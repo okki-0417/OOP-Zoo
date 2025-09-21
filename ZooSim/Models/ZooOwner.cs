@@ -1,4 +1,5 @@
-class ZooOwner
+namespace ZooSim.Models;
+public class ZooOwner
 {
   const int MaximumNameLength = 255;
   private readonly string Name;

@@ -1,4 +1,5 @@
-class AnimalSellers
+namespace ZooSim.Models;
+public class AnimalSellers
 {
   static public List<AnimalSeller> AllAnimalSellers { get; set; } = [];
 

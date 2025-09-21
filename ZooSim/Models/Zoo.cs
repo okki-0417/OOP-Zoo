@@ -1,6 +1,6 @@
+namespace ZooSim.Models;
 using System.Diagnostics.Contracts;
-
-class Zoo
+public class Zoo
 {
   const int MaximumNameLength = 255;
   private readonly string Name;

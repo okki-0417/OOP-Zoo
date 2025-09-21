@@ -1,4 +1,5 @@
-class ZooSimulation
+namespace ZooSim.Models;
+public class ZooSimulation
 {
   private readonly ZooOwner ZooOwner;
   private AnimalSeller AnimalSeller;

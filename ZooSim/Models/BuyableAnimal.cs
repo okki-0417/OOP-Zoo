@@ -1,4 +1,5 @@
-class BuyableAnimal
+namespace ZooSim.Models;
+public class BuyableAnimal
 {
   public Animal Animal;
   public int Price;

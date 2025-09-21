@@ -1,4 +1,5 @@
-class ZooFinance
+namespace ZooSim.Models;
+public class ZooFinance
 {
   public int Funds { get; set; } = 100000000;
 
