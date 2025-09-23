@@ -1,0 +1,57 @@
+@startuml ZooSimulation
+title 動物園シミュレーション
+
+ZooOwner *-- Zoo
+Zoo o-- AnimalSeller
+Zoo *-- ZooFinance
+AnimalSellers *-- AnimalSeller
+AnimalSeller o-- BuyableAnimal
+Animal *--  BuyableAnimal
+Zoo o-- Animal
+
+class ZooSimulation{
+  + ZooOwner: ZooOwner
+  + Init(): void
+  + Run(): void
+  + CreateZooOwner(): ZooOwner
+}
+
+class ZooOwner {
+  + Name: string
+  + Zoo: Zoo
+  + AddNewZoo(): void
+}
+
+class Animal {
+  + Name: string
+  + Display(): void
+}
+
+class AnimalSeller {
+  + Name: string
+  + BuyableAnimals: BuyableAnimals
+  + ListBuyableAnimals(): void
+}
+class AnimalSellers {
+  + AllAnimalSellers: AnimalSeller
+  + ListAllAnimalSellers(): void
+}
+class BuyableAnimal {
+  + Animal: Animal
+  + Price: int
+}
+class Zoo {
+  + Name: string
+  + ZooFinance: ZooFinance
+  + Animals: Animal[]
+  + ContractedAnimalSellers: AnimalSeller[]
+  + AnimalIntroduceWays: string[]
+  + IntroduceNewAnimal(): void
+  + ListAnimals(): void
+  + ContractWithAnimalSeller(): void
+}
+class ZooFinance {
+  + Funds: int
+}
+
+@enduml
