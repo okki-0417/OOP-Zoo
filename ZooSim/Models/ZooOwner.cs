@@ -2,40 +2,33 @@ namespace ZooSim.Models;
 public class ZooOwner
 {
   const int MaximumNameLength = 255;
-  private readonly string Name;
-  public Zoo Zoo { get; }
+  public string Name { get; set; }
+  public Zoo Zoo { get; set; }
 
-  public ZooOwner(string name)
+  public ZooOwner(string name, string zooName)
   {
     Name = name;
     Validate();
 
-    Console.WriteLine($"{Name}さん、これからよろしくお願いします！");
-
-    Console.WriteLine($"{Name}さんの最初の動物園を作りましょう！");
-    Zoo = CreateZoo();
+    Zoo = new(zooName);
   }
 
-  static private Zoo CreateZoo()
+  public void IntroduceAnimal() {
+    
+  }
+
+  public string AddNewZoo(string name)
   {
-    string? zooName;
-
-    while (true)
+    try
     {
-      Console.WriteLine("動物園の名前を入力してください");
-      zooName = Console.ReadLine();
+      Zoo zoo = new(name);
+      Zoo = zoo;
 
-      try
-      {
-        if (string.IsNullOrWhiteSpace(zooName)) throw new ArgumentException("名前は空にできません。");
-
-        Zoo zoo = new(zooName);
-        return zoo;
-      }
-      catch (ArgumentException ex)
-      {
-        Console.WriteLine($"作成失敗: {ex.Message}");
-      }
+      return "";
+    }
+    catch (ArgumentException ex)
+    {
+      return ex.Message;
     }
   }
 

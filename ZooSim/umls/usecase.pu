@@ -1,0 +1,21 @@
+@startuml ZooSimulation
+left to right direction
+
+actor "動物園オーナー" as ZooOwner
+
+usecase "動物を導入する" as IntroduceAnimal
+  usecase "購入する" as BuyAnimal
+  usecase "繁殖させる" as BreedAnimal
+  usecase "他園と交換する" as TradeAnimal
+  usecase "保護する" as RescueAnimal
+usecase "動物商人と契約する" as ContractWithAnimalSeller
+
+ZooOwner --> IntroduceAnimal
+
+BuyAnimal  .u.> IntroduceAnimal : <<extend>>
+  ContractWithAnimalSeller .u.> BuyAnimal : <<extend>>
+BreedAnimal .u.> IntroduceAnimal : <<extend>>
+TradeAnimal .u.> IntroduceAnimal : <<extend>>
+RescueAnimal .u.> IntroduceAnimal : <<extend>>
+
+@enduml

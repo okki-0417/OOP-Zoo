@@ -1,10 +1,10 @@
 namespace ZooSim.Models;
-public class AnimalSeller
+public class AnimalTrader
 {
   public string Name { get;}
   public List<BuyableAnimal> BuyableAnimals = [];
 
-  public AnimalSeller(string name)
+  public AnimalTrader(string name)
   {
     Name = name;
     BuyableAnimals = [
@@ -15,7 +15,6 @@ public class AnimalSeller
       new BuyableAnimal(new Animal("カバ"), 10000000),
     ];
 
-    AnimalSellers.AllAnimalSellers.Add(this);
   }
 
   public void ListBuyableAnimals()

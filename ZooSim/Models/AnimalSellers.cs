@@ -1,7 +1,7 @@
 namespace ZooSim.Models;
 public class AnimalSellers
 {
-  static public List<AnimalSeller> AllAnimalSellers { get; set; } = [];
+  static public List<AnimalTrader> AllAnimalSellers { get; set; } = [];
 
   static public void ListAllAnimalSellers()
   {

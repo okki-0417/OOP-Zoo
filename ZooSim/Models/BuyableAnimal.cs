@@ -1,12 +1,7 @@
 namespace ZooSim.Models;
-public class BuyableAnimal
-{
-  public Animal Animal;
-  public int Price;
 
-  public BuyableAnimal(Animal animal, int price)
-  {
-    Animal = animal;
-    Price = price;
-  }
+public class BuyableAnimal(Animal animal, int price)
+{
+    public Animal Animal { get; } = animal;
+    public int Price { get; } = price;
 }

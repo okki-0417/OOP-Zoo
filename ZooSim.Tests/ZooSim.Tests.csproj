@@ -18,8 +18,4 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ZooSim\ZooSim.csproj" />
-  </ItemGroup>
-
 </Project>

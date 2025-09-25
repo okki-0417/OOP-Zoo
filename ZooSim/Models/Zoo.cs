@@ -3,10 +3,16 @@ using System.Diagnostics.Contracts;
 public class Zoo
 {
   const int MaximumNameLength = 255;
-  private readonly string Name;
+  public string Name;
   private readonly ZooFinance ZooFinance;
   private readonly List<Animal> Animals = [];
-  private List<AnimalSeller> ContractedAnimalSellers = [];
+  public List<AnimalTrader> ContractedAnimalTraders = [];
+  public static readonly List<string> AnimalIntroduceWays = [
+    "購入する",
+    "繁殖させる",
+    "他園と交換する",
+    "保護する",
+  ];
 
   public Zoo(string name)
   {
@@ -94,13 +100,13 @@ public class Zoo
 
     while (true)
     {
-      if (ContractedAnimalSellers.Count > 0)
+      if (ContractedAnimalTraders.Count > 0)
       {
         Console.WriteLine("どの動物商人から買うか選択してください");
-        AnimalSeller animalSeller = SelectAnimalSeller();
+        AnimalTrader animalTrader = SelectAnimalTrader();
 
         Console.WriteLine("どの動物を買うか選択してください");
-        BuyableAnimal buyingAnimal = SelectBuyingAnimal(animalSeller);
+        BuyableAnimal buyingAnimal = SelectBuyingAnimal(animalTrader);
 
         if (ZooFinance.PayIfPayable(buyingAnimal.Price))
         {
@@ -119,13 +125,13 @@ public class Zoo
         Console.WriteLine("契約している動物商人がいません。");
         Console.WriteLine("まず動物商人と契約しましょう。");
 
-        ContractWithAnimalSeller();
+        ContractWithAnimalTrader();
         continue;
       }
     }
   }
 
-  public void ContractWithAnimalSeller()
+  public void ContractWithAnimalTrader()
   {
     AnimalSellers.ListAllAnimalSellers();
 
@@ -140,9 +146,9 @@ public class Zoo
       {
         if (index >= 0 && index < AnimalSellers.AllAnimalSellers.Count)
         {
-          AnimalSeller contractingAnimalSeller = AnimalSellers.AllAnimalSellers[int.Parse(input)];
-          ContractedAnimalSellers.Add(contractingAnimalSeller);
-          Console.WriteLine($"{contractingAnimalSeller.Name}と契約しました！");
+          AnimalTrader contractingAnimalTrader = AnimalSellers.AllAnimalSellers[int.Parse(input)];
+          ContractedAnimalTraders.Add(contractingAnimalTrader);
+          Console.WriteLine($"{contractingAnimalTrader.Name}と契約しました！");
 
           return;
         }
@@ -158,17 +164,17 @@ public class Zoo
     }
   }
 
-  private void ListContractedAnimalSellers()
+  private void ListContractedAnimalTraders()
   {
-    for (int i = 0; i < ContractedAnimalSellers.Count; i++)
+    for (int i = 0; i < ContractedAnimalTraders.Count; i++)
     {
-      Console.WriteLine($"{i} -> {ContractedAnimalSellers[i].Name}");
+      Console.WriteLine($"{i} -> {ContractedAnimalTraders[i].Name}");
     }
   }
 
-  private AnimalSeller SelectAnimalSeller()
+  private AnimalTrader SelectAnimalTrader()
   {
-    ListContractedAnimalSellers();
+    ListContractedAnimalTraders();
 
     string? input;
 
@@ -180,7 +186,7 @@ public class Zoo
       {
         if (index >= 0 && index < AnimalSellers.AllAnimalSellers.Count)
         {
-          return ContractedAnimalSellers[int.Parse(input)];
+          return ContractedAnimalTraders[int.Parse(input)];
         }
         else
         {
@@ -194,9 +200,9 @@ public class Zoo
     }
   }
 
-  static private BuyableAnimal SelectBuyingAnimal(AnimalSeller animalSeller)
+  static private BuyableAnimal SelectBuyingAnimal(AnimalTrader animalTrader)
   {
-    animalSeller.ListBuyableAnimals();
+    animalTrader.ListBuyableAnimals();
 
     Console.WriteLine("購入する動物を選択してください。");
 
@@ -208,9 +214,9 @@ public class Zoo
 
       if (int.TryParse(input, out int index))
       {
-        if (index >= 0 && index < animalSeller.BuyableAnimals.Count)
+        if (index >= 0 && index < animalTrader.BuyableAnimals.Count)
         {
-          return animalSeller.BuyableAnimals[int.Parse(input)];
+          return animalTrader.BuyableAnimals[int.Parse(input)];
         }
         else
         {
