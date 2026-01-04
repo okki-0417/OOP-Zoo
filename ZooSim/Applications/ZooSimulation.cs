@@ -1,58 +1,22 @@
 using static System.Console;
-using ZooSim.Models;
+using ZooSim.Models.Zoo;
+using ZooSim.Models.ZooOwner;
+
 namespace ZooSim.Applications;
 
 public class ZooSimulation
 {
   private readonly ZooOwner ZooOwner;
-  private readonly Zoo Zoo;
 
   public ZooSimulation()
   {
     WriteLine("動物シミュレーションへようこそ！");
     WriteLine("動物園のオーナーとして登録します！");
 
-    var ownerName = GetValidOwnerName();
-    var zooName = GetValidZooName();
+    ZooOwnerName ownerName = GetValidOwnerName();
+    ZooName zooName = GetValidZooName();
     ZooOwner = new ZooOwner(ownerName, zooName);
-    Zoo = ZooOwner.Zoo;
-  }
-
-  private string GetValidOwnerName()
-  {
-    string? ownerName;
-
-    while (true)
-    {
-      Write("あなたのお名前を教えてください：");
-      ownerName = ReadLine();
-
-      if (!string.IsNullOrWhiteSpace(ownerName))
-      {
-        WriteLine($"{ownerName}さん、これからよろしくお願いします！");
-        return ownerName;
-      }
-
-      WriteLine("名前は空にできません。");
-    }
-  }
-
-  private string GetValidZooName()
-  {
-    string? zooName;
-
-    while (true)
-    {
-      Write("動物園の名前を教えてください：");
-      zooName = ReadLine();
-
-      if (!string.IsNullOrWhiteSpace(zooName))
-      {
-        return zooName;
-      }
-
-      WriteLine("名前は空にできません。");
-    }
+    WriteLine($"{ownerName}さん、これからよろしくお願いします！");
   }
 
   public void Run()
@@ -68,7 +32,7 @@ public class ZooSimulation
       switch (input)
       {
         case "1":
-          Zoo.IntroduceNewAnimal();
+          // ZooOwner.IntroduceNewAnimal();
           break;
         case "2":
           WriteLine("さようなら！");
@@ -77,6 +41,36 @@ public class ZooSimulation
           WriteLine("選択肢のいずれかを入力してください！");
           break;
       }
+    }
+  }
+
+  static private ZooOwnerName GetValidOwnerName()
+  {
+    string? ownerName;
+
+    while (true)
+    {
+      Write("あなたのお名前を教えてください：");
+      ownerName = ReadLine();
+
+      if (!string.IsNullOrWhiteSpace(ownerName)) return new ZooOwnerName(ownerName);
+
+      WriteLine("名前は空にできません。");
+    }
+  }
+
+  static private ZooName GetValidZooName()
+  {
+    string? zooName;
+
+    while (true)
+    {
+      Write("動物園の名前を教えてください：");
+      zooName = ReadLine();
+
+      if (!string.IsNullOrWhiteSpace(zooName)) return new ZooName(zooName);
+
+      WriteLine("名前は空にできません。");
     }
   }
 }

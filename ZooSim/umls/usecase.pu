@@ -1,5 +1,4 @@
 @startuml ZooSimulation
-left to right direction
 
 actor "動物園オーナー" as ZooOwner
 

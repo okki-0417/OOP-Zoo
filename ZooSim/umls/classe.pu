@@ -3,11 +3,11 @@ title 動物園シミュレーション
 
 ZooSimulation o-- NextAction
 NextAction --> ZooOwner
+ZooOwner o-- AnimalTrader
 ZooOwner o-- Zoo
-ZooOwner o-- ZooOrganization
-ZooOrganization --> AnimalTradeAgency
+ZooOwner <--> AnimalTraderService
+AnimalTraderService --> AnimalTrader
 Zoo o-- Animal
-AnimalTradeAgency o-- AnimalTrader
 AnimalTrader o-- Animal
 
 class ZooSimulation {
@@ -22,44 +22,37 @@ class NextAction {
   - CreateZooOwner(): ZooOwner
 }
 
+class AnimalTraderService {
+  - AnimalTraders: AnimalTrader[]
+  + Contract()
+}
+
 class ZooOwner {
   + Name: string
   + OwnZoo: Zoo
-  + OwnZooOrganization: ZooOrganization
-  + IntroduceAnimal()
-  - ContractWithAnimalTrader()
-  - BuyAnimal()
-  - BreedAnimal()
-  - TradeAnimal()
-  - RescueAnimal()
-}
-
-class ZooOrganization {
-  + ContractedAnimalTrader
+  + ContractedAnimalTraders: AnimalTrader[]
+  + BuyAnimal()
+  + BreedAnimal()
+  + TradeAnimal()
+  + RescueAnimal()
   + ContractWithAnimalTrader()
 }
 
 class Zoo {
   + Name: string
   + Animals: Animal[]
-  + ListAnimals(): void
 }
 
 class Animal {
   + Name: string
   + Price: int
-  + Display(): void
+  + Bow(): sttring
 }
 
 class AnimalTrader {
   + Name: string
   + Animals: Animal[]
   + ListBuyableAnimals(): void
-}
-class AnimalTradeAgency {
-  + AllAnimalTraders : AnimalTrader[]
-  + ListAllAnimalTraders(): void
-  + BrokerContractWithAnimalTrader()
 }
 
 @enduml
