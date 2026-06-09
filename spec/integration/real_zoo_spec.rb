@@ -1,0 +1,135 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+# 現実の動物園の一日を、ドメイン層だけで再現する統合シナリオ。
+# 分類・飼育エリア・給餌・職員・繁殖・運営の各コンテキストが協調することを確認する。
+RSpec.describe '現実の動物園の再現' do
+  # 名前空間の別名(テスト内ローカル)。
+  shared    = Zoo::Domain::Shared
+  taxonomy  = Zoo::Domain::Taxonomy
+  husbandry = Zoo::Domain::Husbandry
+  staff     = Zoo::Domain::Staff
+  feeding   = Zoo::Domain::Feeding
+  breeding  = Zoo::Domain::Breeding
+  medical   = Zoo::Domain::Medical
+  catalog   = taxonomy::SpeciesCatalog
+
+  def deg(value)
+    Zoo::Domain::Shared::Temperature.celsius(value)
+  end
+
+  # --- 動物園の開園準備 ---
+  let(:zoo) { Zoo::Domain::Zoo.new(name: 'おうきの動物園', admission_fee: shared::Money.yen(2000)) }
+
+  let(:savanna) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'アフリカサバンナ', temperature: deg(30), capacity: 6)) }
+  let(:lion_hill) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'ライオンの丘', temperature: deg(28), capacity: 4)) }
+  let(:polar_sea) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'ホッキョクの海', temperature: deg(-5), capacity: 2)) }
+  let(:penguin_pool) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'ペンギンプール', temperature: deg(0), capacity: 10)) }
+  let(:reptile_house) { zoo.add_enclosure(husbandry::Enclosure.new(name: '爬虫類館', temperature: deg(28), capacity: 2)) }
+  let(:monkey_mountain) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'モンキーマウンテン', temperature: deg(20), capacity: 8)) }
+
+  let(:mammal_keeper) { zoo.hire_keeper(staff::Keeper.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal])) }
+  let(:bird_keeper) { zoo.hire_keeper(staff::Keeper.new(name: '鈴木', specialties: [taxonomy::TaxonClass.bird])) }
+  let(:reptile_keeper) { zoo.hire_keeper(staff::Keeper.new(name: '佐藤', specialties: [taxonomy::TaxonClass.reptile])) }
+  let(:vet) { zoo.hire_veterinarian(staff::Veterinarian.new(name: '山田')) }
+
+  # 雌雄の成体ペア。
+  let(:lions) { build_pair(catalog.lion) }
+  let(:zebras) { build_pair(catalog.grevys_zebra) }
+  let(:giraffe) { build_adult(catalog.reticulated_giraffe, name: 'キリン') }
+  let(:polar_bear) { build_adult(catalog.polar_bear, name: 'シロ') }
+  let(:penguins) { Array.new(3) { |i| build_adult(catalog.emperor_penguin, name: "ペンギン#{i}") } }
+  let(:python) { build_adult(catalog.burmese_python, name: 'ニシキ') }
+  let(:macaques) { build_pair(catalog.japanese_macaque) }
+
+  before do
+    # サバンナは草食動物の混合展示。
+    zebras.each { |z| zoo.house(z, savanna) }
+    zoo.house(giraffe, savanna)
+    # 肉食獣・極地・水鳥・爬虫類・霊長類はそれぞれの環境へ。
+    lions.each { |l| zoo.house(l, lion_hill) }
+    zoo.house(polar_bear, polar_sea)
+    penguins.each { |p| zoo.house(p, penguin_pool) }
+    zoo.house(python, reptile_house)
+    macaques.each { |m| zoo.house(m, monkey_mountain) }
+    # 担当割り当て。
+    mammal_keeper.assign_to(savanna).assign_to(lion_hill).assign_to(polar_sea).assign_to(monkey_mountain)
+    bird_keeper.assign_to(penguin_pool)
+    reptile_keeper.assign_to(reptile_house)
+  end
+
+  it '多様な動物が適切な環境に収容され、混合展示が成立すること' do
+    expect(zoo.population).to eq(12)
+    expect(savanna.species_present.size).to eq(2) # シマウマ + キリン
+    expect(zoo.species_on_exhibit.size).to eq(7)
+  end
+
+  it '肉食獣を草食動物の展示に同居させられないこと' do
+    rogue_lion = build_adult(catalog.lion, name: 'はぐれ')
+    expect { zoo.house(rogue_lion, savanna) }
+      .to raise_error(Zoo::Domain::Errors::IncompatibleCohabitation)
+  end
+
+  it '気候の合わない動物を収容できないこと(ホッキョクグマをサバンナへ)' do
+    misplaced = build_adult(catalog.polar_bear, name: '迷子')
+    expect { zoo.house(misplaced, savanna) }
+      .to raise_error(Zoo::Domain::Errors::ClimateMismatch)
+  end
+
+  it '飼育員が専門の動物に給餌でき、専門外には給餌できないこと' do
+    zebras.first.get_hungrier(40)
+    mammal_keeper.feed(zebras.first, feeding::FoodCatalog.hay)
+    expect(zebras.first.hunger.level).to eq(15)
+
+    # 哺乳類担当はペンギン(鳥類)に給餌できない。
+    expect { mammal_keeper.feed(penguins.first, feeding::FoodCatalog.sardine) }
+      .to raise_error(Zoo::Domain::Errors::NotQualified)
+    # 鳥類担当なら給餌できる。
+    penguins.first.get_hungrier(30)
+    expect { bird_keeper.feed(penguins.first, feeding::FoodCatalog.sardine) }.not_to raise_error
+  end
+
+  it '病気の動物を獣医が診て治療できること' do
+    patient = penguins.first
+    patient.fall_ill(medical::IllnessCatalog.pneumonia)
+    expect(vet.examine(patient)).to eq(:sick)
+
+    vet.treat(patient)
+    expect(patient).not_to be_sick
+    expect(vet.examine(patient)).to eq(:healthy)
+  end
+
+  it 'ライオンを繁殖させ、生まれた子を群れに加えられること' do
+    sire, dam = lions
+    pair = breeding::BreedingPair.new(sire: sire, dam: dam)
+    pair.mate
+    pair.advance(catalog.lion.gestation_period_days)
+    cub = pair.deliver(name: 'シンバ', sex: shared::Sex.male)
+
+    zoo.house(cub, lion_hill)
+    expect(lion_hill.population).to eq(3)
+    expect(zoo.population).to eq(13)
+    expect(pair.pull_events.first).to be_a(Zoo::Domain::Events::AnimalBorn)
+    expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
+  end
+
+  it '来園者を受け入れて収益を計上できること' do
+    zoo.admit_visitors(500)
+    expect(zoo.revenue).to eq(shared::Money.yen(1_000_000))
+  end
+
+  it '展示中の絶滅危惧種を把握できること' do
+    # シマウマ(EN)・キリン(EN)・ライオン(VU)・ホッキョクグマ(VU)・ニシキヘビ(VU)が該当。
+    names = zoo.threatened_species.map(&:name_ja)
+    expect(names).to include('グレビーシマウマ', 'アミメキリン', 'ライオン', 'ホッキョクグマ', 'ビルマニシキヘビ')
+    expect(names).not_to include('ニホンザル') # LC
+  end
+
+  it '一日を開園すると全個体が歳をとり、エリアが汚れること' do
+    expect { zoo.open_for_a_day }
+      .to change { zebras.first.age_in_days }.by(1)
+    expect(savanna.cleanliness.level).to be < 100
+    expect(zoo.population).to eq(12) # 健康な個体は誰も死なない
+  end
+end

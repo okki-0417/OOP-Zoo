@@ -1,0 +1,77 @@
+# frozen_string_literal: true
+
+module Zoo
+  module Domain
+    module Breeding
+      # 繁殖ペアを表す集約。一組の雌雄を結びつけ、交尾→妊娠/抱卵→出産/孵化の
+      # ライフサイクルを管理し、誕生(AnimalBorn)イベントを記録する。
+      class BreedingPair
+        include Events::Recorder
+
+        # 新生個体の初期最大体力(指定がなければこの値)。
+        NEWBORN_HEALTH = 50
+
+        attr_reader :sire, :dam
+
+        def initialize(sire:, dam:)
+          raise Errors::BreedingNotAllowed, 'sireはオスでなければなりません' unless sire.sex.male?
+          raise Errors::BreedingNotAllowed, 'damはメスでなければなりません' unless dam.sex.female?
+
+          reason = BreedingPolicy.rejection_reason(sire, dam)
+          raise Errors::BreedingNotAllowed, reason if reason
+
+          @sire = sire
+          @dam = dam
+          @gestation_days = nil
+        end
+
+        def species
+          @dam.species
+        end
+
+        # 交尾する。妊娠/抱卵を開始する。
+        def mate
+          raise Errors::BreedingNotAllowed, '既に妊娠/抱卵中です' if expecting?
+
+          @gestation_days = 0
+          self
+        end
+
+        def expecting?
+          !@gestation_days.nil?
+        end
+
+        # 妊娠/抱卵を日数ぶん進める。
+        def advance(days = 1)
+          return self unless expecting?
+
+          @gestation_days += days
+          self
+        end
+
+        # 出産/孵化できる状態か(妊娠/抱卵期間に達したか)。
+        def ready_to_deliver?
+          expecting? && @gestation_days >= species.gestation_period_days
+        end
+
+        # 出産/孵化する。新生個体を生成して返し、AnimalBornを記録する。
+        def deliver(name:, sex:, max_health: NEWBORN_HEALTH)
+          raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
+
+          offspring = Animal.new(
+            species: species, name: name, sex: sex, max_health: max_health,
+            age_in_days: 0, sire: @sire, dam: @dam
+          )
+          @gestation_days = nil
+
+          record_event(Events::AnimalBorn.new(animal: offspring, sire_id: @sire.id, dam_id: @dam.id))
+          offspring
+        end
+
+        def to_s
+          "#{species.name_ja}の繁殖ペア(#{@sire.name}×#{@dam.name})"
+        end
+      end
+    end
+  end
+end

@@ -1,0 +1,86 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+module Zoo
+  module Domain
+    module Staff
+      RSpec.describe Keeper do
+        let(:mammal_keeper) do
+          described_class.new(name: '田中', specialties: [Taxonomy::TaxonClass.mammal])
+        end
+        let(:lion) { build_adult(Taxonomy::SpeciesCatalog.lion) }
+        let(:penguin) { build_adult(Taxonomy::SpeciesCatalog.emperor_penguin) }
+
+        it '専門の綱の動物を担当できること' do
+          expect(mammal_keeper.qualified_for?(lion)).to be(true)
+          expect(mammal_keeper.qualified_for?(penguin)).to be(false)
+        end
+
+        it '専門の動物に給餌できること' do
+          lion.get_hungrier(50)
+          expect { mammal_keeper.feed(lion, Feeding::FoodCatalog.horse_meat) }
+            .to change { lion.hunger.level }.by(-35)
+        end
+
+        it '専門外の動物には給餌できないこと' do
+          expect { mammal_keeper.feed(penguin, Feeding::FoodCatalog.sardine) }
+            .to raise_error(Errors::NotQualified)
+        end
+
+        it 'エリアを清掃できること' do
+          enclosure = Husbandry::Enclosure.new(
+            name: 'サバンナ', temperature: Shared::Temperature.celsius(30), capacity: 5
+          )
+          enclosure.soil(40)
+          expect { mammal_keeper.clean(enclosure) }
+            .to change { enclosure.cleanliness.level }.to(100)
+        end
+
+        it '専門を持たない飼育員は作れないこと' do
+          expect { described_class.new(name: '空', specialties: []) }.to raise_error(ArgumentError)
+        end
+      end
+
+      RSpec.describe Veterinarian do
+        let(:vet) { described_class.new(name: '佐藤') }
+        let(:animal) { build_adult(Taxonomy::SpeciesCatalog.lion) }
+
+        it '健康な個体を健康と診断すること' do
+          expect(vet.examine(animal)).to eq(:healthy)
+        end
+
+        it '病気の個体を診断し、治療で治せること' do
+          animal.fall_ill(Medical::IllnessCatalog.pneumonia)
+          expect(vet.examine(animal)).to eq(:sick)
+          vet.treat(animal)
+          expect(animal).not_to be_sick
+        end
+
+        it '衰弱した個体を診断し、治療で回復させること' do
+          90.times { animal.cry_out } # 体力を削る
+          expect(vet.examine(animal)).to eq(:injured)
+          vet.treat(animal)
+          expect(animal.health.weak?).to be(false)
+        end
+
+        it '死亡個体は治療できないこと' do
+          animal.die
+          expect(vet.examine(animal)).to eq(:dead)
+          expect { vet.treat(animal) }.to raise_error(Errors::DeadAnimal)
+        end
+      end
+
+      RSpec.describe '病気の進行' do
+        let(:animal) { build_adult(Taxonomy::SpeciesCatalog.lion, max_health: 30) }
+
+        it '治療しないと病気で衰弱し、やがて死亡すること' do
+          animal.fall_ill(Medical::IllnessCatalog.pneumonia) # 1日6ダメージ
+          animal.grow_older(5)
+          expect(animal).to be_dead
+          expect(animal.cause_of_death).to eq(:illness)
+        end
+      end
+    end
+  end
+end

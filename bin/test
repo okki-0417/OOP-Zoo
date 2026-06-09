@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# このリポジトリのテストを実行するためのローカルランナー。
+# 環境の Ruby が古く bundler が使えないため、--user-install した gem を参照する。
+set -euo pipefail
+
+RUBY="${RUBY:-$HOME/bin/ruby}"
+USERGEM="$("$RUBY" -e 'puts Gem.user_dir')"
+export GEM_HOME="$USERGEM"
+export GEM_PATH="$USERGEM:/usr/share/gems"
+export PATH="$USERGEM/bin:$PATH"
+
+exec "$RUBY" -S rspec "$@"
