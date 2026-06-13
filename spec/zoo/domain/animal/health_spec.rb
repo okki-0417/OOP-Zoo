@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Zoo::Domain::Shared::Health do
+RSpec.describe Zoo::Domain::Animal::Health do
   describe '.full' do
     it '最大体力で満タンのHealthを生成すること' do
       health = described_class.full(10)

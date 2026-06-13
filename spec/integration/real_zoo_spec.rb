@@ -7,6 +7,7 @@ require 'spec_helper'
 RSpec.describe '現実の動物園の再現' do
   # 名前空間の別名(テスト内ローカル)。
   shared    = Zoo::Domain::Shared
+  animal    = Zoo::Domain::Animal
   taxonomy  = Zoo::Domain::Taxonomy
   husbandry = Zoo::Domain::Husbandry
   staff     = Zoo::Domain::Staff
@@ -105,7 +106,7 @@ RSpec.describe '現実の動物園の再現' do
     pair = breeding::BreedingPair.new(sire: sire, dam: dam)
     pair.mate
     pair.advance(catalog.lion.gestation_period_days)
-    cub = pair.deliver(name: 'シンバ', sex: shared::Sex.male)
+    cub = pair.deliver(name: 'シンバ', sex: animal::Sex.male)
 
     zoo.house(cub, lion_hill)
     expect(lion_hill.population).to eq(3)
@@ -128,7 +129,7 @@ RSpec.describe '現実の動物園の再現' do
 
   it '一日を開園すると全個体が歳をとり、エリアが汚れること' do
     expect { zoo.open_for_a_day }
-      .to change { zebras.first.age_in_days }.by(1)
+      .to change { zebras.first.age_in_days.value }.by(1)
     expect(savanna.cleanliness.level).to be < 100
     expect(zoo.population).to eq(12) # 健康な個体は誰も死なない
   end

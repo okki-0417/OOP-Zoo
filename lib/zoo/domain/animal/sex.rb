@@ -2,10 +2,10 @@
 
 module Zoo
   module Domain
-    module Shared
+    class Animal
       # 性別を表す値オブジェクト。繁殖の可否判定などで用いる。
       class Sex
-        include ValueObject
+        include Shared::ValueObject
 
         VALUES = { male: 'オス', female: 'メス' }.freeze
 

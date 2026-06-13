@@ -10,53 +10,42 @@ module Zoo
     class Animal
       include Events::Recorder
 
-      attr_reader :id, :species, :name, :sex, :health, :hunger, :age_in_days, :cause_of_death, :parent_ids
-
       CRY_OUT_DAMAGE = 1
       # 1日あたりに増す空腹度。
       HUNGER_PER_DAY = 10
       # 飢餓状態で1日あたりに失う体力。
       STARVATION_DAMAGE_PER_DAY = 2
 
+      attr_reader :id, :species, :name, :sex, :health, :hunger, :age_in_days, :death, :parent_ids, :illness
+
       def initialize(species:, name:, sex:, max_health:, voice: :default,
                      age_in_days: 0, sire: nil, dam: nil, id: Shared::Identifier.new)
-        raise ArgumentError, '名前は一文字以上でなければなりません' if name.to_s.empty?
-        raise ArgumentError, '日齢は0以上でなければなりません' if age_in_days.negative?
-
         @id = id
         @species = species
-        @name = name
+        @name = Name.new(name)
         @sex = sex
-        @health = Shared::Health.full(max_health)
-        @voice = voice == :default ? species.default_voice : voice
-        @age_in_days = age_in_days
-        @hunger = Shared::Hunger.satisfied
-        @alive = true
+        @health = Health.full(max_health)
+        @voice = Voice.from(voice == :default ? species.default_voice : voice)
+        @age_in_days = AgeInDays.new(age_in_days)
+        @hunger = Hunger.satisfied
+        @death = nil
         @illness = nil
         @parent_ids = [sire&.id, dam&.id].compact
       end
 
-      attr_reader :illness
-
-      # --- 鳴く ---
-
       def cry_out
-        current_voice.tap { @health = @health.decreased_by(CRY_OUT_DAMAGE) if @alive }
+        current_voice.tap { @health = @health.decreased_by(CRY_OUT_DAMAGE) if alive? }
       end
 
       def current_voice
-        return '...' if incapacitated? || @voice.to_s.empty?
+        return '...' if incapacitated? || @voice.silent?
 
-        @health.weak? ? "#{@voice}..." : @voice
+        @health.weak? ? "#{@voice}..." : @voice.to_s
       end
 
       def change_voice(new_voice)
-        raise ArgumentError, '鳴き声はnilにできません' if new_voice.nil?
-
-        @voice = new_voice
+        @voice = Voice.new(new_voice)
       end
-
-      # --- 体力・体調 ---
 
       def heal(amount)
         raise ArgumentError, '回復量は0以上でなければなりません' if amount.negative?
@@ -72,11 +61,11 @@ module Zoo
       end
 
       def alive?
-        @alive
+        @death.nil?
       end
 
       def dead?
-        !@alive
+        !alive?
       end
 
       # 体力が尽きているか衰弱で行動不能か。
@@ -84,12 +73,10 @@ module Zoo
         dead? || @health.empty?
       end
 
-      # 個体を死亡させる。理由(死因)は任意。
       def die(cause: :unknown)
         return self if dead?
 
-        @alive = false
-        @cause_of_death = cause
+        @death = Death.new(cause: cause)
         record_event(Events::AnimalDied.new(animal: self, cause: cause))
         self
       end
@@ -122,19 +109,16 @@ module Zoo
         !@illness.nil?
       end
 
-      # --- 加齢・空腹 ---
-
       # 指定日数ぶん歳をとる。空腹が進み、飢餓なら衰弱し、寿命を超えれば寿命死する。
       def grow_older(days = 1)
-        raise ArgumentError, '日数は1以上でなければなりません' if days < 1
         return self if dead?
 
-        @age_in_days += days
+        @age_in_days = @age_in_days.advanced_by(days)
         get_hungrier(HUNGER_PER_DAY * days)
         @health = @health.decreased_by(STARVATION_DAMAGE_PER_DAY * days) if @hunger.starving?
         @health = @health.decreased_by(@illness.daily_damage * days) if sick?
 
-        if past_lifespan?
+        if @age_in_days.past_lifespan?(@species)
           die(cause: :old_age)
         elsif @health.empty?
           die(cause: sick? ? :illness : :starvation)
@@ -174,19 +158,17 @@ module Zoo
         @hunger.starving?
       end
 
-      # --- ライフステージ・繁殖適性 ---
-
       def life_stage
-        Shared::LifeStage.for(age_in_days: @age_in_days, species: @species)
+        @age_in_days.life_stage(@species)
       end
 
       def age_in_years
-        @age_in_days / Shared::LifeStage::DAYS_PER_YEAR
+        @age_in_days.years
       end
 
       # 性成熟しているか。
       def mature?
-        life_stage.mature?
+        @age_in_days.mature?(@species)
       end
 
       # 繁殖可能な状態か(生存・成熟・衰弱や病気がない)。
@@ -202,22 +184,12 @@ module Zoo
           fertile? && other.fertile?
       end
 
-      # --- 改名 ---
-
       def change_name(new_name)
-        raise ArgumentError, '名前は一文字以上でなければなりません' if new_name.to_s.empty?
-
-        @name = new_name
+        @name = Name.new(new_name)
       end
 
       def to_s
         "#{@name}(#{@species.name_ja}/#{@sex.label}/#{life_stage.label})"
-      end
-
-      private
-
-      def past_lifespan?
-        @age_in_days > @species.lifespan_years * Shared::LifeStage::DAYS_PER_YEAR
       end
     end
   end

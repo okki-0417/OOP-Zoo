@@ -2,14 +2,14 @@
 
 module Zoo
   module Domain
-    module Shared
+    class Animal
       # 体力(HP)を表す不変の値オブジェクト。
       #
       # 現在値と最大値の組で体力を表現し、増減は常に新しいHealthを返す。
       # 0未満や最大値超過にならないことを内部で保証するため、利用側は
       # 範囲チェックを意識しなくてよい。
       class Health
-        include ValueObject
+        include Shared::ValueObject
 
         # この割合以下を「衰弱状態」とみなす既定のしきい値。
         DEFAULT_WEAK_THRESHOLD = 0.2

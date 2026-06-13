@@ -24,7 +24,7 @@ module Zoo
           @temperature = temperature
           @capacity = capacity
           @area_sqm = area_sqm
-          @cleanliness = Shared::Cleanliness.spotless
+          @cleanliness = Cleanliness.spotless
           @occupants = []
         end
 

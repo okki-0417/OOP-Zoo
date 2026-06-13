@@ -2,13 +2,13 @@
 
 module Zoo
   module Domain
-    module Shared
+    class Animal
       # 空腹度を表す不変の値オブジェクト。0(満腹)〜100(限界)。
       #
       # 時間経過で増加し、給餌で減少する。一定以上で「空腹」、上限で「飢餓」とみなし、
       # 飢餓状態は体力を削る要因になる。
       class Hunger
-        include ValueObject
+        include Shared::ValueObject
         include Comparable
 
         MIN = 0

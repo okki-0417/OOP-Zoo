@@ -78,7 +78,7 @@ module Zoo
           animal.fall_ill(Medical::IllnessCatalog.pneumonia) # 1日6ダメージ
           animal.grow_older(5)
           expect(animal).to be_dead
-          expect(animal.cause_of_death).to eq(:illness)
+          expect(animal.death.cause).to eq(:illness)
         end
       end
     end

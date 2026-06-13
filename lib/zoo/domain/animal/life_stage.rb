@@ -2,13 +2,13 @@
 
 module Zoo
   module Domain
-    module Shared
+    class Animal
       # 生活史段階(ライフステージ)を表す値オブジェクト。
       #
       # 個体の日齢と、種ごとの性成熟年齢・寿命から導出する。
       # 繁殖可否(成体か)や展示・飼育方針の判断に用いる。
       class LifeStage
-        include ValueObject
+        include Shared::ValueObject
 
         DAYS_PER_YEAR = 365
 

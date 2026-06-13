@@ -24,7 +24,7 @@ module Zoo
             conservation_status: ConservationStatus.vulnerable,
             habitable_temperature_range: temp(10)..temp(40),
             lifespan_years: 15, maturity_age_years: 3, gestation_period_days: 110,
-            adult_weight: Shared::Weight.from_kilograms(190),
+            adult_weight: Weight.from_kilograms(190),
             default_voice: 'ガオー', group_living: true
           )
         end
@@ -36,7 +36,7 @@ module Zoo
             conservation_status: ConservationStatus.endangered,
             habitable_temperature_range: temp(12)..temp(40),
             lifespan_years: 60, maturity_age_years: 12, gestation_period_days: 660,
-            adult_weight: Shared::Weight.from_tons(5),
+            adult_weight: Weight.from_tons(5),
             default_voice: 'パオーン', group_living: true
           )
         end
@@ -48,7 +48,7 @@ module Zoo
             conservation_status: ConservationStatus.endangered,
             habitable_temperature_range: temp(12)..temp(40),
             lifespan_years: 25, maturity_age_years: 4, gestation_period_days: 450,
-            adult_weight: Shared::Weight.from_kilograms(1200),
+            adult_weight: Weight.from_kilograms(1200),
             default_voice: nil, group_living: true
           )
         end
@@ -60,7 +60,7 @@ module Zoo
             conservation_status: ConservationStatus.endangered,
             habitable_temperature_range: temp(8)..temp(40),
             lifespan_years: 20, maturity_age_years: 3, gestation_period_days: 390,
-            adult_weight: Shared::Weight.from_kilograms(400),
+            adult_weight: Weight.from_kilograms(400),
             default_voice: 'ヒヒーン', group_living: true
           )
         end
@@ -72,7 +72,7 @@ module Zoo
             conservation_status: ConservationStatus.least_concern,
             habitable_temperature_range: temp(-15)..temp(32),
             lifespan_years: 25, maturity_age_years: 4, gestation_period_days: 170,
-            adult_weight: Shared::Weight.from_kilograms(11),
+            adult_weight: Weight.from_kilograms(11),
             default_voice: 'キャッキャ', group_living: true
           )
         end
@@ -84,7 +84,7 @@ module Zoo
             conservation_status: ConservationStatus.vulnerable,
             habitable_temperature_range: temp(-40)..temp(15),
             lifespan_years: 25, maturity_age_years: 5, gestation_period_days: 240,
-            adult_weight: Shared::Weight.from_kilograms(450),
+            adult_weight: Weight.from_kilograms(450),
             default_voice: 'ウゥー', group_living: false
           )
         end
@@ -96,7 +96,7 @@ module Zoo
             conservation_status: ConservationStatus.endangered,
             habitable_temperature_range: temp(-5)..temp(25),
             lifespan_years: 12, maturity_age_years: 2, gestation_period_days: 130,
-            adult_weight: Shared::Weight.from_kilograms(5),
+            adult_weight: Weight.from_kilograms(5),
             default_voice: 'ピャー', group_living: false
           )
         end
@@ -110,7 +110,7 @@ module Zoo
             conservation_status: ConservationStatus.near_threatened,
             habitable_temperature_range: temp(-40)..temp(8),
             lifespan_years: 20, maturity_age_years: 4, gestation_period_days: 65,
-            adult_weight: Shared::Weight.from_kilograms(30),
+            adult_weight: Weight.from_kilograms(30),
             default_voice: 'アー', group_living: true
           )
         end
@@ -122,7 +122,7 @@ module Zoo
             conservation_status: ConservationStatus.vulnerable,
             habitable_temperature_range: temp(5)..temp(28),
             lifespan_years: 20, maturity_age_years: 2, gestation_period_days: 40,
-            adult_weight: Shared::Weight.from_kilograms(4),
+            adult_weight: Weight.from_kilograms(4),
             default_voice: 'ガアガア', group_living: true
           )
         end
@@ -134,7 +134,7 @@ module Zoo
             conservation_status: ConservationStatus.endangered,
             habitable_temperature_range: temp(-20)..temp(30),
             lifespan_years: 30, maturity_age_years: 3, gestation_period_days: 32,
-            adult_weight: Shared::Weight.from_kilograms(9),
+            adult_weight: Weight.from_kilograms(9),
             default_voice: 'コォー', group_living: true
           )
         end
@@ -148,7 +148,7 @@ module Zoo
             conservation_status: ConservationStatus.vulnerable,
             habitable_temperature_range: temp(22)..temp(35),
             lifespan_years: 25, maturity_age_years: 3, gestation_period_days: 60,
-            adult_weight: Shared::Weight.from_kilograms(75),
+            adult_weight: Weight.from_kilograms(75),
             default_voice: nil, group_living: false
           )
         end
@@ -160,7 +160,7 @@ module Zoo
             conservation_status: ConservationStatus.vulnerable,
             habitable_temperature_range: temp(20)..temp(35),
             lifespan_years: 100, maturity_age_years: 25, gestation_period_days: 130,
-            adult_weight: Shared::Weight.from_kilograms(250),
+            adult_weight: Weight.from_kilograms(250),
             default_voice: nil, group_living: true
           )
         end
@@ -174,7 +174,7 @@ module Zoo
             conservation_status: ConservationStatus.least_concern,
             habitable_temperature_range: temp(10)..temp(25),
             lifespan_years: 20, maturity_age_years: 3, gestation_period_days: 25,
-            adult_weight: Shared::Weight.from_grams(15),
+            adult_weight: Weight.from_grams(15),
             default_voice: nil, group_living: true
           )
         end
@@ -188,7 +188,7 @@ module Zoo
             conservation_status: ConservationStatus.least_concern,
             habitable_temperature_range: temp(2)..temp(30),
             lifespan_years: 35, maturity_age_years: 3, gestation_period_days: 7,
-            adult_weight: Shared::Weight.from_kilograms(5),
+            adult_weight: Weight.from_kilograms(5),
             default_voice: nil, group_living: true
           )
         end
@@ -202,7 +202,7 @@ module Zoo
             conservation_status: ConservationStatus.least_concern,
             habitable_temperature_range: temp(18)..temp(28),
             lifespan_years: 2, maturity_age_years: 1, gestation_period_days: 35,
-            adult_weight: Shared::Weight.from_grams(30),
+            adult_weight: Weight.from_grams(30),
             default_voice: nil, group_living: false
           )
         end
