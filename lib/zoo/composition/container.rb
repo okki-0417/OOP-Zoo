@@ -8,27 +8,17 @@ module Zoo
       attr_reader :animals, :enclosures, :keepers, :veterinarians, :zoo,
                   :event_store, :memorial_log, :birth_announcements
 
-      # state を渡すと保存済み状態から復元する(Snapshot で読み込んだもの)。
-      def initialize(state: nil)
-        store = Infrastructure::InMemory
-        @animals = store::InMemoryAnimalRepository.new(state ? state[:animals] : [])
-        @enclosures = store::InMemoryEnclosureRepository.new(state ? state[:enclosures] : [])
-        @keepers = store::InMemoryKeeperRepository.new(state ? state[:keepers] : [])
-        @veterinarians = store::InMemoryVeterinarianRepository.new(state ? state[:veterinarians] : [])
-        @zoo = store::InMemoryZooRepository.new(state ? state[:zoo] : default_zoo)
-
-        @event_store = store::InMemoryEventStore.new
-        (state ? state[:events] : []).each { |event| @event_store.append(event) }
+      # 永続化の選択:
+      #   database: を渡すと SQLite(実トランザクション・ファイル永続化)
+      #   state:    を渡すと Snapshot から復元(in-memory)
+      #   どちらも無ければ in-memory(揮発)
+      def initialize(state: nil, database: nil)
+        database ? setup_sqlite(database) : setup_in_memory(state)
 
         @memorial_log = Infrastructure::Subscribers::MemorialLog.new
         @birth_announcements = Infrastructure::Subscribers::BirthAnnouncementLog.new
         @event_dispatcher = Application::EventDispatcher.new(
           event_store: @event_store, subscribers: [@memorial_log, @birth_announcements]
-        )
-
-        # 書き込みを伴う(Snapshotable な)リポジトリのみ登録する。
-        @unit_of_work = store::InMemoryUnitOfWork.new(
-          repositories: [@animals, @enclosures, @keepers, @veterinarians]
         )
       end
 
@@ -189,6 +179,33 @@ module Zoo
       end
 
       private
+
+      def setup_in_memory(state)
+        store = Infrastructure::InMemory
+        @animals = store::InMemoryAnimalRepository.new(state ? state[:animals] : [])
+        @enclosures = store::InMemoryEnclosureRepository.new(state ? state[:enclosures] : [])
+        @keepers = store::InMemoryKeeperRepository.new(state ? state[:keepers] : [])
+        @veterinarians = store::InMemoryVeterinarianRepository.new(state ? state[:veterinarians] : [])
+        @zoo = store::InMemoryZooRepository.new(state ? state[:zoo] : default_zoo)
+        @event_store = store::InMemoryEventStore.new
+        (state ? state[:events] : []).each { |event| @event_store.append(event) }
+        # 書き込みを伴う(Snapshotable な)リポジトリのみ登録する。
+        @unit_of_work = store::InMemoryUnitOfWork.new(
+          repositories: [@animals, @enclosures, @keepers, @veterinarians]
+        )
+      end
+
+      def setup_sqlite(path)
+        sqlite = Infrastructure::Sqlite
+        database = sqlite::Database.new(path)
+        @animals = sqlite::AnimalRepository.new(database)
+        @enclosures = sqlite::EnclosureRepository.new(database, @animals)
+        @keepers = sqlite::KeeperRepository.new(database)
+        @veterinarians = sqlite::VeterinarianRepository.new(database)
+        @zoo = sqlite::ZooRepository.new(database, default_zoo)
+        @event_store = sqlite::EventStore.new(database, @animals)
+        @unit_of_work = sqlite::UnitOfWork.new(database)
+      end
 
       def default_zoo
         Domain::Zoo.new(
