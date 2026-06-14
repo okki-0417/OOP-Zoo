@@ -90,5 +90,22 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
       expect { service.call(command(sire_id: 'missing')) }
         .to raise_error(Zoo::Application::Errors::AnimalNotFound)
     end
+
+    it '血統から近交係数を求め、血縁の近い親(祖父×孫娘)の子は近交弱勢で虚弱になること' do
+      male = animal::Sex.male
+      female = animal::Sex.female
+      grandpa = animal.new(species: catalog.lion, name: '祖父', sex: male, max_health: 100, age_in_days: 6000)
+      grandma = animal.new(species: catalog.lion, name: '祖母', sex: female, max_health: 100, age_in_days: 6000)
+      mother = animal.new(species: catalog.lion, name: '母', sex: female, max_health: 100, age_in_days: 3000,
+                          sire: grandpa, dam: grandma)
+      outsider = animal.new(species: catalog.lion, name: '外', sex: male, max_health: 100, age_in_days: 6000)
+      granddaughter = animal.new(species: catalog.lion, name: '孫娘', sex: female, max_health: 100, age_in_days: 1200,
+                                 sire: outsider, dam: mother)
+      [grandpa, grandma, mother, outsider, granddaughter].each { |a| animals.save(a) }
+
+      child = service.call(command(sire_id: grandpa.id, dam_id: granddaughter.id, name: '近交子'))
+
+      expect(child.health.max).to eq(44) # 近交係数1/8 → 50 ×(1 − 0.125)= 43.75 → 44
+    end
   end
 end

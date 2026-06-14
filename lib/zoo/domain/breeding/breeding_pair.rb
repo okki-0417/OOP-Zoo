@@ -55,11 +55,12 @@ module Zoo
         end
 
         # 出産/孵化する。新生個体を生成して返し、AnimalBornを記録する。
-        def deliver(name:, sex:, max_health: NEWBORN_HEALTH)
+        # inbreeding(近交係数 0〜1)が高いほど近交弱勢で最大体力が下がる。
+        def deliver(name:, sex:, max_health: NEWBORN_HEALTH, inbreeding: 0.0)
           raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
 
           offspring = Animal.new(
-            species: species, name: name, sex: sex, max_health: max_health,
+            species: species, name: name, sex: sex, max_health: newborn_vitality(max_health, inbreeding),
             age_in_days: 0, sire: @sire, dam: @dam
           )
           @gestation_days = nil
@@ -70,6 +71,13 @@ module Zoo
 
         def to_s
           "#{species.name_ja}の繁殖ペア(#{@sire.name}×#{@dam.name})"
+        end
+
+        private
+
+        # 近交弱勢: 近交係数に比例して最大体力を下げる。最低1は保証する。
+        def newborn_vitality(base, inbreeding)
+          (base * (1.0 - inbreeding)).round.clamp(1, base)
         end
       end
     end

@@ -25,7 +25,9 @@ module Zoo
             pair = Domain::Breeding::BreedingPair.new(sire: sire, dam: dam)
             pair.mate
             pair.advance(dam.species.gestation_period_days)
-            child = pair.deliver(name: command.name, sex: command.sex)
+            # 血統(在籍する全個体)から子の近交係数を求め、近交弱勢を反映する。
+            inbreeding = Domain::Breeding::Pedigree.inbreeding_of_offspring(sire, dam, animal_lookup)
+            child = pair.deliver(name: command.name, sex: command.sex, inbreeding: inbreeding)
 
             @animals.save(child)
             enclosure.admit(child)
@@ -36,6 +38,13 @@ module Zoo
 
           @event_dispatcher.publish(events)
           offspring
+        end
+
+        private
+
+        # 祖先を id から辿るための参照(在籍記録＝全個体リポジトリ)。
+        def animal_lookup
+          ->(id) { @animals.find(id) }
         end
       end
     end

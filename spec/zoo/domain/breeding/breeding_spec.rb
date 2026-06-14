@@ -56,6 +56,20 @@ module Zoo
             expect(events.size).to eq(1)
             expect(events.first).to be_a(Events::AnimalBorn)
           end
+
+          it 'inbreeding=0.25 を渡すと最大体力が約75%(50→38)に下がること' do
+            pair.mate
+            pair.advance(lion.gestation_period_days)
+            cub = pair.deliver(name: '近交子', sex: Animal::Sex.female, inbreeding: 0.25)
+            expect(cub.health.max).to eq(38) # 50 * (1 - 0.25) = 37.5 → 38
+          end
+
+          it 'inbreeding=1.0 でも最大体力は最低1に保たれること' do
+            pair.mate
+            pair.advance(lion.gestation_period_days)
+            cub = pair.deliver(name: '極端', sex: Animal::Sex.female, inbreeding: 1.0)
+            expect(cub.health.max).to eq(1)
+          end
         end
       end
 
