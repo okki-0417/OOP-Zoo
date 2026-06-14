@@ -109,7 +109,7 @@ module Zoo
 
       def breed_animals
         Application::Services::BreedAnimals.new(
-          animals: @animals, enclosures: @enclosures,
+          animals: @animals, enclosures: @enclosures, zoo: @zoo,
           event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
         )
       end

@@ -4,9 +4,10 @@ module Zoo
   module Application
     module Services
       class BreedAnimals
-        def initialize(animals:, enclosures:, event_dispatcher:, unit_of_work:)
+        def initialize(animals:, enclosures:, zoo:, event_dispatcher:, unit_of_work:)
           @animals = animals
           @enclosures = enclosures
+          @zoo = zoo
           @event_dispatcher = event_dispatcher
           @unit_of_work = unit_of_work
         end
@@ -23,7 +24,7 @@ module Zoo
             raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if enclosure.nil?
 
             pair = Domain::Breeding::BreedingPair.new(sire: sire, dam: dam)
-            pair.mate
+            pair.mate(season: @zoo.load.season)
             pair.advance(dam.species.gestation_period_days)
             # 血統(在籍する全個体)から子の近交係数を求め、近交弱勢を反映する。
             inbreeding = Domain::Breeding::Pedigree.inbreeding_of_offspring(sire, dam, animal_lookup)

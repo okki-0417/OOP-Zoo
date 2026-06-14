@@ -29,9 +29,10 @@ module Zoo
           @dam.species
         end
 
-        # 交尾する。妊娠/抱卵を開始する。
-        def mate
+        # 交尾する。妊娠/抱卵を開始する。繁殖期(春)でなければ成立しない。
+        def mate(season: Operations::Season.spring)
           raise Errors::BreedingNotAllowed, '既に妊娠/抱卵中です' if expecting?
+          raise Errors::BreedingNotAllowed, "#{season.label}は繁殖期ではありません" unless season.breeding_season?
 
           @gestation_days = 0
           self

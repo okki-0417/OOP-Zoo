@@ -25,6 +25,11 @@ module Zoo
             .to raise_error(Errors::BreedingNotAllowed)
         end
 
+        it '繁殖期(春)でない季節には交尾できないこと' do
+          pair = described_class.new(sire: sire, dam: dam)
+          expect { pair.mate(season: Operations::Season.summer) }.to raise_error(Errors::BreedingNotAllowed)
+        end
+
         describe '出産までのライフサイクル' do
           let(:pair) { described_class.new(sire: sire, dam: dam) }
 

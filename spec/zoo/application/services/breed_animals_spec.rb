@@ -23,9 +23,15 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
     Zoo::Application::EventDispatcher.new(event_store: event_store, subscribers: [birth_announcements])
   end
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, enclosures]) }
+  # 既定は0日目=春(繁殖期)。
+  let(:zoo) do
+    in_memory::InMemoryZooRepository.new(
+      Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
+    )
+  end
   let(:service) do
-    described_class.new(animals: animals, enclosures: enclosures, event_dispatcher: event_dispatcher,
-                        unit_of_work: unit_of_work)
+    described_class.new(animals: animals, enclosures: enclosures, zoo: zoo,
+                        event_dispatcher: event_dispatcher, unit_of_work: unit_of_work)
   end
 
   def command(sire_id: sire.id, dam_id: dam.id, enclosure_id: enclosure.id, name: 'シンバ',
@@ -89,6 +95,17 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
     it '存在しない sire_id=\'missing\' を渡すと Application::Errors::AnimalNotFound が発生すること' do
       expect { service.call(command(sire_id: 'missing')) }
         .to raise_error(Zoo::Application::Errors::AnimalNotFound)
+    end
+
+    it '繁殖期(春)でない季節には繁殖できないこと(BreedingNotAllowed)' do
+      summer = Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
+      100.times { summer.advance_day } # 約100日目=夏
+      summer_service = described_class.new(
+        animals: animals, enclosures: enclosures, zoo: in_memory::InMemoryZooRepository.new(summer),
+        event_dispatcher: event_dispatcher, unit_of_work: unit_of_work
+      )
+
+      expect { summer_service.call(command) }.to raise_error(Zoo::Domain::Errors::BreedingNotAllowed)
     end
 
     it '血統から近交係数を求め、血縁の近い親(祖父×孫娘)の子は近交弱勢で虚弱になること' do

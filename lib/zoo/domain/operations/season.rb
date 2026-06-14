@@ -33,6 +33,11 @@ module Zoo
           SEASONS.fetch(@value)[:temperature_offset]
         end
 
+        # 繁殖期(本園では春)か。
+        def breeding_season?
+          @value == :spring
+        end
+
         # 区画の気温にこの季節のオフセットを足した実効気温。
         def felt_temperature(base)
           Shared::Temperature.celsius(base.celsius + temperature_offset)
