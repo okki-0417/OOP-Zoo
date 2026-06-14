@@ -40,11 +40,30 @@ module Zoo
         it '専門を持たない飼育員は作れないこと' do
           expect { described_class.new(name: '空', specialties: []) }.to raise_error(ArgumentError)
         end
+
+        it '担当エリアを割り当てると assigned_enclosures に現れ、複製を返すこと' do
+          enclosure = Husbandry::Enclosure.new(
+            name: 'サバンナ', temperature: Shared::Temperature.celsius(30), capacity: 5
+          )
+          mammal_keeper.assign_to(enclosure)
+          expect(mammal_keeper.assigned_enclosures).to contain_exactly(enclosure)
+          mammal_keeper.assigned_enclosures.clear # 複製なので内部は変わらない
+          expect(mammal_keeper.assigned_enclosures).to contain_exactly(enclosure)
+        end
+
+        it '#to_s は 飼育員 名前(専門担当) の形で表されること' do
+          expect(mammal_keeper.to_s).to start_with('飼育員 田中(')
+          expect(mammal_keeper.to_s).to end_with('担当)')
+        end
       end
 
       RSpec.describe Veterinarian do
         let(:vet) { described_class.new(name: '佐藤') }
         let(:animal) { build_adult(Taxonomy::SpeciesCatalog.lion) }
+
+        it '#to_s は 獣医 名前 の形で表されること' do
+          expect(vet.to_s).to eq('獣医 佐藤')
+        end
 
         it '健康な個体を健康と診断すること' do
           expect(vet.examine(animal)).to eq(:healthy)

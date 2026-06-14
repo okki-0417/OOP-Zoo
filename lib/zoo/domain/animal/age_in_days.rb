@@ -47,9 +47,24 @@ module Zoo
           life_stage(species).mature?
         end
 
+        # 離乳適齢(性成熟年齢の2割)に達し、親に依存しなくなったか。
+        WEANING_RATIO = 0.2
+
+        def weaned?(species)
+          weaning_days = (species.maturity_age_years * LifeStage::DAYS_PER_YEAR * WEANING_RATIO).floor
+          @value >= weaning_days
+        end
+
         # 指定種の寿命を超えているか。
         def past_lifespan?(species)
           @value > species.lifespan_years * LifeStage::DAYS_PER_YEAR
+        end
+
+        # 繁殖適齢期の上限を過ぎ、生殖が老化したか(寿命の8割を超えた高齢)。
+        BREEDING_SENESCENCE_RATIO = 0.8
+
+        def past_breeding_age?(species)
+          @value >= species.lifespan_years * BREEDING_SENESCENCE_RATIO * LifeStage::DAYS_PER_YEAR
         end
 
         def <=>(other)

@@ -111,7 +111,7 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
     it '血統から近交係数を求め、血縁の近い親(祖父×孫娘)の子は近交弱勢で虚弱になること' do
       male = animal::Sex.male
       female = animal::Sex.female
-      grandpa = animal.new(species: catalog.lion, name: '祖父', sex: male, max_health: 100, age_in_days: 6000)
+      grandpa = animal.new(species: catalog.lion, name: '祖父', sex: male, max_health: 100, age_in_days: 4000)
       grandma = animal.new(species: catalog.lion, name: '祖母', sex: female, max_health: 100, age_in_days: 6000)
       mother = animal.new(species: catalog.lion, name: '母', sex: female, max_health: 100, age_in_days: 3000,
                           sire: grandpa, dam: grandma)

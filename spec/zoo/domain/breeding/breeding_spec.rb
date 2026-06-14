@@ -14,6 +14,11 @@ module Zoo
           expect { described_class.new(sire: sire, dam: dam) }.not_to raise_error
         end
 
+        it '#to_s は 種の繁殖ペア(♂×♀) の形で表されること' do
+          pair = described_class.new(sire: sire, dam: dam)
+          expect(pair.to_s).to eq('ライオンの繁殖ペア(レオ×ナラ)')
+        end
+
         it 'オスとメスを取り違えるとペアにできないこと' do
           expect { described_class.new(sire: dam, dam: sire) }
             .to raise_error(Errors::BreedingNotAllowed)
@@ -74,6 +79,49 @@ module Zoo
             pair.advance(lion.gestation_period_days)
             cub = pair.deliver(name: '極端', sex: Animal::Sex.female, inbreeding: 1.0)
             expect(cub.health.max).to eq(1)
+          end
+        end
+
+        describe '流産' do
+          let(:pair) { described_class.new(sire: sire, dam: dam) }
+
+          it '妊娠していなければ流産は起こらないこと' do
+            dam.get_hungrier(100)
+            pair.advance(10)
+            expect(pair).not_to be_miscarried
+          end
+
+          it '母体が飢餓だと advance で流産し妊娠が解けること' do
+            pair.mate
+            dam.get_hungrier(100)
+            pair.advance(1)
+            expect(pair).to be_miscarried
+            expect(pair).not_to be_expecting
+          end
+
+          it '母体が過度のストレス(90)だと流産すること' do
+            pair.mate
+            dam.add_stress(Animal::Stress::SEVERE_THRESHOLD)
+            pair.advance(1)
+            expect(pair).to be_miscarried
+          end
+
+          it 'ストレスが過度の一歩手前(89)では流産しないこと' do
+            pair.mate
+            dam.add_stress(Animal::Stress::SEVERE_THRESHOLD - 1)
+            pair.advance(1)
+            expect(pair).not_to be_miscarried
+            expect(pair).to be_expecting
+          end
+
+          it '流産後に再び交尾すると流産フラグが解除されること' do
+            pair.mate
+            dam.get_hungrier(100)
+            pair.advance(1)
+            dam.satisfy_hunger(100) # 母体が回復
+            pair.mate
+            expect(pair).not_to be_miscarried
+            expect(pair).to be_expecting
           end
         end
       end

@@ -75,6 +75,20 @@ module Zoo
           expect { savanna.admit(dead) }.to raise_error(Errors::DeadAnimal)
         end
 
+        describe '#can_admit? / #rejection_reason(例外を投げない収容判定)' do
+          it '収容できる個体は can_admit? が true、rejection_reason が nil であること' do
+            expect(savanna.can_admit?(build_adult(zebra))).to be(true)
+            expect(savanna.rejection_reason(build_adult(zebra))).to be_nil
+          end
+
+          it '収容できない個体は can_admit? が false、rejection_reason に理由が入ること' do
+            savanna.admit(build_adult(zebra))
+            lion_animal = build_adult(lion)
+            expect(savanna.can_admit?(lion_animal)).to be(false)
+            expect(savanna.rejection_reason(lion_animal)).to include('捕食')
+          end
+        end
+
         it '退去させると頭数が減ること' do
           z = build_adult(zebra)
           savanna.admit(z)
@@ -135,6 +149,28 @@ module Zoo
             savanna.pass_day
 
             expect(a.stress).to be_calm
+          end
+
+          it '刺激が日々 ENRICHMENT_DECAY_PER_DAY ぶん薄れること' do
+            expect { savanna.pass_day }
+              .to change { savanna.enrichment.level }.by(-described_class::ENRICHMENT_DECAY_PER_DAY)
+          end
+        end
+
+        describe '環境エンリッチメント' do
+          it '新設エリアは刺激が満ちており殺風景でないこと' do
+            expect(savanna).not_to be_barren
+          end
+
+          it 'deplete_enrichment で刺激が枯れると barren? になること' do
+            savanna.deplete_enrichment(100)
+            expect(savanna).to be_barren
+          end
+
+          it 'enrich で刺激を補充すると barren? が解けること' do
+            savanna.deplete_enrichment(100)
+            savanna.enrich(100)
+            expect(savanna).not_to be_barren
           end
         end
       end

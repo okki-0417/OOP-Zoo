@@ -14,10 +14,13 @@ module Zoo
       # エリアは動物が暮らすほど汚れ、清掃で清潔さを取り戻す。
       class Enclosure
         include Shared::Entity
-        attr_reader :id, :name, :temperature, :capacity, :cleanliness
+        attr_reader :id, :name, :temperature, :capacity, :cleanliness, :enrichment
 
         # 定員1枠あたりの標準面積(m²)。area_sqm 未指定のエリアの広さの算出に使う。
         AREA_PER_SLOT_SQM = 100
+
+        # 1日経過で薄れる刺激の量。
+        ENRICHMENT_DECAY_PER_DAY = 2
 
         def initialize(name:, temperature:, capacity:, area_sqm: nil, id: Shared::Identifier.new)
           raise ArgumentError, 'エリア名は必須です' if name.to_s.empty?
@@ -29,6 +32,7 @@ module Zoo
           @capacity = capacity
           @area_sqm = area_sqm
           @cleanliness = Cleanliness.spotless
+          @enrichment = Enrichment.stimulating
           @occupants = []
         end
 
@@ -42,6 +46,7 @@ module Zoo
             enclosure.instance_variable_set(:@capacity, capacity)
             enclosure.instance_variable_set(:@area_sqm, nil)
             enclosure.instance_variable_set(:@cleanliness, cleanliness)
+            enclosure.instance_variable_set(:@enrichment, Enrichment.stimulating)
             enclosure.instance_variable_set(:@occupants, occupants)
           end
         end
@@ -121,6 +126,25 @@ module Zoo
           @cleanliness.filthy?
         end
 
+        # --- 環境エンリッチメント(刺激) ---
+
+        # 刺激を補充する(採食装置・遊具・隠れ場所などの導入)。
+        def enrich(amount = 100)
+          @enrichment = @enrichment.enriched_by(amount)
+          self
+        end
+
+        # 刺激を薄れさせる。
+        def deplete_enrichment(amount)
+          @enrichment = @enrichment.depleted_by(amount)
+          self
+        end
+
+        # 殺風景か(刺激が枯れているか)。
+        def barren?
+          @enrichment.barren?
+        end
+
         # --- 時間経過 ---
 
         # 1日経過させる。不衛生なエリアでは健康な個体が発病し、各個体は飼育環境・社会的
@@ -136,6 +160,7 @@ module Zoo
             animal.grow_older(1)
           end
           soil(@occupants.size)
+          deplete_enrichment(ENRICHMENT_DECAY_PER_DAY)
           dead = @occupants.select(&:dead?)
           dead.each { |a| @occupants.delete(a) }
           dead

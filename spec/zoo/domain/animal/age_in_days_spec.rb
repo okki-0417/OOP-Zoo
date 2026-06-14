@@ -89,6 +89,27 @@ RSpec.describe Zoo::Domain::Animal::AgeInDays do
     end
   end
 
+  describe '#past_breeding_age?(species)' do
+    it 'age=365*12 のライオン(寿命15年の8割ちょうど)は true を返すこと' do
+      expect(described_class.new(365 * 12).past_breeding_age?(lion)).to be(true)
+    end
+
+    it 'age=365*11 のライオン(8割未満)は false を返すこと' do
+      expect(described_class.new(365 * 11).past_breeding_age?(lion)).to be(false)
+    end
+  end
+
+  describe '#weaned?(species)' do
+    # ライオンの離乳適齢 = 性成熟3年 × 0.2 × 365 = 219日
+    it 'age=219 のライオン(離乳適齢ちょうど)は true を返すこと' do
+      expect(described_class.new(219).weaned?(lion)).to be(true)
+    end
+
+    it 'age=218 のライオン(離乳適齢未満)は false を返すこと' do
+      expect(described_class.new(218).weaned?(lion)).to be(false)
+    end
+  end
+
   describe '大小比較(Comparable)' do
     it 'value の大小で比較されること' do
       expect(described_class.new(10)).to be < described_class.new(20)

@@ -1,0 +1,47 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+# 予防接種の知識。感染性の病気には、かかる前にワクチンを接種して免疫を獲得できる。
+# 免疫があれば接触しても発病しない。感染性でない病気(骨折など)にはワクチンが無い。
+RSpec.describe '予防接種と免疫' do
+  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  illnesses = Zoo::Domain::Medical::IllnessCatalog
+  contagion = Zoo::Domain::Medical::Contagion
+  errors    = Zoo::Domain::Errors
+
+  def pride(*animals)
+    enclosure = Zoo::Domain::Husbandry::Enclosure.new(
+      name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 6
+    )
+    animals.each { |a| enclosure.admit(a) }
+    enclosure
+  end
+
+  describe '感染性の病気へのワクチン' do
+    it '接種するとかかる前から免疫を得ること' do
+      lion = build_adult(catalog.lion)
+      lion.vaccinate(illnesses.cold)
+      expect(lion.immune_to?(illnesses.cold)).to be(true)
+    end
+
+    it '接種済みなら感染源と同居しても発病しないこと' do
+      vaccinated = build_adult(catalog.lion, name: '接種済み')
+      vaccinated.vaccinate(illnesses.cold)
+      carrier = build_adult(catalog.lion, name: '感染源')
+      carrier.fall_ill(illnesses.cold)
+      enclosure = pride(vaccinated, carrier)
+
+      contagion.spread(enclosure)
+
+      expect(vaccinated).not_to be_sick
+    end
+  end
+
+  describe '感染性でない病気へのワクチン' do
+    it '骨折にはワクチンが無く、接種できないこと' do
+      lion = build_adult(catalog.lion)
+      expect { lion.vaccinate(illnesses.fracture) }.to raise_error(errors::VaccineUnavailable)
+    end
+  end
+end

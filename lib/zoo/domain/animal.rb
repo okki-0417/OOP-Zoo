@@ -127,6 +127,16 @@ module Zoo
         self
       end
 
+      # 予防接種する。感染性の病気には、かかる前から免疫を獲得できる。
+      # 感染性でない病気(骨折など)にはワクチンが無い。
+      def vaccinate(illness)
+        raise Errors::DeadAnimal, "#{@name}は死亡しています" if dead?
+        raise Errors::VaccineUnavailable, "#{illness.name_ja}にはワクチンがありません" unless illness.contagious?
+
+        @immunities << illness unless immune_to?(illness)
+        self
+      end
+
       # 回復(治癒)する。かかっていた病気には以後免疫を持つ。
       def recover
         @immunities << @illness if @illness && !immune_to?(@illness)
@@ -228,9 +238,15 @@ module Zoo
         @age_in_days.mature?(@species)
       end
 
-      # 繁殖可能な状態か(生存・成熟・衰弱や病気がなく、ストレス過多でもない)。
+      # 離乳して親に依存しなくなったか。
+      def weaned?
+        @age_in_days.weaned?(@species)
+      end
+
+      # 繁殖可能な状態か(生存・成熟・高齢前で、衰弱や病気がなく、ストレス過多でもない)。
       def fertile?
-        alive? && mature? && !@health.weak? && !sick? && !stressed?
+        alive? && mature? && !@age_in_days.past_breeding_age?(@species) &&
+          !@health.weak? && !sick? && !stressed?
       end
 
       # 異性・同種・双方繁殖可能なら交配できる。

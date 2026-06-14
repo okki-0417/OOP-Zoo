@@ -100,4 +100,33 @@ RSpec.describe Zoo::Domain::Zoo do
       expect(events.first.cause).to eq(:old_age)
     end
   end
+
+  describe '構成要素の参照' do
+    it 'enclosures / keepers / veterinarians は登録したものを返し、複製であること' do
+      area = zoo.add_enclosure(savanna)
+      keeper = zoo.hire_keeper(Zoo::Domain::Staff::Keeper.new(name: '田中', specialties: [T::TaxonClass.mammal]))
+      vet = zoo.hire_veterinarian(Zoo::Domain::Staff::Veterinarian.new(name: '佐藤'))
+
+      expect(zoo.enclosures).to contain_exactly(area)
+      expect(zoo.keepers).to contain_exactly(keeper)
+      expect(zoo.veterinarians).to contain_exactly(vet)
+
+      zoo.enclosures.clear # 複製なので内部は変わらない
+      expect(zoo.enclosures).to contain_exactly(area)
+    end
+
+    it 'find_enclosure は名前でエリアを引き、未知の名前には nil を返すこと' do
+      area = zoo.add_enclosure(savanna)
+      expect(zoo.find_enclosure('サバンナ')).to eq(area)
+      expect(zoo.find_enclosure('存在しない')).to be_nil
+    end
+  end
+
+  describe '#to_s' do
+    it '園名(エリア数・頭数)の形で表されること' do
+      zoo.add_enclosure(savanna)
+      zoo.house(build_adult(T::SpeciesCatalog.lion), zoo.find_enclosure('サバンナ'))
+      expect(zoo.to_s).to eq('おうきの動物園(1エリア・1頭)')
+    end
+  end
 end

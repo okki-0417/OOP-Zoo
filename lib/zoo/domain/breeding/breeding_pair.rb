@@ -23,6 +23,7 @@ module Zoo
           @sire = sire
           @dam = dam
           @gestation_days = nil
+          @miscarried = false
         end
 
         def species
@@ -35,6 +36,7 @@ module Zoo
           raise Errors::BreedingNotAllowed, "#{season.label}は繁殖期ではありません" unless season.breeding_season?
 
           @gestation_days = 0
+          @miscarried = false
           self
         end
 
@@ -42,12 +44,18 @@ module Zoo
           !@gestation_days.nil?
         end
 
-        # 妊娠/抱卵を日数ぶん進める。
+        # 妊娠/抱卵を日数ぶん進める。母体が飢餓や過度のストレスに陥っていれば流産する。
         def advance(days = 1)
           return self unless expecting?
+          return miscarry if pregnancy_failing?
 
           @gestation_days += days
           self
+        end
+
+        # 母体の不調で妊娠が継続できず流産したか。
+        def miscarried?
+          @miscarried
         end
 
         # 出産/孵化できる状態か(妊娠/抱卵期間に達したか)。
@@ -75,6 +83,17 @@ module Zoo
         end
 
         private
+
+        # 妊娠を継続できない母体の状態か(飢餓・過度のストレス)。
+        def pregnancy_failing?
+          @dam.starving? || @dam.stress.severe?
+        end
+
+        def miscarry
+          @gestation_days = nil
+          @miscarried = true
+          self
+        end
 
         # 近交弱勢: 近交係数に比例して最大体力を下げる。最低1は保証する。
         def newborn_vitality(base, inbreeding)

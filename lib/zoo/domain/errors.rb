@@ -30,6 +30,9 @@ module Zoo
 
       # 担当・資格の不足(専門外の種への対応など)。
       class NotQualified < DomainError; end
+
+      # ワクチンの無い病気への予防接種。
+      class VaccineUnavailable < DomainError; end
     end
   end
 end

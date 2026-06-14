@@ -1,6 +1,7 @@
 /tmp/
 *.db
 *.save
+/coverage/
 
 # frontend (Node)
 /frontend/node_modules/

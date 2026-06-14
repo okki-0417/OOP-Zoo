@@ -67,3 +67,14 @@ RSpec.describe Zoo::Domain::Medical::Illness do
     end
   end
 end
+
+RSpec.describe Zoo::Domain::Medical::IllnessCatalog do
+  it '.all は KEYS と同数の疾病を返し、各疾病を含むこと' do
+    expect(described_class.all.size).to eq(described_class.keys.size)
+    expect(described_class.all).to include(described_class.cold)
+  end
+
+  it '.find は未知のキーに nil を返すこと' do
+    expect(described_class.find(:unknown)).to be_nil
+  end
+end

@@ -27,5 +27,38 @@ RSpec.describe 'Shared値オブジェクト' do
     it '絶対零度未満はエラーになること' do
       expect { described_class.celsius(-300) }.to raise_error(ArgumentError)
     end
+
+    it '華氏に換算できること(0℃=32°F、100℃=212°F)' do
+      expect(described_class.celsius(0).fahrenheit).to eq(32)
+      expect(described_class.celsius(100).fahrenheit).to eq(212)
+    end
+  end
+
+  describe Zoo::Domain::Shared::ValueObject do
+    it '#components を実装しない値オブジェクトは NotImplementedError になること' do
+      klass = Class.new { include Zoo::Domain::Shared::ValueObject }
+      expect { klass.new == klass.new }.to raise_error(NotImplementedError)
+    end
+  end
+
+  describe Zoo::Domain::Shared::Entity do
+    let(:entity_class) do
+      Class.new do
+        include Zoo::Domain::Shared::Entity
+        attr_reader :id
+        def initialize(id) = @id = id
+      end
+    end
+
+    it 'id が同じなら hash が一致し、ハッシュキーとして同一視されること' do
+      a = entity_class.new('x')
+      b = entity_class.new('x')
+      expect(a.hash).to eq(b.hash)
+      expect({ a => 1 }[b]).to eq(1)
+    end
+
+    it 'id が異なれば等価でないこと' do
+      expect(entity_class.new('x')).not_to eq(entity_class.new('y'))
+    end
   end
 end
