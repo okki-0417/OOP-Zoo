@@ -14,6 +14,11 @@ module Zoo
       set :show_exceptions, false
       set :host_authorization, { permitted_hosts: [] }
 
+      # 本番は frontend をビルドした静的ファイルを同一オリジンで配信する(あれば)。
+      # 開発時は Vite dev server を別ポートで使い、CORS で繋ぐ(下記)。
+      set :public_folder, File.expand_path('../../../frontend/dist', __dir__)
+      set :static, true
+
       # 開発時はフロント(Vite dev server)が別オリジンになるため CORS を許可する。
       before do
         headers 'Access-Control-Allow-Origin' => '*',
@@ -97,6 +102,15 @@ module Zoo
       patch('/admission-fee') { dispatch(SetAdmissionFee) }
       post('/operate') { dispatch(OperateDay) }
       post('/run-days') { dispatch(RunDays) }
+
+      # SPA のエントリ(ビルド済みなら配信、未ビルドなら案内を返す)。
+      get '/' do
+        index = File.join(settings.public_folder, 'index.html')
+        return send_file(index) if File.exist?(index)
+
+        content_type :json
+        { message: 'OOP-Zoo API。フロントは frontend/ を npm run build するとここで配信されます。' }.to_json
+      end
     end
   end
 end

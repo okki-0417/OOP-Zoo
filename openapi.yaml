@@ -521,7 +521,7 @@ paths:
 components:
   responses:
     Error:
-      description: エラー(3つの輪: 400=形式 / 404=存在 / 422=ドメイン規則)
+      description: 'エラー(3つの輪: 400=形式 / 404=存在 / 422=ドメイン規則)'
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
