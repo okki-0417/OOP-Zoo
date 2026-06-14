@@ -185,7 +185,10 @@ module Zoo
       end
 
       def change_name(new_name)
+        old_name = @name.to_s
         @name = Name.new(new_name)
+        record_event(Events::AnimalRenamed.new(animal: self, old_name: old_name, new_name: @name.to_s))
+        self
       end
 
       def to_s

@@ -26,16 +26,18 @@ module Zoo
       RSpec.describe VisitorAttraction do
         catalog = Taxonomy::SpeciesCatalog
 
+        fee = Shared::Money.yen(2_000) # 基準料金
+
         it '展示が空なら来園者は0であること' do
-          expect(described_class.expected_visitors([], Reputation.default)).to eq(0)
+          expect(described_class.expected_visitors([], Reputation.default, fee)).to eq(0)
         end
 
-        it '評判100で 多様性1種(×20)＋希少種1(×30)=50人 を期待すること(EN のシマウマ)' do
+        it '評判100・基準料金で 多様性1種(×20)＋希少種1(×30)=50人 を期待すること(EN のシマウマ)' do
           animal = Animal.new(
             species: catalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
           )
 
-          expect(described_class.expected_visitors([animal], Reputation.new(100))).to eq(50)
+          expect(described_class.expected_visitors([animal], Reputation.new(100), fee)).to eq(50)
         end
 
         it '評判50では期待来園者が半減すること(50→25人)' do
@@ -43,7 +45,44 @@ module Zoo
             species: catalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
           )
 
-          expect(described_class.expected_visitors([animal], Reputation.new(50))).to eq(25)
+          expect(described_class.expected_visitors([animal], Reputation.new(50), fee)).to eq(25)
+        end
+
+        it '料金を2倍(¥4,000)にすると来園者が半減すること(50→25人)' do
+          animal = Animal.new(
+            species: catalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
+          )
+
+          expect(described_class.expected_visitors([animal], Reputation.new(100), Shared::Money.yen(4_000))).to eq(25)
+        end
+      end
+
+      RSpec.describe OutbreakPolicy do
+        def animal(name = 'シマオ')
+          Animal.new(
+            species: Taxonomy::SpeciesCatalog.grevys_zebra, name: name, sex: Animal::Sex.male, max_health: 100
+          )
+        end
+
+        it '発生する乱数(rand<20)では健康な個体を1頭返すこと' do
+          random = instance_double(Random)
+          allow(random).to receive(:rand).and_return(0)
+          target = animal
+
+          expect(described_class.strike([target], random)).to eq(target)
+        end
+
+        it '発生しない乱数(rand>=20)では nil を返すこと' do
+          random = instance_double(Random, rand: 50)
+
+          expect(described_class.strike([animal], random)).to be_nil
+        end
+
+        it '健康な個体がいなければ nil を返すこと' do
+          sick = animal.fall_ill(Medical::IllnessCatalog.parasite)
+          random = instance_double(Random, rand: 0)
+
+          expect(described_class.strike([sick], random)).to be_nil
         end
       end
 

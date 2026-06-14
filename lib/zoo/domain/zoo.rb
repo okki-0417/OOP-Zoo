@@ -27,6 +27,16 @@ module Zoo
         @reputation = reputation
       end
 
+      # 保存済みの状態から復元する(永続化からの読み戻し用)。生成(new)の初期化規則を
+      # 通さず、収益・来園者数・残高を保存値そのままに組み直す。
+      def self.reconstitute(name:, admission_fee:, revenue:, visitor_count:, balance:, reputation:)
+        new(name: name, admission_fee: admission_fee, reputation: reputation).tap do |zoo|
+          zoo.instance_variable_set(:@revenue, revenue)
+          zoo.instance_variable_set(:@visitor_count, visitor_count)
+          zoo.instance_variable_set(:@balance, balance)
+        end
+      end
+
       # --- 構成 ---
 
       def add_enclosure(enclosure)
@@ -125,6 +135,12 @@ module Zoo
       # 評判を更新する(運営結果に応じて)。
       def apply_reputation(reputation)
         @reputation = reputation
+        self
+      end
+
+      # 入園料を改定する。高くすると客単価は上がるが来園者数は減る。
+      def change_admission_fee(fee)
+        @admission_fee = fee
         self
       end
 

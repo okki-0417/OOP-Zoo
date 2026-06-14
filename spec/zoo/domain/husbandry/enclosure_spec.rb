@@ -95,6 +95,25 @@ module Zoo
             expect(dead).to include(old_zebra)
             expect(savanna).to be_empty
           end
+
+          it '不衛生(filthy)なエリアでは健康な個体が発病すること' do
+            zebra_animal = build_adult(zebra)
+            savanna.admit(zebra_animal)
+            savanna.soil(80) # 清潔度100→20で filthy
+
+            savanna.pass_day
+
+            expect(zebra_animal).to be_sick
+          end
+
+          it '清潔なエリアでは発病しないこと' do
+            zebra_animal = build_adult(zebra)
+            savanna.admit(zebra_animal)
+
+            savanna.pass_day
+
+            expect(zebra_animal).not_to be_sick
+          end
         end
       end
     end

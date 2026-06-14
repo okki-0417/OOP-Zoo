@@ -100,9 +100,10 @@ module Zoo
 
         # --- 時間経過 ---
 
-        # 1日経過させる。収容個体が歳をとり、エリアは頭数ぶん汚れる。
-        # 死亡した個体はエリアから取り除き、その一覧を返す。
+        # 1日経過させる。不衛生なエリアでは健康な個体が発病し、収容個体が歳をとり、
+        # エリアは頭数ぶん汚れる。死亡した個体はエリアから取り除き、その一覧を返す。
         def pass_day
+          spread_disease_if_filthy
           @occupants.each { |a| a.grow_older(1) }
           soil(@occupants.size)
           dead = @occupants.select(&:dead?)
@@ -111,6 +112,16 @@ module Zoo
         end
 
         private
+
+        # 不衛生(filthy)なエリアでは、健康な個体が寄生虫感染を起こす。清掃を怠ると
+        # 病気→衰弱死につながる、という連鎖を生む。
+        def spread_disease_if_filthy
+          return unless filthy?
+
+          @occupants.each do |animal|
+            animal.fall_ill(Medical::IllnessCatalog.parasite) if animal.alive? && !animal.sick?
+          end
+        end
 
         # 収容を妨げる違反を表す例外インスタンスを返す(無ければnil)。送出はしない。
         def violation_for(animal)

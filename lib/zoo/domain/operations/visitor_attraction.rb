@@ -10,14 +10,16 @@ module Zoo
 
         VARIETY_APPEAL = 20
         RARITY_APPEAL = 30
+        # この料金を中立点とし、これより高いと来園者が減り、安いと増える。
+        BASELINE_FEE_YEN = 2_000
 
-        def expected_visitors(animals, reputation)
+        def expected_visitors(animals, reputation, admission_fee)
           return 0 if animals.empty?
 
           species = animals.map(&:species).uniq
           appeal = (species.size * VARIETY_APPEAL) +
                    (species.count { |s| s.conservation_status.threatened? } * RARITY_APPEAL)
-          appeal * reputation.score / Reputation::MAX
+          appeal * reputation.score * BASELINE_FEE_YEN / (Reputation::MAX * admission_fee.yen)
         end
       end
     end
