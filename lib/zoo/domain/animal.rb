@@ -16,8 +16,10 @@ module Zoo
       HUNGER_PER_DAY = 10
       # 飢餓状態で1日あたりに失う体力。
       STARVATION_DAMAGE_PER_DAY = 2
+      # 過度のストレス下で1日あたりに失う体力(免疫低下)。
+      STRESS_DAMAGE_PER_DAY = 2
 
-      attr_reader :id, :species, :name, :sex, :health, :hunger, :age_in_days, :death, :parent_ids, :illness
+      attr_reader :id, :species, :name, :sex, :health, :hunger, :age_in_days, :death, :parent_ids, :illness, :stress
 
       def initialize(species:, name:, sex:, max_health:, voice: :default,
                      age_in_days: 0, sire: nil, dam: nil, id: Shared::Identifier.new)
@@ -29,6 +31,7 @@ module Zoo
         @voice = Voice.from(voice == :default ? species.default_voice : voice)
         @age_in_days = AgeInDays.new(age_in_days)
         @hunger = Hunger.satisfied
+        @stress = Stress.calm
         @death = nil
         @illness = nil
         @parent_ids = [sire&.id, dam&.id].compact
@@ -37,7 +40,8 @@ module Zoo
       # 保存済みの状態から復元する(永続化からの読み戻し用)。生成(new)の初期化規則を
       # 通さず、体力・空腹・加齢・病気・生死を保存値そのままに組み直す。voice は鳴き声の
       # 変更を保存しないため種の既定に戻す。
-      def self.reconstitute(id:, species:, name:, sex:, health:, hunger:, age_in_days:, illness:, death:, parent_ids:)
+      def self.reconstitute(id:, species:, name:, sex:, health:, hunger:, age_in_days:, illness:, death:, parent_ids:,
+                            stress: Stress.calm)
         allocate.tap do |animal|
           animal.instance_variable_set(:@id, id)
           animal.instance_variable_set(:@species, species)
@@ -45,6 +49,7 @@ module Zoo
           animal.instance_variable_set(:@sex, sex)
           animal.instance_variable_set(:@health, health)
           animal.instance_variable_set(:@hunger, hunger)
+          animal.instance_variable_set(:@stress, stress)
           animal.instance_variable_set(:@age_in_days, age_in_days)
           animal.instance_variable_set(:@voice, Voice.from(species.default_voice))
           animal.instance_variable_set(:@illness, illness)
@@ -129,7 +134,25 @@ module Zoo
         !@illness.nil?
       end
 
-      # 指定日数ぶん歳をとる。空腹が進み、飢餓なら衰弱し、寿命を超えれば寿命死する。
+      # ストレスを与える(悪い飼育環境・社会的不適合などの結果)。
+      def add_stress(amount)
+        @stress = @stress.increased_by(amount)
+        self
+      end
+
+      # ストレスを和らげる(良い飼育環境・社会的充足などの結果)。
+      def relieve_stress(amount)
+        @stress = @stress.decreased_by(amount)
+        self
+      end
+
+      # ストレス状態か。
+      def stressed?
+        @stress.stressed?
+      end
+
+      # 指定日数ぶん歳をとる。空腹が進み、飢餓や過度のストレスなら衰弱し、
+      # 寿命を超えれば寿命死する。
       def grow_older(days = 1)
         return self if dead?
 
@@ -137,6 +160,7 @@ module Zoo
         get_hungrier(HUNGER_PER_DAY * days)
         @health = @health.decreased_by(STARVATION_DAMAGE_PER_DAY * days) if @hunger.starving?
         @health = @health.decreased_by(@illness.daily_damage * days) if sick?
+        @health = @health.decreased_by(STRESS_DAMAGE_PER_DAY * days) if @stress.severe?
 
         if @age_in_days.past_lifespan?(@species)
           die(cause: :old_age)
@@ -191,9 +215,9 @@ module Zoo
         @age_in_days.mature?(@species)
       end
 
-      # 繁殖可能な状態か(生存・成熟・衰弱や病気がない)。
+      # 繁殖可能な状態か(生存・成熟・衰弱や病気がなく、ストレス過多でもない)。
       def fertile?
-        alive? && mature? && !@health.weak? && !sick?
+        alive? && mature? && !@health.weak? && !sick? && !stressed?
       end
 
       # 異性・同種・双方繁殖可能なら交配できる。

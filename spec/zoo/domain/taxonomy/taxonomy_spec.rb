@@ -75,6 +75,13 @@ module Zoo
           expect(polar_bear.habitable?(Shared::Temperature.celsius(30))).to be(false)
         end
 
+        it '快適か(適温域の内側か)を判定できること' do
+          # ライオンの適温域は10〜40℃。縁15%を除く約14.5〜35.5℃が快適帯。
+          expect(lion.comfortable?(Shared::Temperature.celsius(25))).to be(true)  # 中央
+          expect(lion.comfortable?(Shared::Temperature.celsius(12))).to be(false) # 適応域内だが縁
+          expect(lion.comfortable?(Shared::Temperature.celsius(50))).to be(false) # 適応域外
+        end
+
         it '気候域の重なりを判定できること(ライオンとコウテイペンギンは気候が両立しない)' do
           expect(lion.climate_overlaps?(zebra)).to be(true)
           expect(lion.climate_overlaps?(SpeciesCatalog.emperor_penguin)).to be(false)

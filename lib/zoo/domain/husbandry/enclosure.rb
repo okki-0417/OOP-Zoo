@@ -115,11 +115,17 @@ module Zoo
 
         # --- 時間経過 ---
 
-        # 1日経過させる。不衛生なエリアでは健康な個体が発病し、収容個体が歳をとり、
-        # エリアは頭数ぶん汚れる。死亡した個体はエリアから取り除き、その一覧を返す。
+        # 1日経過させる。不衛生なエリアでは健康な個体が発病し、各個体は飼育環境・社会的
+        # 状況に応じてストレスが増減し、収容個体が歳をとり、エリアは頭数ぶん汚れる。
+        # 死亡した個体はエリアから取り除き、その一覧を返す。
         def pass_day
           spread_disease_if_filthy
-          @occupants.each { |a| a.grow_older(1) }
+          @occupants.each do |animal|
+            next if animal.dead?
+
+            apply_welfare(animal)
+            animal.grow_older(1)
+          end
           soil(@occupants.size)
           dead = @occupants.select(&:dead?)
           dead.each { |a| @occupants.delete(a) }
@@ -127,6 +133,12 @@ module Zoo
         end
 
         private
+
+        # その日の飼育環境・社会的状況からストレスを増減させる。
+        def apply_welfare(animal)
+          delta = Welfare.daily_stress(animal, self)
+          delta.negative? ? animal.relieve_stress(-delta) : animal.add_stress(delta)
+        end
 
         # 不衛生(filthy)なエリアでは、健康な個体が寄生虫感染を起こす。清掃を怠ると
         # 病気→衰弱死につながる、という連鎖を生む。

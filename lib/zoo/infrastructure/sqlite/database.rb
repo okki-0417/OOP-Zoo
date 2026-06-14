@@ -53,6 +53,7 @@ module Zoo
               health_current INTEGER NOT NULL,
               health_max     INTEGER NOT NULL,
               hunger         INTEGER NOT NULL,
+              stress         INTEGER NOT NULL DEFAULT 0,
               age_in_days    INTEGER NOT NULL,
               illness_key    TEXT,
               death_cause    TEXT,

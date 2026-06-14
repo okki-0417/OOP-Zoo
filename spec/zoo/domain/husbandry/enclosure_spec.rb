@@ -114,6 +114,24 @@ module Zoo
 
             expect(zebra_animal).not_to be_sick
           end
+
+          it '群れ性の個体を一頭だけ収容すると、孤独で日々ストレスが増すこと' do
+            lone_zebra = build_adult(zebra)
+            savanna.admit(lone_zebra)
+
+            expect { savanna.pass_day }.to change { lone_zebra.stress.level }.by_at_least(1)
+          end
+
+          it '仲間がいて清潔・適温なら、ストレスは増えないこと' do
+            a = build_adult(zebra, name: 'a')
+            b = build_adult(zebra, name: 'b')
+            savanna.admit(a)
+            savanna.admit(b)
+
+            savanna.pass_day
+
+            expect(a.stress).to be_calm
+          end
         end
       end
     end

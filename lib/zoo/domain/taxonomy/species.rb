@@ -62,6 +62,15 @@ module Zoo
           @habitable_temperature_range.cover?(temperature)
         end
 
+        # 指定気温が快適か(適温域の内側。縁に近いと生存はできても消耗する)。
+        # 適温域の上下それぞれ15%を「縁」とみなし、中央の帯のみを快適とする。
+        def comfortable?(temperature)
+          low = @habitable_temperature_range.begin.celsius
+          high = @habitable_temperature_range.end.celsius
+          margin = (high - low) * 0.15
+          temperature.celsius.between?(low + margin, high - margin)
+        end
+
         # 2種の適温域が重なるか(同一エリアで飼える気候か)。
         def climate_overlaps?(other)
           low = [@habitable_temperature_range.begin, other.habitable_temperature_range.begin].max

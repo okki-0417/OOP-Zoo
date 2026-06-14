@@ -8,7 +8,7 @@ module Zoo
         include Domain::Repositories::AnimalRepository
 
         COLUMNS = %i[
-          id species_key name sex health_current health_max hunger age_in_days illness_key death_cause parent_ids
+          id species_key name sex health_current health_max hunger stress age_in_days illness_key death_cause parent_ids
         ].freeze
 
         def initialize(database, mapper: AnimalMapper.new)
