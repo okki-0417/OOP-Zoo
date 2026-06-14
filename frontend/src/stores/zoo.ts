@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { api, ApiError } from '../api/client'
 import type {
-  AnimalSummary, EnclosureSummary, Keeper, Veterinarian, ZooStatistics,
+  Animal, Enclosure, AnimalSummary, EnclosureSummary, Keeper, Veterinarian, ZooStatistics,
   ExhibitedSpecies, Deceased, SpeciesRef, FoodRef, TaxonClassRef,
 } from '../api/client'
 
@@ -56,6 +56,24 @@ export const useZooStore = defineStore('zoo', () => {
       return undefined
     } finally {
       loading.value = false
+    }
+  }
+
+  // ドリルダウン用の詳細取得(読み取り)。失敗時は error に積み null を返す。
+  async function loadAnimal(id: string): Promise<Animal | null> {
+    try {
+      return await api.getAnimal(id)
+    } catch (e) {
+      error.value = e instanceof ApiError ? e.message : String(e)
+      return null
+    }
+  }
+  async function loadEnclosure(id: string): Promise<Enclosure | null> {
+    try {
+      return await api.getEnclosure(id)
+    } catch (e) {
+      error.value = e instanceof ApiError ? e.message : String(e)
+      return null
     }
   }
 
@@ -129,7 +147,7 @@ export const useZooStore = defineStore('zoo', () => {
   return {
     animals, enclosures, keepers, veterinarians, report, threatened, deceased,
     species, foods, taxonClasses, loading, error, notice,
-    bootstrap, refresh,
+    bootstrap, refresh, loadAnimal, loadEnclosure,
     acquire, rename, feed, treat, examine, transfer,
     addEnclosure, house, release, clean, breed,
     hireKeeper, hireVet, admitVisitors, setFee, operate, runMany,

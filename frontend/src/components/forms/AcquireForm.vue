@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useZooStore } from '../../stores/zoo'
 
 const store = useZooStore()
+const emit = defineEmits<{ done: [] }>()
 const species = ref('')
 const name = ref('')
 const sex = ref('male')
@@ -10,7 +11,7 @@ const sex = ref('male')
 async function submit() {
   if (!species.value || !name.value) return
   await store.acquire({ species: species.value, name: name.value, sex: sex.value })
-  if (!store.error) name.value = ''
+  if (!store.error) emit('done')
 }
 </script>
 

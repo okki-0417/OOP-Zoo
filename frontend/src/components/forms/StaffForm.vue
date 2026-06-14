@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useZooStore } from '../../stores/zoo'
 
 const store = useZooStore()
+const emit = defineEmits<{ done: [] }>()
 const keeperName = ref('')
 const specialties = ref<string[]>([])
 const vetName = ref('')
@@ -10,13 +11,13 @@ const vetName = ref('')
 async function hireKeeper() {
   if (!keeperName.value || specialties.value.length === 0) return
   await store.hireKeeper(keeperName.value, specialties.value)
-  if (!store.error) { keeperName.value = ''; specialties.value = [] }
+  if (!store.error) emit('done')
 }
 
 async function hireVet() {
   if (!vetName.value) return
   await store.hireVet(vetName.value)
-  if (!store.error) vetName.value = ''
+  if (!store.error) emit('done')
 }
 </script>
 

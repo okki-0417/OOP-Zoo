@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useZooStore } from '../../stores/zoo'
 
 const store = useZooStore()
+const emit = defineEmits<{ done: [] }>()
 const name = ref('')
 const celsius = ref(25)
 const capacity = ref(4)
@@ -10,7 +11,7 @@ const capacity = ref(4)
 async function submit() {
   if (!name.value) return
   await store.addEnclosure({ name: name.value, celsius: Number(celsius.value), capacity: Number(capacity.value) })
-  if (!store.error) name.value = ''
+  if (!store.error) emit('done')
 }
 </script>
 

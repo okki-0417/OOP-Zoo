@@ -29,7 +29,7 @@ describe('useZooStore', () => {
   it('refresh は各取得結果をストア状態へ反映すること', async () => {
     stubRefresh()
     vi.spyOn(api, 'listAnimals').mockResolvedValue([
-      { id: '1', name: 'レオ', species: 'ライオン', alive: true },
+      { id: '1', name: 'レオ', species: 'ライオン', alive: true, health: 100, max_health: 100, ailing: false },
     ])
     const store = useZooStore()
 
