@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
+require 'zoo'
+
+# in-memory のため状態はサーバ起動中のみ保持される。
+Zoo::Presentation::Web.set(:container, Zoo::Composition::Container.new)
+Zoo::Presentation::Web.run!(host: '127.0.0.1', port: 4567)
