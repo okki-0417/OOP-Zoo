@@ -10,9 +10,9 @@ module Zoo
     class Zoo
       include Events::Recorder
 
-      attr_reader :name, :admission_fee, :revenue, :visitor_count
+      attr_reader :name, :admission_fee, :revenue, :visitor_count, :balance, :reputation
 
-      def initialize(name:, admission_fee:)
+      def initialize(name:, admission_fee:, funds: Shared::Money.zero, reputation: Operations::Reputation.default)
         raise ArgumentError, '動物園名は必須です' if name.to_s.empty?
 
         @name = name
@@ -23,6 +23,8 @@ module Zoo
         @revenue = Shared::Money.zero
         @visitor_count = 0
         @deceased = []
+        @balance = Shared::Balance.new(funds.yen)
+        @reputation = reputation
       end
 
       # --- 構成 ---
@@ -103,8 +105,27 @@ module Zoo
         raise ArgumentError, '来園者数は0以上でなければなりません' if count.negative?
 
         @visitor_count += count
-        @revenue += @admission_fee * count
+        earned = @admission_fee * count
+        @revenue += earned
+        @balance += earned
         @revenue
+      end
+
+      # 運営費などを支出する。残高は赤字(債務)になりうる。
+      def spend(money)
+        @balance -= money
+        @balance
+      end
+
+      # 残高が赤字か(破産状態か)。
+      def bankrupt?
+        @balance.negative?
+      end
+
+      # 評判を更新する(運営結果に応じて)。
+      def apply_reputation(reputation)
+        @reputation = reputation
+        self
       end
 
       # 開園して1日を過ごす。全エリアで時間が経過し、死亡個体を記録・回収し、

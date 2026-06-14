@@ -15,6 +15,27 @@ RSpec.describe Zoo::Domain::Zoo do
     described_class.new(name: 'おうきの動物園', admission_fee: S::Money.yen(2000))
   end
 
+  describe '残高と支出' do
+    it '来園者を受け入れると収益ぶん残高が増えること(2000円×100=¥200,000)' do
+      zoo.admit_visitors(100)
+
+      expect(zoo.balance).to eq(S::Balance.new(200_000))
+    end
+
+    it '残高を超えて支出すると赤字になり bankrupt? が true を返すこと' do
+      zoo.admit_visitors(1) # 残高 2000円
+      zoo.spend(S::Money.yen(5_000))
+
+      expect(zoo.bankrupt?).to be(true)
+    end
+
+    it '初期資金を与えると残高の初期値になること' do
+      funded = described_class.new(name: 'おうきの動物園', admission_fee: S::Money.yen(2000), funds: S::Money.yen(50_000))
+
+      expect(funded.balance).to eq(S::Balance.new(50_000))
+    end
+  end
+
   describe '入園料と収益' do
     it '来園者数に応じて収益が積み上がること' do
       zoo.admit_visitors(100)

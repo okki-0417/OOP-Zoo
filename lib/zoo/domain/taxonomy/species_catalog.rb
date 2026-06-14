@@ -207,14 +207,28 @@ module Zoo
           )
         end
 
+        KEYS = %i[
+          lion african_elephant reticulated_giraffe grevys_zebra japanese_macaque
+          polar_bear red_panda emperor_penguin humboldt_penguin red_crowned_crane
+          burmese_python galapagos_tortoise japanese_fire_belly_newt koi
+          hercules_beetle
+        ].freeze
+
+        def keys
+          KEYS
+        end
+
         # カタログ全種。
         def all
-          %i[
-            lion african_elephant reticulated_giraffe grevys_zebra japanese_macaque
-            polar_bear red_panda emperor_penguin humboldt_penguin red_crowned_crane
-            burmese_python galapagos_tortoise japanese_fire_belly_newt koi
-            hercules_beetle
-          ].map { |name| public_send(name) }
+          KEYS.map { |name| public_send(name) }
+        end
+
+        # キーから種を引く。未知のキーは nil。
+        def find(key)
+          symbol = key.to_s.to_sym
+          return nil unless KEYS.include?(symbol)
+
+          public_send(symbol)
         end
       end
     end

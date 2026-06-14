@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
+require 'zoo'
+
+# in-memory のため状態は1セッション内でのみ保持される。
+container = Zoo::Composition::Container.new
+cli = Zoo::Presentation::Cli.new(container: container)
+
+puts <<~HELP
+  OOP-Zoo CLI — コマンド一覧:
+    acquire SPECIES NAME SEX          個体を受け入れる
+    build-enclosure NAME CELSIUS CAP  エリアを作る
+    house ENCLOSURE_ID ANIMAL_ID      収容する
+    hire-keeper NAME CLASS [CLASS...]  飼育員を採用する
+    hire-veterinarian NAME            獣医を採用する
+    feed KEEPER_ID ANIMAL_ID FOOD     給餌する
+    treat VET_ID ANIMAL_ID            治療する
+    clean KEEPER_ID ENCLOSURE_ID [N]  清掃する
+    breed SIRE_ID DAM_ID ENC_ID NAME SEX  繁殖させる
+    transfer ANIMAL_ID TO_ENCLOSURE_ID  別エリアへ移送する
+    examine VET_ID ANIMAL_ID          診察する
+    admit-visitors COUNT              来園者を受け入れる
+    population / threatened / revenue  在園数 / 絶滅危惧種 / 収益
+    enclosures / animals / report     一覧 / 統計レポート
+    open / run-days DAYS              開園して1日 / 複数日進める
+    operate                           1日運営する（来園・収益・費用・評判）
+    exit                              終了
+HELP
+loop do
+  print '> '
+  line = $stdin.gets
+  break if line.nil?
+
+  argv = line.split
+  next if argv.empty?
+  break if argv.first == 'exit'
+
+  cli.run(argv)
+end

@@ -55,11 +55,25 @@ module Zoo
           Food.new(name_ja: '配合飼料', category: :seed, satiety: 30)
         end
 
+        KEYS = %i[
+          horse_meat chicken horse_mackerel sardine cricket mealworm
+          hay bamboo_leaf leafy_vegetable banana apple formula_pellet
+        ].freeze
+
+        def keys
+          KEYS
+        end
+
         def all
-          %i[
-            horse_meat chicken horse_mackerel sardine cricket mealworm
-            hay bamboo_leaf leafy_vegetable banana apple formula_pellet
-          ].map { |name| public_send(name) }
+          KEYS.map { |name| public_send(name) }
+        end
+
+        # キーから餌を引く。未知のキーは nil。
+        def find(key)
+          symbol = key.to_s.to_sym
+          return nil unless KEYS.include?(symbol)
+
+          public_send(symbol)
         end
       end
     end

@@ -22,6 +22,16 @@ module Zoo
           categories = described_class.all.map(&:category).uniq
           expect(categories).to contain_exactly(:meat, :fish, :insect, :plant, :fruit, :seed)
         end
+
+        describe '.find' do
+          it "既知のキー 'hay' を渡すと対応する Food を返すこと" do
+            expect(described_class.find('hay')).to eq(described_class.hay)
+          end
+
+          it "未知のキー 'pizza' を渡すと nil を返すこと" do
+            expect(described_class.find('pizza')).to be_nil
+          end
+        end
       end
 
       RSpec.describe 'Animal#eat' do

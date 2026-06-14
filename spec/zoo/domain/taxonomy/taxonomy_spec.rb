@@ -96,6 +96,16 @@ module Zoo
           diets = described_class.all.map { |s| s.diet_type.value }.uniq
           expect(diets).to contain_exactly(:carnivore, :piscivore, :insectivore, :herbivore, :frugivore, :omnivore)
         end
+
+        describe '.find' do
+          it "既知のキー 'lion' を渡すと対応する Species を返すこと" do
+            expect(described_class.find('lion')).to eq(described_class.lion)
+          end
+
+          it "未知のキー 'dragon' を渡すと nil を返すこと" do
+            expect(described_class.find('dragon')).to be_nil
+          end
+        end
       end
     end
   end
