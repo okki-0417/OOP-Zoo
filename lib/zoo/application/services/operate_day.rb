@@ -23,8 +23,8 @@ module Zoo
 
         def call
           @unit_of_work.run do
-            dead = @open_for_a_day.call
             zoo = @zoo.load
+            dead = @open_for_a_day.call(season: zoo.season)
 
             visitors = Domain::Operations::VisitorAttraction.expected_visitors(
               on_exhibit, zoo.reputation, zoo.admission_fee
@@ -40,6 +40,7 @@ module Zoo
             outbreak = strike_outbreak
 
             zoo.apply_reputation(Domain::Operations::ReputationPolicy.after_day(zoo.reputation, deaths: dead.size))
+            zoo.advance_day
             @zoo.save(zoo)
 
             ReadModels::DayReport.new(

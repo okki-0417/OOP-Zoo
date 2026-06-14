@@ -10,7 +10,7 @@ module Zoo
     class Zoo
       include Events::Recorder
 
-      attr_reader :name, :admission_fee, :revenue, :visitor_count, :balance, :reputation
+      attr_reader :name, :admission_fee, :revenue, :visitor_count, :balance, :reputation, :day
 
       def initialize(name:, admission_fee:, funds: Shared::Money.zero, reputation: Operations::Reputation.default)
         raise ArgumentError, '動物園名は必須です' if name.to_s.empty?
@@ -25,16 +25,29 @@ module Zoo
         @deceased = []
         @balance = Shared::Balance.new(funds.yen)
         @reputation = reputation
+        @day = 0
       end
 
       # 保存済みの状態から復元する(永続化からの読み戻し用)。生成(new)の初期化規則を
-      # 通さず、収益・来園者数・残高を保存値そのままに組み直す。
-      def self.reconstitute(name:, admission_fee:, revenue:, visitor_count:, balance:, reputation:)
+      # 通さず、収益・来園者数・残高・経過日数を保存値そのままに組み直す。
+      def self.reconstitute(name:, admission_fee:, revenue:, visitor_count:, balance:, reputation:, day: 0)
         new(name: name, admission_fee: admission_fee, reputation: reputation).tap do |zoo|
           zoo.instance_variable_set(:@revenue, revenue)
           zoo.instance_variable_set(:@visitor_count, visitor_count)
           zoo.instance_variable_set(:@balance, balance)
+          zoo.instance_variable_set(:@day, day)
         end
+      end
+
+      # 現在の季節。経過日数から導く。
+      def season
+        Operations::Calendar.season_for(@day)
+      end
+
+      # 1日進める。
+      def advance_day
+        @day += 1
+        self
       end
 
       # --- 構成 ---

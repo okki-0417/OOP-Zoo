@@ -49,6 +49,10 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect(report.cost).to eq(shared::Money.yen(1_500))      # エリア1*1000 + 個体1*500
     end
 
+    it '1日運営すると園の経過日数が1進むこと' do
+      expect { service.call }.to change { zoo.load.day }.by(1)
+    end
+
     it '死亡が無い日は評判が2上がり、残高に純益が反映されること(100,000+50,000-1,500)' do
       report = service.call
 

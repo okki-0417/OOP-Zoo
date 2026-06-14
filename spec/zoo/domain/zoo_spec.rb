@@ -15,6 +15,19 @@ RSpec.describe Zoo::Domain::Zoo do
     described_class.new(name: 'おうきの動物園', admission_fee: S::Money.yen(2000))
   end
 
+  describe '経過日数と季節' do
+    it '生成直後は0日目で春であること' do
+      expect(zoo.day).to eq(0)
+      expect(zoo.season.label).to eq('春')
+    end
+
+    it '日を進めると経過日数が増え、やがて季節が変わること' do
+      expect { zoo.advance_day }.to change(zoo, :day).by(1)
+      100.times { zoo.advance_day } # 計101日 → 夏
+      expect(zoo.season.label).to eq('夏')
+    end
+  end
+
   describe '残高と支出' do
     it '来園者を受け入れると収益ぶん残高が増えること(2000円×100=¥200,000)' do
       zoo.admit_visitors(100)

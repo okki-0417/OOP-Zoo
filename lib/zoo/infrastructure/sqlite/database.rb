@@ -43,7 +43,8 @@ module Zoo
               revenue       INTEGER NOT NULL,
               visitor_count INTEGER NOT NULL,
               balance       INTEGER NOT NULL,
-              reputation    INTEGER NOT NULL
+              reputation    INTEGER NOT NULL,
+              day           INTEGER NOT NULL DEFAULT 0
             );
             CREATE TABLE IF NOT EXISTS animals (
               id             TEXT PRIMARY KEY,

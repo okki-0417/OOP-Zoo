@@ -126,13 +126,13 @@ module Zoo
         # 1日経過させる。不衛生なエリアでは健康な個体が発病し、各個体は飼育環境・社会的
         # 状況に応じてストレスが増減し、収容個体が歳をとり、エリアは頭数ぶん汚れる。
         # 死亡した個体はエリアから取り除き、その一覧を返す。
-        def pass_day
+        def pass_day(season: Operations::Season.spring)
           spread_disease_if_filthy
           Medical::Contagion.spread(self)
           @occupants.each do |animal|
             next if animal.dead?
 
-            apply_welfare(animal)
+            apply_welfare(animal, season)
             animal.grow_older(1)
           end
           soil(@occupants.size)
@@ -144,8 +144,8 @@ module Zoo
         private
 
         # その日の飼育環境・社会的状況からストレスを増減させる。
-        def apply_welfare(animal)
-          delta = Welfare.daily_stress(animal, self)
+        def apply_welfare(animal, season)
+          delta = Welfare.daily_stress(animal, self, season: season)
           delta.negative? ? animal.relieve_stress(-delta) : animal.add_stress(delta)
         end
 

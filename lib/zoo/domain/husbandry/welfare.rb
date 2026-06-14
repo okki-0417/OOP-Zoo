@@ -20,9 +20,9 @@ module Zoo
         ILLNESS = 12          # 病気
         RECOVERY = 15         # 良好な環境での回復量
 
-        # その日のストレス増減を返す(正=増加、負=回復)。
-        def daily_stress(animal, enclosure)
-          total = stressor_total(animal, enclosure)
+        # その日のストレス増減を返す(正=増加、負=回復)。season は実効気温に影響する。
+        def daily_stress(animal, enclosure, season: Operations::Season.spring)
+          total = stressor_total(animal, enclosure, season)
           total.positive? ? total : -RECOVERY
         end
 
@@ -36,12 +36,12 @@ module Zoo
           companions <= 1 # 自分自身しかいない
         end
 
-        def stressor_total(animal, enclosure)
+        def stressor_total(animal, enclosure, season)
           total = 0
           total += FILTH if enclosure.filthy?
           total += LONELINESS if lonely?(animal, enclosure)
           total += CROWDING if Stocking.overcrowded?(enclosure)
-          total += CLIMATE_DISCOMFORT unless animal.species.comfortable?(enclosure.temperature)
+          total += CLIMATE_DISCOMFORT unless animal.species.comfortable?(season.felt_temperature(enclosure.temperature))
           total += HUNGER if animal.hungry?
           total += ILLNESS if animal.sick?
           total

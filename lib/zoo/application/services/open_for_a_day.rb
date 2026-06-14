@@ -13,12 +13,12 @@ module Zoo
 
         # 死亡した個体の一覧を返す。日次バッチは全体を1トランザクションにせず、
         # エリアごとに区切る(1エリアの失敗が他エリアを巻き込まない)。
-        def call
+        def call(season: Domain::Operations::Season.spring)
           deceased = []
 
           @enclosures.all.each do |enclosure|
             dead, events = @unit_of_work.run do
-              dead_animals = enclosure.pass_day
+              dead_animals = enclosure.pass_day(season: season)
               @enclosures.save(enclosure)
               enclosure.occupants.each { |animal| @animals.save(animal) }
               dead_animals.each { |animal| @animals.save(animal) }
