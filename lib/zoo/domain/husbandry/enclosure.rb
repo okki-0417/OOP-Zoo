@@ -13,6 +13,7 @@ module Zoo
       #
       # エリアは動物が暮らすほど汚れ、清掃で清潔さを取り戻す。
       class Enclosure
+        include Shared::Entity
         attr_reader :id, :name, :temperature, :capacity, :area_sqm, :cleanliness
 
         def initialize(name:, temperature:, capacity:, area_sqm: nil, id: Shared::Identifier.new)
@@ -26,6 +27,20 @@ module Zoo
           @area_sqm = area_sqm
           @cleanliness = Cleanliness.spotless
           @occupants = []
+        end
+
+        # 保存済みの状態から復元する(永続化からの読み戻し用)。清潔度・収容個体を
+        # 保存値そのままに組み直す。
+        def self.reconstitute(id:, name:, temperature:, capacity:, cleanliness:, occupants:)
+          allocate.tap do |enclosure|
+            enclosure.instance_variable_set(:@id, id)
+            enclosure.instance_variable_set(:@name, name)
+            enclosure.instance_variable_set(:@temperature, temperature)
+            enclosure.instance_variable_set(:@capacity, capacity)
+            enclosure.instance_variable_set(:@area_sqm, nil)
+            enclosure.instance_variable_set(:@cleanliness, cleanliness)
+            enclosure.instance_variable_set(:@occupants, occupants)
+          end
         end
 
         # 個体を収容する。不変条件に反する場合はドメイン例外を送出する。

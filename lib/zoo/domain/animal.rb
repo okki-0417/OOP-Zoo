@@ -9,6 +9,7 @@ module Zoo
     # 外部からは振る舞い(鳴く・食べる・回復する・歳をとる)を通じてのみ変化する。
     class Animal
       include Events::Recorder
+      include Shared::Entity
 
       CRY_OUT_DAMAGE = 1
       # 1日あたりに増す空腹度。
@@ -31,6 +32,25 @@ module Zoo
         @death = nil
         @illness = nil
         @parent_ids = [sire&.id, dam&.id].compact
+      end
+
+      # 保存済みの状態から復元する(永続化からの読み戻し用)。生成(new)の初期化規則を
+      # 通さず、体力・空腹・加齢・病気・生死を保存値そのままに組み直す。voice は鳴き声の
+      # 変更を保存しないため種の既定に戻す。
+      def self.reconstitute(id:, species:, name:, sex:, health:, hunger:, age_in_days:, illness:, death:, parent_ids:)
+        allocate.tap do |animal|
+          animal.instance_variable_set(:@id, id)
+          animal.instance_variable_set(:@species, species)
+          animal.instance_variable_set(:@name, name)
+          animal.instance_variable_set(:@sex, sex)
+          animal.instance_variable_set(:@health, health)
+          animal.instance_variable_set(:@hunger, hunger)
+          animal.instance_variable_set(:@age_in_days, age_in_days)
+          animal.instance_variable_set(:@voice, Voice.from(species.default_voice))
+          animal.instance_variable_set(:@illness, illness)
+          animal.instance_variable_set(:@death, death)
+          animal.instance_variable_set(:@parent_ids, parent_ids)
+        end
       end
 
       def cry_out

@@ -23,8 +23,22 @@ module Zoo
           Illness.new(name_ja: '骨折', daily_damage: 4, contagious: false)
         end
 
+        KEYS = %i[cold parasite pneumonia fracture].freeze
+
+        def keys
+          KEYS
+        end
+
         def all
-          %i[cold parasite pneumonia fracture].map { |name| public_send(name) }
+          KEYS.map { |name| public_send(name) }
+        end
+
+        # キーから疾病を引く。未知のキーは nil。
+        def find(key)
+          symbol = key.to_s.to_sym
+          return nil unless KEYS.include?(symbol)
+
+          public_send(symbol)
         end
       end
     end

@@ -5,6 +5,7 @@ module Zoo
     module Staff
       # 獣医を表すエンティティ。動物の診察と治療を担う。
       class Veterinarian
+        include Shared::Entity
         attr_reader :id, :name
 
         # 治療1回で回復する体力。
@@ -15,6 +16,14 @@ module Zoo
 
           @id = id
           @name = name
+        end
+
+        # 保存済みの状態から復元する(永続化からの読み戻し用)。
+        def self.reconstitute(id:, name:)
+          allocate.tap do |vet|
+            vet.instance_variable_set(:@id, id)
+            vet.instance_variable_set(:@name, name)
+          end
         end
 
         # 診察し、状態を示す記号を返す。

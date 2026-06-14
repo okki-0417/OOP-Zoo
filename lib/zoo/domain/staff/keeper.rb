@@ -8,6 +8,7 @@ module Zoo
       # 担当できる分類群(綱)に専門性を持ち、専門外の動物には給餌できない。
       # 給餌・清掃・エリア担当を通じて飼育エリアと動物の世話をする。
       class Keeper
+        include Shared::Entity
         attr_reader :id, :name, :specialties
 
         # specialties: 担当できる TaxonClass の配列。
@@ -19,6 +20,16 @@ module Zoo
           @name = name
           @specialties = specialties
           @assigned_enclosures = []
+        end
+
+        # 保存済みの状態から復元する(永続化からの読み戻し用)。担当エリアは保存しない。
+        def self.reconstitute(id:, name:, specialties:)
+          allocate.tap do |keeper|
+            keeper.instance_variable_set(:@id, id)
+            keeper.instance_variable_set(:@name, name)
+            keeper.instance_variable_set(:@specialties, specialties)
+            keeper.instance_variable_set(:@assigned_enclosures, [])
+          end
         end
 
         # この動物を担当できるか(綱が専門に含まれるか)。
