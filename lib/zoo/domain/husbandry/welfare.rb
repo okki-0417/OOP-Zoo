@@ -14,6 +14,7 @@ module Zoo
 
         FILTH = 15            # 不衛生なエリア
         LONELINESS = 12       # 群れ性なのに仲間がいない
+        SOCIAL_CONFLICT = 12  # 序列下位の余剰オスの闘争
         CROWDING = 12         # 過密(体格の合計が広さを超える)
         CLIMATE_DISCOMFORT = 10 # 適温域の縁で快適でない
         HUNGER = 10           # 空腹
@@ -40,6 +41,7 @@ module Zoo
           total = 0
           total += FILTH if enclosure.filthy?
           total += LONELINESS if lonely?(animal, enclosure)
+          total += SOCIAL_CONFLICT if SocialStructure.subordinate_male?(animal, enclosure)
           total += CROWDING if Stocking.overcrowded?(enclosure)
           total += CLIMATE_DISCOMFORT unless animal.species.comfortable?(season.felt_temperature(enclosure.temperature))
           total += HUNGER if animal.hungry?

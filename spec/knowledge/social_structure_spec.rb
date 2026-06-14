@@ -1,0 +1,54 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+# 群れの社会構造の知識。群れで暮らす種は成熟したオスの間に序列ができ、優位な1頭以外の
+# 成熟オス(余剰オス)は闘争でストレスを受ける。バチェラーは分けて飼うべき、という判断に繋がる。
+RSpec.describe '群れと社会構造' do
+  welfare = Zoo::Domain::Husbandry::Welfare
+  shared  = Zoo::Domain::Shared
+  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  sex     = Zoo::Domain::Animal::Sex
+
+  def savanna(capacity: 4, temp: 28)
+    Zoo::Domain::Husbandry::Enclosure.new(
+      name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(temp), capacity: capacity
+    )
+  end
+
+  describe '序列と余剰オス' do
+    context '群れ性の種で成熟したオスが複数同居すると' do
+      it '最も年長でない(序列下位の)オスは闘争でストレスを受けること' do
+        enclosure = savanna
+        senior = build_animal(catalog.lion, name: '長老', sex: sex.male, age_in_days: 4000)
+        junior = build_adult(catalog.lion, name: '若オス', sex: sex.male) # 長老より年下
+        enclosure.admit(senior)
+        enclosure.admit(junior)
+
+        expect(welfare.daily_stress(junior, enclosure)).to be > 0
+      end
+
+      it '最も年長のオス(優位)はストレスを受けないこと' do
+        enclosure = savanna
+        senior = build_animal(catalog.lion, name: '長老', sex: sex.male, age_in_days: 4000)
+        junior = build_adult(catalog.lion, name: '若オス', sex: sex.male)
+        enclosure.admit(senior)
+        enclosure.admit(junior)
+
+        expect(welfare.daily_stress(senior, enclosure)).to be < 0
+      end
+    end
+
+    context '成熟したオスが1頭だけのとき' do
+      it '序列闘争は起きないこと' do
+        enclosure = savanna
+        male = build_adult(catalog.lion, name: 'オス', sex: sex.male)
+        female = build_adult(catalog.lion, name: 'メス', sex: sex.female) # 仲間(闘争相手ではない)
+        enclosure.admit(male)
+        enclosure.admit(female)
+
+        expect(welfare.daily_stress(male, enclosure)).to be < 0
+      end
+    end
+  end
+end

@@ -21,7 +21,7 @@ RSpec.describe '動物福祉' do
       enclosure = savanna
       a = build_adult(catalog.lion, name: 'A')
       enclosure.admit(a)
-      enclosure.admit(build_adult(catalog.lion, name: 'B'))
+      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
 
       expect(welfare.daily_stress(a, enclosure)).to be < 0
     end
@@ -32,7 +32,7 @@ RSpec.describe '動物福祉' do
       enclosure = savanna
       a = build_adult(catalog.lion, name: 'A')
       enclosure.admit(a)
-      enclosure.admit(build_adult(catalog.lion, name: 'B'))
+      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
       enclosure.soil(90) # 清潔度100→10で不衛生
 
       expect(welfare.daily_stress(a, enclosure)).to be > 0
@@ -80,7 +80,7 @@ RSpec.describe '動物福祉' do
       enclosure = savanna(12) # 適応はできるが快適帯(約14.5℃〜)の外
       a = build_adult(catalog.lion, name: 'A')
       enclosure.admit(a)
-      enclosure.admit(build_adult(catalog.lion, name: 'B'))
+      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
 
       expect(welfare.daily_stress(a, enclosure)).to be > 0
     end
@@ -92,7 +92,7 @@ RSpec.describe '動物福祉' do
       a = build_adult(catalog.lion, name: 'A')
       a.get_hungrier(80) # 空腹(しきい値70以上)
       enclosure.admit(a)
-      enclosure.admit(build_adult(catalog.lion, name: 'B'))
+      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
 
       expect(welfare.daily_stress(a, enclosure)).to be > 0
     end
@@ -104,7 +104,7 @@ RSpec.describe '動物福祉' do
       a = build_adult(catalog.lion, name: 'A')
       a.fall_ill(Zoo::Domain::Medical::IllnessCatalog.cold)
       enclosure.admit(a)
-      enclosure.admit(build_adult(catalog.lion, name: 'B'))
+      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
 
       expect(welfare.daily_stress(a, enclosure)).to be > 0
     end

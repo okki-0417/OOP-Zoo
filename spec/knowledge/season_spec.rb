@@ -15,7 +15,8 @@ RSpec.describe '季節と気候' do
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(temp), capacity: 4
     )
     enclosure.admit(build_adult(Zoo::Domain::Taxonomy::SpeciesCatalog.lion, name: 'A'))
-    enclosure.admit(build_adult(Zoo::Domain::Taxonomy::SpeciesCatalog.lion, name: 'B'))
+    enclosure.admit(build_adult(Zoo::Domain::Taxonomy::SpeciesCatalog.lion, name: 'B',
+                                sex: Zoo::Domain::Animal::Sex.female))
     enclosure
   end
 

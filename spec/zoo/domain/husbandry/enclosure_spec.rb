@@ -128,7 +128,7 @@ module Zoo
 
           it '仲間がいて清潔・適温なら、ストレスは増えないこと' do
             a = build_adult(zebra, name: 'a')
-            b = build_adult(zebra, name: 'b')
+            b = build_adult(zebra, name: 'b', sex: Animal::Sex.female)
             savanna.admit(a)
             savanna.admit(b)
 
