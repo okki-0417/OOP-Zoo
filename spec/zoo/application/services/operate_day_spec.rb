@@ -30,10 +30,13 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       enclosures: enclosures, animals: animals, event_dispatcher: dispatcher, unit_of_work: unit_of_work
     )
   end
+  # rand=99(>=20) で疫病を起こさない決定的な乱数源。
+  let(:no_outbreak) { instance_double(Random, rand: 99) }
   let(:service) do
     described_class.new(
       open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals,
-      keepers: keepers, veterinarians: veterinarians, zoo: zoo, unit_of_work: unit_of_work
+      keepers: keepers, veterinarians: veterinarians, zoo: zoo, unit_of_work: unit_of_work,
+      random: no_outbreak
     )
   end
 
@@ -53,6 +56,21 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect(report.reputation).to eq(52)
       expect(report.balance).to eq(shared::Balance.new(148_500))
       expect(report.bankrupt).to be(false)
+    end
+
+    it '疫病が発生する乱数だと在園個体が発病し、report.outbreak に名前が入ること' do
+      outbreak_random = instance_double(Random)
+      allow(outbreak_random).to receive(:rand).and_return(0) # 発生＋先頭個体を選ぶ
+      service = described_class.new(
+        open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals,
+        keepers: keepers, veterinarians: veterinarians, zoo: zoo, unit_of_work: unit_of_work,
+        random: outbreak_random
+      )
+
+      report = service.call
+
+      expect(report.outbreak).to eq('シマオ')
+      expect(animals.find(zebra.id)).to be_sick
     end
   end
 end

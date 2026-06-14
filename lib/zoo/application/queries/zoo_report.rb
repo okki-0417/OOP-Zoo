@@ -16,6 +16,7 @@ module Zoo
           occupants = @enclosures.all.flat_map(&:occupants)
           species = occupants.map(&:species).uniq
           events = @event_store.all
+          zoo = @zoo.load
 
           ReadModels::ZooStatistics.new(
             population: occupants.size,
@@ -23,7 +24,9 @@ module Zoo
             threatened_count: species.count { |s| s.conservation_status.threatened? },
             births: events.count { |event| event.is_a?(Domain::Events::AnimalBorn) },
             deaths_by_cause: deaths_by_cause(events),
-            revenue: @zoo.load.revenue
+            revenue: zoo.revenue,
+            balance: zoo.balance,
+            reputation: zoo.reputation.score
           )
         end
 

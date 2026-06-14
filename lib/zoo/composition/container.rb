@@ -8,21 +8,18 @@ module Zoo
       attr_reader :animals, :enclosures, :keepers, :veterinarians, :zoo,
                   :event_store, :memorial_log, :birth_announcements
 
-      def initialize
+      # state を渡すと保存済み状態から復元する(Snapshot で読み込んだもの)。
+      def initialize(state: nil)
         store = Infrastructure::InMemory
-        @animals = store::InMemoryAnimalRepository.new
-        @enclosures = store::InMemoryEnclosureRepository.new
-        @keepers = store::InMemoryKeeperRepository.new
-        @veterinarians = store::InMemoryVeterinarianRepository.new
-        @zoo = store::InMemoryZooRepository.new(
-          Domain::Zoo.new(
-            name: 'OOP動物園',
-            admission_fee: Domain::Shared::Money.yen(2000),
-            funds: Domain::Shared::Money.yen(100_000)
-          )
-        )
+        @animals = store::InMemoryAnimalRepository.new(state ? state[:animals] : [])
+        @enclosures = store::InMemoryEnclosureRepository.new(state ? state[:enclosures] : [])
+        @keepers = store::InMemoryKeeperRepository.new(state ? state[:keepers] : [])
+        @veterinarians = store::InMemoryVeterinarianRepository.new(state ? state[:veterinarians] : [])
+        @zoo = store::InMemoryZooRepository.new(state ? state[:zoo] : default_zoo)
 
         @event_store = store::InMemoryEventStore.new
+        (state ? state[:events] : []).each { |event| @event_store.append(event) }
+
         @memorial_log = Infrastructure::Subscribers::MemorialLog.new
         @birth_announcements = Infrastructure::Subscribers::BirthAnnouncementLog.new
         @event_dispatcher = Application::EventDispatcher.new(
@@ -35,8 +32,31 @@ module Zoo
         )
       end
 
+      # 保存ファイルから状態を復元したコンテナを作る。
+      def self.load(path)
+        new(state: Infrastructure::Persistence::Snapshot.load(path))
+      end
+
+      # 全状態を1ファイルに保存する。
+      def save(path)
+        Infrastructure::Persistence::Snapshot.dump(
+          {
+            animals: @animals.all, enclosures: @enclosures.all,
+            keepers: @keepers.all, veterinarians: @veterinarians.all,
+            zoo: @zoo.load, events: @event_store.all
+          },
+          path
+        )
+      end
+
       def acquire_animal
         Application::Services::AcquireAnimal.new(animals: @animals, unit_of_work: @unit_of_work)
+      end
+
+      def rename_animal
+        Application::Services::RenameAnimal.new(
+          animals: @animals, event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
+        )
       end
 
       def add_enclosure
@@ -55,6 +75,10 @@ module Zoo
         Application::Services::AdmitVisitors.new(zoo: @zoo, unit_of_work: @unit_of_work)
       end
 
+      def set_admission_fee
+        Application::Services::SetAdmissionFee.new(zoo: @zoo, unit_of_work: @unit_of_work)
+      end
+
       def examine_animal
         Application::Services::ExamineAnimal.new(
           veterinarians: @veterinarians, animals: @animals, unit_of_work: @unit_of_work
@@ -63,6 +87,12 @@ module Zoo
 
       def transfer_animal
         Application::Services::TransferAnimal.new(
+          enclosures: @enclosures, animals: @animals, unit_of_work: @unit_of_work
+        )
+      end
+
+      def release_animal
+        Application::Services::ReleaseAnimal.new(
           enclosures: @enclosures, animals: @animals, unit_of_work: @unit_of_work
         )
       end
@@ -136,6 +166,36 @@ module Zoo
 
       def animal_list
         Application::Queries::AnimalList.new(animals: @animals)
+      end
+
+      def keeper_list
+        Application::Queries::KeeperList.new(keepers: @keepers)
+      end
+
+      def veterinarian_list
+        Application::Queries::VeterinarianList.new(veterinarians: @veterinarians)
+      end
+
+      def animal_detail
+        Application::Queries::AnimalDetail.new(animals: @animals)
+      end
+
+      def enclosure_detail
+        Application::Queries::EnclosureDetail.new(enclosures: @enclosures)
+      end
+
+      def deceased_list
+        Application::Queries::DeceasedList.new(event_store: @event_store)
+      end
+
+      private
+
+      def default_zoo
+        Domain::Zoo.new(
+          name: 'OOP動物園',
+          admission_fee: Domain::Shared::Money.yen(2000),
+          funds: Domain::Shared::Money.yen(100_000)
+        )
       end
     end
   end
