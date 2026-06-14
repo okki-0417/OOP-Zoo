@@ -14,7 +14,10 @@ module Zoo
               id: animal.id.to_s,
               name: animal.name.to_s,
               species: animal.species.name_ja,
-              alive: animal.alive?
+              alive: animal.alive?,
+              health: animal.health.current,
+              max_health: animal.health.max,
+              ailing: animal.alive? && (animal.sick? || animal.starving? || animal.health.weak?)
             )
           end
         end

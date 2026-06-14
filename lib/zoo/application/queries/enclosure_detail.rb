@@ -27,7 +27,9 @@ module Zoo
 
         def occupant(animal)
           ReadModels::AnimalSummary.new(
-            id: animal.id.to_s, name: animal.name.to_s, species: animal.species.name_ja, alive: animal.alive?
+            id: animal.id.to_s, name: animal.name.to_s, species: animal.species.name_ja, alive: animal.alive?,
+            health: animal.health.current, max_health: animal.health.max,
+            ailing: animal.alive? && (animal.sick? || animal.starving? || animal.health.weak?)
           )
         end
       end

@@ -14,7 +14,9 @@ module Zoo
               id: enclosure.id.to_s,
               name: enclosure.name,
               population: enclosure.population,
-              capacity: enclosure.capacity
+              capacity: enclosure.capacity,
+              cleanliness: enclosure.cleanliness.level,
+              filthy: enclosure.filthy?
             )
           end
         end

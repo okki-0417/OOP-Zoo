@@ -19,6 +19,14 @@ RSpec.describe Zoo::Application::Queries::AnimalList do
       expect(row.alive).to be(true)
     end
 
+    it '満タンで健康な個体は health=max_health・ailing=false を返すこと' do
+      row = described_class.new(animals: animals).call.first
+
+      expect(row.health).to eq(100)
+      expect(row.max_health).to eq(100)
+      expect(row.ailing).to be(false)
+    end
+
     it '集約ではなく ReadModels::AnimalSummary を返すこと' do
       result = described_class.new(animals: animals).call
 

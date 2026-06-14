@@ -167,7 +167,7 @@ module Zoo
       end
 
       def animal_detail
-        Application::Queries::AnimalDetail.new(animals: @animals)
+        Application::Queries::AnimalDetail.new(animals: @animals, enclosures: @enclosures)
       end
 
       def enclosure_detail

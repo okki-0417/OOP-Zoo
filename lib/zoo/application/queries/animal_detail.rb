@@ -5,8 +5,9 @@ module Zoo
     module Queries
       # 1個体の詳細を読み取りモデルに射影する。見つからなければ nil。
       class AnimalDetail
-        def initialize(animals:)
+        def initialize(animals:, enclosures:)
           @animals = animals
+          @enclosures = enclosures
         end
 
         def call(animal_id)
@@ -15,6 +16,7 @@ module Zoo
 
           species = animal.species
           status = species.conservation_status
+          enclosure = @enclosures.all.find { |e| e.houses?(animal) }
           ReadModels::AnimalProfile.new(
             id: animal.id.to_s,
             name: animal.name.to_s,
@@ -34,7 +36,9 @@ module Zoo
             illness: animal.illness&.name_ja,
             alive: animal.alive?,
             cause: animal.death&.cause,
-            parents: animal.parent_ids.size
+            parents: animal.parent_ids.size,
+            enclosure_id: enclosure&.id&.to_s,
+            enclosure_name: enclosure&.name
           )
         end
       end

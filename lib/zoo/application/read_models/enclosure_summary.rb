@@ -3,7 +3,7 @@
 module Zoo
   module Application
     module ReadModels
-      EnclosureSummary = Data.define(:id, :name, :population, :capacity)
+      EnclosureSummary = Data.define(:id, :name, :population, :capacity, :cleanliness, :filthy)
     end
   end
 end

@@ -24,6 +24,13 @@ RSpec.describe Zoo::Application::Queries::EnclosureList do
       expect(row.capacity).to eq(4)
     end
 
+    it '清掃直後のエリアは cleanliness=100・filthy=false を返すこと' do
+      row = described_class.new(enclosures: enclosures).call.first
+
+      expect(row.cleanliness).to eq(100)
+      expect(row.filthy).to be(false)
+    end
+
     it '集約ではなく ReadModels::EnclosureSummary を返すこと' do
       result = described_class.new(enclosures: enclosures).call
 

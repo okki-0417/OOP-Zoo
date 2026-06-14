@@ -10,7 +10,10 @@ module Zoo
         module_function
 
         def animal_summary(summary)
-          { id: summary.id, name: summary.name, species: summary.species, alive: summary.alive }
+          {
+            id: summary.id, name: summary.name, species: summary.species, alive: summary.alive,
+            health: summary.health, max_health: summary.max_health, ailing: summary.ailing
+          }
         end
 
         def animal(profile)
@@ -21,12 +24,16 @@ module Zoo
             sex: profile.sex, life_stage: profile.life_stage, age_in_days: profile.age_in_days,
             health: profile.health, max_health: profile.max_health, weak: profile.weak,
             hunger: profile.hunger, starving: profile.starving, illness: profile.illness,
-            alive: profile.alive, cause: profile.cause, parents: profile.parents
+            alive: profile.alive, cause: profile.cause, parents: profile.parents,
+            enclosure_id: profile.enclosure_id, enclosure_name: profile.enclosure_name
           }
         end
 
         def enclosure_summary(summary)
-          { id: summary.id, name: summary.name, population: summary.population, capacity: summary.capacity }
+          {
+            id: summary.id, name: summary.name, population: summary.population, capacity: summary.capacity,
+            cleanliness: summary.cleanliness, filthy: summary.filthy
+          }
         end
 
         def enclosure(profile)

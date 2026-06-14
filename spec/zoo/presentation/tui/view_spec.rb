@@ -42,7 +42,10 @@ RSpec.describe Zoo::Presentation::Tui::View do
     end
 
     it '個体があれば名前・種を含む表を描画すること' do
-      rows = [read_models::AnimalSummary.new(id: 'abcdef123456', name: 'レオ', species: 'ライオン', alive: true)]
+      rows = [read_models::AnimalSummary.new(
+        id: 'abcdef123456', name: 'レオ', species: 'ライオン', alive: true,
+        health: 100, max_health: 100, ailing: false
+      )]
 
       table = view.animal_table(rows)
 
@@ -56,7 +59,9 @@ RSpec.describe Zoo::Presentation::Tui::View do
     end
 
     it 'エリアがあれば名前と収容数/定員を描画すること' do
-      rows = [read_models::EnclosureSummary.new(id: 'abcdef123456', name: 'サバンナ', population: 2, capacity: 6)]
+      rows = [read_models::EnclosureSummary.new(
+        id: 'abcdef123456', name: 'サバンナ', population: 2, capacity: 6, cleanliness: 80, filthy: false
+      )]
 
       expect(view.enclosure_table(rows)).to include('サバンナ', '2/6')
     end
@@ -66,7 +71,10 @@ RSpec.describe Zoo::Presentation::Tui::View do
     it '収容数・清潔度・収容個体名を描画すること' do
       profile = read_models::EnclosureProfile.new(
         id: 'e1', name: 'サバンナ', capacity: 6, population: 1, cleanliness: 100, filthy: false,
-        occupants: [read_models::AnimalSummary.new(id: 'a1', name: 'シマオ', species: 'グレビーシマウマ', alive: true)]
+        occupants: [read_models::AnimalSummary.new(
+          id: 'a1', name: 'シマオ', species: 'グレビーシマウマ', alive: true,
+          health: 100, max_health: 100, ailing: false
+        )]
       )
 
       panel = view.enclosure_detail(profile)

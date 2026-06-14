@@ -538,12 +538,15 @@ components:
             message: { type: string }
     AnimalSummary:
       type: object
-      required: [id, name, species, alive]
+      required: [id, name, species, alive, health, max_health, ailing]
       properties:
         id: { type: string }
         name: { type: string }
         species: { type: string }
         alive: { type: boolean }
+        health: { type: integer }
+        max_health: { type: integer }
+        ailing: { type: boolean }
     Animal:
       type: object
       required:
@@ -570,14 +573,18 @@ components:
         alive: { type: boolean }
         cause: { type: string, nullable: true }
         parents: { type: integer }
+        enclosure_id: { type: string, nullable: true }
+        enclosure_name: { type: string, nullable: true }
     EnclosureSummary:
       type: object
-      required: [id, name, population, capacity]
+      required: [id, name, population, capacity, cleanliness, filthy]
       properties:
         id: { type: string }
         name: { type: string }
         population: { type: integer }
         capacity: { type: integer }
+        cleanliness: { type: integer }
+        filthy: { type: boolean }
     Enclosure:
       type: object
       required: [id, name, capacity, population, cleanliness, filthy, occupants]

@@ -469,6 +469,9 @@ export interface components {
             name: string;
             species: string;
             alive: boolean;
+            health: number;
+            max_health: number;
+            ailing: boolean;
         };
         Animal: {
             id: string;
@@ -490,12 +493,16 @@ export interface components {
             alive: boolean;
             cause?: string | null;
             parents: number;
+            enclosure_id?: string | null;
+            enclosure_name?: string | null;
         };
         EnclosureSummary: {
             id: string;
             name: string;
             population: number;
             capacity: number;
+            cleanliness: number;
+            filthy: boolean;
         };
         Enclosure: {
             id: string;
