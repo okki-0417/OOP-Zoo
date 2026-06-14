@@ -62,6 +62,19 @@ RSpec.describe '動物福祉' do
     end
   end
 
+  context '過密なエリアにいると' do
+    it 'ストレスが増すこと' do
+      # 単独性のホッキョクグマ(112.5m²必要)を広さ100m²(定員1)の狭い区画へ。
+      den = Zoo::Domain::Husbandry::Enclosure.new(
+        name: '狭い獣舎', temperature: shared::Temperature.celsius(0), capacity: 1
+      )
+      bear = build_adult(catalog.polar_bear)
+      den.admit(bear)
+
+      expect(welfare.daily_stress(bear, den)).to be > 0
+    end
+  end
+
   context '適温域の縁で快適でないと' do
     it 'ストレスが増すこと' do
       enclosure = savanna(12) # 適応はできるが快適帯(約14.5℃〜)の外

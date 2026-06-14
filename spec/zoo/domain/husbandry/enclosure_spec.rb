@@ -82,6 +82,10 @@ module Zoo
           expect(savanna).to be_empty
         end
 
+        it '広さを指定しなければ定員×100m²になること' do
+          expect(savanna.area_sqm).to eq(300) # 定員3
+        end
+
         describe '#pass_day' do
           it '収容個体が歳をとり、エリアが汚れること' do
             savanna.admit(build_adult(zebra))

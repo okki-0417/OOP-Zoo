@@ -14,7 +14,10 @@ module Zoo
       # エリアは動物が暮らすほど汚れ、清掃で清潔さを取り戻す。
       class Enclosure
         include Shared::Entity
-        attr_reader :id, :name, :temperature, :capacity, :area_sqm, :cleanliness
+        attr_reader :id, :name, :temperature, :capacity, :cleanliness
+
+        # 定員1枠あたりの標準面積(m²)。area_sqm 未指定のエリアの広さの算出に使う。
+        AREA_PER_SLOT_SQM = 100
 
         def initialize(name:, temperature:, capacity:, area_sqm: nil, id: Shared::Identifier.new)
           raise ArgumentError, 'エリア名は必須です' if name.to_s.empty?
@@ -74,6 +77,11 @@ module Zoo
 
         def population
           @occupants.size
+        end
+
+        # 区画の広さ(m²)。明示が無ければ定員から標準面積を算出する。
+        def area_sqm
+          @area_sqm || capacity * AREA_PER_SLOT_SQM
         end
 
         def vacancies

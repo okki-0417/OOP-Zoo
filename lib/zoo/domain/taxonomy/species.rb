@@ -43,6 +43,15 @@ module Zoo
           @diet_type.predatory?
         end
 
+        # 体格1kgあたりに要する面積(m²)と、最小必要面積。
+        SPACE_SQM_PER_KG = 0.25
+        MIN_SPACE_SQM = 5
+
+        # この種1頭が必要とする面積(m²)。体格(成獣体重)が大きいほど広い。
+        def space_requirement_sqm
+          [@adult_weight.kilograms * SPACE_SQM_PER_KG, MIN_SPACE_SQM].max
+        end
+
         # 群れで暮らす種か。
         def group_living?
           @group_living

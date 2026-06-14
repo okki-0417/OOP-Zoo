@@ -14,6 +14,7 @@ module Zoo
 
         FILTH = 15            # 不衛生なエリア
         LONELINESS = 12       # 群れ性なのに仲間がいない
+        CROWDING = 12         # 過密(体格の合計が広さを超える)
         CLIMATE_DISCOMFORT = 10 # 適温域の縁で快適でない
         HUNGER = 10           # 空腹
         ILLNESS = 12          # 病気
@@ -39,6 +40,7 @@ module Zoo
           total = 0
           total += FILTH if enclosure.filthy?
           total += LONELINESS if lonely?(animal, enclosure)
+          total += CROWDING if Stocking.overcrowded?(enclosure)
           total += CLIMATE_DISCOMFORT unless animal.species.comfortable?(enclosure.temperature)
           total += HUNGER if animal.hungry?
           total += ILLNESS if animal.sick?
