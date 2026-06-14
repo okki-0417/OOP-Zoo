@@ -13,7 +13,7 @@ module Zoo
             sex: Domain::Animal::Sex.new(params['sex'].to_s), max_health: 100
           )
           animal = @container.acquire_animal.call(command)
-          [201, { id: animal.id.to_s, name: animal.name.to_s }]
+          [201, Serializer.animal(@container.animal_detail.call(animal.id))]
         end
       end
     end

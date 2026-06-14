@@ -8,7 +8,7 @@ module Zoo
           profile = @container.animal_detail.call(params['id'])
           raise Application::Errors::AnimalNotFound, "動物 #{params['id']} は存在しません" if profile.nil?
 
-          [200, profile.to_h]
+          [200, Serializer.animal(profile)]
         end
       end
     end

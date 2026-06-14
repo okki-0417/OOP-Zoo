@@ -8,7 +8,7 @@ module Zoo
           revenue = @container.admit_visitors.call(
             Application::Commands::AdmitVisitorsCommand.new(count: Integer(params['count']))
           )
-          [200, { revenue: revenue.to_s }]
+          [200, { revenue: revenue.yen }]
         end
       end
     end

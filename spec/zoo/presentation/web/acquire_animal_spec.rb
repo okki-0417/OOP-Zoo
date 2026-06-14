@@ -7,11 +7,11 @@ RSpec.describe Zoo::Presentation::Web::AcquireAnimal do
   let(:action) { described_class.new(container: container) }
 
   describe '#call' do
-    it 'params から個体を作り [201, {id, name}] を返し、Container に保存すること' do
+    it 'params から個体を作り [201, 動物プロフィール] を返し、Container に保存すること' do
       code, data = action.call('species' => 'lion', 'name' => 'レオ', 'sex' => 'male')
 
       expect(code).to eq(201)
-      expect(data[:name]).to eq('レオ')
+      expect(data).to include(name: 'レオ', species: 'ライオン', health: 100, alive: true)
       expect(container.animals.all.size).to eq(1)
     end
 

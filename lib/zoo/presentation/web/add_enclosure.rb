@@ -11,7 +11,7 @@ module Zoo
             capacity: Integer(params['capacity'])
           )
           enclosure = @container.add_enclosure.call(command)
-          [201, { id: enclosure.id.to_s, name: enclosure.name }]
+          [201, Serializer.enclosure(@container.enclosure_detail.call(enclosure.id))]
         end
       end
     end

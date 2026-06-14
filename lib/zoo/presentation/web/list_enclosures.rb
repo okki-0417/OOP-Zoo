@@ -5,7 +5,7 @@ module Zoo
     class Web
       class ListEnclosures < Action
         def call(_params)
-          [200, @container.enclosure_list.call.map(&:to_h)]
+          [200, @container.enclosure_list.call.map { |enclosure| Serializer.enclosure_summary(enclosure) }]
         end
       end
     end

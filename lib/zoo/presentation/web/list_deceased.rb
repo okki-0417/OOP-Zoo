@@ -3,9 +3,9 @@
 module Zoo
   module Presentation
     class Web
-      class OperateDay < Action
+      class ListDeceased < Action
         def call(_params)
-          [200, Serializer.day_report(@container.operate_day.call)]
+          [200, @container.deceased_list.call.map { |record| Serializer.deceased(record) }]
         end
       end
     end

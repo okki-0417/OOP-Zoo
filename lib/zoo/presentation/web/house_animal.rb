@@ -9,7 +9,7 @@ module Zoo
             enclosure_id: params['id'], animal_id: params['animal_id']
           )
           enclosure = @container.house_animal.call(command)
-          [200, { name: enclosure.name, population: enclosure.population }]
+          [200, Serializer.enclosure(@container.enclosure_detail.call(enclosure.id))]
         end
       end
     end
