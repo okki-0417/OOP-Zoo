@@ -128,6 +128,7 @@ module Zoo
         # 死亡した個体はエリアから取り除き、その一覧を返す。
         def pass_day
           spread_disease_if_filthy
+          Medical::Contagion.spread(self)
           @occupants.each do |animal|
             next if animal.dead?
 

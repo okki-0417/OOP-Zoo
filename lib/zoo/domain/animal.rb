@@ -34,6 +34,7 @@ module Zoo
         @stress = Stress.calm
         @death = nil
         @illness = nil
+        @immunities = []
         @parent_ids = [sire&.id, dam&.id].compact
       end
 
@@ -41,7 +42,7 @@ module Zoo
       # 通さず、体力・空腹・加齢・病気・生死を保存値そのままに組み直す。voice は鳴き声の
       # 変更を保存しないため種の既定に戻す。
       def self.reconstitute(id:, species:, name:, sex:, health:, hunger:, age_in_days:, illness:, death:, parent_ids:,
-                            stress: Stress.calm)
+                            stress: Stress.calm, immunities: [])
         allocate.tap do |animal|
           animal.instance_variable_set(:@id, id)
           animal.instance_variable_set(:@species, species)
@@ -53,6 +54,7 @@ module Zoo
           animal.instance_variable_set(:@age_in_days, age_in_days)
           animal.instance_variable_set(:@voice, Voice.from(species.default_voice))
           animal.instance_variable_set(:@illness, illness)
+          animal.instance_variable_set(:@immunities, immunities)
           animal.instance_variable_set(:@death, death)
           animal.instance_variable_set(:@parent_ids, parent_ids)
         end
@@ -116,22 +118,33 @@ module Zoo
         other.is_a?(Animal) && !(@parent_ids & other.parent_ids).empty?
       end
 
-      # 発病・受傷する。
+      # 発病・受傷する。免疫を持つ病気にはかからない。
       def fall_ill(illness)
         raise Errors::DeadAnimal, "#{@name}は死亡しています" if dead?
+        return self if immune_to?(illness)
 
         @illness = illness
         self
       end
 
-      # 回復(治癒)する。
+      # 回復(治癒)する。かかっていた病気には以後免疫を持つ。
       def recover
+        @immunities << @illness if @illness && !immune_to?(@illness)
         @illness = nil
         self
       end
 
       def sick?
         !@illness.nil?
+      end
+
+      # この病気に免疫を持つ(かかって回復したことがある)か。
+      def immune_to?(illness)
+        @immunities.include?(illness)
+      end
+
+      def immunities
+        @immunities.dup
       end
 
       # ストレスを与える(悪い飼育環境・社会的不適合などの結果)。

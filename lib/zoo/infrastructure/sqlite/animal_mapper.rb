@@ -22,6 +22,7 @@ module Zoo
             stress: animal.stress.level,
             age_in_days: animal.age_in_days.value,
             illness_key: animal.illness && illness_key(animal.illness)&.to_s,
+            immunities: animal.immunities.map { |ill| illness_key(ill)&.to_s }.compact.join(','),
             death_cause: animal.death&.cause&.to_s,
             parent_ids: animal.parent_ids.map(&:to_s).join(',')
           }
@@ -38,6 +39,7 @@ module Zoo
             stress: Domain::Animal::Stress.new(row['stress']),
             age_in_days: Domain::Animal::AgeInDays.new(row['age_in_days']),
             illness: row['illness_key'] && Illnesses.find(row['illness_key']),
+            immunities: parse_immunities(row['immunities']),
             death: row['death_cause'] && Domain::Animal::Death.new(cause: row['death_cause'].to_sym),
             parent_ids: parse_parent_ids(row['parent_ids'])
           )
@@ -55,6 +57,10 @@ module Zoo
 
         def parse_parent_ids(value)
           value.to_s.split(',').reject(&:empty?).map { |id| Domain::Shared::Identifier.new(id) }
+        end
+
+        def parse_immunities(value)
+          value.to_s.split(',').reject(&:empty?).map { |key| Illnesses.find(key) }.compact
         end
       end
     end

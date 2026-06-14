@@ -56,6 +56,7 @@ module Zoo
               stress         INTEGER NOT NULL DEFAULT 0,
               age_in_days    INTEGER NOT NULL,
               illness_key    TEXT,
+              immunities     TEXT    NOT NULL DEFAULT '',
               death_cause    TEXT,
               parent_ids     TEXT    NOT NULL DEFAULT ''
             );
