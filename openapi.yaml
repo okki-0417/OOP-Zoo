@@ -1,0 +1,688 @@
+openapi: 3.0.3
+info:
+  title: OOP-Zoo API
+  version: 1.0.0
+  description: >
+    動物園シミュレーションの JSON API。命令指向ハイブリッド設計(GET=取得、
+    POST/PATCH/DELETE=命令)。金額は整数(円)で表現する。この仕様が front/back
+    共通の契約であり、フロントの TS 型はここから openapi-typescript で生成する。
+
+servers:
+  - url: http://localhost:4567
+
+paths:
+  /species:
+    get:
+      summary: 種カタログ(選択肢)
+      operationId: listSpecies
+      responses:
+        '200':
+          description: 種の一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SpeciesRef' }
+  /foods:
+    get:
+      summary: 餌カタログ(選択肢)
+      operationId: listFoods
+      responses:
+        '200':
+          description: 餌の一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/FoodRef' }
+  /taxon-classes:
+    get:
+      summary: 綱の一覧(飼育員の専門選択肢)
+      operationId: listTaxonClasses
+      responses:
+        '200':
+          description: 綱の一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TaxonClassRef' }
+
+  /animals:
+    get:
+      summary: 個体一覧
+      operationId: listAnimals
+      responses:
+        '200':
+          description: 個体サマリの配列
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AnimalSummary' }
+    post:
+      summary: 個体を導入する
+      operationId: acquireAnimal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [species, name, sex]
+              properties:
+                species: { type: string, description: 種キー(/species の key) }
+                name: { type: string }
+                sex: { type: string, enum: [male, female] }
+      responses:
+        '201':
+          description: 作成された個体
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Animal' }
+        '400': { $ref: '#/components/responses/Error' }
+  /animals/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: 個体詳細
+      operationId: showAnimal
+      responses:
+        '200':
+          description: 個体プロフィール
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Animal' }
+        '404': { $ref: '#/components/responses/Error' }
+  /animals/{id}/name:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    patch:
+      summary: 改名する
+      operationId: renameAnimal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '200':
+          description: 更新後の個体
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Animal' }
+        '404': { $ref: '#/components/responses/Error' }
+  /animals/{id}/feedings:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: 給餌する
+      operationId: feedAnimal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [keeper_id, food]
+              properties:
+                keeper_id: { type: string }
+                food: { type: string, description: 餌キー(/foods の key) }
+      responses:
+        '200':
+          description: 更新後の個体
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Animal' }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /animals/{id}/treatments:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: 治療する
+      operationId: treatAnimal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [veterinarian_id]
+              properties:
+                veterinarian_id: { type: string }
+      responses:
+        '200':
+          description: 更新後の個体
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Animal' }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /animals/{id}/examinations:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: 診察する
+      operationId: examineAnimal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [veterinarian_id]
+              properties:
+                veterinarian_id: { type: string }
+      responses:
+        '200':
+          description: 診察結果
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExamineResult' }
+        '404': { $ref: '#/components/responses/Error' }
+  /animals/{id}/transfer:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: 別エリアへ移送する
+      operationId: transferAnimal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enclosure_id]
+              properties:
+                enclosure_id: { type: string }
+      responses:
+        '200':
+          description: 移送後の個体
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Animal' }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /enclosures:
+    get:
+      summary: エリア一覧
+      operationId: listEnclosures
+      responses:
+        '200':
+          description: エリアサマリの配列
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/EnclosureSummary' }
+    post:
+      summary: エリアを増設する
+      operationId: addEnclosure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, celsius, capacity]
+              properties:
+                name: { type: string }
+                celsius: { type: integer }
+                capacity: { type: integer }
+      responses:
+        '201':
+          description: 作成されたエリア
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Enclosure' }
+        '400': { $ref: '#/components/responses/Error' }
+  /enclosures/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: エリア詳細
+      operationId: showEnclosure
+      responses:
+        '200':
+          description: エリアプロフィール
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Enclosure' }
+        '404': { $ref: '#/components/responses/Error' }
+  /enclosures/{id}/occupants:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: 個体を収容する
+      operationId: houseAnimal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [animal_id]
+              properties:
+                animal_id: { type: string }
+      responses:
+        '200':
+          description: 収容後のエリア
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Enclosure' }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /enclosures/{id}/occupants/{animal_id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: animal_id, in: path, required: true, schema: { type: string } }
+    delete:
+      summary: 個体をエリアから退去させる
+      operationId: releaseAnimal
+      responses:
+        '200':
+          description: 退去した個体
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Animal' }
+        '404': { $ref: '#/components/responses/Error' }
+  /enclosures/{id}/cleanings:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: エリアを清掃する
+      operationId: cleanEnclosure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [keeper_id]
+              properties:
+                keeper_id: { type: string }
+                amount: { type: integer, default: 100 }
+      responses:
+        '200':
+          description: 清掃後のエリア
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Enclosure' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /breedings:
+    post:
+      summary: 繁殖させる
+      operationId: breedAnimals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sire_id, dam_id, enclosure_id, name, sex]
+              properties:
+                sire_id: { type: string }
+                dam_id: { type: string }
+                enclosure_id: { type: string }
+                name: { type: string }
+                sex: { type: string, enum: [male, female] }
+      responses:
+        '201':
+          description: 誕生した個体
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Animal' }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /keepers:
+    get:
+      summary: 飼育員一覧
+      operationId: listKeepers
+      responses:
+        '200':
+          description: 飼育員の配列
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Keeper' }
+    post:
+      summary: 飼育員を採用する
+      operationId: hireKeeper
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, specialties]
+              properties:
+                name: { type: string }
+                specialties:
+                  type: array
+                  items: { type: string, description: 綱キー(/taxon-classes の key) }
+      responses:
+        '201':
+          description: 採用された飼育員
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Keeper' }
+        '400': { $ref: '#/components/responses/Error' }
+  /veterinarians:
+    get:
+      summary: 獣医一覧
+      operationId: listVeterinarians
+      responses:
+        '200':
+          description: 獣医の配列
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Veterinarian' }
+    post:
+      summary: 獣医を採用する
+      operationId: hireVeterinarian
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '201':
+          description: 採用された獣医
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Veterinarian' }
+        '400': { $ref: '#/components/responses/Error' }
+
+  /report:
+    get:
+      summary: 園の統計
+      operationId: getReport
+      responses:
+        '200':
+          description: 園全体の統計
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ZooStatistics' }
+  /deceased:
+    get:
+      summary: 慰霊記録(死亡個体)
+      operationId: listDeceased
+      responses:
+        '200':
+          description: 死亡記録の配列
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Deceased' }
+  /threatened:
+    get:
+      summary: 展示中の絶滅危惧種
+      operationId: listThreatened
+      responses:
+        '200':
+          description: 絶滅危惧種の配列
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ExhibitedSpecies' }
+  /visitors:
+    post:
+      summary: 来園者を受け入れる
+      operationId: admitVisitors
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [count]
+              properties:
+                count: { type: integer }
+      responses:
+        '200':
+          description: 得られた収益(円)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  revenue: { type: integer }
+                required: [revenue]
+  /admission-fee:
+    patch:
+      summary: 入園料を改定する
+      operationId: setAdmissionFee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fee]
+              properties:
+                fee: { type: integer }
+      responses:
+        '200':
+          description: 改定後の入園料(円)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  admission_fee: { type: integer }
+                required: [admission_fee]
+  /operate:
+    post:
+      summary: 1日運営する
+      operationId: operateDay
+      responses:
+        '200':
+          description: その日の収支レポート
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DayReport' }
+  /run-days:
+    post:
+      summary: 複数日運営する
+      operationId: runDays
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [days]
+              properties:
+                days: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: 推移サマリ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RunDaysSummary' }
+
+components:
+  responses:
+    Error:
+      description: エラー(3つの輪: 400=形式 / 404=存在 / 422=ドメイン規則)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+    AnimalSummary:
+      type: object
+      required: [id, name, species, alive]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        species: { type: string }
+        alive: { type: boolean }
+    Animal:
+      type: object
+      required:
+        [id, name, species, taxon_class, diet, conservation_code, conservation_label,
+         sex, life_stage, age_in_days, health, max_health, weak, hunger, starving,
+         alive, parents]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        species: { type: string }
+        taxon_class: { type: string }
+        diet: { type: string }
+        conservation_code: { type: string }
+        conservation_label: { type: string }
+        sex: { type: string }
+        life_stage: { type: string }
+        age_in_days: { type: integer }
+        health: { type: integer }
+        max_health: { type: integer }
+        weak: { type: boolean }
+        hunger: { type: integer }
+        starving: { type: boolean }
+        illness: { type: string, nullable: true }
+        alive: { type: boolean }
+        cause: { type: string, nullable: true }
+        parents: { type: integer }
+    EnclosureSummary:
+      type: object
+      required: [id, name, population, capacity]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        population: { type: integer }
+        capacity: { type: integer }
+    Enclosure:
+      type: object
+      required: [id, name, capacity, population, cleanliness, filthy, occupants]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        capacity: { type: integer }
+        population: { type: integer }
+        cleanliness: { type: integer }
+        filthy: { type: boolean }
+        occupants:
+          type: array
+          items: { $ref: '#/components/schemas/AnimalSummary' }
+    Keeper:
+      type: object
+      required: [id, name, specialties]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        specialties: { type: string }
+    Veterinarian:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string }
+        name: { type: string }
+    Deceased:
+      type: object
+      required: [name, species, cause]
+      properties:
+        name: { type: string }
+        species: { type: string }
+        cause: { type: string }
+    ExhibitedSpecies:
+      type: object
+      required: [name_ja, status_code, status_label, count]
+      properties:
+        name_ja: { type: string }
+        status_code: { type: string }
+        status_label: { type: string }
+        count: { type: integer }
+    ExamineResult:
+      type: object
+      required: [animal_id, result]
+      properties:
+        animal_id: { type: string }
+        result: { type: string, enum: [dead, sick, injured, healthy] }
+    DayReport:
+      type: object
+      required: [visitors, income, cost, deaths, balance, reputation, bankrupt]
+      properties:
+        visitors: { type: integer }
+        income: { type: integer }
+        cost: { type: integer }
+        deaths: { type: integer }
+        balance: { type: integer }
+        reputation: { type: integer }
+        bankrupt: { type: boolean }
+        outbreak: { type: string, nullable: true }
+    RunDaysSummary:
+      type: object
+      required: [days, total_deaths, deaths_by_cause]
+      properties:
+        days: { type: integer }
+        total_deaths: { type: integer }
+        deaths_by_cause:
+          type: object
+          additionalProperties: { type: integer }
+    ZooStatistics:
+      type: object
+      required:
+        [population, species_count, threatened_count, births, deaths_by_cause,
+         revenue, balance, reputation]
+      properties:
+        population: { type: integer }
+        species_count: { type: integer }
+        threatened_count: { type: integer }
+        births: { type: integer }
+        deaths_by_cause:
+          type: object
+          additionalProperties: { type: integer }
+        revenue: { type: integer }
+        balance: { type: integer }
+        reputation: { type: integer }
+    SpeciesRef:
+      type: object
+      required: [key, name_ja, taxon_class, diet, conservation_code, conservation_label]
+      properties:
+        key: { type: string }
+        name_ja: { type: string }
+        taxon_class: { type: string }
+        diet: { type: string }
+        conservation_code: { type: string }
+        conservation_label: { type: string }
+    FoodRef:
+      type: object
+      required: [key, name_ja, category, satiety]
+      properties:
+        key: { type: string }
+        name_ja: { type: string }
+        category: { type: string }
+        satiety: { type: integer }
+    TaxonClassRef:
+      type: object
+      required: [key, label]
+      properties:
+        key: { type: string }
+        label: { type: string }

@@ -1,0 +1,7 @@
+/tmp/
+*.db
+*.save
+
+# frontend (Node)
+/frontend/node_modules/
+/frontend/dist/
