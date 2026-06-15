@@ -37,7 +37,6 @@ RSpec.describe '入園料と需要' do
     end
 
     it '十分に高い料金では来園者がいなくなること' do
-      pending('需要曲線(choke price)の導入で対応予定。現状は 1/料金 で漸近するだけ')
       expect(visitors_at(100_000)).to eq(0)
     end
   end
@@ -47,7 +46,6 @@ RSpec.describe '入園料と需要' do
     FEES = [200, 400, 800, 1_600, 3_200, 6_400, 12_800, 25_600].freeze
 
     it '収益を最大化する料金が、最安値ではないこと(安売りは取りこぼす)' do
-      pending('需要曲線の導入で収益に最適点を作る')
       revenues = FEES.map { |fee| revenue_at(fee) }
       best_index = revenues.each_index.max_by { |i| revenues[i] }
       expect(best_index).not_to eq(0)
@@ -60,7 +58,6 @@ RSpec.describe '入園料と需要' do
     end
 
     it '中庸の料金は、安すぎ・高すぎの両極より収益が大きいこと' do
-      pending('需要曲線の導入で収益に最適点を作る')
       cheap  = revenue_at(FEES.first)
       mid    = revenue_at(3_200)
       pricey = revenue_at(FEES.last)

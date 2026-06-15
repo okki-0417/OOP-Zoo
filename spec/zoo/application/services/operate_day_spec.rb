@@ -41,13 +41,15 @@ RSpec.describe Zoo::Application::Services::OperateDay do
   end
 
   describe '#call' do
-    it '展示1種(EN)・評判50で来園25人を集め、収入¥50,000・費用¥1,500を計上すること' do
+    it '展示1種(EN)・評判50・料金¥2,000で来園17人を集め、収入¥34,000・費用を計上すること' do
       report = service.call
 
       zebra_food = husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
 
-      expect(report.visitors).to eq(40)             # (カリスマ60+多様性20)*50/100
-      expect(report.income).to eq(shared::Money.yen(80_000))   # 2000 * 40
+      # 線形需要: 魅力80(カリスマ60+多様性20), Qmax=80*50/100=40, Pmax=3000+80*15*50/100=3600
+      #          来園=floor(40*(1-2000/3600))=17
+      expect(report.visitors).to eq(17)
+      expect(report.income).to eq(shared::Money.yen(34_000))   # 2000 * 17
       expect(report.cost).to eq(shared::Money.yen(1_000 + zebra_food)) # エリア1*1000 + シマウマの飼料費
     end
 
@@ -61,7 +63,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
 
       expect(report.deaths).to eq(0)
       expect(report.reputation).to eq(52)
-      expect(report.balance).to eq(shared::Balance.new(100_000 + 80_000 - cost))
+      expect(report.balance).to eq(shared::Balance.new(100_000 + 34_000 - cost)) # 収入 2000*17
       expect(report.bankrupt).to be(false)
     end
 

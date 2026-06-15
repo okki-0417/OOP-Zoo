@@ -50,28 +50,31 @@ module Zoo
           expect(described_class.expected_visitors([], Reputation.default, fee)).to eq(0)
         end
 
-        it '評判100・基準料金で カリスマ性(シマウマ60)＋多様性1種(×20)=80人 を期待すること' do
-          animal = Animal.new(
-            species: catalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
+        def zebra
+          Animal.new(
+            species: Taxonomy::SpeciesCatalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
           )
-
-          expect(described_class.expected_visitors([animal], Reputation.new(100), fee)).to eq(80)
         end
 
-        it '評判50では期待来園者が半減すること(80→40人)' do
-          animal = Animal.new(
-            species: catalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
-          )
-
-          expect(described_class.expected_visitors([animal], Reputation.new(50), fee)).to eq(40)
+        it '線形需要: 評判100・料金¥2,000・魅力80(シマウマ60+多様性20)で41人を期待すること' do
+          # Qmax=80, Pmax=3000+80*15=4200, 来園=floor(80*(1-2000/4200))=41
+          expect(described_class.expected_visitors([zebra], Reputation.new(100), fee)).to eq(41)
         end
 
-        it '料金を2倍(¥4,000)にすると来園者が半減すること(80→40人)' do
-          animal = Animal.new(
-            species: catalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
-          )
+        it '評判が下がると来園が減ること(100→50)' do
+          high = described_class.expected_visitors([zebra], Reputation.new(100), fee)
+          low  = described_class.expected_visitors([zebra], Reputation.new(50), fee)
+          expect(low).to be < high
+        end
 
-          expect(described_class.expected_visitors([animal], Reputation.new(100), Shared::Money.yen(4_000))).to eq(40)
+        it '料金を上げると来園が減ること(単位弾力ではなく、収益には最適点がある)' do
+          cheap  = described_class.expected_visitors([zebra], Reputation.new(100), Shared::Money.yen(2_000))
+          pricey = described_class.expected_visitors([zebra], Reputation.new(100), Shared::Money.yen(4_000))
+          expect(pricey).to be < cheap
+        end
+
+        it '支払意思(Pmax)以上の料金では来園が0になること(choke price)' do
+          expect(described_class.expected_visitors([zebra], Reputation.new(100), Shared::Money.yen(100_000))).to eq(0)
         end
       end
 
