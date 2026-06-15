@@ -107,13 +107,41 @@ module Zoo
         end
       end
 
-      RSpec.describe ReputationPolicy do
-        it '死亡が2件あると評判を 5*2=10 下げること' do
-          expect(described_class.after_day(Reputation.new(50), deaths: 2).score).to eq(40)
+      RSpec.describe VisitorExperience do
+        money = Shared::Money
+
+        it 'コンディションから ¥500 ごとに1点の期待ペナルティを引くこと(80, ¥2,000→76)' do
+          expect(described_class.score(condition: 80, fee: money.yen(2_000))).to eq(76)
         end
 
-        it '死亡が無い日は評判を2上げること' do
-          expect(described_class.after_day(Reputation.new(50), deaths: 0).score).to eq(52)
+        it '体験は 0..100 にクランプされること(低コンディション+高料金でも負にならない)' do
+          expect(described_class.score(condition: 10, fee: money.yen(100_000))).to eq(0)
+        end
+      end
+
+      RSpec.describe ReputationPolicy do
+        it '体験経路: 露出満杯・体験100・評判0なら、上げ幅は DRIFT_CAP(3)でクランプされること' do
+          expect(described_class.after_day(Reputation.new(0), experience: 100, exposure: 100).score).to eq(3)
+        end
+
+        it '非対称: 下げは上げの倍速(体験0・評判50・露出満杯で -6 の 44)であること' do
+          expect(described_class.after_day(Reputation.new(50), experience: 0, exposure: 100).score).to eq(44)
+        end
+
+        it '露出が小さい(来場5)と、同じ体験でも評判はほとんど動かないこと' do
+          expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 5).score).to eq(50)
+        end
+
+        it '来場ゼロでもニュース経路(死亡)は効き、5×頭数だけ下げること' do
+          expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 0, deaths: 2).score).to eq(40)
+        end
+
+        it '疫病が出ると OUTBREAK_PENALTY(8)だけ下げること' do
+          expect(described_class.after_day(Reputation.new(50), experience: 50, exposure: 100, outbreak: true).score).to eq(42)
+        end
+
+        it '評判は 0..100 にクランプされること(過大なイベントでも負にならない)' do
+          expect(described_class.after_day(Reputation.new(0), experience: 0, exposure: 100, deaths: 5).score).to eq(0)
         end
       end
     end

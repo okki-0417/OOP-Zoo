@@ -39,7 +39,16 @@ module Zoo
 
             outbreak = strike_outbreak
 
-            zoo.apply_reputation(Domain::Operations::ReputationPolicy.after_day(zoo.reputation, deaths: dead.size))
+            condition = Domain::Husbandry::Condition.score(on_exhibit)
+            experience = Domain::Operations::VisitorExperience.score(
+              condition: condition, fee: zoo.admission_fee
+            )
+            zoo.apply_reputation(
+              Domain::Operations::ReputationPolicy.after_day(
+                zoo.reputation, experience: experience, exposure: visitors,
+                deaths: dead.size, outbreak: !outbreak.nil?
+              )
+            )
             zoo.advance_day
             @zoo.save(zoo)
 

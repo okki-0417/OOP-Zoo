@@ -57,12 +57,12 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect { service.call }.to change { zoo.load.day }.by(1)
     end
 
-    it '死亡が無い日は評判が2上がり、残高に純益(収入-費用)が反映されること' do
+    it '死亡が無い日は評判が体験へドリフトするが、来場17人と露出が小さく1だけ上がり(50→51)、残高に純益が反映されること' do
       cost = 1_000 + husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
       report = service.call
 
       expect(report.deaths).to eq(0)
-      expect(report.reputation).to eq(52)
+      expect(report.reputation).to eq(51)
       expect(report.balance).to eq(shared::Balance.new(100_000 + 34_000 - cost)) # 収入 2000*17
       expect(report.bankrupt).to be(false)
     end

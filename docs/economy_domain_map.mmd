@@ -1,0 +1,87 @@
+%% 経済ドメイン関連図(層版)
+%% 実線=順方向の因果 / 破線=フィードバックの戻り・未実装 / ニュースは層を飛ばす近道
+flowchart TB
+  classDef done fill:#e3f2fd,stroke:#1565c0,color:#0d47a1;
+  classDef pending fill:#fff8e1,stroke:#f9a825,color:#795548,stroke-dasharray: 5 4;
+  classDef problem fill:#ffebee,stroke:#c62828,color:#b71c1c;
+  classDef event fill:#f3e5f5,stroke:#6a1b9a,color:#4a148c;
+  classDef stock fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20;
+
+  subgraph L1["① 飼育インプット（手段）"]
+    direction LR
+    husbandry["清潔 / 過密 / 刺激 / 栄養<br/>気候 / 社会 / 空腹 / 母子分離"]:::done
+  end
+
+  subgraph L2["② 動物の内部状態（隠れている＝真の状態）"]
+    direction LR
+    welfare["動物福祉<br/>ストレス（＋繁栄=未）"]:::done
+    health["健康<br/>sick? / weak?"]:::done
+  end
+
+  subgraph L3["③ 可視（来園者が知覚できる分）"]
+    direction LR
+    cond["コンディション<br/>知覚される飼育の質"]:::done
+    show["見せ場<br/>その日の可視性"]:::pending
+  end
+
+  subgraph L4["④ 来園者の受け取り（来て分かる）"]
+    direction LR
+    exp["体験"]:::done
+    exposure["露出<br/>来場規模"]:::done
+    congestion["混雑"]:::pending
+  end
+
+  subgraph L5["⑤ 公衆の信念（ストック）"]
+    rep["評判"]:::stock
+  end
+
+  subgraph NEWS["ニュース経路（来てない人にも届く・層を飛ばす）"]
+    direction LR
+    death["死亡"]:::event
+    outbreak["疫病"]:::event
+    birth["幼獣誕生"]:::pending
+  end
+
+  subgraph L6["⑥ 経済（フロー / 資源）"]
+    direction LR
+    appeal["魅力<br/>カリスマ＋多様性＋話題"]:::done
+    fee["料金"]:::done
+    visitors["集客"]:::done
+    revenue["収益"]:::done
+    funds["資金"]:::stock
+    staff["スタッフ→職員福祉"]:::pending
+  end
+
+  %% --- 順方向の背骨 ---
+  husbandry -->|Welfare.daily_stress| welfare
+  welfare -->|見える分| cond
+  health -->|見える分| cond
+  cond -->|Condition.score| exp
+  fee -->|期待ギャップ| exp
+  exp -->|"ReputationPolicy drift × 露出・非対称"| rep
+  exposure --> rep
+  appeal --> visitors
+  fee --> visitors
+  rep -->|集客の係数| visitors
+  visitors --> revenue
+  fee --> revenue
+  revenue --> funds
+
+  %% --- ニュース経路（近道）---
+  death --> rep
+  outbreak --> rep
+  birth -.-> rep
+
+  %% --- フィードバックの戻り ---
+  visitors -.->|戻り| exposure
+  visitors -.->|戻り:過剰来場| congestion
+  funds -.->|戻り:雇用| staff
+  staff -.->|戻り| welfare
+
+  %% --- 未実装の枝 ---
+  welfare -.->|繁栄→活発| show
+  show -.-> exp
+  congestion -.-> exp
+
+  %% --- 綻び（要削除）---
+  welfare -.->|"welfare_multiplier（綻び）"| visitors
