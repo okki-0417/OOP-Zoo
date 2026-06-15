@@ -30,10 +30,11 @@ module Zoo
           @dam.species
         end
 
-        # 交尾する。妊娠/抱卵を開始する。繁殖期(春)でなければ成立しない。
+        # 交尾する。妊娠/抱卵を開始する。種ごとの繁殖季節でなければ成立しない
+        # (周年繁殖種はどの季節でも成立する)。
         def mate(season: Operations::Season.spring)
           raise Errors::BreedingNotAllowed, '既に妊娠/抱卵中です' if expecting?
-          raise Errors::BreedingNotAllowed, "#{season.label}は繁殖期ではありません" unless season.breeding_season?
+          raise Errors::BreedingNotAllowed, "#{species.name_ja}は#{season.label}には繁殖しません" unless species.breeds_in?(season)
 
           @gestation_days = 0
           @miscarried = false
@@ -78,15 +79,34 @@ module Zoo
           offspring
         end
 
+        # 一腹(litter/clutch)を出産/孵化する。種の産仔数ぶんの新生個体をまとめて生み、
+        # 各個体について AnimalBorn を記録する。性別は雌雄交互に割り当てる。
+        def deliver_litter(name:, max_health: NEWBORN_HEALTH, inbreeding: 0.0)
+          raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
+
+          vitality = newborn_vitality(max_health, inbreeding)
+          litter = Array.new(species.litter_size) do |i|
+            Animal.new(
+              species: species, name: "#{name}#{i + 1}",
+              sex: i.even? ? Animal::Sex.male : Animal::Sex.female,
+              max_health: vitality, age_in_days: 0, sire: @sire, dam: @dam
+            )
+          end
+          @gestation_days = nil
+
+          litter.each { |o| record_event(Events::AnimalBorn.new(animal: o, sire_id: @sire.id, dam_id: @dam.id)) }
+          litter
+        end
+
         def to_s
           "#{species.name_ja}の繁殖ペア(#{@sire.name}×#{@dam.name})"
         end
 
         private
 
-        # 妊娠を継続できない母体の状態か(飢餓・過度のストレス)。
+        # 妊娠を継続できない母体の状態か(飢餓・過度のストレス・栄養失調)。
         def pregnancy_failing?
-          @dam.starving? || @dam.stress.severe?
+          @dam.starving? || @dam.stress.severe? || @dam.malnourished?
         end
 
         def miscarry

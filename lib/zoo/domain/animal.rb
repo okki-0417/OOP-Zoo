@@ -18,8 +18,11 @@ module Zoo
       STARVATION_DAMAGE_PER_DAY = 2
       # 過度のストレス下で1日あたりに失う体力(免疫低下)。
       STRESS_DAMAGE_PER_DAY = 2
+      # 栄養失調で1日あたりに失う体力。
+      MALNUTRITION_DAMAGE_PER_DAY = 2
 
-      attr_reader :id, :species, :name, :sex, :health, :hunger, :age_in_days, :death, :parent_ids, :illness, :stress
+      attr_reader :id, :species, :name, :sex, :health, :hunger, :age_in_days, :death,
+                  :parent_ids, :illness, :stress, :nutrition
 
       def initialize(species:, name:, sex:, max_health:, voice: :default,
                      age_in_days: 0, sire: nil, dam: nil, id: Shared::Identifier.new)
@@ -32,6 +35,7 @@ module Zoo
         @age_in_days = AgeInDays.new(age_in_days)
         @hunger = Hunger.satisfied
         @stress = Stress.calm
+        @nutrition = Nutrition.nourished
         @death = nil
         @illness = nil
         @immunities = []
@@ -42,7 +46,7 @@ module Zoo
       # 通さず、体力・空腹・加齢・病気・生死を保存値そのままに組み直す。voice は鳴き声の
       # 変更を保存しないため種の既定に戻す。
       def self.reconstitute(id:, species:, name:, sex:, health:, hunger:, age_in_days:, illness:, death:, parent_ids:,
-                            stress: Stress.calm, immunities: [])
+                            stress: Stress.calm, immunities: [], nutrition: Nutrition.nourished)
         allocate.tap do |animal|
           animal.instance_variable_set(:@id, id)
           animal.instance_variable_set(:@species, species)
@@ -51,6 +55,7 @@ module Zoo
           animal.instance_variable_set(:@health, health)
           animal.instance_variable_set(:@hunger, hunger)
           animal.instance_variable_set(:@stress, stress)
+          animal.instance_variable_set(:@nutrition, nutrition)
           animal.instance_variable_set(:@age_in_days, age_in_days)
           animal.instance_variable_set(:@voice, Voice.from(species.default_voice))
           animal.instance_variable_set(:@illness, illness)
@@ -174,21 +179,32 @@ module Zoo
         @stress.stressed?
       end
 
+      # 外傷を負う(種内闘争などの結果)。体力が尽きれば外傷死する。
+      def injure(amount)
+        raise ArgumentError, '外傷量は0以上でなければなりません' if amount.negative?
+        return self if dead? || amount.zero?
+
+        @health = @health.decreased_by(amount)
+        die(cause: :injury) if @health.empty?
+        self
+      end
+
       # 指定日数ぶん歳をとる。空腹が進み、飢餓や過度のストレスなら衰弱し、
       # 寿命を超えれば寿命死する。
       def grow_older(days = 1)
         return self if dead?
 
         @age_in_days = @age_in_days.advanced_by(days)
-        get_hungrier(HUNGER_PER_DAY * days)
+        get_hungrier(Husbandry::Metabolism.daily_hunger(@species) * days)
         @health = @health.decreased_by(STARVATION_DAMAGE_PER_DAY * days) if @hunger.starving?
-        @health = @health.decreased_by(@illness.daily_damage * days) if sick?
+        @health = @health.decreased_by(illness_damage(days)) if sick?
         @health = @health.decreased_by(STRESS_DAMAGE_PER_DAY * days) if @stress.severe?
+        @health = @health.decreased_by(MALNUTRITION_DAMAGE_PER_DAY * days) if malnourished?
 
         if @age_in_days.past_lifespan?(@species)
           die(cause: :old_age)
         elsif @health.empty?
-          die(cause: sick? ? :illness : :starvation)
+          die(cause: lethal_cause)
         end
         self
       end
@@ -213,7 +229,7 @@ module Zoo
                 "#{@species.name_ja}(#{@species.diet_type.label})に#{food.name_ja}は与えられません"
         end
 
-        satisfy_hunger(food.satiety)
+        satisfy_hunger(Husbandry::Metabolism.satiety(@species, food))
         self
       end
 
@@ -223,6 +239,28 @@ module Zoo
 
       def starving?
         @hunger.starving?
+      end
+
+      # その日の食事(与えられた餌の組み合わせ)を評価し、栄養状態を更新する。
+      # 食性に見合った多様な食事なら栄養が改善し、偏った食事なら悪化する。
+      NUTRITION_GAIN = 20
+      NUTRITION_LOSS = 25
+
+      def dine(foods)
+        if Feeding::NutritionPolicy.balanced?(@species, foods)
+          @nutrition = @nutrition.improved_by(NUTRITION_GAIN)
+        else
+          @nutrition = @nutrition.declined_by(NUTRITION_LOSS)
+        end
+        self
+      end
+
+      def malnourished?
+        @nutrition.malnourished?
+      end
+
+      def well_nourished?
+        !malnourished?
       end
 
       def life_stage
@@ -246,7 +284,7 @@ module Zoo
       # 繁殖可能な状態か(生存・成熟・高齢前で、衰弱や病気がなく、ストレス過多でもない)。
       def fertile?
         alive? && mature? && !@age_in_days.past_breeding_age?(@species) &&
-          !@health.weak? && !sick? && !stressed?
+          !@health.weak? && !sick? && !stressed? && well_nourished?
       end
 
       # 異性・同種・双方繁殖可能なら交配できる。
@@ -266,6 +304,22 @@ module Zoo
 
       def to_s
         "#{@name}(#{@species.name_ja}/#{@sex.label}/#{life_stage.label})"
+      end
+
+      private
+
+      # 病気による被害。脆弱な個体(幼体・老齢・高ストレス・栄養失調)ほど重い。
+      def illness_damage(days)
+        (@illness.daily_damage * Medical::Vulnerability.multiplier(self) * days).round
+      end
+
+      # 体力が尽きたときの死因を、状態の重さの順に判定する。
+      def lethal_cause
+        return :illness if sick?
+        return :starvation if starving?
+        return :malnutrition if malnourished?
+
+        :starvation
       end
     end
   end

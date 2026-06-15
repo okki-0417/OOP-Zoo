@@ -2,6 +2,7 @@
 *.db
 *.save
 /coverage/
+/.bundle/
 
 # frontend (Node)
 /frontend/node_modules/

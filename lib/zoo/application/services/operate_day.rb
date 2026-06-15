@@ -27,13 +27,13 @@ module Zoo
             dead = @open_for_a_day.call(season: zoo.season)
 
             visitors = Domain::Operations::VisitorAttraction.expected_visitors(
-              on_exhibit, zoo.reputation, zoo.admission_fee
+              on_exhibit, zoo.reputation, zoo.admission_fee, buzz: zoo.buzz
             )
             income = zoo.admission_fee * visitors
             zoo.admit_visitors(visitors)
 
             cost = Domain::Operations::OperatingCost.daily(
-              enclosures: @enclosures.all.size, animals: @animals.all.size, staff: staff_count
+              enclosures: @enclosures.all, staff: staff_count, species: @animals.all.map(&:species)
             )
             zoo.spend(cost)
 

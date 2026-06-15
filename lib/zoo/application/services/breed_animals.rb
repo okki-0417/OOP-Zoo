@@ -4,6 +4,9 @@ module Zoo
   module Application
     module Services
       class BreedAnimals
+        # 1回の誕生が生む話題度。
+        BIRTH_BUZZ = 40
+
         def initialize(animals:, enclosures:, zoo:, event_dispatcher:, unit_of_work:)
           @animals = animals
           @enclosures = enclosures
@@ -33,6 +36,11 @@ module Zoo
             @animals.save(child)
             enclosure.admit(child)
             @enclosures.save(enclosure)
+
+            # 幼獣の誕生は話題を生み、一時的に集客を押し上げる。
+            zoo = @zoo.load
+            zoo.generate_buzz(BIRTH_BUZZ)
+            @zoo.save(zoo)
 
             [child, pair.pull_events]
           end

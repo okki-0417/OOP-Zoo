@@ -7,7 +7,7 @@ module Zoo
       class AnimalDied
         CAUSE_LABELS = {
           old_age: '老衰', starvation: '餓死', illness: '病死',
-          predation: '捕食', unknown: '不明'
+          predation: '捕食', malnutrition: '栄養失調', injury: '外傷', unknown: '不明'
         }.freeze
 
         attr_reader :animal, :cause

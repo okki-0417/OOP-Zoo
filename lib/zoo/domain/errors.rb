@@ -33,6 +33,9 @@ module Zoo
 
       # ワクチンの無い病気への予防接種。
       class VaccineUnavailable < DomainError; end
+
+      # 残高が費用に満たず、裁量的な購入ができない。
+      class InsufficientFunds < DomainError; end
     end
   end
 end

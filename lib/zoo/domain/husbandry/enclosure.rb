@@ -22,7 +22,8 @@ module Zoo
         # 1日経過で薄れる刺激の量。
         ENRICHMENT_DECAY_PER_DAY = 2
 
-        def initialize(name:, temperature:, capacity:, area_sqm: nil, id: Shared::Identifier.new)
+        def initialize(name:, temperature:, capacity:, area_sqm: nil, climate_controlled: false,
+                       id: Shared::Identifier.new)
           raise ArgumentError, 'エリア名は必須です' if name.to_s.empty?
           raise ArgumentError, '定員は1以上でなければなりません' unless capacity.is_a?(Integer) && capacity.positive?
 
@@ -31,9 +32,22 @@ module Zoo
           @temperature = temperature
           @capacity = capacity
           @area_sqm = area_sqm
+          @climate_controlled = climate_controlled
           @cleanliness = Cleanliness.spotless
           @enrichment = Enrichment.stimulating
           @occupants = []
+        end
+
+        # 空調・屋内施設を備えているか。
+        def climate_controlled?
+          @climate_controlled
+        end
+
+        # その季節に動物が実際に感じる気温。空調があれば季節の変動を抑え、設定気温を保つ。
+        def effective_temperature(season)
+          return @temperature if climate_controlled?
+
+          season.felt_temperature(@temperature)
         end
 
         # 保存済みの状態から復元する(永続化からの読み戻し用)。清潔度・収容個体を
@@ -157,7 +171,8 @@ module Zoo
             next if animal.dead?
 
             apply_welfare(animal, season)
-            animal.grow_older(1)
+            animal.injure(Aggression.injury_for(animal, self))
+            animal.grow_older(1) unless animal.dead?
           end
           soil(@occupants.size)
           deplete_enrichment(ENRICHMENT_DECAY_PER_DAY)

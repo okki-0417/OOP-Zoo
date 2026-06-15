@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# このリポジトリのテストを実行するためのローカルランナー。
-# 環境の Ruby が古く bundler が使えないため、--user-install した gem を参照する。
+# テストランナー。通常は `bundle exec rspec`。
+# この開発機ではシステム Ruby が古い(2.5)ため、micromamba の "zoo" 環境
+# (Ruby 3.3)があればそれを使う。ユーザーの環境では単に bundle exec が走る。
 set -euo pipefail
 
-RUBY="${RUBY:-$HOME/bin/ruby}"
-USERGEM="$("$RUBY" -e 'puts Gem.user_dir')"
-export GEM_HOME="$USERGEM"
-export GEM_PATH="$USERGEM:/usr/share/gems"
-export PATH="$USERGEM/bin:$PATH"
+MM="$HOME/.micromamba/bin/micromamba"
+if [ -x "$MM" ] && "$MM" env list 2>/dev/null | grep -q '\bzoo\b'; then
+  export MAMBA_ROOT_PREFIX="$HOME/.micromamba"
+  exec "$MM" run -n zoo bundle exec rspec "$@"
+fi
 
-exec "$RUBY" -S rspec "$@"
+exec bundle exec rspec "$@"

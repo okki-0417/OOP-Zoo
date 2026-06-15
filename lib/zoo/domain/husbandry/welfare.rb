@@ -19,6 +19,7 @@ module Zoo
         CLIMATE_DISCOMFORT = 10 # 適温域の縁で快適でない
         HUNGER = 10           # 空腹
         ILLNESS = 12          # 病気
+        MALNUTRITION = 12     # 栄養失調(偏った食事)
         BOREDOM = 10          # 刺激の枯れた殺風景なエリアでの退屈(常同行動)
         MATERNAL_SEPARATION = 14 # 未離乳の幼体が親から引き離される
         RECOVERY = 15         # 良好な環境での回復量
@@ -55,9 +56,10 @@ module Zoo
           total += LONELINESS if lonely?(animal, enclosure)
           total += SOCIAL_CONFLICT if SocialStructure.subordinate_male?(animal, enclosure)
           total += CROWDING if Stocking.overcrowded?(enclosure)
-          total += CLIMATE_DISCOMFORT unless animal.species.comfortable?(season.felt_temperature(enclosure.temperature))
+          total += CLIMATE_DISCOMFORT unless animal.species.comfortable?(enclosure.effective_temperature(season))
           total += HUNGER if animal.hungry?
           total += ILLNESS if animal.sick?
+          total += MALNUTRITION if animal.malnourished?
           total += BOREDOM if enclosure.barren?
           total += MATERNAL_SEPARATION if separated_dependent?(animal, enclosure)
           total

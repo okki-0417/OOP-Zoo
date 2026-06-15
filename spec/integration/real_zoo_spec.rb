@@ -80,8 +80,9 @@ RSpec.describe '現実の動物園の再現' do
 
   it '飼育員が専門の動物に給餌でき、専門外には給餌できないこと' do
     zebras.first.get_hungrier(40)
+    satiety = Zoo::Domain::Husbandry::Metabolism.satiety(catalog.grevys_zebra, feeding::FoodCatalog.hay)
     mammal_keeper.feed(zebras.first, feeding::FoodCatalog.hay)
-    expect(zebras.first.hunger.level).to eq(15)
+    expect(zebras.first.hunger.level).to eq(40 - satiety)
 
     # 哺乳類担当はペンギン(鳥類)に給餌できない。
     expect { mammal_keeper.feed(penguins.first, feeding::FoodCatalog.sardine) }

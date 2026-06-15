@@ -16,10 +16,28 @@ module Zoo
       end
 
       RSpec.describe OperatingCost do
-        it 'エリア2・職員3・個体5で 2*1000+3*3000+5*500=¥13,500 を返すこと' do
-          cost = described_class.daily(enclosures: 2, animals: 5, staff: 3)
+        it 'エリア維持費・職員給与・在園個体の飼料費(種ごと)の合計を返すこと' do
+          enclosures = Array.new(2) do
+            Husbandry::Enclosure.new(name: 'A', temperature: Shared::Temperature.celsius(20), capacity: 4)
+          end
+          zebras = Array.new(5) { Taxonomy::SpeciesCatalog.grevys_zebra }
+          food = zebras.sum(0) { |s| Husbandry::Metabolism.daily_food_cost(s).yen }
 
-          expect(cost).to eq(Shared::Money.yen(13_500))
+          cost = described_class.daily(enclosures: enclosures, staff: 3, species: zebras)
+
+          expect(cost).to eq(Shared::Money.yen((2 * 1000) + (3 * 3000) + food))
+        end
+
+        it '空調付きエリアは稼働費が上乗せされること' do
+          plain = Husbandry::Enclosure.new(name: '平', temperature: Shared::Temperature.celsius(20), capacity: 4)
+          controlled = Husbandry::Enclosure.new(
+            name: '空調', temperature: Shared::Temperature.celsius(20), capacity: 4, climate_controlled: true
+          )
+
+          plain_cost = described_class.daily(enclosures: [plain], staff: 0, species: [])
+          controlled_cost = described_class.daily(enclosures: [controlled], staff: 0, species: [])
+
+          expect(controlled_cost).to be > plain_cost
         end
       end
 
@@ -32,28 +50,28 @@ module Zoo
           expect(described_class.expected_visitors([], Reputation.default, fee)).to eq(0)
         end
 
-        it '評判100・基準料金で 多様性1種(×20)＋希少種1(×30)=50人 を期待すること(EN のシマウマ)' do
+        it '評判100・基準料金で カリスマ性(シマウマ60)＋多様性1種(×20)=80人 を期待すること' do
           animal = Animal.new(
             species: catalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
           )
 
-          expect(described_class.expected_visitors([animal], Reputation.new(100), fee)).to eq(50)
+          expect(described_class.expected_visitors([animal], Reputation.new(100), fee)).to eq(80)
         end
 
-        it '評判50では期待来園者が半減すること(50→25人)' do
+        it '評判50では期待来園者が半減すること(80→40人)' do
           animal = Animal.new(
             species: catalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
           )
 
-          expect(described_class.expected_visitors([animal], Reputation.new(50), fee)).to eq(25)
+          expect(described_class.expected_visitors([animal], Reputation.new(50), fee)).to eq(40)
         end
 
-        it '料金を2倍(¥4,000)にすると来園者が半減すること(50→25人)' do
+        it '料金を2倍(¥4,000)にすると来園者が半減すること(80→40人)' do
           animal = Animal.new(
             species: catalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
           )
 
-          expect(described_class.expected_visitors([animal], Reputation.new(100), Shared::Money.yen(4_000))).to eq(25)
+          expect(described_class.expected_visitors([animal], Reputation.new(100), Shared::Money.yen(4_000))).to eq(40)
         end
       end
 

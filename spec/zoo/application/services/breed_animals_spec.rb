@@ -97,15 +97,27 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
         .to raise_error(Zoo::Application::Errors::AnimalNotFound)
     end
 
-    it '繁殖期(春)でない季節には繁殖できないこと(BreedingNotAllowed)' do
+    it '季節繁殖種(ニホンザル=秋)は繁殖季節でない季節には繁殖できないこと(BreedingNotAllowed)' do
+      m_sire, m_dam = build_pair(catalog.japanese_macaque)
+      m_enclosure = husbandry::Enclosure.new(
+        name: 'モンキーマウンテン', temperature: shared::Temperature.celsius(20), capacity: 4
+      )
+      m_animals = in_memory::InMemoryAnimalRepository.new([m_sire, m_dam])
+      m_enclosures = in_memory::InMemoryEnclosureRepository.new([m_enclosure])
+
       summer = Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
-      100.times { summer.advance_day } # 約100日目=夏
+      100.times { summer.advance_day } # 約100日目=夏(ニホンザルの繁殖期=秋ではない)
       summer_service = described_class.new(
-        animals: animals, enclosures: enclosures, zoo: in_memory::InMemoryZooRepository.new(summer),
-        event_dispatcher: event_dispatcher, unit_of_work: unit_of_work
+        animals: m_animals, enclosures: m_enclosures, zoo: in_memory::InMemoryZooRepository.new(summer),
+        event_dispatcher: event_dispatcher,
+        unit_of_work: in_memory::InMemoryUnitOfWork.new(repositories: [m_animals, m_enclosures])
+      )
+      m_command = Zoo::Application::Commands::BreedAnimalsCommand.new(
+        sire_id: m_sire.id, dam_id: m_dam.id, enclosure_id: m_enclosure.id, name: '仔',
+        sex: animal::Sex.male
       )
 
-      expect { summer_service.call(command) }.to raise_error(Zoo::Domain::Errors::BreedingNotAllowed)
+      expect { summer_service.call(m_command) }.to raise_error(Zoo::Domain::Errors::BreedingNotAllowed)
     end
 
     it '血統から近交係数を求め、血縁の近い親(祖父×孫娘)の子は近交弱勢で虚弱になること' do

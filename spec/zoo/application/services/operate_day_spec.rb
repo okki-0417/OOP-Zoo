@@ -44,21 +44,24 @@ RSpec.describe Zoo::Application::Services::OperateDay do
     it '展示1種(EN)・評判50で来園25人を集め、収入¥50,000・費用¥1,500を計上すること' do
       report = service.call
 
-      expect(report.visitors).to eq(25)             # (20+30)*50/100
-      expect(report.income).to eq(shared::Money.yen(50_000))   # 2000 * 25
-      expect(report.cost).to eq(shared::Money.yen(1_500))      # エリア1*1000 + 個体1*500
+      zebra_food = husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
+
+      expect(report.visitors).to eq(40)             # (カリスマ60+多様性20)*50/100
+      expect(report.income).to eq(shared::Money.yen(80_000))   # 2000 * 40
+      expect(report.cost).to eq(shared::Money.yen(1_000 + zebra_food)) # エリア1*1000 + シマウマの飼料費
     end
 
     it '1日運営すると園の経過日数が1進むこと' do
       expect { service.call }.to change { zoo.load.day }.by(1)
     end
 
-    it '死亡が無い日は評判が2上がり、残高に純益が反映されること(100,000+50,000-1,500)' do
+    it '死亡が無い日は評判が2上がり、残高に純益(収入-費用)が反映されること' do
+      cost = 1_000 + husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
       report = service.call
 
       expect(report.deaths).to eq(0)
       expect(report.reputation).to eq(52)
-      expect(report.balance).to eq(shared::Balance.new(148_500))
+      expect(report.balance).to eq(shared::Balance.new(100_000 + 80_000 - cost))
       expect(report.bankrupt).to be(false)
     end
 

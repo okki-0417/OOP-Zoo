@@ -49,6 +49,26 @@ RSpec.describe Zoo::Domain::Zoo do
     end
   end
 
+  describe '#afford? / #purchase' do
+    let(:funded) do
+      described_class.new(name: 'おうきの動物園', admission_fee: S::Money.yen(2000), funds: S::Money.yen(30_000))
+    end
+
+    it '残高ちょうどの額は支払えると判定すること' do
+      expect(funded.afford?(S::Money.yen(30_000))).to be(true)
+      expect(funded.afford?(S::Money.yen(30_001))).to be(false)
+    end
+
+    it 'purchase は費用ぶん残高を減らして新しい残高を返すこと' do
+      expect(funded.purchase(S::Money.yen(12_000))).to eq(S::Balance.new(18_000))
+    end
+
+    it '残高を超える purchase は InsufficientFunds を送出し残高を変えないこと' do
+      expect { funded.purchase(S::Money.yen(40_000)) }.to raise_error(Zoo::Domain::Errors::InsufficientFunds)
+      expect(funded.balance).to eq(S::Balance.new(30_000))
+    end
+  end
+
   describe '入園料と収益' do
     it '来園者数に応じて収益が積み上がること' do
       zoo.admit_visitors(100)

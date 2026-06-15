@@ -10,8 +10,15 @@ RSpec.describe 'AcquireAnimal on SQLite' do
   it '実トランザクションで個体を受け入れ、永続化されること' do
     database = sqlite::Database.new
     animals = sqlite::AnimalRepository.new(database)
+    zoo = sqlite::ZooRepository.new(
+      database,
+      Zoo::Domain::Zoo.new(
+        name: 'テスト動物園', admission_fee: Zoo::Domain::Shared::Money.yen(2_000),
+        funds: Zoo::Domain::Shared::Money.yen(100_000)
+      )
+    )
     service = Zoo::Application::Services::AcquireAnimal.new(
-      animals: animals, unit_of_work: sqlite::UnitOfWork.new(database)
+      animals: animals, zoo: zoo, unit_of_work: sqlite::UnitOfWork.new(database)
     )
 
     animal = service.call(

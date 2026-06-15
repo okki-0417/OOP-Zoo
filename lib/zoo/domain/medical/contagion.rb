@@ -10,20 +10,36 @@ module Zoo
       module Contagion
         module_function
 
+        BASE_CHANCE = 50
+        FILTH_BONUS = 30
+        CROWDING_BONUS = 20
+
         # エリア内で感染を広げ、新たに発病した個体を返す。
-        def spread(enclosure)
+        # random を与えると接触の度合い(transmission_chance)に応じて確率的に伝播する。
+        # 与えなければ決定論的に(感受性のある全個体へ)広がる。
+        def spread(enclosure, random: nil)
           illnesses = active_contagions(enclosure)
           return [] if illnesses.empty?
 
+          chance = transmission_chance(enclosure)
           enclosure.occupants.each_with_object([]) do |animal, infected|
             next unless susceptible?(animal)
 
             illness = illnesses.find { |ill| !animal.immune_to?(ill) }
             next unless illness
+            next if random && random.rand(100) >= chance
 
             animal.fall_ill(illness)
             infected << animal
           end
+        end
+
+        # 接触感染の確率(%)。不衛生・過密なエリアほど高い。
+        def transmission_chance(enclosure)
+          chance = BASE_CHANCE
+          chance += FILTH_BONUS if enclosure.filthy?
+          chance += CROWDING_BONUS if Husbandry::Stocking.overcrowded?(enclosure)
+          [chance, 100].min
         end
 
         # エリア内で出回っている感染性の病気(重複なし)。

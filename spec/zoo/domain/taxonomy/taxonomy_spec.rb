@@ -75,8 +75,9 @@ module Zoo
           expect(polar_bear.habitable?(Shared::Temperature.celsius(30))).to be(false)
         end
 
-        it '体格に応じた必要面積を返すこと(最小5m²)' do
-          expect(lion.space_requirement_sqm).to eq(47.5) # 190kg × 0.25
+        it '体格と行動様式に応じた必要面積を返すこと(最小5m²)' do
+          # ライオンは捕食性哺乳類で広い行動圏: 190kg × 0.25 × 2.0 = 95
+          expect(lion.space_requirement_sqm).to eq(95)
           expect(SpeciesCatalog.hercules_beetle.space_requirement_sqm).to eq(5) # 体格極小でも最小5
         end
 

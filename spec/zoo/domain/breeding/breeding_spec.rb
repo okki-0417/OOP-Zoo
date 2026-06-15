@@ -30,8 +30,17 @@ module Zoo
             .to raise_error(Errors::BreedingNotAllowed)
         end
 
-        it '繁殖期(春)でない季節には交尾できないこと' do
+        it '周年繁殖種(ライオン)はどの季節でも交尾できること' do
           pair = described_class.new(sire: sire, dam: dam)
+          expect { pair.mate(season: Operations::Season.summer) }.not_to raise_error
+        end
+
+        it '季節繁殖種(ニホンザル)は繁殖季節でない季節には交尾できないこと' do
+          macaque = Taxonomy::SpeciesCatalog.japanese_macaque
+          pair = described_class.new(
+            sire: build_adult(macaque, name: 'M♂', sex: Animal::Sex.male),
+            dam: build_adult(macaque, name: 'M♀', sex: Animal::Sex.female)
+          )
           expect { pair.mate(season: Operations::Season.summer) }.to raise_error(Errors::BreedingNotAllowed)
         end
 

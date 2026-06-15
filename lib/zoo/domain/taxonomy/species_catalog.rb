@@ -7,7 +7,7 @@ module Zoo
       #
       # 種は値オブジェクトのため、ここでは生成のためのファクトリを提供する。
       # 飼育に必要な生態情報(適温域・寿命・性成熟年齢・妊娠/抱卵期間・成獣体重・
-      # 群れ性・鳴き声)を実在の知見に基づいて与えている。
+      # 群れ性・鳴き声・産仔数・繁殖季節・カリスマ性)を実在の知見に基づいて与えている。
       module SpeciesCatalog
         module_function
 
@@ -25,7 +25,8 @@ module Zoo
             habitable_temperature_range: temp(10)..temp(40),
             lifespan_years: 15, maturity_age_years: 3, gestation_period_days: 110,
             adult_weight: Weight.from_kilograms(190),
-            default_voice: 'ガオー', group_living: true
+            default_voice: 'ガオー', group_living: true,
+            litter_size: 3, charisma: 90
           )
         end
 
@@ -37,7 +38,8 @@ module Zoo
             habitable_temperature_range: temp(12)..temp(40),
             lifespan_years: 60, maturity_age_years: 12, gestation_period_days: 660,
             adult_weight: Weight.from_tons(5),
-            default_voice: 'パオーン', group_living: true
+            default_voice: 'パオーン', group_living: true,
+            litter_size: 1, charisma: 95
           )
         end
 
@@ -49,7 +51,8 @@ module Zoo
             habitable_temperature_range: temp(12)..temp(40),
             lifespan_years: 25, maturity_age_years: 4, gestation_period_days: 450,
             adult_weight: Weight.from_kilograms(1200),
-            default_voice: nil, group_living: true
+            default_voice: nil, group_living: true,
+            litter_size: 1, charisma: 85
           )
         end
 
@@ -61,7 +64,8 @@ module Zoo
             habitable_temperature_range: temp(8)..temp(40),
             lifespan_years: 20, maturity_age_years: 3, gestation_period_days: 390,
             adult_weight: Weight.from_kilograms(400),
-            default_voice: 'ヒヒーン', group_living: true
+            default_voice: 'ヒヒーン', group_living: true,
+            litter_size: 1, charisma: 60
           )
         end
 
@@ -73,7 +77,8 @@ module Zoo
             habitable_temperature_range: temp(-15)..temp(32),
             lifespan_years: 25, maturity_age_years: 4, gestation_period_days: 170,
             adult_weight: Weight.from_kilograms(11),
-            default_voice: 'キャッキャ', group_living: true
+            default_voice: 'キャッキャ', group_living: true,
+            litter_size: 1, breeding_season: :autumn, charisma: 55
           )
         end
 
@@ -85,7 +90,8 @@ module Zoo
             habitable_temperature_range: temp(-40)..temp(15),
             lifespan_years: 25, maturity_age_years: 5, gestation_period_days: 240,
             adult_weight: Weight.from_kilograms(450),
-            default_voice: 'ウゥー', group_living: false
+            default_voice: 'ウゥー', group_living: false,
+            litter_size: 2, charisma: 88
           )
         end
 
@@ -97,7 +103,8 @@ module Zoo
             habitable_temperature_range: temp(-5)..temp(25),
             lifespan_years: 12, maturity_age_years: 2, gestation_period_days: 130,
             adult_weight: Weight.from_kilograms(5),
-            default_voice: 'ピャー', group_living: false
+            default_voice: 'ピャー', group_living: false,
+            litter_size: 2, charisma: 80
           )
         end
 
@@ -111,7 +118,8 @@ module Zoo
             habitable_temperature_range: temp(-40)..temp(8),
             lifespan_years: 20, maturity_age_years: 4, gestation_period_days: 65,
             adult_weight: Weight.from_kilograms(30),
-            default_voice: 'アー', group_living: true
+            default_voice: 'アー', group_living: true,
+            litter_size: 1, charisma: 82
           )
         end
 
@@ -123,7 +131,8 @@ module Zoo
             habitable_temperature_range: temp(5)..temp(28),
             lifespan_years: 20, maturity_age_years: 2, gestation_period_days: 40,
             adult_weight: Weight.from_kilograms(4),
-            default_voice: 'ガアガア', group_living: true
+            default_voice: 'ガアガア', group_living: true,
+            litter_size: 2, charisma: 70
           )
         end
 
@@ -135,7 +144,8 @@ module Zoo
             habitable_temperature_range: temp(-20)..temp(30),
             lifespan_years: 30, maturity_age_years: 3, gestation_period_days: 32,
             adult_weight: Weight.from_kilograms(9),
-            default_voice: 'コォー', group_living: true
+            default_voice: 'コォー', group_living: true,
+            litter_size: 2, breeding_season: :spring, charisma: 65
           )
         end
 
@@ -149,7 +159,8 @@ module Zoo
             habitable_temperature_range: temp(22)..temp(35),
             lifespan_years: 25, maturity_age_years: 3, gestation_period_days: 60,
             adult_weight: Weight.from_kilograms(75),
-            default_voice: nil, group_living: false
+            default_voice: nil, group_living: false,
+            litter_size: 20, charisma: 45
           )
         end
 
@@ -161,7 +172,8 @@ module Zoo
             habitable_temperature_range: temp(20)..temp(35),
             lifespan_years: 100, maturity_age_years: 25, gestation_period_days: 130,
             adult_weight: Weight.from_kilograms(250),
-            default_voice: nil, group_living: true
+            default_voice: nil, group_living: true,
+            litter_size: 10, charisma: 50
           )
         end
 
@@ -175,7 +187,8 @@ module Zoo
             habitable_temperature_range: temp(10)..temp(25),
             lifespan_years: 20, maturity_age_years: 3, gestation_period_days: 25,
             adult_weight: Weight.from_grams(15),
-            default_voice: nil, group_living: true
+            default_voice: nil, group_living: true,
+            litter_size: 200, charisma: 25
           )
         end
 
@@ -189,7 +202,8 @@ module Zoo
             habitable_temperature_range: temp(2)..temp(30),
             lifespan_years: 35, maturity_age_years: 3, gestation_period_days: 7,
             adult_weight: Weight.from_kilograms(5),
-            default_voice: nil, group_living: true
+            default_voice: nil, group_living: true,
+            litter_size: 300, charisma: 30
           )
         end
 
@@ -203,7 +217,8 @@ module Zoo
             habitable_temperature_range: temp(18)..temp(28),
             lifespan_years: 2, maturity_age_years: 1, gestation_period_days: 35,
             adult_weight: Weight.from_grams(30),
-            default_voice: nil, group_living: false
+            default_voice: nil, group_living: false,
+            litter_size: 50, charisma: 40
           )
         end
 

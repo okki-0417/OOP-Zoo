@@ -40,7 +40,7 @@ module Zoo
       end
 
       def acquire_animal
-        Application::Services::AcquireAnimal.new(animals: @animals, unit_of_work: @unit_of_work)
+        Application::Services::AcquireAnimal.new(animals: @animals, zoo: @zoo, unit_of_work: @unit_of_work)
       end
 
       def rename_animal
@@ -50,15 +50,17 @@ module Zoo
       end
 
       def add_enclosure
-        Application::Services::AddEnclosure.new(enclosures: @enclosures, unit_of_work: @unit_of_work)
+        Application::Services::AddEnclosure.new(enclosures: @enclosures, zoo: @zoo, unit_of_work: @unit_of_work)
       end
 
       def hire_keeper
-        Application::Services::HireKeeper.new(keepers: @keepers, unit_of_work: @unit_of_work)
+        Application::Services::HireKeeper.new(keepers: @keepers, zoo: @zoo, unit_of_work: @unit_of_work)
       end
 
       def hire_veterinarian
-        Application::Services::HireVeterinarian.new(veterinarians: @veterinarians, unit_of_work: @unit_of_work)
+        Application::Services::HireVeterinarian.new(
+          veterinarians: @veterinarians, zoo: @zoo, unit_of_work: @unit_of_work
+        )
       end
 
       def admit_visitors
@@ -211,7 +213,7 @@ module Zoo
         Domain::Zoo.new(
           name: 'OOP動物園',
           admission_fee: Domain::Shared::Money.yen(2000),
-          funds: Domain::Shared::Money.yen(100_000)
+          funds: Domain::Shared::Money.yen(1_000_000)
         )
       end
     end

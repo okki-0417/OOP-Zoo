@@ -26,6 +26,19 @@ module Zoo
         @balance = Shared::Balance.new(funds.yen)
         @reputation = reputation
         @day = 0
+        @buzz = 0
+      end
+
+      # 現在の話題度(幼獣誕生などで一時的に高まり、日々薄れる集客の押し上げ)。
+      attr_reader :buzz
+
+      # 1日あたりに薄れる話題度。
+      BUZZ_DECAY_PER_DAY = 10
+
+      # 話題を生む(幼獣誕生など)。
+      def generate_buzz(amount)
+        @buzz += amount
+        self
       end
 
       # 保存済みの状態から復元する(永続化からの読み戻し用)。生成(new)の初期化規則を
@@ -44,9 +57,10 @@ module Zoo
         Operations::Calendar.season_for(@day)
       end
 
-      # 1日進める。
+      # 1日進める。話題は時間とともに薄れる。
       def advance_day
         @day += 1
+        @buzz = [@buzz - BUZZ_DECAY_PER_DAY, 0].max
         self
       end
 
@@ -136,6 +150,19 @@ module Zoo
 
       # 運営費などを支出する。残高は赤字(債務)になりうる。
       def spend(money)
+        @balance -= money
+        @balance
+      end
+
+      # 残高でこの費用を支払えるか。
+      def afford?(money)
+        @balance.yen >= money.yen
+      end
+
+      # 裁量的な購入。残高が足りなければ拒否し、残高は変えない。
+      def purchase(money)
+        raise Errors::InsufficientFunds, "残高#{@balance}では#{money}を支払えません" unless afford?(money)
+
         @balance -= money
         @balance
       end

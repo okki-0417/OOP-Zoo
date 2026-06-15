@@ -51,9 +51,9 @@ RSpec.describe '動物福祉' do
 
   context '単独性の種が一頭で暮らすとき' do
     it '孤独にはならず、良好な環境ならストレスが和らぐこと' do
-      # ホッキョクグマは単独性。適温域-40〜15℃、快適帯はおよそ-31〜7℃。
+      # ホッキョクグマは単独性。適温域-40〜15℃、快適帯はおよそ-31〜7℃。必要面積225m²。
       den = Zoo::Domain::Husbandry::Enclosure.new(
-        name: '極地', temperature: shared::Temperature.celsius(0), capacity: 2
+        name: '極地', temperature: shared::Temperature.celsius(0), capacity: 3
       )
       bear = build_adult(catalog.polar_bear)
       den.admit(bear)

@@ -64,6 +64,8 @@ module Zoo
         BREEDING_SENESCENCE_RATIO = 0.8
 
         def past_breeding_age?(species)
+          return false unless species.reproductively_senesces?
+
           @value >= species.lifespan_years * BREEDING_SENESCENCE_RATIO * LifeStage::DAYS_PER_YEAR
         end
 
