@@ -12,7 +12,10 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "@primeuix/themes": "^2.0.3",
     "pinia": "^2.2.0",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.5.5",
     "vue": "^3.5.0"
   },
   "devDependencies": {
@@ -26,6 +29,9 @@
     "vue-tsc": "^2.1.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "vue-demi"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "vue-demi"
+    ]
   }
 }
