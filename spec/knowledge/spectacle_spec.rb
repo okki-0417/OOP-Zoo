@@ -35,6 +35,16 @@ RSpec.describe '集客の見応え' do
       expect(attraction.expected_visitors(diverse, rep, fee))
         .to be > attraction.expected_visitors(single, rep, fee)
     end
+
+    it '見応えは展示を増やすほど高まるが、増分は逓減すること(1日の鑑賞容量は有限)' do
+      modest = [build_adult(catalog.koi)]
+      rich = [catalog.lion, catalog.african_elephant, catalog.polar_bear, catalog.red_panda].map { |s| build_adult(s) }
+      gain_when_modest = attraction.spectacle_of(modest + [build_adult(catalog.grevys_zebra)]) -
+                         attraction.spectacle_of(modest)
+      gain_when_rich = attraction.spectacle_of(rich + [build_adult(catalog.grevys_zebra)]) -
+                       attraction.spectacle_of(rich)
+      expect(gain_when_modest).to be > gain_when_rich
+    end
   end
 
   describe '展示の質(福祉)は集客の直接の引数ではない' do

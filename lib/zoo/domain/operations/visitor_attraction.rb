@@ -8,6 +8,7 @@ module Zoo
 
         WILLINGNESS_BASE_YEN = 3_000
         WILLINGNESS_PER_SPECTACLE_YEN = 15
+        SPECTACLE_SATURATION = 3_000
 
         def expected_visitors(animals, reputation, admission_fee, buzz: 0)
           return 0 if animals.empty?
@@ -23,7 +24,11 @@ module Zoo
 
         def spectacle_of(animals, buzz = 0)
           species = animals.map(&:species).uniq
-          species.sum(&:charisma) + buzz
+          saturate(species.sum(&:charisma)) + buzz
+        end
+
+        def saturate(standing)
+          SPECTACLE_SATURATION * standing / (standing + SPECTACLE_SATURATION).to_f
         end
 
         def max_demand(spectacle, reputation)
