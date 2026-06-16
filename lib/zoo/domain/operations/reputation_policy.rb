@@ -23,9 +23,16 @@ module Zoo
         # するのでフリーズせず"遅くなる"だけ(=世論は持続的な人気で初めて動く)。
         EXPOSURE_REFERENCE = 2_000
 
+        # 自然減衰: 評判は来園者の口コミで維持される。来園も良い出来事もないと、築いた名声は薄れる。
+        # 中立(DECAY_ANCHOR)を超えて築いた分だけを、毎日その割合(DECAY_RATE)で中立へ向けて削る。
+        # 中立以下は減衰しない(無活動で無名にはなるが、悪評にはならない=悪評はニュースの仕事)。
+        DECAY_ANCHOR = 50
+        DECAY_RATE = 0.01
+
         def after_day(reputation, experience:, exposure: 0, events: [])
           value = reputation.value
           value += drift(experience, value, exposure)
+          value += decay(value)
           value += events.sum(&:reputation_delta)
           Reputation.new(value)
         end
@@ -36,6 +43,13 @@ module Zoo
           gap = experience - value
           cap = gap.negative? ? DRIFT_CAP * DOWN_MULTIPLIER : DRIFT_CAP
           gap.clamp(-cap, cap) * exposure_factor(exposure)
+        end
+
+        # 中立を超えて築いた評判の自然減衰(0以下)。中立以下では効かない。
+        def decay(value)
+          return 0.0 unless value > DECAY_ANCHOR
+
+          -DECAY_RATE * (value - DECAY_ANCHOR)
         end
 
         # 露出係数(0〜1)。来場が多いほど口コミが行き渡り、1.0に近づく。

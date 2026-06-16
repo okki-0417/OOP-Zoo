@@ -143,6 +143,17 @@ module Zoo
           expect(many.score).to be > 50 # 累積して動く
         end
 
+        it '中立超えの評判は、露出ゼロでも中立へ DECAY_RATE 分だけ減衰すること' do
+          after = described_class.after_day(Reputation.new(70), experience: 100, exposure: 0)
+          expected = 70 - (described_class::DECAY_RATE * (70 - described_class::DECAY_ANCHOR))
+          expect(after.value).to be_within(1e-9).of(expected)
+        end
+
+        it '中立以下の評判は自然減衰しないこと' do
+          after = described_class.after_day(Reputation.new(40), experience: 0, exposure: 0)
+          expect(after.value).to eq(40)
+        end
+
         it '来場ゼロでもニュース経路(死亡)は効き、events の reputation_delta の和だけ下げること' do
           deaths = Array.new(2) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) }
           expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 0, events: deaths).score).to eq(40)

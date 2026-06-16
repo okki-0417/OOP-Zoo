@@ -73,6 +73,22 @@ RSpec.describe '評判の動学' do
     end
   end
 
+  describe '自然減衰(築いた評判は維持しないと錆びる)' do
+    # 評判は来園者の口コミで維持される。来園も良い出来事もなければ、築いた名声は薄れる。
+    # 錆びるのは「中立(平均)を超えて築いた分」だけ。無名にはなるが、無活動だけで悪評にはならない
+    # (悪評はニュースの仕事)。
+
+    it '来園も良い出来事もない日が続くと、築いた評判(中立超え)は徐々に下がること' do
+      after = policy.after_day(reputation.new(90), experience: 100, exposure: 0)
+      expect(after.value).to be < 90
+    end
+
+    it '中立(平均的な評判)は、放置しても下がらないこと(錆びるのは築いた分だけ)' do
+      after = policy.after_day(reputation.new(50), experience: 100, exposure: 0)
+      expect(after.value).to eq(50)
+    end
+  end
+
   # 「何がニュースになるか/どのチャネルか」は spec/knowledge/news_spec.rb(ニュース性)が持つ。
   # ここでは、ニュース(ReputationEvent)が評判を「どれだけ」下げるか=重みの大小だけを縛る。
   # 各出来事は自分が持つデータ(死因・対象のカリスマ性)から効きの大きさを自分で決める。
