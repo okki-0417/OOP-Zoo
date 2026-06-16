@@ -13,7 +13,7 @@ module Zoo
             revenue: zoo.revenue.yen,
             visitor_count: zoo.visitor_count,
             balance: zoo.balance.yen,
-            reputation: zoo.reputation.score,
+            reputation: zoo.reputation.value,
             day: zoo.day
           }
         end

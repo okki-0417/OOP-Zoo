@@ -123,15 +123,24 @@ module Zoo
 
       RSpec.describe ReputationPolicy do
         it '体験経路: 露出満杯・体験100・評判0なら、上げ幅は DRIFT_CAP(3)でクランプされること' do
-          expect(described_class.after_day(Reputation.new(0), experience: 100, exposure: 100).score).to eq(3)
+          expect(described_class.after_day(Reputation.new(0), experience: 100, exposure: described_class::EXPOSURE_REFERENCE).score).to eq(3)
         end
 
         it '非対称: 下げは上げの倍速(体験0・評判50・露出満杯で -6 の 44)であること' do
-          expect(described_class.after_day(Reputation.new(50), experience: 0, exposure: 100).score).to eq(44)
+          expect(described_class.after_day(Reputation.new(50), experience: 0, exposure: described_class::EXPOSURE_REFERENCE).score).to eq(44)
         end
 
         it '露出が小さい(来場5)と、同じ体験でも評判はほとんど動かないこと' do
           expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 5).score).to eq(50)
+        end
+
+        it '露出が小さく1日では1点未満の前進でも、続ければ端数が累積して評判が動くこと' do
+          one = described_class.after_day(Reputation.new(50), experience: 96, exposure: 10)
+          expect(one.score).to eq(50) # 単日は端数で表示据え置き
+
+          many = Reputation.new(50)
+          60.times { many = described_class.after_day(many, experience: 96, exposure: 10) }
+          expect(many.score).to be > 50 # 累積して動く
         end
 
         it '来場ゼロでもニュース経路(死亡)は効き、events の reputation_delta の和だけ下げること' do

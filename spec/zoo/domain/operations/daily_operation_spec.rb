@@ -40,7 +40,7 @@ RSpec.describe Zoo::Domain::Operations::DailyOperation do
       expect(outcome.income).to eq(shared::Money.yen(34_000))     # 2000 * 17
       expect(zoo.day).to eq(1)                                     # 日送り
       expect(zoo.balance).to eq(shared::Balance.new(100_000 + 34_000 - (upkeep + zebra_food)))
-      expect(zoo.reputation.score).to eq(51)                       # 良い体験へ少しドリフト
+      expect(zoo.reputation.score).to eq(50)                       # 17人では露出が小さく、単日では表示は据え置き(端数は累積)
       expect(outcome.afflicted).to be_nil
     end
 

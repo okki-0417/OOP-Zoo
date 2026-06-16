@@ -17,21 +17,25 @@ module Zoo
         # 1日に「上げられる」最大幅(築くは遅い)。下げはこの DOWN_MULTIPLIER 倍まで。
         DRIFT_CAP = 3
         DOWN_MULTIPLIER = 2
-        # この来場規模で露出はほぼ満杯(口コミが行き渡る)とみなす。
-        EXPOSURE_REFERENCE = 100
+        # この来場規模で口コミが社会に行き渡る(露出が満杯=係数1.0)とみなす。社会側のしきい値で
+        # あり、園の収容力とは無関係。expected_visitors のスケールに合わせて調整する定数で、
+        # 需要を作り直したら見直す。小集客の日は前進が1点未満になるが、Reputation が端数を累積
+        # するのでフリーズせず"遅くなる"だけ(=世論は持続的な人気で初めて動く)。
+        EXPOSURE_REFERENCE = 2_000
 
         def after_day(reputation, experience:, exposure: 0, events: [])
-          score = reputation.score
-          score += drift(experience, score, exposure)
-          score += events.sum(&:reputation_delta)
-          Reputation.new(score)
+          value = reputation.value
+          value += drift(experience, value, exposure)
+          value += events.sum(&:reputation_delta)
+          Reputation.new(value)
         end
 
         # 体験へ向かうドリフト。露出(来場規模)で強さが決まり、下降は上昇より速い。
-        def drift(experience, score, exposure)
-          gap = experience - score
+        # 端数は丸めず返す(Reputation 側で累積する)。
+        def drift(experience, value, exposure)
+          gap = experience - value
           cap = gap.negative? ? DRIFT_CAP * DOWN_MULTIPLIER : DRIFT_CAP
-          (gap.clamp(-cap, cap) * exposure_factor(exposure)).round
+          gap.clamp(-cap, cap) * exposure_factor(exposure)
         end
 
         # 露出係数(0〜1)。来場が多いほど口コミが行き渡り、1.0に近づく。

@@ -33,8 +33,8 @@ RSpec.describe '評判の動学' do
     Array.new(3) { build_adult(Zoo::Domain::Taxonomy::SpeciesCatalog.lion).tap { |a| a.add_stress(70) } }
   end
 
-  # にぎわう一日(露出が十分)を既定にして、評判の動きを観察する。
-  CROWD = 100
+  # にぎわう一日(露出が満杯)を既定にして、評判の動きを観察する。
+  CROWD = Zoo::Domain::Operations::ReputationPolicy::EXPOSURE_REFERENCE
 
   describe '体験経路(来た人が評判を育てる)' do
     context '良い体験(健康で落ち着いた展示)の日がにぎわうと' do
@@ -61,8 +61,9 @@ RSpec.describe '評判の動学' do
 
   describe '露出(口コミの量)' do
     it '来場が多い日ほど、同じ体験でも評判が大きく動くこと' do
-      busy  = policy.after_day(reputation.new(50), experience: 100, exposure: 200).score
-      quiet = policy.after_day(reputation.new(50), experience: 100, exposure: 5).score
+      # 小集客では1日の前進が1点未満になるため、丸めた score でなく連続値 value で比べる。
+      busy  = policy.after_day(reputation.new(50), experience: 100, exposure: 200).value
+      quiet = policy.after_day(reputation.new(50), experience: 100, exposure: 5).value
       expect(busy - 50).to be > (quiet - 50)
     end
 
