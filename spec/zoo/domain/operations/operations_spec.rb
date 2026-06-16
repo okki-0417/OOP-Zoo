@@ -25,7 +25,9 @@ module Zoo
 
           cost = described_class.daily(enclosures: enclosures, staff: 3, species: zebras)
 
-          expect(cost).to eq(Shared::Money.yen((2 * 1000) + (3 * 3000) + food))
+          upkeep = 2 * described_class::UPKEEP_PER_ENCLOSURE
+          salaries = 3 * described_class::SALARY_PER_STAFF
+          expect(cost).to eq(Shared::Money.yen(upkeep + salaries + food))
         end
 
         it '空調付きエリアは稼働費が上乗せされること' do

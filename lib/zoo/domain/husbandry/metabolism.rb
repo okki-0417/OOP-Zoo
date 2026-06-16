@@ -18,9 +18,11 @@ module Zoo
         HUNGER_MAX = 30
 
         FOOD_COST_REFERENCE_KG = 100.0
-        FOOD_COST_BASE_YEN = 300
-        FOOD_COST_MIN_YEN = 30
-        PREDATORY_DIET_FACTOR = 1.5
+        # 実勢に合わせた飼料費(円/日)。肉はkg単価が草より大幅に高いため肉食係数を効かせ、
+        # ライオン(190kg,肉食)≈2,500、ゾウ(大型,草食)≈8,500 と両端を現実圏に収める。
+        FOOD_COST_BASE_YEN = 450
+        FOOD_COST_MIN_YEN = 100
+        PREDATORY_DIET_FACTOR = 3.5
 
         SATIETY_FACTOR_RANGE = (0.3..3.0)
 

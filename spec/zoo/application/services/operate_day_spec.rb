@@ -45,12 +45,13 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       report = service.call
 
       zebra_food = husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
+      upkeep = Zoo::Domain::Operations::OperatingCost::UPKEEP_PER_ENCLOSURE
 
       # 線形需要: 魅力80(カリスマ60+多様性20), Qmax=80*50/100=40, Pmax=3000+80*15*50/100=3600
       #          来園=floor(40*(1-2000/3600))=17
       expect(report.visitors).to eq(17)
       expect(report.income).to eq(shared::Money.yen(34_000))   # 2000 * 17
-      expect(report.cost).to eq(shared::Money.yen(1_000 + zebra_food)) # エリア1*1000 + シマウマの飼料費
+      expect(report.cost).to eq(shared::Money.yen(upkeep + zebra_food)) # エリア1*維持費 + シマウマの飼料費
     end
 
     it '1日運営すると園の経過日数が1進むこと' do
@@ -58,7 +59,8 @@ RSpec.describe Zoo::Application::Services::OperateDay do
     end
 
     it '死亡が無い日は評判が体験へドリフトするが、来場17人と露出が小さく1だけ上がり(50→51)、残高に純益が反映されること' do
-      cost = 1_000 + husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
+      cost = Zoo::Domain::Operations::OperatingCost::UPKEEP_PER_ENCLOSURE +
+             husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
       report = service.call
 
       expect(report.deaths).to eq(0)

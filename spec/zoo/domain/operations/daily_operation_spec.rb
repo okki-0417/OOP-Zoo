@@ -28,6 +28,7 @@ RSpec.describe Zoo::Domain::Operations::DailyOperation do
     it 'リポジトリ無しで1日を回し、日送り・収支・評判を集約に反映すること' do
       enclosure, zebra = savanna_with_zebra
       zebra_food = husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
+      upkeep = operations::OperatingCost::UPKEEP_PER_ENCLOSURE
 
       outcome = described_class.run(
         zoo: zoo, enclosures: [enclosure], animals: [zebra], dead: [],
@@ -38,7 +39,7 @@ RSpec.describe Zoo::Domain::Operations::DailyOperation do
       expect(outcome.visitors).to eq(17)
       expect(outcome.income).to eq(shared::Money.yen(34_000))     # 2000 * 17
       expect(zoo.day).to eq(1)                                     # 日送り
-      expect(zoo.balance).to eq(shared::Balance.new(100_000 + 34_000 - (1_000 + zebra_food)))
+      expect(zoo.balance).to eq(shared::Balance.new(100_000 + 34_000 - (upkeep + zebra_food)))
       expect(zoo.reputation.score).to eq(51)                       # 良い体験へ少しドリフト
       expect(outcome.afflicted).to be_nil
     end

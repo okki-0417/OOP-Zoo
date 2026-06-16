@@ -8,9 +8,11 @@ module Zoo
       module OperatingCost
         module_function
 
-        UPKEEP_PER_ENCLOSURE = 1_000
-        CLIMATE_CONTROL_RUNNING_YEN = 800
-        SALARY_PER_STAFF = 3_000
+        # 1日あたりの実勢ベンチに合わせた値(円)。
+        # 維持費: 展示1つ年~180万、空調館の電気代、飼育員 年収~360万÷~300日。
+        UPKEEP_PER_ENCLOSURE = 5_000
+        CLIMATE_CONTROL_RUNNING_YEN = 4_000
+        SALARY_PER_STAFF = 12_000
 
         # enclosures: 飼育エリア(Enclosure)の配列。空調付きは稼働費が上乗せされる。
         # species: 在園個体の種(Species)の配列。飼料費は種ごとの代謝から算出する。
