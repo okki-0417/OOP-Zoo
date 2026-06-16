@@ -58,9 +58,9 @@ module Zoo
           )
         end
 
-        it '線形需要: 評判100・料金¥2,000・魅力80(シマウマ60+多様性20)で41人を期待すること' do
-          # Qmax=80, Pmax=3000+80*15=4200, 来園=floor(80*(1-2000/4200))=41
-          expect(described_class.expected_visitors([zebra], Reputation.new(100), fee)).to eq(41)
+        it '線形需要: 評判100・料金¥2,000・魅力60(シマウマ60)で29人を期待すること' do
+          # Qmax=60, Pmax=3000+60*15=3900, 来園=floor(60*(1-2000/3900))=29
+          expect(described_class.expected_visitors([zebra], Reputation.new(100), fee)).to eq(29)
         end
 
         it '評判が下がると来園が減ること(100→50)' do

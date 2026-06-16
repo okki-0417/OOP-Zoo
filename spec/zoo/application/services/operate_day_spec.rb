@@ -41,16 +41,16 @@ RSpec.describe Zoo::Application::Services::OperateDay do
   end
 
   describe '#call' do
-    it '展示1種(EN)・評判50・料金¥2,000で来園17人を集め、収入¥34,000・費用を計上すること' do
+    it '展示1種(EN)・評判50・料金¥2,000で来園12人を集め、収入¥24,000・費用を計上すること' do
       report = service.call
 
       zebra_food = husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
       upkeep = Zoo::Domain::Operations::OperatingCost::UPKEEP_PER_ENCLOSURE
 
-      # 線形需要: 魅力80(カリスマ60+多様性20), Qmax=80*50/100=40, Pmax=3000+80*15*50/100=3600
-      #          来園=floor(40*(1-2000/3600))=17
-      expect(report.visitors).to eq(17)
-      expect(report.income).to eq(shared::Money.yen(34_000))   # 2000 * 17
+      # 線形需要: 魅力60(カリスマ60), Qmax=60*50/100=30, Pmax=3000+60*15*50/100=3450
+      #          来園=floor(30*(1-2000/3450))=12
+      expect(report.visitors).to eq(12)
+      expect(report.income).to eq(shared::Money.yen(24_000))   # 2000 * 12
       expect(report.cost).to eq(shared::Money.yen(upkeep + zebra_food)) # エリア1*維持費 + シマウマの飼料費
     end
 
@@ -58,14 +58,14 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect { service.call }.to change { zoo.load.day }.by(1)
     end
 
-    it '死亡が無い日は評判が体験へドリフトするが、来場17人と露出が小さく単日では表示は据え置き(50のまま)、残高に純益が反映されること' do
+    it '死亡が無い日は評判が体験へドリフトするが、来場12人と露出が小さく単日では表示は据え置き(50のまま)、残高に純益が反映されること' do
       cost = Zoo::Domain::Operations::OperatingCost::UPKEEP_PER_ENCLOSURE +
              husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
       report = service.call
 
       expect(report.deaths).to eq(0)
       expect(report.reputation).to eq(50)
-      expect(report.balance).to eq(shared::Balance.new(100_000 + 34_000 - cost)) # 収入 2000*17
+      expect(report.balance).to eq(shared::Balance.new(100_000 + 24_000 - cost)) # 収入 2000*12
       expect(report.bankrupt).to be(false)
     end
 

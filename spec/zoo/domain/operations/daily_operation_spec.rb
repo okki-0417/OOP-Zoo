@@ -35,12 +35,12 @@ RSpec.describe Zoo::Domain::Operations::DailyOperation do
         staff_count: 0, random: no_outbreak
       )
 
-      # 集客=線形需要(魅力80・評判50・料金2000) → 17人
-      expect(outcome.visitors).to eq(17)
-      expect(outcome.income).to eq(shared::Money.yen(34_000))     # 2000 * 17
+      # 集客=線形需要(魅力60・評判50・料金2000) → 12人
+      expect(outcome.visitors).to eq(12)
+      expect(outcome.income).to eq(shared::Money.yen(24_000))     # 2000 * 12
       expect(zoo.day).to eq(1)                                     # 日送り
-      expect(zoo.balance).to eq(shared::Balance.new(100_000 + 34_000 - (upkeep + zebra_food)))
-      expect(zoo.reputation.score).to eq(50)                       # 17人では露出が小さく、単日では表示は据え置き(端数は累積)
+      expect(zoo.balance).to eq(shared::Balance.new(100_000 + 24_000 - (upkeep + zebra_food)))
+      expect(zoo.reputation.score).to eq(50)                       # 12人では露出が小さく、単日では表示は据え置き(端数は累積)
       expect(outcome.afflicted).to be_nil
     end
 
