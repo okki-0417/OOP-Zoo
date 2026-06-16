@@ -17,29 +17,46 @@ module Zoo
           on_exhibit = enclosures.flat_map(&:occupants)
 
           visitors = VisitorAttraction.expected_visitors(
-            on_exhibit, zoo.reputation, zoo.admission_fee, buzz: zoo.buzz
+            on_exhibit,
+            zoo.reputation,
+            zoo.admission_fee,
+            buzz: zoo.buzz
           )
-          income = zoo.admission_fee * visitors
-          zoo.admit_visitors(visitors)
+
+          income = zoo.admit_visitors(visitors)
 
           cost = OperatingCost.daily(
-            enclosures: enclosures, staff: staff_count, species: animals.map(&:species)
+            enclosures:,
+            staff: staff_count,
+            species: animals.map(&:species)
           )
+
           zoo.spend(cost)
 
           afflicted = OutbreakPolicy.strike(on_exhibit, random)
           afflicted&.fall_ill(Medical::IllnessCatalog.parasite)
 
-          condition = Husbandry::Condition.score(on_exhibit)
-          experience = VisitorExperience.score(condition: condition, fee: zoo.admission_fee)
           zoo.apply_reputation(
             ReputationPolicy.after_day(
-              zoo.reputation, experience: experience, exposure: visitors, events: news_of(dead, afflicted)
+              zoo.reputation,
+              experience: VisitorExperience.score(
+                condition: Husbandry::Condition.score(on_exhibit),
+                fee: zoo.admission_fee
+              ),
+              exposure: visitors,
+              events: news_of(dead, afflicted)
             )
           )
+
           zoo.advance_day
 
-          DayOutcome.new(visitors: visitors, income: income, cost: cost, deaths: dead.size, afflicted: afflicted)
+          DayOutcome.new(
+            visitors:,
+            income:,
+            cost:,
+            deaths: dead.size,
+            afflicted:
+          )
         end
 
         # その日のニュース(評判を動かす出来事)を組み立てる。
