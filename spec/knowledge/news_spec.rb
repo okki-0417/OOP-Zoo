@@ -33,8 +33,8 @@ RSpec.describe 'ニュース性' do
     end
   end
 
-  describe '話題チャネル(魅力を動かすニュース)' do
-    it '幼獣の誕生はニュースになること(buzzで魅力が上がり集客が増える)' do
+  describe '話題チャネル(見応えを動かすニュース)' do
+    it '幼獣の誕生はニュースになること(buzzで見応えが上がり集客が増える)' do
       animals = [build_adult(catalog.lion)]
       with_buzz    = attraction.expected_visitors(animals, rep, fee, buzz: 100)
       without_buzz = attraction.expected_visitors(animals, rep, fee, buzz: 0)

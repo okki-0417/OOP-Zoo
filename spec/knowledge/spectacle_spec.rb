@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe '集客の魅力' do
+RSpec.describe '集客の見応え' do
   catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
   attraction = Zoo::Domain::Operations::VisitorAttraction
   money = Zoo::Domain::Shared::Money
@@ -18,7 +18,7 @@ RSpec.describe '集客の魅力' do
     end
   end
 
-  describe '魅力の源泉' do
+  describe '見応えの源泉' do
     it 'カリスマ性の高い種ほど強く集客すること(ライオン > ニシキゴイ)' do
       expect(attraction.expected_visitors(herd(catalog.lion), rep, fee))
         .to be > attraction.expected_visitors(herd(catalog.koi), rep, fee)
