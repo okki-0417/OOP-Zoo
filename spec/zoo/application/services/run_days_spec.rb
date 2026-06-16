@@ -13,7 +13,10 @@ RSpec.describe Zoo::Application::Services::RunDays do
   let(:elder) { build_animal(catalog.lion, name: '老', age_in_days: 1_000_000) }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
-                        .tap { |e| e.admit(survivor); e.admit(elder) }
+                        .tap do |e|
+      e.admit(survivor)
+      e.admit(elder)
+    end
   end
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([survivor, elder]) }

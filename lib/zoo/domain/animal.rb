@@ -108,7 +108,7 @@ module Zoo
       end
 
       def sibling_of?(other)
-        other.is_a?(Animal) && !(@parent_ids & other.parent_ids).empty?
+        other.is_a?(Animal) && !!@parent_ids.intersect?(other.parent_ids)
       end
 
       def fall_ill(illness)
@@ -220,11 +220,11 @@ module Zoo
       NUTRITION_LOSS = 25
 
       def dine(foods)
-        if Feeding::NutritionPolicy.balanced?(@species, foods)
-          @nutrition = @nutrition.improved_by(NUTRITION_GAIN)
-        else
-          @nutrition = @nutrition.declined_by(NUTRITION_LOSS)
-        end
+        @nutrition = if Feeding::NutritionPolicy.balanced?(@species, foods)
+                       @nutrition.improved_by(NUTRITION_GAIN)
+                     else
+                       @nutrition.declined_by(NUTRITION_LOSS)
+                     end
         self
       end
 

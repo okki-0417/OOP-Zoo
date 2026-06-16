@@ -6,7 +6,6 @@ module Zoo
   module Domain
     module Repositories
       RSpec.describe 'リポジトリポートの未実装契約' do
-
         def adapter_including(port)
           Class.new { include port }.new
         end

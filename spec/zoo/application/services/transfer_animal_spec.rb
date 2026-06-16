@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::TransferAnimal do
-  shared    = Zoo::Domain::Shared
-  husbandry = Zoo::Domain::Husbandry
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory

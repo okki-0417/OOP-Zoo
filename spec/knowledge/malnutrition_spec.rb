@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe '栄養失調' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   foods   = Zoo::Domain::Feeding::FoodCatalog
   welfare = Zoo::Domain::Husbandry::Welfare
   season  = Zoo::Domain::Operations::Season

@@ -6,7 +6,6 @@ RSpec.describe '疾病の重症度と伝播' do
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   illnesses = Zoo::Domain::Medical::IllnessCatalog
   contagion = Zoo::Domain::Medical::Contagion
-  sex       = Zoo::Domain::Animal::Sex
 
   def sick_lion(age_in_days:, stress: 0, illness: Zoo::Domain::Medical::IllnessCatalog.cold)
     lion = Zoo::Domain::Taxonomy::SpeciesCatalog.lion

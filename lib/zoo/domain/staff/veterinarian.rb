@@ -5,6 +5,7 @@ module Zoo
     module Staff
       class Veterinarian
         include Shared::Entity
+
         attr_reader :id, :name
 
         TREATMENT_HEAL = 50

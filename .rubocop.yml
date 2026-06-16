@@ -1,0 +1,20 @@
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  TargetRubyVersion: 3.3
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'frontend/**/*'
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+    - 'coverage/**/*'
+
+# コメントを書かない方針(CLAUDE.md)のため、ドキュメントコメントを要求しない
+Style/Documentation:
+  Enabled: false
+
+# RSpec の describe/it ブロックは長くなる
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'

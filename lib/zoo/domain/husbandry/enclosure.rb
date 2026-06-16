@@ -5,6 +5,7 @@ module Zoo
     module Husbandry
       class Enclosure
         include Shared::Entity
+
         attr_reader :id, :name, :temperature, :capacity, :cleanliness, :enrichment
 
         AREA_PER_SLOT_SQM = 100
@@ -80,7 +81,7 @@ module Zoo
         end
 
         def area_sqm
-          @area_sqm || capacity * AREA_PER_SLOT_SQM
+          @area_sqm || (capacity * AREA_PER_SLOT_SQM)
         end
 
         def vacancies
@@ -164,13 +165,9 @@ module Zoo
         end
 
         def violation_for(animal)
-          if animal.dead?
-            return Errors::DeadAnimal.new("#{animal.name}は死亡しているため収容できません")
-          end
+          return Errors::DeadAnimal.new("#{animal.name}は死亡しているため収容できません") if animal.dead?
 
-          if full?
-            return Errors::CapacityExceeded.new("#{@name}は定員#{@capacity}に達しています")
-          end
+          return Errors::CapacityExceeded.new("#{@name}は定員#{@capacity}に達しています") if full?
 
           unless animal.species.habitable?(@temperature)
             return Errors::ClimateMismatch.new(

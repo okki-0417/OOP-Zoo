@@ -6,7 +6,7 @@ module Zoo
   module Domain
     module Breeding
       RSpec.describe MatingRecommendation do
-        lion = Taxonomy::SpeciesCatalog.lion
+        Taxonomy::SpeciesCatalog.lion
 
         def founder(name, sex)
           Animal.new(species: Taxonomy::SpeciesCatalog.lion, name: name, sex: sex, max_health: 100, age_in_days: 3000)

@@ -21,7 +21,8 @@ module Zoo
 
         describe '.offered_categories' do
           it '食性に合う餌のカテゴリを重複なく返すこと' do
-            result = described_class.offered_categories(catalog.african_elephant, [foods.hay, foods.bamboo_leaf, foods.banana])
+            result = described_class.offered_categories(catalog.african_elephant,
+                                                        [foods.hay, foods.bamboo_leaf, foods.banana])
             expect(result).to contain_exactly(:plant, :fruit)
           end
 

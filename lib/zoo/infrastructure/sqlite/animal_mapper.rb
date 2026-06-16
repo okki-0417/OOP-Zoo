@@ -22,7 +22,7 @@ module Zoo
             illness_key: animal.illness && illness_key(animal.illness)&.to_s,
             immunities: animal.immunities.map { |ill| illness_key(ill)&.to_s }.compact.join(','),
             death_cause: animal.death&.cause&.to_s,
-            parent_ids: animal.parent_ids.map(&:to_s).join(',')
+            parent_ids: animal.parent_ids.join(',')
           }
         end
 

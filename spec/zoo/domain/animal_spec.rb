@@ -5,7 +5,7 @@ require 'spec_helper'
 module Zoo
   module Domain
     RSpec.describe Animal do
-      lion      = Taxonomy::SpeciesCatalog.lion
+      Taxonomy::SpeciesCatalog.lion
       illnesses = Medical::IllnessCatalog
 
       def build(name: 'Jack', sex: Animal::Sex.male, max_health: 100, age_in_days: 0, sire: nil, dam: nil)
@@ -29,7 +29,7 @@ module Zoo
 
       describe '#age_in_years' do
         it '日齢を365で割った端数切り捨ての歳を返すこと' do
-          expect(build(age_in_days: 365 * 4 + 200).age_in_years).to eq(4)
+          expect(build(age_in_days: (365 * 4) + 200).age_in_years).to eq(4)
         end
       end
 
@@ -57,7 +57,6 @@ module Zoo
       end
 
       describe '.reconstitute' do
-
         def reconstitute(health:, hunger:, stress:, illness:, death:, immunities: [], parent_ids: [])
           Animal.reconstitute(
             id: Shared::Identifier.new, species: Taxonomy::SpeciesCatalog.lion,

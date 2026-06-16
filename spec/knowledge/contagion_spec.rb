@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe '病気の感染と免疫' do
-  shared    = Zoo::Domain::Shared
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   illnesses = Zoo::Domain::Medical::IllnessCatalog
   contagion = Zoo::Domain::Medical::Contagion

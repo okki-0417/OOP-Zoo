@@ -8,7 +8,7 @@ module Zoo
           raise ArgumentError, 'animal_id は必須です' if animal_id.nil?
           raise ArgumentError, 'enclosure_id は必須です' if enclosure_id.nil?
 
-          super(animal_id: animal_id, enclosure_id: enclosure_id)
+          super
         end
       end
     end

@@ -5,8 +5,7 @@ require 'spec_helper'
 RSpec.describe '集客の魅力' do
   catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
   attraction = Zoo::Domain::Operations::VisitorAttraction
-  reputation = Zoo::Domain::Operations::Reputation
-  money      = Zoo::Domain::Shared::Money
+  money = Zoo::Domain::Shared::Money
 
   rep = Zoo::Domain::Operations::Reputation.new(100)
   fee = Zoo::Domain::Shared::Money.yen(2_000)

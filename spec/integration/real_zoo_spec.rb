@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe '現実の動物園の再現' do
-
   shared    = Zoo::Domain::Shared
   animal    = Zoo::Domain::Animal
   taxonomy  = Zoo::Domain::Taxonomy
@@ -25,7 +24,9 @@ RSpec.describe '現実の動物園の再現' do
   let(:polar_sea) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'ホッキョクの海', temperature: deg(-5), capacity: 2)) }
   let(:penguin_pool) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'ペンギンプール', temperature: deg(0), capacity: 10)) }
   let(:reptile_house) { zoo.add_enclosure(husbandry::Enclosure.new(name: '爬虫類館', temperature: deg(28), capacity: 2)) }
-  let(:monkey_mountain) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'モンキーマウンテン', temperature: deg(20), capacity: 8)) }
+  let(:monkey_mountain) do
+    zoo.add_enclosure(husbandry::Enclosure.new(name: 'モンキーマウンテン', temperature: deg(20), capacity: 8))
+  end
 
   let(:mammal_keeper) { zoo.hire_keeper(staff::Keeper.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal])) }
   let(:bird_keeper) { zoo.hire_keeper(staff::Keeper.new(name: '鈴木', specialties: [taxonomy::TaxonClass.bird])) }
@@ -41,7 +42,6 @@ RSpec.describe '現実の動物園の再現' do
   let(:macaques) { build_pair(catalog.japanese_macaque) }
 
   before do
-
     zebras.each { |z| zoo.house(z, savanna) }
     zoo.house(giraffe, savanna)
 
@@ -117,7 +117,6 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   it '展示中の絶滅危惧種を把握できること' do
-
     names = zoo.threatened_species.map(&:name_ja)
     expect(names).to include('グレビーシマウマ', 'アミメキリン', 'ライオン', 'ホッキョクグマ', 'ビルマニシキヘビ')
     expect(names).not_to include('ニホンザル')

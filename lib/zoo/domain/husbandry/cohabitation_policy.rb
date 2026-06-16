@@ -11,9 +11,7 @@ module Zoo
         end
 
         def incompatibility_reason(resident, newcomer)
-          unless resident.climate_overlaps?(newcomer)
-            return "#{resident.name_ja}と#{newcomer.name_ja}は適温域が両立しません"
-          end
+          return "#{resident.name_ja}と#{newcomer.name_ja}は適温域が両立しません" unless resident.climate_overlaps?(newcomer)
 
           if resident.same_species?(newcomer)
             return "#{resident.name_ja}は単独性のため同種を同居させられません" if resident.solitary?

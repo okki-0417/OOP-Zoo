@@ -7,7 +7,7 @@ module Zoo
         def initialize(name:)
           raise ArgumentError, 'name は必須です' if name.nil?
 
-          super(name: name)
+          super
         end
       end
     end

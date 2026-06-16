@@ -10,7 +10,7 @@ module Zoo
           raise ArgumentError, 'sex は必須です' if sex.nil?
           raise ArgumentError, 'max_health は必須です' if max_health.nil?
 
-          super(species: species, name: name, sex: sex, max_health: max_health, age_in_days: age_in_days)
+          super
         end
       end
     end

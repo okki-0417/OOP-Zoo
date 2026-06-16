@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 if ENV['COVERAGE']
   require 'simplecov'
   SimpleCov.start do
@@ -10,7 +12,7 @@ end
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'zoo'
 
-Dir[File.expand_path('support/**/*.rb', __dir__)].sort.each { |f| require f }
+Dir[File.expand_path('support/**/*.rb', __dir__)].each { |f| require f }
 
 RSpec.configure do |config|
   config.default_formatter = 'doc'

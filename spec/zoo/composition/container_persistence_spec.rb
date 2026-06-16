@@ -4,8 +4,7 @@ require 'spec_helper'
 require 'tmpdir'
 
 RSpec.describe 'Zoo::Composition::Container 永続化' do
-  shared    = Zoo::Domain::Shared
-  husbandry = Zoo::Domain::Husbandry
+  shared = Zoo::Domain::Shared
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   commands  = Zoo::Application::Commands
 

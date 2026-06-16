@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe '入園料と需要' do
-
   def exhibit
     catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
     [build_adult(catalog.lion, name: 'A'), build_adult(catalog.grevys_zebra, name: 'B')]
@@ -30,7 +29,6 @@ RSpec.describe '入園料と需要' do
   end
 
   describe '収益の最適点' do
-
     FEES = [200, 400, 800, 1_600, 3_200, 6_400, 12_800, 25_600].freeze
 
     it '収益を最大化する料金が、最安値ではないこと(安売りは取りこぼす)' do

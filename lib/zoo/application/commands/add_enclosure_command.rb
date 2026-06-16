@@ -9,7 +9,7 @@ module Zoo
           raise ArgumentError, 'temperature は必須です' if temperature.nil?
           raise ArgumentError, 'capacity は必須です' if capacity.nil?
 
-          super(name: name, temperature: temperature, capacity: capacity)
+          super
         end
       end
     end

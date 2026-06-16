@@ -7,7 +7,7 @@ module Zoo
         def initialize(animal_id:)
           raise ArgumentError, 'animal_id は必須です' if animal_id.nil?
 
-          super(animal_id: animal_id)
+          super
         end
       end
     end

@@ -6,7 +6,6 @@ RSpec.describe '種内闘争と外傷' do
   catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
   aggression = Zoo::Domain::Husbandry::Aggression
   sex        = Zoo::Domain::Animal::Sex
-  shared     = Zoo::Domain::Shared
 
   def pride(capacity: 6, area_sqm: nil)
     Zoo::Domain::Husbandry::Enclosure.new(

@@ -11,7 +11,7 @@ module Zoo
           raise ArgumentError, 'name は必須です' if name.nil?
           raise ArgumentError, 'sex は必須です' if sex.nil?
 
-          super(sire_id: sire_id, dam_id: dam_id, enclosure_id: enclosure_id, name: name, sex: sex)
+          super
         end
       end
     end

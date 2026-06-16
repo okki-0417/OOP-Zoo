@@ -23,7 +23,8 @@ RSpec.describe Zoo::Application::Services::AcquireAnimal do
   let(:service) { described_class.new(animals: animals, zoo: zoo_repo, unit_of_work: unit_of_work) }
 
   let(:command) do
-    commands::AcquireAnimalCommand.new(species: catalog.japanese_macaque, name: 'モンタ', sex: animal::Sex.male, max_health: 100)
+    commands::AcquireAnimalCommand.new(species: catalog.japanese_macaque, name: 'モンタ', sex: animal::Sex.male,
+                                       max_health: 100)
   end
 
   describe '#call' do

@@ -28,7 +28,6 @@ RSpec.describe '個体群管理(交配推奨)' do
   describe '遺伝的多様性を保つ推奨' do
     context '血縁の異なる候補が複数いるとき' do
       it '近縁度が最も低くなるペアを推奨すること' do
-
         male    = founder('M', sex.male, age: 3600)
         granny  = founder('祖母', sex.female, age: 3600)
         mother  = offspring('娘', sex.female, sire: male, dam: granny, age: 2500)

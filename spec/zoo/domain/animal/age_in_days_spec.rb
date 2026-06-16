@@ -47,7 +47,7 @@ RSpec.describe Zoo::Domain::Animal::AgeInDays do
 
   describe '#years' do
     it 'age_in_days=365*2+10 のとき 2 を返すこと(端数切り捨て)' do
-      expect(described_class.new(365 * 2 + 10).years).to eq(2)
+      expect(described_class.new((365 * 2) + 10).years).to eq(2)
     end
 
     it 'age_in_days=0 のとき 0 を返すこと' do
@@ -100,7 +100,6 @@ RSpec.describe Zoo::Domain::Animal::AgeInDays do
   end
 
   describe '#weaned?(species)' do
-
     it 'age=219 のライオン(離乳適齢ちょうど)は true を返すこと' do
       expect(described_class.new(219).weaned?(lion)).to be(true)
     end

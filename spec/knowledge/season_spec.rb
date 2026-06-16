@@ -3,8 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe '季節と気候' do
-  shared    = Zoo::Domain::Shared
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  shared = Zoo::Domain::Shared
   calendar  = Zoo::Domain::Operations::Calendar
   season    = Zoo::Domain::Operations::Season
   welfare   = Zoo::Domain::Husbandry::Welfare
@@ -15,7 +14,7 @@ RSpec.describe '季節と気候' do
     )
     enclosure.admit(build_adult(Zoo::Domain::Taxonomy::SpeciesCatalog.lion, name: 'A'))
     enclosure.admit(build_adult(Zoo::Domain::Taxonomy::SpeciesCatalog.lion, name: 'B',
-                                sex: Zoo::Domain::Animal::Sex.female))
+                                                                            sex: Zoo::Domain::Animal::Sex.female))
     enclosure
   end
 
@@ -43,7 +42,6 @@ RSpec.describe '季節と気候' do
 
   describe '季節と福祉' do
     it '冬は暖地性の動物が同じ区画でも快適でなくなり、ストレスが増えること' do
-
       enclosure = pride(20)
       occupant = enclosure.occupants.first
 

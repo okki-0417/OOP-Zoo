@@ -14,7 +14,10 @@ RSpec.describe Zoo::Application::Queries::Population do
 
   let(:savanna) do
     husbandry::Enclosure.new(name: 'サバンナ', temperature: shared::Temperature.celsius(30), capacity: 6)
-                        .tap { |e| zebras.each { |z| e.admit(z) }; e.admit(giraffe) }
+                        .tap do |e|
+      zebras.each { |z| e.admit(z) }
+      e.admit(giraffe)
+    end
   end
   let(:monkey_mountain) do
     husbandry::Enclosure.new(name: 'モンキーマウンテン', temperature: shared::Temperature.celsius(20), capacity: 8)

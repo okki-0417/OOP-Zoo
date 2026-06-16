@@ -13,7 +13,9 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
   let(:pair) { build_pair(catalog.lion) }
   let(:sire) { pair[0] }
   let(:dam) { pair[1] }
-  let(:enclosure) { husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4) }
+  let(:enclosure) do
+    husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
+  end
 
   let(:animals) { in_memory::InMemoryAnimalRepository.new([sire, dam]) }
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
@@ -66,7 +68,7 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
     it '定員1の満員エリアに収容できず CapacityExceeded になると、子が保存されずロールバックされること' do
       resident = build_adult(catalog.lion, name: '先住')
       full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
-                                .tap { |e| e.admit(resident) }
+                                 .tap { |e| e.admit(resident) }
       enclosures.save(full)
 
       expect { service.call(command(enclosure_id: full.id)) }
@@ -77,7 +79,7 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
     it 'ロールバックされた出産のイベントは EventStore に残らないこと' do
       resident = build_adult(catalog.lion, name: '先住')
       full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
-                                .tap { |e| e.admit(resident) }
+                                 .tap { |e| e.admit(resident) }
       enclosures.save(full)
 
       expect { service.call(command(enclosure_id: full.id)) }.to raise_error(Zoo::Domain::Errors::CapacityExceeded)

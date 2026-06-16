@@ -22,7 +22,7 @@ module Zoo
         end
 
         def fahrenheit
-          @celsius * 9 / 5 + 32
+          (@celsius * 9 / 5) + 32
         end
 
         def within?(range)

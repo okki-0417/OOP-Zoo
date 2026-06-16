@@ -5,8 +5,7 @@ require 'spec_helper'
 RSpec.describe '動物福祉' do
   welfare   = Zoo::Domain::Husbandry::Welfare
   shared    = Zoo::Domain::Shared
-  husbandry = Zoo::Domain::Husbandry
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
 
   def savanna(temp = 28, capacity: 4)
     Zoo::Domain::Husbandry::Enclosure.new(
@@ -49,7 +48,6 @@ RSpec.describe '動物福祉' do
 
   context '単独性の種が一頭で暮らすとき' do
     it '孤独にはならず、良好な環境ならストレスが和らぐこと' do
-
       den = Zoo::Domain::Husbandry::Enclosure.new(
         name: '極地', temperature: shared::Temperature.celsius(0), capacity: 3
       )
@@ -62,7 +60,6 @@ RSpec.describe '動物福祉' do
 
   context '過密なエリアにいると' do
     it 'ストレスが増すこと' do
-
       den = Zoo::Domain::Husbandry::Enclosure.new(
         name: '狭い獣舎', temperature: shared::Temperature.celsius(0), capacity: 1
       )

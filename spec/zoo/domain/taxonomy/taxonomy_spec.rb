@@ -76,13 +76,11 @@ module Zoo
         end
 
         it '体格と行動様式に応じた必要面積を返すこと(最小5m²)' do
-
           expect(lion.space_requirement_sqm).to eq(95)
           expect(SpeciesCatalog.hercules_beetle.space_requirement_sqm).to eq(5)
         end
 
         it '快適か(適温域の内側か)を判定できること' do
-
           expect(lion.comfortable?(Shared::Temperature.celsius(25))).to be(true)
           expect(lion.comfortable?(Shared::Temperature.celsius(12))).to be(false)
           expect(lion.comfortable?(Shared::Temperature.celsius(50))).to be(false)

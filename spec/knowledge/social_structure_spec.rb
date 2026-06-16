@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe '群れと社会構造' do
   welfare = Zoo::Domain::Husbandry::Welfare
-  shared  = Zoo::Domain::Shared
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex
 

@@ -31,7 +31,7 @@ module Zoo
         private
 
         def deaths_by_cause(events)
-          events.select { |event| event.is_a?(Domain::Events::AnimalDied) }
+          events.grep(Domain::Events::AnimalDied)
                 .group_by(&:cause)
                 .transform_values(&:size)
         end

@@ -26,7 +26,8 @@ module Zoo
         end
 
         def satiety(species, food)
-          factor = ((REFERENCE_KG / species.adult_weight.kilograms)**0.25).clamp(SATIETY_FACTOR_RANGE.begin, SATIETY_FACTOR_RANGE.end)
+          factor = ((REFERENCE_KG / species.adult_weight.kilograms)**0.25).clamp(SATIETY_FACTOR_RANGE.begin,
+                                                                                 SATIETY_FACTOR_RANGE.end)
           [(food.satiety * factor).round, 1].max
         end
 

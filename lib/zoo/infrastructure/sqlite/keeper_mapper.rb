@@ -8,7 +8,7 @@ module Zoo
           {
             id: keeper.id.to_s,
             name: keeper.name,
-            specialties: keeper.specialties.map { |taxon_class| taxon_class.value }.join(',')
+            specialties: keeper.specialties.map(&:value).join(',')
           }
         end
 

@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe '環境エンリッチメントと常同行動' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
-  shared  = Zoo::Domain::Shared
   welfare = Zoo::Domain::Husbandry::Welfare
 
   def savanna(temp = 28)

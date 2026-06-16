@@ -10,7 +10,7 @@ module Zoo
 
         def call
           @event_store.all
-                      .select { |event| event.is_a?(Domain::Events::AnimalDied) }
+                      .grep(Domain::Events::AnimalDied)
                       .map { |event| ReadModels::DeceasedRecord.new(name: event.animal.name.to_s, species: event.animal.species.name_ja, cause: event.cause) }
         end
       end

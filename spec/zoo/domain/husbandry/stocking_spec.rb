@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Domain::Husbandry::Stocking do
-  shared  = Zoo::Domain::Shared
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
 
   def pen(capacity, temp)

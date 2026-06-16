@@ -8,7 +8,7 @@ module Zoo
           raise ArgumentError, 'days は必須です' if days.nil?
           raise ArgumentError, 'days は1以上でなければなりません' unless days.is_a?(Integer) && days.positive?
 
-          super(days: days)
+          super
         end
       end
     end

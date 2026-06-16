@@ -3,8 +3,8 @@
 source 'https://rubygems.org'
 
 group :development, :test do
-  gem 'rspec', '~> 3.13'
   gem 'rack-test'
+  gem 'rspec', '~> 3.13'
   gem 'simplecov', require: false
 end
 

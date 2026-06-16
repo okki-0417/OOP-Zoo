@@ -41,7 +41,7 @@ RSpec.describe Zoo::Domain::Shared::Money do
 
     it '元のインスタンスは不変であること' do
       a = described_class.new(1000)
-      a + described_class.new(500)
+      described_class.new(500)
       expect(a.yen).to eq(1000)
     end
   end

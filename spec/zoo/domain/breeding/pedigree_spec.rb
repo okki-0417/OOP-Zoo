@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Domain::Breeding::Pedigree do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sex = Zoo::Domain::Animal::Sex
 
   def lion(name, sex:, age:, sire: nil, dam: nil)

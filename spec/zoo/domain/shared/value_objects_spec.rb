@@ -45,7 +45,9 @@ RSpec.describe 'Shared値オブジェクト' do
     let(:entity_class) do
       Class.new do
         include Zoo::Domain::Shared::Entity
+
         attr_reader :id
+
         def initialize(id) = @id = id
       end
     end

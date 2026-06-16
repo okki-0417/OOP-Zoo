@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Domain::Medical::Contagion do
-  shared    = Zoo::Domain::Shared
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   illnesses = Zoo::Domain::Medical::IllnessCatalog
 

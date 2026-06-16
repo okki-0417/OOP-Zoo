@@ -5,8 +5,7 @@ require 'spec_helper'
 RSpec.describe '妊娠と出産' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex
-  pair_vo = Zoo::Domain::Breeding::BreedingPair
-  errors  = Zoo::Domain::Errors
+  errors = Zoo::Domain::Errors
 
   def pair_of(species)
     sire, dam = build_pair(species)

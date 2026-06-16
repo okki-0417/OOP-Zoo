@@ -13,7 +13,10 @@ RSpec.describe Zoo::Application::Services::OpenForADay do
   let(:elder) { build_animal(catalog.lion, name: '老', age_in_days: 1_000_000) }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
-                        .tap { |e| e.admit(survivor); e.admit(elder) }
+                        .tap do |e|
+      e.admit(survivor)
+      e.admit(elder)
+    end
   end
 
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
@@ -50,7 +53,7 @@ RSpec.describe Zoo::Application::Services::OpenForADay do
     it '死亡個体の AnimalDied が EventStore に追加されること' do
       service.call
 
-      died = event_store.all.select { |event| event.is_a?(events::AnimalDied) }
+      died = event_store.all.grep(events::AnimalDied)
       expect(died.map(&:animal)).to include(elder)
     end
 
@@ -62,9 +65,12 @@ RSpec.describe Zoo::Application::Services::OpenForADay do
 
     it '誰も死なない開園では EventStore にイベントが残らないこと' do
       young_only = in_memory::InMemoryEnclosureRepository.new([
-        husbandry::Enclosure.new(name: '若者エリア', temperature: shared::Temperature.celsius(28), capacity: 4)
-                            .tap { |e| e.admit(survivor) }
-      ])
+                                                                husbandry::Enclosure.new(name: '若者エリア',
+                                                                                         temperature: shared::Temperature.celsius(28), capacity: 4)
+                                                                                    .tap do |e|
+                                                                  e.admit(survivor)
+                                                                end
+                                                              ])
       described_class.new(enclosures: young_only, animals: animals, event_dispatcher: event_dispatcher,
                           unit_of_work: unit_of_work).call
 

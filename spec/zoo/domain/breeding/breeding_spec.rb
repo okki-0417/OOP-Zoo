@@ -146,7 +146,7 @@ module Zoo
           pair.advance(lion.gestation_period_days)
           daughter = pair.deliver(name: '娘', sex: Animal::Sex.female)
 
-          daughter.grow_older(lion.maturity_age_years * 365 + 1)
+          daughter.grow_older((lion.maturity_age_years * 365) + 1)
           daughter.satisfy_hunger(100)
 
           expect(described_class.related?(sire, daughter)).to be(true)

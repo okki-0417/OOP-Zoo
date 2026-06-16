@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe '産仔数' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
-  sex     = Zoo::Domain::Animal::Sex
 
   def delivered_litter(species, inbreeding: 0.0)
     sire, dam = build_pair(species)

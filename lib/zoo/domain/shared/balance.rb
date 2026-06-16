@@ -19,12 +19,12 @@ module Zoo
           freeze
         end
 
-        def +(money)
-          self.class.new(@yen + money.yen)
+        def +(other)
+          self.class.new(@yen + other.yen)
         end
 
-        def -(money)
-          self.class.new(@yen - money.yen)
+        def -(other)
+          self.class.new(@yen - other.yen)
         end
 
         def negative?

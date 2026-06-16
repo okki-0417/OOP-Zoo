@@ -7,7 +7,7 @@ module Zoo
         def initialize(count:)
           raise ArgumentError, 'count は必須です' if count.nil?
 
-          super(count: count)
+          super
         end
       end
     end

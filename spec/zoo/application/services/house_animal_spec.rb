@@ -10,7 +10,9 @@ RSpec.describe Zoo::Application::Services::HouseAnimal do
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:lion) { build_adult(catalog.lion, name: 'レオ') }
-  let(:enclosure) { husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 2) }
+  let(:enclosure) do
+    husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 2)
+  end
 
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
@@ -40,7 +42,9 @@ RSpec.describe Zoo::Application::Services::HouseAnimal do
 
     it '定員1の満員エリアに収容しようとすると Domain::Errors::CapacityExceeded が伝播すること' do
       resident = build_adult(catalog.lion, name: '先住')
-      full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1).tap { |e| e.admit(resident) }
+      full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1).tap do |e|
+        e.admit(resident)
+      end
       repo = in_memory::InMemoryEnclosureRepository.new([full])
       command = commands::HouseAnimalCommand.new(enclosure_id: full.id, animal_id: lion.id)
 

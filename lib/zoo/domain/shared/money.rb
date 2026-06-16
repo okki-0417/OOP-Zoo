@@ -29,10 +29,10 @@ module Zoo
           self.class.new(@yen + other.yen)
         end
 
-        def *(factor)
-          raise ArgumentError, '係数は0以上の整数でなければなりません' unless factor.is_a?(Integer) && !factor.negative?
+        def *(other)
+          raise ArgumentError, '係数は0以上の整数でなければなりません' unless other.is_a?(Integer) && !other.negative?
 
-          self.class.new(@yen * factor)
+          self.class.new(@yen * other)
         end
 
         def <=>(other)

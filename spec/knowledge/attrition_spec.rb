@@ -16,12 +16,10 @@ RSpec.describe '生物ドメインの経済接続' do
   end
 
   describe '評判の動学' do
-
     it '評判は死亡だけでなく福祉・清潔・過密・保全でも増減すること'
   end
 
   describe '福祉の経済接続' do
-
     it '福祉を放置すると病気・死で資産(個体)を失うこと'
   end
 end

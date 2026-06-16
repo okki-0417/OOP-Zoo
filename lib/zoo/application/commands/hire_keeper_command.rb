@@ -8,7 +8,7 @@ module Zoo
           raise ArgumentError, 'name は必須です' if name.nil?
           raise ArgumentError, 'specialties は必須です' if specialties.nil?
 
-          super(name: name, specialties: specialties)
+          super
         end
       end
     end

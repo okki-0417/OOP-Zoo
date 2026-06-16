@@ -3,9 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe '繁殖適齢期' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
-  sex     = Zoo::Domain::Animal::Sex
-
   def lion_aged(years)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,

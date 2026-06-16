@@ -5,8 +5,6 @@ module Zoo
     class Zoo
       include Events::Recorder
 
-      attr_reader :name, :admission_fee, :revenue, :visitor_count, :balance, :reputation, :day
-
       def initialize(name:, admission_fee:, funds: Shared::Money.zero, reputation: Operations::Reputation.default)
         raise ArgumentError, '動物園名は必須です' if name.to_s.empty?
 
@@ -24,7 +22,7 @@ module Zoo
         @buzz = 0
       end
 
-      attr_reader :buzz
+      attr_reader :name, :admission_fee, :revenue, :visitor_count, :balance, :reputation, :day, :buzz
 
       BUZZ_DECAY_PER_DAY = 10
 
@@ -84,9 +82,7 @@ module Zoo
       end
 
       def house(animal, enclosure)
-        unless @enclosures.include?(enclosure)
-          raise ArgumentError, "#{enclosure.name}はこの動物園のエリアではありません"
-        end
+        raise ArgumentError, "#{enclosure.name}はこの動物園のエリアではありません" unless @enclosures.include?(enclosure)
 
         enclosure.admit(animal)
         animal

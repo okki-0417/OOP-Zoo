@@ -29,7 +29,10 @@ module Zoo
 
         def mate(season: Operations::Season.spring)
           raise Errors::BreedingNotAllowed, '既に妊娠/抱卵中です' if expecting?
-          raise Errors::BreedingNotAllowed, "#{species.name_ja}は#{season.label}には繁殖しません" unless species.breeds_in?(season)
+          unless species.breeds_in?(season)
+            raise Errors::BreedingNotAllowed,
+                  "#{species.name_ja}は#{season.label}には繁殖しません"
+          end
 
           @gestation_days = 0
           @miscarried = false

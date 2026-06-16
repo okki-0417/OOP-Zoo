@@ -21,7 +21,7 @@ module Zoo
             Husbandry::Enclosure.new(name: 'A', temperature: Shared::Temperature.celsius(20), capacity: 4)
           end
           zebras = Array.new(5) { Taxonomy::SpeciesCatalog.grevys_zebra }
-          food = zebras.sum(0) { |s| Husbandry::Metabolism.daily_food_cost(s).yen }
+          food = zebras.sum { |s| Husbandry::Metabolism.daily_food_cost(s).yen }
 
           cost = described_class.daily(enclosures: enclosures, staff: 3, species: zebras)
 
@@ -44,8 +44,6 @@ module Zoo
       end
 
       RSpec.describe VisitorAttraction do
-        catalog = Taxonomy::SpeciesCatalog
-
         fee = Shared::Money.yen(2_000)
 
         it '展示が空なら来園者は0であること' do
@@ -59,7 +57,6 @@ module Zoo
         end
 
         it '線形需要: 評判100・料金¥2,000・魅力60(シマウマ60)で29人を期待すること' do
-
           expect(described_class.expected_visitors([zebra], Reputation.new(100), fee)).to eq(29)
         end
 
@@ -123,11 +120,13 @@ module Zoo
 
       RSpec.describe ReputationPolicy do
         it '体験経路: 露出満杯・体験100・評判0なら、上げ幅は DRIFT_CAP(3)でクランプされること' do
-          expect(described_class.after_day(Reputation.new(0), experience: 100, exposure: described_class::EXPOSURE_REFERENCE).score).to eq(3)
+          expect(described_class.after_day(Reputation.new(0), experience: 100,
+                                                              exposure: described_class::EXPOSURE_REFERENCE).score).to eq(3)
         end
 
         it '非対称: 下げは上げの倍速(体験0・評判50・露出満杯で -6 の 44)であること' do
-          expect(described_class.after_day(Reputation.new(50), experience: 0, exposure: described_class::EXPOSURE_REFERENCE).score).to eq(44)
+          expect(described_class.after_day(Reputation.new(50), experience: 0,
+                                                               exposure: described_class::EXPOSURE_REFERENCE).score).to eq(44)
         end
 
         it '露出が小さい(来場5)と、同じ体験でも評判はほとんど動かないこと' do
@@ -156,17 +155,20 @@ module Zoo
 
         it '来場ゼロでもニュース経路(死亡)は効き、events の reputation_delta の和だけ下げること' do
           deaths = Array.new(2) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) }
-          expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 0, events: deaths).score).to eq(40)
+          expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 0,
+                                                               events: deaths).score).to eq(40)
         end
 
         it '疫病(Outbreak)が出ると PENALTY(8)だけ下げること' do
           events = [ReputationEvent::Outbreak.new]
-          expect(described_class.after_day(Reputation.new(50), experience: 50, exposure: 100, events: events).score).to eq(42)
+          expect(described_class.after_day(Reputation.new(50), experience: 50, exposure: 100,
+                                                               events: events).score).to eq(42)
         end
 
         it '評判は 0..100 にクランプされること(過大なイベントでも負にならない)' do
           deaths = Array.new(5) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) }
-          expect(described_class.after_day(Reputation.new(0), experience: 0, exposure: 100, events: deaths).score).to eq(0)
+          expect(described_class.after_day(Reputation.new(0), experience: 0, exposure: 100,
+                                                              events: deaths).score).to eq(0)
         end
       end
     end

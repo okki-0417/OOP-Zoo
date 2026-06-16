@@ -11,7 +11,9 @@ RSpec.describe Zoo::Application::Services::CleanEnclosure do
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:keeper) { staff::Keeper.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal]) }
-  let(:enclosure) { husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4) }
+  let(:enclosure) do
+    husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
+  end
 
   let(:keepers) { in_memory::InMemoryKeeperRepository.new([keeper]) }
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }

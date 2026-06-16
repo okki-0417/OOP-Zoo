@@ -44,7 +44,6 @@ RSpec.describe '評判の動学' do
 
   describe '露出(口コミの量)' do
     it '来場が多い日ほど、同じ体験でも評判が大きく動くこと' do
-
       busy  = policy.after_day(reputation.new(50), experience: 100, exposure: 200).value
       quiet = policy.after_day(reputation.new(50), experience: 100, exposure: 5).value
       expect(busy - 50).to be > (quiet - 50)
@@ -57,7 +56,6 @@ RSpec.describe '評判の動学' do
   end
 
   describe '自然減衰(築いた評判は維持しないと錆びる)' do
-
     it '来園も良い出来事もない日が続くと、築いた評判(中立超え)は徐々に下がること' do
       after = policy.after_day(reputation.new(90), experience: 100, exposure: 0)
       expect(after.value).to be < 90
@@ -75,9 +73,9 @@ RSpec.describe '評判の動学' do
     context '死因(帰責性)で重みが変わる' do
       it '予防可能な死(餓死)は、老衰死より評判を大きく下げること' do
         starved = policy.after_day(reputation.new(80), experience: 100, exposure: 0,
-                                   events: [event::Death.new(cause: :starvation, charisma: 50)])
+                                                       events: [event::Death.new(cause: :starvation, charisma: 50)])
         old_age = policy.after_day(reputation.new(80), experience: 100, exposure: 0,
-                                   events: [event::Death.new(cause: :old_age, charisma: 50)])
+                                                       events: [event::Death.new(cause: :old_age, charisma: 50)])
         expect(starved.score).to be < old_age.score
       end
     end
@@ -85,9 +83,9 @@ RSpec.describe '評判の動学' do
     context '対象の格(カリスマ性)で重みが変わる' do
       it '同じ死因でも、カリスマ性の高い個体ほど評判を大きく下げること' do
         star  = policy.after_day(reputation.new(80), experience: 100, exposure: 0,
-                                 events: [event::Death.new(cause: :old_age, charisma: 90)])
+                                                     events: [event::Death.new(cause: :old_age, charisma: 90)])
         minor = policy.after_day(reputation.new(80), experience: 100, exposure: 0,
-                                 events: [event::Death.new(cause: :old_age, charisma: 10)])
+                                                     events: [event::Death.new(cause: :old_age, charisma: 10)])
         expect(star.score).to be < minor.score
       end
     end

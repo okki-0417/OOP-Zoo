@@ -5,6 +5,7 @@ module Zoo
     module Staff
       class Keeper
         include Shared::Entity
+
         attr_reader :id, :name, :specialties
 
         def initialize(name:, specialties:, id: Shared::Identifier.new)
