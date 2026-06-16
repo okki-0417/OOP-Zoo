@@ -76,6 +76,11 @@ RSpec.describe Zoo::Domain::Zoo do
       expect(zoo.visitor_count).to eq(150)
       expect(zoo.revenue).to eq(S::Money.yen(300_000))
     end
+
+    it 'admit_visitors はその回の収入(料金×人数)を返すこと(累計ではない)' do
+      zoo.admit_visitors(100)
+      expect(zoo.admit_visitors(50)).to eq(S::Money.yen(100_000))
+    end
   end
 
   describe '収容' do

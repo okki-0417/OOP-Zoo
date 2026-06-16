@@ -137,7 +137,7 @@ module Zoo
 
       # --- 運営 ---
 
-      # 来園者を受け入れ、入園料ぶんの収益を計上する。
+      # 来園者を受け入れ、入園料ぶんの収益を計上する。その回の収入(料金×人数)を返す。
       def admit_visitors(count)
         raise ArgumentError, '来園者数は0以上でなければなりません' if count.negative?
 
@@ -145,7 +145,7 @@ module Zoo
         earned = @admission_fee * count
         @revenue += earned
         @balance += earned
-        @revenue
+        earned
       end
 
       # 運営費などを支出する。残高は赤字(債務)になりうる。
