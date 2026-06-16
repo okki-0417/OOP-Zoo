@@ -72,29 +72,32 @@ RSpec.describe '評判の動学' do
     end
   end
 
-  describe 'ニュース経路(来てない人にも届く)' do
-    # 評判を動かすニュースは「内容のカタログ」ではなく、シムが機構的に生む"少数の名前付き
-    # 出来事"だけ(死因別の死・疫病・絶滅危惧種の繁殖成功)。ニュース内容を無限に書き足すのでは
-    # なく、各出来事は自分が持つデータ(死因・対象のカリスマ性・規模)から評判への効きが定まる。
-    # 多様性はニュース内容ではなくシミュレーション(いつ何が起きるか)から生まれる。
-    # 脱走・スキャンダル等は、そのメカニクスを作った回に名前付き出来事を1つ足すだけでよい。
-    it '死亡は、来場ゼロの日でも評判を下げること(露出に依存しない)' do
-      after = policy.after_day(reputation.new(80), experience: 100, exposure: 0, deaths: 1)
-      expect(after.score).to be < 80
+  # 「何がニュースになるか/どのチャネルか」は spec/knowledge/news_spec.rb(ニュース性)が持つ。
+  # ここでは、ニュース(ReputationEvent)が評判を「どれだけ」下げるか=重みの大小だけを縛る。
+  # 各出来事は自分が持つデータ(死因・対象のカリスマ性)から効きの大きさを自分で決める。
+  describe 'ニュースの重み(評判をどれだけ下げるか)' do
+    event = Zoo::Domain::Operations::ReputationEvent
+
+    # 露出ゼロで体験ドリフトを殺し、ニュースの重みだけを比べる。
+    context '死因(帰責性)で重みが変わる' do
+      it '予防可能な死(餓死)は、老衰死より評判を大きく下げること' do
+        starved = policy.after_day(reputation.new(80), experience: 100, exposure: 0,
+                                   events: [event::Death.new(cause: :starvation, charisma: 50)])
+        old_age = policy.after_day(reputation.new(80), experience: 100, exposure: 0,
+                                   events: [event::Death.new(cause: :old_age, charisma: 50)])
+        expect(starved.score).to be < old_age.score
+      end
     end
 
-    it '疫病が発生すると、たとえ体験が良くても評判が下がること' do
-      after = policy.after_day(reputation.new(80), experience: 100, exposure: CROWD, outbreak: true)
-      expect(after.score).to be < 80
+    context '対象の格(カリスマ性)で重みが変わる' do
+      it '同じ死因でも、カリスマ性の高い個体ほど評判を大きく下げること' do
+        star  = policy.after_day(reputation.new(80), experience: 100, exposure: 0,
+                                 events: [event::Death.new(cause: :old_age, charisma: 90)])
+        minor = policy.after_day(reputation.new(80), experience: 100, exposure: 0,
+                                 events: [event::Death.new(cause: :old_age, charisma: 10)])
+        expect(star.score).to be < minor.score
+      end
     end
-
-    # 死因(帰責性)で重みを変える: 予防可能な死 >> 老衰死。後段で死因モデルを導入。
-    it '予防可能な死(餓死・治療放置)は、老衰死より評判を大きく下げること'
-    # ニュースの大きさは対象の格でスケールする(著名・カリスマ個体ほど大ニュース)。
-    it '同じ死亡でも、カリスマ性の高い個体ほど評判を大きく下げること'
-    # 正のニュースは「保全実績」にアンカーする。普通の幼獣誕生は魅力(話題=buzz)に効くだけで
-    # 評判は上げない(見たい≠信頼)。
-    it '絶滅危惧種の繁殖成功は評判を押し上げること(保全実績)'
   end
 
   describe '非対称性(信用は築くより失うが速い)' do

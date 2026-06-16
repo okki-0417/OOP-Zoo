@@ -34,13 +34,20 @@ module Zoo
           experience = VisitorExperience.score(condition: condition, fee: zoo.admission_fee)
           zoo.apply_reputation(
             ReputationPolicy.after_day(
-              zoo.reputation, experience: experience, exposure: visitors,
-              deaths: dead.size, outbreak: !afflicted.nil?
+              zoo.reputation, experience: experience, exposure: visitors, events: news_of(dead, afflicted)
             )
           )
           zoo.advance_day
 
           DayOutcome.new(visitors: visitors, income: income, cost: cost, deaths: dead.size, afflicted: afflicted)
+        end
+
+        # その日のニュース(評判を動かす出来事)を組み立てる。
+        # 死因は未モデル化のため :unknown(死因別の重みは ReputationEvent::Death 側に実装済み)。
+        def news_of(dead, afflicted)
+          events = dead.map { |a| ReputationEvent::Death.new(cause: :unknown, charisma: a.species.charisma) }
+          events << ReputationEvent::Outbreak.new if afflicted
+          events
         end
       end
     end

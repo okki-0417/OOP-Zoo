@@ -132,16 +132,19 @@ module Zoo
           expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 5).score).to eq(50)
         end
 
-        it '来場ゼロでもニュース経路(死亡)は効き、5×頭数だけ下げること' do
-          expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 0, deaths: 2).score).to eq(40)
+        it '来場ゼロでもニュース経路(死亡)は効き、events の reputation_delta の和だけ下げること' do
+          deaths = Array.new(2) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) }
+          expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 0, events: deaths).score).to eq(40)
         end
 
-        it '疫病が出ると OUTBREAK_PENALTY(8)だけ下げること' do
-          expect(described_class.after_day(Reputation.new(50), experience: 50, exposure: 100, outbreak: true).score).to eq(42)
+        it '疫病(Outbreak)が出ると PENALTY(8)だけ下げること' do
+          events = [ReputationEvent::Outbreak.new]
+          expect(described_class.after_day(Reputation.new(50), experience: 50, exposure: 100, events: events).score).to eq(42)
         end
 
         it '評判は 0..100 にクランプされること(過大なイベントでも負にならない)' do
-          expect(described_class.after_day(Reputation.new(0), experience: 0, exposure: 100, deaths: 5).score).to eq(0)
+          deaths = Array.new(5) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) }
+          expect(described_class.after_day(Reputation.new(0), experience: 0, exposure: 100, events: deaths).score).to eq(0)
         end
       end
     end
