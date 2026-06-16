@@ -3,11 +3,11 @@
 module Zoo
   module Application
     module Services
-      # 1日の運営ループを束ねる高階のユースケース。
+      # 1日の運営を実行するユースケース。
       #
-      # 加齢・死亡(OpenForADay)を回し、展示内容と評判から来園者を集めて収益を得、
-      # 運営費を支払い、その日の結果で評判を更新する。式はドメインサービスが持ち、
-      # 本サービスはそれらの調整に徹する。
+      # 加齢・死亡(OpenForADay)を回し、1日のサイクル(DailyOperation ドメインサービス)に
+      # 編成を委ねる。本サービスはトランザクション境界・永続化・read model への変換に徹する
+      # (「何が起きるか」はドメイン、「いつ回して保存するか」はここ)。
       class OperateDay
         def initialize(open_for_a_day:, enclosures:, animals:, keepers:, veterinarians:, zoo:, unit_of_work:,
                        random: Random.new)
@@ -26,55 +26,23 @@ module Zoo
             zoo = @zoo.load
             dead = @open_for_a_day.call(season: zoo.season)
 
-            visitors = Domain::Operations::VisitorAttraction.expected_visitors(
-              on_exhibit, zoo.reputation, zoo.admission_fee, buzz: zoo.buzz
+            outcome = Domain::Operations::DailyOperation.run(
+              zoo: zoo, enclosures: @enclosures.all, animals: @animals.all,
+              dead: dead, staff_count: staff_count, random: @random
             )
-            income = zoo.admission_fee * visitors
-            zoo.admit_visitors(visitors)
 
-            cost = Domain::Operations::OperatingCost.daily(
-              enclosures: @enclosures.all, staff: staff_count, species: @animals.all.map(&:species)
-            )
-            zoo.spend(cost)
-
-            outbreak = strike_outbreak
-
-            condition = Domain::Husbandry::Condition.score(on_exhibit)
-            experience = Domain::Operations::VisitorExperience.score(
-              condition: condition, fee: zoo.admission_fee
-            )
-            zoo.apply_reputation(
-              Domain::Operations::ReputationPolicy.after_day(
-                zoo.reputation, experience: experience, exposure: visitors,
-                deaths: dead.size, outbreak: !outbreak.nil?
-              )
-            )
-            zoo.advance_day
+            @animals.save(outcome.afflicted) if outcome.afflicted
             @zoo.save(zoo)
 
             ReadModels::DayReport.new(
-              visitors: visitors, income: income, cost: cost, deaths: dead.size,
+              visitors: outcome.visitors, income: outcome.income, cost: outcome.cost, deaths: outcome.deaths,
               balance: zoo.balance, reputation: zoo.reputation.score, bankrupt: zoo.bankrupt?,
-              outbreak: outbreak
+              outbreak: outcome.outbreak_name
             )
           end
         end
 
         private
-
-        # 疫病が発生したら1頭を発病させ、その名前を返す(無ければ nil)。
-        def strike_outbreak
-          afflicted = Domain::Operations::OutbreakPolicy.strike(on_exhibit, @random)
-          return nil if afflicted.nil?
-
-          afflicted.fall_ill(Domain::Medical::IllnessCatalog.parasite)
-          @animals.save(afflicted)
-          afflicted.name.to_s
-        end
-
-        def on_exhibit
-          @enclosures.all.flat_map(&:occupants)
-        end
 
         def staff_count
           @keepers.all.size + @veterinarians.all.size

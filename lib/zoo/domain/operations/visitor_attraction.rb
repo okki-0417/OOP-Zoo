@@ -20,8 +20,6 @@ module Zoo
         # 支払意思(choke price)の下限と、魅力1点あたりの押し上げ額(評判満点時)。
         WILLINGNESS_BASE_YEN = 3_000
         WILLINGNESS_PER_APPEAL_YEN = 15
-        # 全頭がストレス下にあるときの集客係数(良好なら1.0)。
-        WELFARE_FLOOR = 0.5
 
         def expected_visitors(animals, reputation, admission_fee, buzz: 0)
           return 0 if animals.empty?
@@ -32,8 +30,7 @@ module Zoo
           price = admission_fee.yen
           return 0 if price >= p_max
 
-          visitors = q_max * (1.0 - (price.to_f / p_max))
-          (visitors * welfare_multiplier(animals)).to_i
+          (q_max * (1.0 - (price.to_f / p_max))).to_i
         end
 
         # 魅力: カリスマ性＋多様性＋話題。
@@ -50,14 +47,6 @@ module Zoo
         # 支払意思の上限(Pmax/choke price)。良い園(魅力・評判が高い)ほど高くても来る。
         def willingness_to_pay(appeal, reputation)
           WILLINGNESS_BASE_YEN + (appeal * WILLINGNESS_PER_APPEAL_YEN * reputation.score / Reputation::MAX)
-        end
-
-        # 福祉による集客係数。ストレスを抱えていない個体の割合が高いほど1.0に近づく。
-        def welfare_multiplier(animals)
-          return 1.0 if animals.empty?
-
-          content = animals.count { |animal| !animal.stressed? }
-          WELFARE_FLOOR + ((1.0 - WELFARE_FLOOR) * content.to_f / animals.size)
         end
       end
     end

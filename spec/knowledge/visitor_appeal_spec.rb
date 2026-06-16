@@ -3,7 +3,9 @@
 require 'spec_helper'
 
 # 集客の魅力の知識。来園者を惹きつけるのは保全ランク(希少性)そのものではなく、
-# 種のカリスマ性(フラッグシップ種)と展示の質(動物の活発さ・福祉・幼獣の誕生)である。
+# 種のカリスマ性(フラッグシップ種)・展示の多様性・話題(幼獣の誕生)である。
+# 集客 = f(魅力, 評判, 料金) であり、福祉そのものは集客の直接の引数ではない。
+# 福祉は「来た人の体験 → 評判」を経由して(遅延して)集客に効く(reputation_spec を参照)。
 RSpec.describe '集客の魅力' do
   catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
   attraction = Zoo::Domain::Operations::VisitorAttraction
@@ -40,12 +42,12 @@ RSpec.describe '集客の魅力' do
     end
   end
 
-  describe '展示の質' do
-    it '福祉が良い(ストレスのない)展示ほど来園者を惹きつけること' do
+  describe '展示の質(福祉)は集客の直接の引数ではない' do
+    it '同じ展示なら、福祉(ストレス)の良し悪しで同日の集客は変わらないこと' do
       content = herd(catalog.lion, count: 4)
       stressed = herd(catalog.lion, count: 4, stress: 70)
-      expect(attraction.expected_visitors(content, rep, fee))
-        .to be > attraction.expected_visitors(stressed, rep, fee)
+      expect(attraction.expected_visitors(stressed, rep, fee))
+        .to eq(attraction.expected_visitors(content, rep, fee))
     end
   end
 
