@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# Stress 値オブジェクトの実装上の保証(クランプ・異常系・等価性・しきい値)。
-# ドメインとしての福祉の意味は spec/knowledge/ の「動物」「動物福祉」を参照。
 RSpec.describe Zoo::Domain::Animal::Stress do
   describe '.calm' do
     it '穏やか(0)の Stress を返すこと' do

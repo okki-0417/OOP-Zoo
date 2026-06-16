@@ -4,7 +4,6 @@ module Zoo
   module Application
     module Services
       class BreedAnimals
-        # 1回の誕生が生む話題度。
         BIRTH_BUZZ = 40
 
         def initialize(animals:, enclosures:, zoo:, event_dispatcher:, unit_of_work:)
@@ -29,7 +28,7 @@ module Zoo
             pair = Domain::Breeding::BreedingPair.new(sire: sire, dam: dam)
             pair.mate(season: @zoo.load.season)
             pair.advance(dam.species.gestation_period_days)
-            # 血統(在籍する全個体)から子の近交係数を求め、近交弱勢を反映する。
+
             inbreeding = Domain::Breeding::Pedigree.inbreeding_of_offspring(sire, dam, animal_lookup)
             child = pair.deliver(name: command.name, sex: command.sex, inbreeding: inbreeding)
 
@@ -37,7 +36,6 @@ module Zoo
             enclosure.admit(child)
             @enclosures.save(enclosure)
 
-            # 幼獣の誕生は話題を生み、一時的に集客を押し上げる。
             zoo = @zoo.load
             zoo.generate_buzz(BIRTH_BUZZ)
             @zoo.save(zoo)
@@ -51,7 +49,6 @@ module Zoo
 
         private
 
-        # 祖先を id から辿るための参照(在籍記録＝全個体リポジトリ)。
         def animal_lookup
           ->(id) { @animals.find(id) }
         end

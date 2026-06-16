@@ -3,10 +3,6 @@
 module Zoo
   module Domain
     module Husbandry
-      # 清潔度を表す不変の値オブジェクト。0(不衛生)〜100(清潔)。
-      #
-      # 飼育エリアは動物が暮らすほど汚れ(減少)、清掃で回復(増加)する。
-      # 一定以下になると衛生悪化として動物の健康に影響しうる。
       class Cleanliness
         include Shared::ValueObject
         include Comparable
@@ -40,7 +36,6 @@ module Zoo
           self.class.new(@level + amount)
         end
 
-        # 不衛生か(しきい値以下)。
         def filthy?
           @level <= FILTHY_THRESHOLD
         end

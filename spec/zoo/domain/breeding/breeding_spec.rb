@@ -80,7 +80,7 @@ module Zoo
             pair.mate
             pair.advance(lion.gestation_period_days)
             cub = pair.deliver(name: '近交子', sex: Animal::Sex.female, inbreeding: 0.25)
-            expect(cub.health.max).to eq(38) # 50 * (1 - 0.25) = 37.5 → 38
+            expect(cub.health.max).to eq(38)
           end
 
           it 'inbreeding=1.0 でも最大体力は最低1に保たれること' do
@@ -127,7 +127,7 @@ module Zoo
             pair.mate
             dam.get_hungrier(100)
             pair.advance(1)
-            dam.satisfy_hunger(100) # 母体が回復
+            dam.satisfy_hunger(100)
             pair.mate
             expect(pair).not_to be_miscarried
             expect(pair).to be_expecting
@@ -145,7 +145,7 @@ module Zoo
           pair.mate
           pair.advance(lion.gestation_period_days)
           daughter = pair.deliver(name: '娘', sex: Animal::Sex.female)
-          # 子を成熟させる
+
           daughter.grow_older(lion.maturity_age_years * 365 + 1)
           daughter.satisfy_hunger(100)
 

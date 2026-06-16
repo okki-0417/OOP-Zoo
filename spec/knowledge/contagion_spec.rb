@@ -2,14 +2,12 @@
 
 require 'spec_helper'
 
-# 病気の感染と免疫の知識。感染性の病気は同じエリア(接触)で広がり、回復した個体は免疫を得る。
 RSpec.describe '病気の感染と免疫' do
   shared    = Zoo::Domain::Shared
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   illnesses = Zoo::Domain::Medical::IllnessCatalog
   contagion = Zoo::Domain::Medical::Contagion
 
-  # 群れ性のライオンを同居させたエリアを作る。
   def pride(*animals)
     enclosure = Zoo::Domain::Husbandry::Enclosure.new(
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 6
@@ -22,7 +20,7 @@ RSpec.describe '病気の感染と免疫' do
     it '感染性の病気を持つ個体がいると、同じエリアの健康な個体に広がること' do
       carrier = build_adult(catalog.lion, name: '感染源')
       healthy = build_adult(catalog.lion, name: '健康')
-      carrier.fall_ill(illnesses.cold) # 風邪は感染性
+      carrier.fall_ill(illnesses.cold)
       enclosure = pride(carrier, healthy)
 
       contagion.spread(enclosure)
@@ -33,7 +31,7 @@ RSpec.describe '病気の感染と免疫' do
     it '感染性でない病気(骨折)は広がらないこと' do
       injured = build_adult(catalog.lion, name: '骨折')
       healthy = build_adult(catalog.lion, name: '健康')
-      injured.fall_ill(illnesses.fracture) # 骨折は感染しない
+      injured.fall_ill(illnesses.fracture)
       enclosure = pride(injured, healthy)
 
       contagion.spread(enclosure)
@@ -46,7 +44,7 @@ RSpec.describe '病気の感染と免疫' do
       carrier.fall_ill(illnesses.cold)
       faraway = build_adult(catalog.lion, name: '別エリア')
       sick_enclosure = pride(carrier)
-      pride(faraway) # 別エリア
+      pride(faraway)
 
       contagion.spread(sick_enclosure)
 
@@ -66,7 +64,7 @@ RSpec.describe '病気の感染と免疫' do
     it '免疫を持つ病気には接触しても再びかからないこと' do
       recovered = build_adult(catalog.lion, name: '回復済み')
       recovered.fall_ill(illnesses.cold)
-      recovered.recover # 風邪に免疫
+      recovered.recover
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
       enclosure = pride(recovered, carrier)

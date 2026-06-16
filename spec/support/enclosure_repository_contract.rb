@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# EnclosureRepository ポートが満たすべき契約(occupants 無しの基本)。
-# ホスト側で let(:repository) を提供すること。
 RSpec.shared_examples 'an enclosure repository' do
   def sample_enclosure(name = '丘')
     Zoo::Domain::Husbandry::Enclosure.new(
@@ -11,7 +9,7 @@ RSpec.shared_examples 'an enclosure repository' do
 
   it 'save した区画を find で取り出せること(名前・定員・清潔度)' do
     enclosure = sample_enclosure
-    enclosure.soil(30) # 清潔度 70
+    enclosure.soil(30)
 
     repository.save(enclosure)
     found = repository.find(enclosure.id)

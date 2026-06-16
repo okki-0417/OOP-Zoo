@@ -22,7 +22,6 @@ RSpec.describe Zoo::Application::Services::AcquireAnimal do
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals]) }
   let(:service) { described_class.new(animals: animals, zoo: zoo_repo, unit_of_work: unit_of_work) }
 
-  # ニホンザルは低危険(LC)で取引可能。
   let(:command) do
     commands::AcquireAnimalCommand.new(species: catalog.japanese_macaque, name: 'モンタ', sex: animal::Sex.male, max_health: 100)
   end

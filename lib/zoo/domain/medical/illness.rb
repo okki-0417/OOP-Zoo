@@ -3,10 +3,6 @@
 module Zoo
   module Domain
     module Medical
-      # 病気・怪我を表す値オブジェクト。
-      #
-      # 毎日体力を削る度合い(daily_damage)と、同居個体へうつるか(contagious)を持つ。
-      # 重症度は daily_damage の大きさで表現する。
       class Illness
         include Shared::ValueObject
 
@@ -22,12 +18,10 @@ module Zoo
           freeze
         end
 
-        # 同居個体に感染するか。
         def contagious?
           @contagious
         end
 
-        # 重症(進行が速い)か。
         def severe?
           @daily_damage >= 5
         end

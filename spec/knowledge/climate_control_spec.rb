@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 空調・屋内施設の知識。実際の動物園は加温・冷房・屋内放飼場で、季節や立地の気候不適合を
-# 緩和する。これにより本来その地に合わない種も飼育でき、福祉を保てる。設備には費用がかかる。
 RSpec.describe '空調と屋内施設' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   season  = Zoo::Domain::Operations::Season
@@ -29,9 +27,9 @@ RSpec.describe '空調と屋内施設' do
   describe '気候の緩和' do
     it '空調付きエリアは、季節による実効気温の変動を抑えること' do
       expect(enclosure(climate_controlled: true).effective_temperature(season.winter))
-        .to eq(shared::Temperature.celsius(20)) # 設定気温を保つ
+        .to eq(shared::Temperature.celsius(20))
       expect(enclosure(climate_controlled: false).effective_temperature(season.winter).celsius)
-        .to be < 20 # 冬は寒く感じる
+        .to be < 20
     end
 
     it '空調により、本来その季節に合わない種でも快適に保たれること' do

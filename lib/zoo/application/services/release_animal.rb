@@ -3,7 +3,6 @@
 module Zoo
   module Application
     module Services
-      # 個体を現在のエリアから退去させる(展示から外す)。個体自体は在籍したまま。
       class ReleaseAnimal
         def initialize(enclosures:, animals:, unit_of_work:)
           @enclosures = enclosures

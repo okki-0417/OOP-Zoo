@@ -10,7 +10,7 @@ module Zoo
 
         describe '.acquisition_price' do
           it '基本価格＋希少性(ランク×単価)＋体重(kg×単価)で算出すること' do
-            # ライオン: 20,000 + VU(rank2)×10,000 + 190kg×50 = 49,500
+
             expect(described_class.acquisition_price(catalog.lion)).to eq(Shared::Money.yen(49_500))
           end
 

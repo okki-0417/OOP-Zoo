@@ -97,7 +97,7 @@ module Zoo
         end
 
         it '広さを指定しなければ定員×100m²になること' do
-          expect(savanna.area_sqm).to eq(300) # 定員3
+          expect(savanna.area_sqm).to eq(300)
         end
 
         describe '#pass_day' do
@@ -107,7 +107,7 @@ module Zoo
           end
 
           it '死亡した個体を取り除いて返すこと' do
-            old_zebra = build_animal(zebra, age_in_days: 365 * 20) # 寿命ぎりぎり
+            old_zebra = build_animal(zebra, age_in_days: 365 * 20)
             savanna.admit(old_zebra)
             dead = savanna.pass_day
             expect(dead).to include(old_zebra)
@@ -117,7 +117,7 @@ module Zoo
           it '不衛生(filthy)なエリアでは健康な個体が発病すること' do
             zebra_animal = build_adult(zebra)
             savanna.admit(zebra_animal)
-            savanna.soil(80) # 清潔度100→20で filthy
+            savanna.soil(80)
 
             savanna.pass_day
 

@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     module Operations
-      # 成長アクション(取得・建設・雇用)の費用を算出するドメインサービス。
       module Pricing
         module_function
 

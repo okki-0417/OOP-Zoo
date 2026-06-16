@@ -3,7 +3,6 @@
 require 'spec_helper'
 require 'stringio'
 
-# 今回追加した CLI コマンド(rename / deceased)の薄い動作確認。
 RSpec.describe 'Zoo::Presentation::Cli 追加コマンド' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   events  = Zoo::Domain::Events

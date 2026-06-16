@@ -2,10 +2,8 @@
 
 require 'spec_helper'
 
-# 現実の動物園の一日を、ドメイン層だけで再現する統合シナリオ。
-# 分類・飼育エリア・給餌・職員・繁殖・運営の各コンテキストが協調することを確認する。
 RSpec.describe '現実の動物園の再現' do
-  # 名前空間の別名(テスト内ローカル)。
+
   shared    = Zoo::Domain::Shared
   animal    = Zoo::Domain::Animal
   taxonomy  = Zoo::Domain::Taxonomy
@@ -20,7 +18,6 @@ RSpec.describe '現実の動物園の再現' do
     Zoo::Domain::Shared::Temperature.celsius(value)
   end
 
-  # --- 動物園の開園準備 ---
   let(:zoo) { Zoo::Domain::Zoo.new(name: 'おうきの動物園', admission_fee: shared::Money.yen(2000)) }
 
   let(:savanna) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'アフリカサバンナ', temperature: deg(30), capacity: 6)) }
@@ -35,7 +32,6 @@ RSpec.describe '現実の動物園の再現' do
   let(:reptile_keeper) { zoo.hire_keeper(staff::Keeper.new(name: '佐藤', specialties: [taxonomy::TaxonClass.reptile])) }
   let(:vet) { zoo.hire_veterinarian(staff::Veterinarian.new(name: '山田')) }
 
-  # 雌雄の成体ペア。
   let(:lions) { build_pair(catalog.lion) }
   let(:zebras) { build_pair(catalog.grevys_zebra) }
   let(:giraffe) { build_adult(catalog.reticulated_giraffe, name: 'キリン') }
@@ -45,16 +41,16 @@ RSpec.describe '現実の動物園の再現' do
   let(:macaques) { build_pair(catalog.japanese_macaque) }
 
   before do
-    # サバンナは草食動物の混合展示。
+
     zebras.each { |z| zoo.house(z, savanna) }
     zoo.house(giraffe, savanna)
-    # 肉食獣・極地・水鳥・爬虫類・霊長類はそれぞれの環境へ。
+
     lions.each { |l| zoo.house(l, lion_hill) }
     zoo.house(polar_bear, polar_sea)
     penguins.each { |p| zoo.house(p, penguin_pool) }
     zoo.house(python, reptile_house)
     macaques.each { |m| zoo.house(m, monkey_mountain) }
-    # 担当割り当て。
+
     mammal_keeper.assign_to(savanna).assign_to(lion_hill).assign_to(polar_sea).assign_to(monkey_mountain)
     bird_keeper.assign_to(penguin_pool)
     reptile_keeper.assign_to(reptile_house)
@@ -62,7 +58,7 @@ RSpec.describe '現実の動物園の再現' do
 
   it '多様な動物が適切な環境に収容され、混合展示が成立すること' do
     expect(zoo.population).to eq(12)
-    expect(savanna.species_present.size).to eq(2) # シマウマ + キリン
+    expect(savanna.species_present.size).to eq(2)
     expect(zoo.species_on_exhibit.size).to eq(7)
   end
 
@@ -84,10 +80,9 @@ RSpec.describe '現実の動物園の再現' do
     mammal_keeper.feed(zebras.first, feeding::FoodCatalog.hay)
     expect(zebras.first.hunger.level).to eq(40 - satiety)
 
-    # 哺乳類担当はペンギン(鳥類)に給餌できない。
     expect { mammal_keeper.feed(penguins.first, feeding::FoodCatalog.sardine) }
       .to raise_error(Zoo::Domain::Errors::NotQualified)
-    # 鳥類担当なら給餌できる。
+
     penguins.first.get_hungrier(30)
     expect { bird_keeper.feed(penguins.first, feeding::FoodCatalog.sardine) }.not_to raise_error
   end
@@ -122,16 +117,16 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   it '展示中の絶滅危惧種を把握できること' do
-    # シマウマ(EN)・キリン(EN)・ライオン(VU)・ホッキョクグマ(VU)・ニシキヘビ(VU)が該当。
+
     names = zoo.threatened_species.map(&:name_ja)
     expect(names).to include('グレビーシマウマ', 'アミメキリン', 'ライオン', 'ホッキョクグマ', 'ビルマニシキヘビ')
-    expect(names).not_to include('ニホンザル') # LC
+    expect(names).not_to include('ニホンザル')
   end
 
   it '一日を開園すると全個体が歳をとり、エリアが汚れること' do
     expect { zoo.open_for_a_day }
       .to change { zebras.first.age_in_days.value }.by(1)
     expect(savanna.cleanliness.level).to be < 100
-    expect(zoo.population).to eq(12) # 健康な個体は誰も死なない
+    expect(zoo.population).to eq(12)
   end
 end

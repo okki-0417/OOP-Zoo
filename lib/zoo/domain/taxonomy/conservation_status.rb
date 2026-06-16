@@ -3,15 +3,10 @@
 module Zoo
   module Domain
     module Taxonomy
-      # IUCNレッドリストの保全状況を表す値オブジェクト。
-      #
-      # 深刻度に順序を持たせ、繁殖プログラムの優先度判定(絶滅危惧種を優先して
-      # 繁殖させる)などに用いる。
       class ConservationStatus
         include Shared::ValueObject
         include Comparable
 
-        # 深刻度の低い順に定義する(rankが大きいほど絶滅に近い)。
         STATUSES = {
           least_concern: { code: 'LC', label: '低危険' },
           near_threatened: { code: 'NT', label: '準絶滅危惧' },
@@ -38,12 +33,10 @@ module Zoo
           freeze
         end
 
-        # 絶滅危惧(危急・絶滅危惧・深刻な絶滅危惧)に該当するか。
         def threatened?
           %i[vulnerable endangered critically_endangered].include?(@value)
         end
 
-        # 既に絶滅(野生絶滅含む)しているか。
         def extinct?
           %i[extinct_in_the_wild extinct].include?(@value)
         end

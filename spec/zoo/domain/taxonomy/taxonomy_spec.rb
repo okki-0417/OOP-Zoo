@@ -76,16 +76,16 @@ module Zoo
         end
 
         it '体格と行動様式に応じた必要面積を返すこと(最小5m²)' do
-          # ライオンは捕食性哺乳類で広い行動圏: 190kg × 0.25 × 2.0 = 95
+
           expect(lion.space_requirement_sqm).to eq(95)
-          expect(SpeciesCatalog.hercules_beetle.space_requirement_sqm).to eq(5) # 体格極小でも最小5
+          expect(SpeciesCatalog.hercules_beetle.space_requirement_sqm).to eq(5)
         end
 
         it '快適か(適温域の内側か)を判定できること' do
-          # ライオンの適温域は10〜40℃。縁15%を除く約14.5〜35.5℃が快適帯。
-          expect(lion.comfortable?(Shared::Temperature.celsius(25))).to be(true)  # 中央
-          expect(lion.comfortable?(Shared::Temperature.celsius(12))).to be(false) # 適応域内だが縁
-          expect(lion.comfortable?(Shared::Temperature.celsius(50))).to be(false) # 適応域外
+
+          expect(lion.comfortable?(Shared::Temperature.celsius(25))).to be(true)
+          expect(lion.comfortable?(Shared::Temperature.celsius(12))).to be(false)
+          expect(lion.comfortable?(Shared::Temperature.celsius(50))).to be(false)
         end
 
         it '気候域の重なりを判定できること(ライオンとコウテイペンギンは気候が両立しない)' do

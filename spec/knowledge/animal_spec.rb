@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# 動物園にいる一頭一頭の「動物」が持つドメイン知識。
 RSpec.describe '動物' do
   sex       = Zoo::Domain::Animal::Sex
   name_vo   = Zoo::Domain::Animal::Name
@@ -95,7 +94,7 @@ RSpec.describe '動物' do
   describe '体力' do
     let(:animal) { build_animal }
 
-    before { 5.times { animal.cry_out } } # 最大10のうち体力5まで消耗させておく
+    before { 5.times { animal.cry_out } }
 
     context '手当てを受けると' do
       it '体力が回復すること' do
@@ -169,7 +168,7 @@ RSpec.describe '動物' do
 
     context '衰弱しているとき' do
       it '体力が2割以下だと弱々しい声になること' do
-        8.times { animal.cry_out } # 最大10のうち体力2(2割)まで
+        8.times { animal.cry_out }
         expect(animal.cry_out).to eq('Woof...')
       end
     end
@@ -184,8 +183,8 @@ RSpec.describe '動物' do
 
   describe '空腹と飢餓' do
     let(:animal) { build_animal(max_health: 100) }
-    let(:meat) { foods.horse_meat } # 肉(満腹度35)
-    let(:hay)  { foods.hay }        # 植物
+    let(:meat) { foods.horse_meat }
+    let(:hay)  { foods.hay }
 
     context '時間が経つと' do
       it '空腹が進むこと' do
@@ -226,9 +225,9 @@ RSpec.describe '動物' do
 
     context '飢餓のまま放置されると' do
       it '衰弱し、やがて餓死すること' do
-        animal.grow_older(10) # 空腹が限界に達する
+        animal.grow_older(10)
         expect(animal).to be_starving
-        animal.grow_older(60) # 飢餓のまま放置
+        animal.grow_older(60)
         expect(animal).to be_dead
         expect(animal.death.cause).to eq(:starvation)
       end
@@ -288,7 +287,7 @@ RSpec.describe '動物' do
 
     context '病気のまま放置されると' do
       it '体力を削られ、やがて病死すること' do
-        animal.fall_ill(illnesses.pneumonia) # 肺炎は進行が速い(1日6)
+        animal.fall_ill(illnesses.pneumonia)
         animal.grow_older(20)
         expect(animal).to be_dead
         expect(animal.death.cause).to eq(:illness)

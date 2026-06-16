@@ -3,19 +3,12 @@
 module Zoo
   module Domain
     module Taxonomy
-      # 実在する動物種のカタログ。現実の動物園を再現するためのリファレンスデータ。
-      #
-      # 種は値オブジェクトのため、ここでは生成のためのファクトリを提供する。
-      # 飼育に必要な生態情報(適温域・寿命・性成熟年齢・妊娠/抱卵期間・成獣体重・
-      # 群れ性・鳴き声・産仔数・繁殖季節・カリスマ性)を実在の知見に基づいて与えている。
       module SpeciesCatalog
         module_function
 
         def temp(value)
           Shared::Temperature.celsius(value)
         end
-
-        # --- 哺乳類 ---
 
         def lion
           Species.new(
@@ -108,8 +101,6 @@ module Zoo
           )
         end
 
-        # --- 鳥類 ---
-
         def emperor_penguin
           Species.new(
             name_ja: 'コウテイペンギン', scientific_name: 'Aptenodytes forsteri',
@@ -149,8 +140,6 @@ module Zoo
           )
         end
 
-        # --- 爬虫類 ---
-
         def burmese_python
           Species.new(
             name_ja: 'ビルマニシキヘビ', scientific_name: 'Python bivittatus',
@@ -177,8 +166,6 @@ module Zoo
           )
         end
 
-        # --- 両生類 ---
-
         def japanese_fire_belly_newt
           Species.new(
             name_ja: 'アカハライモリ', scientific_name: 'Cynops pyrrhogaster',
@@ -192,8 +179,6 @@ module Zoo
           )
         end
 
-        # --- 魚類 ---
-
         def koi
           Species.new(
             name_ja: 'ニシキゴイ', scientific_name: 'Cyprinus rubrofuscus',
@@ -206,8 +191,6 @@ module Zoo
             litter_size: 300, charisma: 30
           )
         end
-
-        # --- 無脊椎動物 ---
 
         def hercules_beetle
           Species.new(
@@ -233,12 +216,10 @@ module Zoo
           KEYS
         end
 
-        # カタログ全種。
         def all
           KEYS.map { |name| public_send(name) }
         end
 
-        # キーから種を引く。未知のキーは nil。
         def find(key)
           symbol = key.to_s.to_sym
           return nil unless KEYS.include?(symbol)

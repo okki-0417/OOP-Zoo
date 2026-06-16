@@ -22,7 +22,7 @@ RSpec.describe Zoo::Presentation::Tui::FeedAnimal do
     it '選択した飼育員・個体・餌で給餌すること' do
       keeper
       lion.get_hungrier(40)
-      # choose_keeper → choose_animal → 餌 の順に select が呼ばれる
+
       allow(prompt).to receive(:select).and_return(keeper.id.to_s, lion.id.to_s, :horse_meat)
 
       action.call

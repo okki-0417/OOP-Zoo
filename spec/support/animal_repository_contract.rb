@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# AnimalRepository ポートが満たすべき契約。in-memory と SQLite の両実装で共有する。
-# ホスト側で let(:repository) を提供すること。
 RSpec.shared_examples 'an animal repository' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   medical = Zoo::Domain::Medical
@@ -32,7 +30,7 @@ RSpec.shared_examples 'an animal repository' do
     lion.get_hungrier(40)
     lion.add_stress(50)
     lion.fall_ill(medical::IllnessCatalog.cold)
-    lion.recover # 風邪に免疫を得る
+    lion.recover
     lion.fall_ill(medical::IllnessCatalog.pneumonia)
 
     repository.save(lion)

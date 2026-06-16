@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# SocialStructure の判定上の保証。序列の意味は spec/knowledge/「群れと社会構造」を参照。
 RSpec.describe Zoo::Domain::Husbandry::SocialStructure do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sex = Zoo::Domain::Animal::Sex

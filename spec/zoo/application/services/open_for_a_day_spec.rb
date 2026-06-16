@@ -10,7 +10,7 @@ RSpec.describe Zoo::Application::Services::OpenForADay do
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:survivor) { build_adult(catalog.lion, name: '若') }
-  let(:elder) { build_animal(catalog.lion, name: '老', age_in_days: 1_000_000) } # 寿命を大きく超過
+  let(:elder) { build_animal(catalog.lion, name: '老', age_in_days: 1_000_000) }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
                         .tap { |e| e.admit(survivor); e.admit(elder) }

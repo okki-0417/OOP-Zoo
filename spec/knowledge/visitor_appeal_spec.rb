@@ -2,11 +2,6 @@
 
 require 'spec_helper'
 
-# 集客の魅力の知識。来園者を惹きつけるのは保全ランク(希少性)そのものではなく、
-# 種のカリスマ性(フラッグシップ種)・話題(幼獣の誕生)である。種数(多様性)そのものは引きにならず、
-# 多様化が効くのは「カリスマある種を増やすぶんカリスマ合計が増えるから」=カリスマに内包される。
-# 集客 = f(魅力, 評判, 料金) であり、福祉そのものは集客の直接の引数ではない。
-# 福祉は「来た人の体験 → 評判」を経由して(遅延して)集客に効く(reputation_spec を参照)。
 RSpec.describe '集客の魅力' do
   catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
   attraction = Zoo::Domain::Operations::VisitorAttraction

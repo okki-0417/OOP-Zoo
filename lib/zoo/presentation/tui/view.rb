@@ -25,7 +25,6 @@ module Zoo
           )
         end
 
-        # 操作結果の見出し(ダッシュボードとの境界)。
         def section(label)
           @pastel.cyan.bold("\n── #{label} ───────────────────────────")
         end

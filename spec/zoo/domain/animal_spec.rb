@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# Animal 集約の技術契約(機構・エッジ)。意味は spec/knowledge/「動物」を参照。
 module Zoo
   module Domain
     RSpec.describe Animal do
@@ -58,7 +57,7 @@ module Zoo
       end
 
       describe '.reconstitute' do
-        # 永続化からの復元。new の初期化規則を通さず、保存値そのままに組み直す。
+
         def reconstitute(health:, hunger:, stress:, illness:, death:, immunities: [], parent_ids: [])
           Animal.reconstitute(
             id: Shared::Identifier.new, species: Taxonomy::SpeciesCatalog.lion,
@@ -71,7 +70,7 @@ module Zoo
 
         it '体力・空腹・ストレスを保存値そのままに復元すること' do
           animal = reconstitute(
-            health: Animal::Health.full(100).decreased_by(40), # 現在60
+            health: Animal::Health.full(100).decreased_by(40),
             hunger: Animal::Hunger.new(35), stress: Animal::Stress.new(50),
             illness: nil, death: nil
           )

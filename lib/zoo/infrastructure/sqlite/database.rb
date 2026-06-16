@@ -5,7 +5,6 @@ require 'sqlite3'
 module Zoo
   module Infrastructure
     module Sqlite
-      # SQLite 接続とスキーマを管理する。:memory: ならインメモリDB(テスト向け)。
       class Database
         def initialize(path = ':memory:')
           @db = SQLite3::Database.new(path)
@@ -21,7 +20,6 @@ module Zoo
           @db.execute(sql, params)
         end
 
-        # ブロックを1つのトランザクションで実行する(例外で自動ロールバック)。
         def transaction
           result = nil
           @db.transaction { result = yield }

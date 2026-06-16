@@ -3,7 +3,6 @@
 module Zoo
   module Infrastructure
     module Sqlite
-      # Keeper 集約 ⇄ 行。専門綱(TaxonClass の配列)は値の CSV に平坦化する。
       class KeeperMapper
         def to_row(keeper)
           {

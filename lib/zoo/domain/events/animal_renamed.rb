@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     module Events
-      # 個体の改名を表すドメインイベント。
       class AnimalRenamed
         attr_reader :animal, :old_name, :new_name
 

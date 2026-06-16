@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# Stocking の計算上の保証。密度の意味は spec/knowledge/「飼育密度と過密」を参照。
 RSpec.describe Zoo::Domain::Husbandry::Stocking do
   shared  = Zoo::Domain::Shared
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
@@ -16,7 +15,7 @@ RSpec.describe Zoo::Domain::Husbandry::Stocking do
   describe '.required_area' do
     it '収容個体の必要面積を合計すること' do
       enclosure = pen(4, 28)
-      enclosure.admit(build_adult(catalog.grevys_zebra, name: 'z1')) # 400kg → 100m²
+      enclosure.admit(build_adult(catalog.grevys_zebra, name: 'z1'))
       enclosure.admit(build_adult(catalog.grevys_zebra, name: 'z2'))
 
       expect(described_class.required_area(enclosure)).to eq(200.0)
@@ -35,8 +34,8 @@ RSpec.describe Zoo::Domain::Husbandry::Stocking do
     end
 
     it '必要面積が広さを超えると過密であること' do
-      enclosure = pen(1, 25) # 広さ100m²
-      enclosure.admit(build_adult(catalog.reticulated_giraffe)) # 1200kg → 300m²
+      enclosure = pen(1, 25)
+      enclosure.admit(build_adult(catalog.reticulated_giraffe))
       expect(described_class.overcrowded?(enclosure)).to be(true)
     end
   end

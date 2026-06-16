@@ -3,11 +3,6 @@
 module Zoo
   module Domain
     module Taxonomy
-      # 生物種を表す値オブジェクト。動物個体(Animal)が参照する不変の分類情報。
-      #
-      # 学名で同一性が決まる。和名・綱・食性・保全状況に加え、飼育・繁殖・
-      # エリア相性の判断に必要な生態情報(適温域・寿命・性成熟年齢・妊娠期間・
-      # 成獣体重・群れ性・既定の鳴き声)を保持する。
       class Species
         include Shared::ValueObject
 
@@ -16,7 +11,6 @@ module Zoo
                     :lifespan_years, :maturity_age_years, :gestation_period_days,
                     :adult_weight, :default_voice, :litter_size, :breeding_season, :charisma
 
-        # 季節を持たず周年で繁殖する種を表す記号。
         YEAR_ROUND = :year_round
 
         def initialize(name_ja:, scientific_name:, taxon_class:, diet_type:,
@@ -46,54 +40,41 @@ module Zoo
           freeze
         end
 
-        # 季節を問わず周年で繁殖する種か。
         def breeds_year_round?
           @breeding_season == YEAR_ROUND
         end
 
-        # この季節に繁殖できるか(周年種は常に可)。
         def breeds_in?(season)
           breeds_year_round? || season.value == @breeding_season
         end
 
-        # 高齢で生殖が老化する種か。恒温動物(哺乳類・鳥類)は老化し、
-        # 不確定成長する変温動物(魚類・爬虫類等)は終生繁殖しうる。
         def reproductively_senesces?
           @taxon_class.warm_blooded?
         end
 
-        # 他種を捕食しうる食性か。
         def predatory?
           @diet_type.predatory?
         end
 
-        # 商業的に取引(購入)できる種か。絶滅危惧種・絶滅種は売買せず、
-        # 種の保存計画を通じて園館間で移送・貸与される(CITES)。
         def tradeable?
           !@conservation_status.threatened? && !@conservation_status.extinct?
         end
 
-        # 体格1kgあたりに要する面積(m²)と、最小必要面積。
         SPACE_SQM_PER_KG = 0.25
         MIN_SPACE_SQM = 5
 
-        # 行動様式による必要面積の割増。広い行動圏を持つ捕食性哺乳類は体重比以上、
-        # 遊泳する魚類・飛翔する鳥類は容積(水量・高さ)を要するため割増する。
         WIDE_RANGING_FACTOR = 2.0
         AQUATIC_FACTOR = 1.5
         FLIGHTED_FACTOR = 1.5
 
-        # 広い行動圏を持つ種(大型ネコ・クマなどの捕食性哺乳類)か。
         def wide_ranging?
           @taxon_class.value == :mammal && predatory?
         end
 
-        # 遊泳する種(水量を要する)か。
         def aquatic?
           @taxon_class.value == :fish
         end
 
-        # 飛翔する種(高さ=容積を要する)か。
         def flighted?
           @taxon_class.value == :bird
         end
@@ -106,17 +87,14 @@ module Zoo
           1.0
         end
 
-        # この種1頭が必要とする面積(m²)。体格に加え、行動様式に応じて割増する。
         def space_requirement_sqm
           [@adult_weight.kilograms * SPACE_SQM_PER_KG * ranging_factor, MIN_SPACE_SQM].max
         end
 
-        # 群れで暮らす種か。
         def group_living?
           @group_living
         end
 
-        # 単独性(縄張りを持ち群れない)か。同種を同居させると争う。
         def solitary?
           !@group_living
         end
@@ -125,13 +103,10 @@ module Zoo
           other.is_a?(Species) && @scientific_name == other.scientific_name
         end
 
-        # 指定気温がこの種の適温域に収まるか。
         def habitable?(temperature)
           @habitable_temperature_range.cover?(temperature)
         end
 
-        # 指定気温が快適か(適温域の内側。縁に近いと生存はできても消耗する)。
-        # 適温域の上下それぞれ15%を「縁」とみなし、中央の帯のみを快適とする。
         def comfortable?(temperature)
           low = @habitable_temperature_range.begin.celsius
           high = @habitable_temperature_range.end.celsius
@@ -139,7 +114,6 @@ module Zoo
           temperature.celsius.between?(low + margin, high - margin)
         end
 
-        # 2種の適温域が重なるか(同一エリアで飼える気候か)。
         def climate_overlaps?(other)
           low = [@habitable_temperature_range.begin, other.habitable_temperature_range.begin].max
           high = [@habitable_temperature_range.end, other.habitable_temperature_range.end].min

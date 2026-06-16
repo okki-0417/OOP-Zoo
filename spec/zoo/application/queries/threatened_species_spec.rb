@@ -8,9 +8,9 @@ RSpec.describe Zoo::Application::Queries::ThreatenedSpecies do
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
 
-  let(:zebras) { build_pair(catalog.grevys_zebra) } # EN・2頭
-  let(:giraffe) { build_adult(catalog.reticulated_giraffe, name: 'キリン') } # EN・1頭
-  let(:macaques) { build_pair(catalog.japanese_macaque) } # LC・2頭
+  let(:zebras) { build_pair(catalog.grevys_zebra) }
+  let(:giraffe) { build_adult(catalog.reticulated_giraffe, name: 'キリン') }
+  let(:macaques) { build_pair(catalog.japanese_macaque) }
 
   let(:savanna) do
     husbandry::Enclosure.new(name: 'サバンナ', temperature: shared::Temperature.celsius(30), capacity: 6)

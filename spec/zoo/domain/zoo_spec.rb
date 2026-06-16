@@ -23,7 +23,7 @@ RSpec.describe Zoo::Domain::Zoo do
 
     it '日を進めると経過日数が増え、やがて季節が変わること' do
       expect { zoo.advance_day }.to change(zoo, :day).by(1)
-      100.times { zoo.advance_day } # 計101日 → 夏
+      100.times { zoo.advance_day }
       expect(zoo.season.label).to eq('夏')
     end
   end
@@ -36,7 +36,7 @@ RSpec.describe Zoo::Domain::Zoo do
     end
 
     it '残高を超えて支出すると赤字になり bankrupt? が true を返すこと' do
-      zoo.admit_visitors(1) # 残高 2000円
+      zoo.admit_visitors(1)
       zoo.spend(S::Money.yen(5_000))
 
       expect(zoo.bankrupt?).to be(true)
@@ -100,8 +100,8 @@ RSpec.describe Zoo::Domain::Zoo do
   describe '保全への貢献' do
     it '展示中の絶滅危惧種を集計できること' do
       area = zoo.add_enclosure(savanna)
-      zoo.house(build_adult(T::SpeciesCatalog.grevys_zebra), area)   # EN
-      zoo.house(build_adult(T::SpeciesCatalog.reticulated_giraffe), area) # EN
+      zoo.house(build_adult(T::SpeciesCatalog.grevys_zebra), area)
+      zoo.house(build_adult(T::SpeciesCatalog.reticulated_giraffe), area)
       expect(zoo.threatened_species.size).to eq(2)
     end
   end
@@ -136,7 +136,7 @@ RSpec.describe Zoo::Domain::Zoo do
       expect(zoo.keepers).to contain_exactly(keeper)
       expect(zoo.veterinarians).to contain_exactly(vet)
 
-      zoo.enclosures.clear # 複製なので内部は変わらない
+      zoo.enclosures.clear
       expect(zoo.enclosures).to contain_exactly(area)
     end
 

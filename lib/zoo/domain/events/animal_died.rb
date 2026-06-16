@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     module Events
-      # 個体が死亡したことを表すドメインイベント。
       class AnimalDied
         CAUSE_LABELS = {
           old_age: '老衰', starvation: '餓死', illness: '病死',

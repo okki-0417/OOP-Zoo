@@ -24,7 +24,7 @@ RSpec.describe Zoo::Presentation::Cli do
     end
 
     it 'ハンドラが上げた例外をユーザ向けメッセージに翻訳して1を返すこと' do
-      status = cli.run(['acquire']) # 引数不足で ArgumentError を誘発
+      status = cli.run(['acquire'])
 
       expect(output.string).to start_with('エラー: ')
       expect(status).to eq(1)

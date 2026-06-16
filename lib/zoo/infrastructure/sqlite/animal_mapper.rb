@@ -3,8 +3,6 @@
 module Zoo
   module Infrastructure
     module Sqlite
-      # Animal 集約 ⇄ 行 の変換(Data Mapper)。値オブジェクトを列に平坦化し、種・疾病は
-      # カタログのキーで持つ。読み戻しはドメインの復元ファクトリ(Animal.reconstitute)に委ねる。
       class AnimalMapper
         Domain = Zoo::Domain
         Catalog = Domain::Taxonomy::SpeciesCatalog

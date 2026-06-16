@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 予防接種の知識。感染性の病気には、かかる前にワクチンを接種して免疫を獲得できる。
-# 免疫があれば接触しても発病しない。感染性でない病気(骨折など)にはワクチンが無い。
 RSpec.describe '予防接種と免疫' do
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   illnesses = Zoo::Domain::Medical::IllnessCatalog

@@ -8,7 +8,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
   catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
   in_memory  = Zoo::Infrastructure::InMemory
 
-  let(:zebra) { build_adult(catalog.grevys_zebra, name: 'シマオ') } # EN・健康
+  let(:zebra) { build_adult(catalog.grevys_zebra, name: 'シマオ') }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'サバンナ', temperature: shared::Temperature.celsius(30), capacity: 6)
                         .tap { |e| e.admit(zebra) }
@@ -30,7 +30,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       enclosures: enclosures, animals: animals, event_dispatcher: dispatcher, unit_of_work: unit_of_work
     )
   end
-  # rand=99(>=20) で疫病を起こさない決定的な乱数源。
+
   let(:no_outbreak) { instance_double(Random, rand: 99) }
   let(:service) do
     described_class.new(
@@ -47,11 +47,9 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       zebra_food = husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
       upkeep = Zoo::Domain::Operations::OperatingCost::UPKEEP_PER_ENCLOSURE
 
-      # 線形需要: 魅力60(カリスマ60), Qmax=60*50/100=30, Pmax=3000+60*15*50/100=3450
-      #          来園=floor(30*(1-2000/3450))=12
       expect(report.visitors).to eq(12)
-      expect(report.income).to eq(shared::Money.yen(24_000))   # 2000 * 12
-      expect(report.cost).to eq(shared::Money.yen(upkeep + zebra_food)) # エリア1*維持費 + シマウマの飼料費
+      expect(report.income).to eq(shared::Money.yen(24_000))
+      expect(report.cost).to eq(shared::Money.yen(upkeep + zebra_food))
     end
 
     it '1日運営すると園の経過日数が1進むこと' do
@@ -65,13 +63,13 @@ RSpec.describe Zoo::Application::Services::OperateDay do
 
       expect(report.deaths).to eq(0)
       expect(report.reputation).to eq(50)
-      expect(report.balance).to eq(shared::Balance.new(100_000 + 24_000 - cost)) # 収入 2000*12
+      expect(report.balance).to eq(shared::Balance.new(100_000 + 24_000 - cost))
       expect(report.bankrupt).to be(false)
     end
 
     it '疫病が発生する乱数だと在園個体が発病し、report.outbreak に名前が入ること' do
       outbreak_random = instance_double(Random)
-      allow(outbreak_random).to receive(:rand).and_return(0) # 発生＋先頭個体を選ぶ
+      allow(outbreak_random).to receive(:rand).and_return(0)
       service = described_class.new(
         open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals,
         keepers: keepers, veterinarians: veterinarians, zoo: zoo, unit_of_work: unit_of_work,

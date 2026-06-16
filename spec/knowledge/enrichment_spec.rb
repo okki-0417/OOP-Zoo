@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 環境エンリッチメント(刺激)の知識。飼育環境に十分な刺激がないと、動物は退屈し
-# 常同行動に陥ってストレスを募らせる。刺激は日々の暮らしで薄れ、放置すると枯れる。
 RSpec.describe '環境エンリッチメントと常同行動' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   shared  = Zoo::Domain::Shared
@@ -15,7 +13,6 @@ RSpec.describe '環境エンリッチメントと常同行動' do
     )
   end
 
-  # 孤独・空腹などほかのストレス源を除いた群れを作る。
   def with_company(enclosure)
     lion = Zoo::Domain::Taxonomy::SpeciesCatalog.lion
     enclosure.admit(build_adult(lion, name: 'A'))
@@ -36,7 +33,7 @@ RSpec.describe '環境エンリッチメントと常同行動' do
     context '刺激が枯れた(殺風景な)エリアにいると' do
       it '退屈による常同行動でストレスが増すこと' do
         enclosure = with_company(savanna)
-        enclosure.deplete_enrichment(100) # 刺激が枯れる
+        enclosure.deplete_enrichment(100)
         occupant = enclosure.occupants.first
 
         expect(welfare.daily_stress(occupant, enclosure)).to be > 0
@@ -49,7 +46,7 @@ RSpec.describe '環境エンリッチメントと常同行動' do
       it '再び退屈しなくなること' do
         enclosure = with_company(savanna)
         enclosure.deplete_enrichment(100)
-        enclosure.enrich(100) # 刺激を補充
+        enclosure.enrich(100)
 
         expect(enclosure).not_to be_barren
       end

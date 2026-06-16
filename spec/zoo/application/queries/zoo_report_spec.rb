@@ -9,7 +9,7 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
 
-  let(:zebra) { build_adult(catalog.grevys_zebra, name: 'シマオ') } # EN
+  let(:zebra) { build_adult(catalog.grevys_zebra, name: 'シマオ') }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'サバンナ', temperature: shared::Temperature.celsius(30), capacity: 6)
                         .tap { |e| e.admit(zebra) }

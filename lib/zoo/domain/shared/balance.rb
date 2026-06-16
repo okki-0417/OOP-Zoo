@@ -3,10 +3,6 @@
 module Zoo
   module Domain
     module Shared
-      # 動物園の残高を表す不変の値オブジェクト。収益と支出の差。
-      #
-      # Money は非負(金額)だが、Balance は赤字(債務)を表せるよう符号を許す。
-      # 0未満が破産のシグナルになる。
       class Balance
         include ValueObject
 

@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Domain::Animal::AgeInDays do
-  let(:lion) { Zoo::Domain::Taxonomy::SpeciesCatalog.lion } # 寿命15年, 性成熟3年
+  let(:lion) { Zoo::Domain::Taxonomy::SpeciesCatalog.lion }
 
   describe '.new' do
     it '0 を渡すと value が 0 を返すこと' do
@@ -100,7 +100,7 @@ RSpec.describe Zoo::Domain::Animal::AgeInDays do
   end
 
   describe '#weaned?(species)' do
-    # ライオンの離乳適齢 = 性成熟3年 × 0.2 × 365 = 219日
+
     it 'age=219 のライオン(離乳適齢ちょうど)は true を返すこと' do
       expect(described_class.new(219).weaned?(lion)).to be(true)
     end

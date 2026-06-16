@@ -5,8 +5,6 @@ require 'monitor'
 module Zoo
   module Infrastructure
     module InMemory
-      # ユースケースを総ロックで直列化し(isolation)、登録リポジトリのスナップショットで
-      # 例外時に巻き戻す(atomicity)。書き込みを伴うリポジトリだけ repositories に渡す。
       class InMemoryUnitOfWork
         include Application::UnitOfWork
 

@@ -17,18 +17,18 @@ RSpec.describe Zoo::Infrastructure::Sqlite::UnitOfWork do
     end
 
     it '例外が起きると save が本物のトランザクションで巻き戻ること' do
-      repository.save(default_zoo) # 初期保存(収益0)
+      repository.save(default_zoo)
 
       expect do
         unit_of_work.run do
           zoo = repository.load
           zoo.admit_visitors(100)
-          repository.save(zoo) # トランザクション内で更新
+          repository.save(zoo)
           raise 'boom'
         end
       end.to raise_error('boom')
 
-      expect(repository.load.revenue).to eq(shared::Money.zero) # ロールバックで0のまま
+      expect(repository.load.revenue).to eq(shared::Money.zero)
     end
   end
 end

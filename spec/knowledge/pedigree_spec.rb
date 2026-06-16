@@ -2,14 +2,11 @@
 
 require 'spec_helper'
 
-# 血統(系図)から導く近縁度・近交係数と、近親交配が子に及ぼす影響(近交弱勢)の知識。
-# 個体は親を id で持つため、id→個体 を引く lookup を渡して祖先をたどる。
 RSpec.describe '血統と近親交配' do
   sex      = Zoo::Domain::Animal::Sex
   pedigree = Zoo::Domain::Breeding::Pedigree
   catalog  = Zoo::Domain::Taxonomy::SpeciesCatalog
 
-  # 親を持たない創始個体(古い)。
   def founder(name, sex)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,
@@ -17,7 +14,6 @@ RSpec.describe '血統と近親交配' do
     )
   end
 
-  # 親を持つ子(親より新しい)。
   def offspring(name, sex, sire:, dam:, age: 100)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,
@@ -25,7 +21,6 @@ RSpec.describe '血統と近親交配' do
     )
   end
 
-  # 渡した個体を id で引ける lookup を作る。
   def lookup_for(*animals)
     table = animals.to_h { |a| [a.id.to_s, a] }
     ->(id) { table[id.to_s] }
@@ -99,7 +94,7 @@ RSpec.describe '血統と近親交配' do
 
       pair.mate
       pair.advance(gestation)
-      healthy = pair.deliver(name: '健全な子', sex: sex.male) # 近交係数0
+      healthy = pair.deliver(name: '健全な子', sex: sex.male)
 
       pair.mate
       pair.advance(gestation)

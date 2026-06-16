@@ -2,16 +2,8 @@
 
 require 'spec_helper'
 
-# 入園料と需要の知識。集客 = f(魅力, 評判, 料金) のうち「料金」軸を扱う。
-# 料金が高いほど集客は減り、安いほど増えるが、収益(料金 × 集客)は安すぎても高すぎても
-# 小さく、中庸の料金で最大になる(＝収益を最大化する最適な入園料が存在する)。
-#
-# 経済ドメイン共通の用語(集客=f(魅力,評判,料金) 等)は economy_spec.rb 冒頭に集約。
-#
-# NOTE: 最適点・需要上限はまだ未実装(現状の集客モデルは需要が単位弾力的で
-# 収益が料金に依存しない)。設計を駆動する仕様として pending で残す。
 RSpec.describe '入園料と需要' do
-  # 同一の展示・評判のまま、入園料だけを変えて比較する。
+
   def exhibit
     catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
     [build_adult(catalog.lion, name: 'A'), build_adult(catalog.grevys_zebra, name: 'B')]
@@ -38,7 +30,7 @@ RSpec.describe '入園料と需要' do
   end
 
   describe '収益の最適点' do
-    # 料金を広く振って収益を測り、最大が「最安でも最高でもない中間」に来ることを確かめる。
+
     FEES = [200, 400, 800, 1_600, 3_200, 6_400, 12_800, 25_600].freeze
 
     it '収益を最大化する料金が、最安値ではないこと(安売りは取りこぼす)' do

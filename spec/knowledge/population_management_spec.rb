@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 個体群管理(交配推奨)の知識。飼育下の遺伝的多様性を保つため、近親を避けたうえで、
-# 生まれる子の近交係数が最も低くなる(=両親の近縁度が最も低い)ペアを優先して推奨する。
 RSpec.describe '個体群管理(交配推奨)' do
   sex         = Zoo::Domain::Animal::Sex
   recommender = Zoo::Domain::Breeding::MatingRecommendation
@@ -30,13 +28,13 @@ RSpec.describe '個体群管理(交配推奨)' do
   describe '遺伝的多様性を保つ推奨' do
     context '血縁の異なる候補が複数いるとき' do
       it '近縁度が最も低くなるペアを推奨すること' do
-        # M の孫娘 F2(近縁度1/8)と、血縁のない F1(近縁度0)を候補に並べる。
+
         male    = founder('M', sex.male, age: 3600)
         granny  = founder('祖母', sex.female, age: 3600)
         mother  = offspring('娘', sex.female, sire: male, dam: granny, age: 2500)
         outside = founder('外', sex.male, age: 3600)
         f2      = offspring('孫娘', sex.female, sire: outside, dam: mother, age: 1500)
-        f1      = founder('F1', sex.female, age: 3000) # M と血縁なし
+        f1      = founder('F1', sex.female, age: 3000)
 
         candidates = [male, f1, f2]
         lookup = lookup_for(male, granny, mother, outside, f2, f1)

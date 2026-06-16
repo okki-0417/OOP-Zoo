@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# ドメイン値オブジェクトの表示(#to_s)と順序(#<=>)の技術契約をまとめて押さえる。
 module Zoo
   module Domain
     RSpec.describe '値オブジェクトの表示と比較' do

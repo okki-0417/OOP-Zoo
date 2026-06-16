@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     class Animal
-      # 性別を表す値オブジェクト。繁殖の可否判定などで用いる。
       class Sex
         include Shared::ValueObject
 
@@ -35,7 +34,6 @@ module Zoo
           @value == :female
         end
 
-        # 繁殖は雌雄の組でのみ成立する。相手が異性かを判定する。
         def opposite?(other)
           other.is_a?(Sex) && @value != other.value
         end

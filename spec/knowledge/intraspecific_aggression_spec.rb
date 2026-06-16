@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 種内闘争と外傷の知識。群れの序列争いは、ストレスに留まらず負傷・致死に至りうる。
-# 逃げ場の不足や過密が闘争を激化させ、適切な分離(バチェラー群)で回避できる。
 RSpec.describe '種内闘争と外傷' do
   catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
   aggression = Zoo::Domain::Husbandry::Aggression
@@ -38,9 +36,9 @@ RSpec.describe '種内闘争と外傷' do
       spacious = pride(capacity: 6)
       _s1, j1 = senior_and_junior(spacious)
 
-      cramped = pride(capacity: 4, area_sqm: 100) # 2頭(190m²必要)に対し狭く、過密
+      cramped = pride(capacity: 4, area_sqm: 100)
       _s2, j2 = senior_and_junior(cramped)
-      cramped.deplete_enrichment(100) # 逃げ場が枯れる
+      cramped.deplete_enrichment(100)
 
       expect(aggression.injury_for(j2, cramped)).to be > aggression.injury_for(j1, spacious)
     end

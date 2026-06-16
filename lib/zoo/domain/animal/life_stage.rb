@@ -3,10 +3,6 @@
 module Zoo
   module Domain
     class Animal
-      # 生活史段階(ライフステージ)を表す値オブジェクト。
-      #
-      # 個体の日齢と、種ごとの性成熟年齢・寿命から導出する。
-      # 繁殖可否(成体か)や展示・飼育方針の判断に用いる。
       class LifeStage
         include Shared::ValueObject
 
@@ -20,11 +16,6 @@ module Zoo
           define_singleton_method(key) { new(key) }
         end
 
-        # 日齢と種からライフステージを判定する。
-        #   - 幼体: 性成熟年齢の半分未満
-        #   - 若齢: 性成熟年齢の半分以上、性成熟年齢未満
-        #   - 成体: 性成熟年齢以上、寿命の80%未満
-        #   - 老齢: 寿命の80%以上
         def self.for(age_in_days:, species:)
           maturity_days = species.maturity_age_years * DAYS_PER_YEAR
           elderly_days = species.lifespan_years * DAYS_PER_YEAR * 0.8
@@ -51,7 +42,6 @@ module Zoo
           @value == :baby
         end
 
-        # 繁殖可能な成熟段階(成体または老齢ではなく、成体)か。
         def adult?
           @value == :adult
         end
@@ -60,7 +50,6 @@ module Zoo
           @value == :elderly
         end
 
-        # 性成熟済み(成体以上)か。
         def mature?
           %i[adult elderly].include?(@value)
         end

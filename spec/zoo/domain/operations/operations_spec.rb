@@ -46,7 +46,7 @@ module Zoo
       RSpec.describe VisitorAttraction do
         catalog = Taxonomy::SpeciesCatalog
 
-        fee = Shared::Money.yen(2_000) # 基準料金
+        fee = Shared::Money.yen(2_000)
 
         it '展示が空なら来園者は0であること' do
           expect(described_class.expected_visitors([], Reputation.default, fee)).to eq(0)
@@ -59,7 +59,7 @@ module Zoo
         end
 
         it '線形需要: 評判100・料金¥2,000・魅力60(シマウマ60)で29人を期待すること' do
-          # Qmax=60, Pmax=3000+60*15=3900, 来園=floor(60*(1-2000/3900))=29
+
           expect(described_class.expected_visitors([zebra], Reputation.new(100), fee)).to eq(29)
         end
 
@@ -136,11 +136,11 @@ module Zoo
 
         it '露出が小さく1日では1点未満の前進でも、続ければ端数が累積して評判が動くこと' do
           one = described_class.after_day(Reputation.new(50), experience: 96, exposure: 10)
-          expect(one.score).to eq(50) # 単日は端数で表示据え置き
+          expect(one.score).to eq(50)
 
           many = Reputation.new(50)
           60.times { many = described_class.after_day(many, experience: 96, exposure: 10) }
-          expect(many.score).to be > 50 # 累積して動く
+          expect(many.score).to be > 50
         end
 
         it '中立超えの評判は、露出ゼロでも中立へ DECAY_RATE 分だけ減衰すること' do

@@ -3,15 +3,10 @@
 module Zoo
   module Domain
     module Staff
-      # 飼育員を表すエンティティ。
-      #
-      # 担当できる分類群(綱)に専門性を持ち、専門外の動物には給餌できない。
-      # 給餌・清掃・エリア担当を通じて飼育エリアと動物の世話をする。
       class Keeper
         include Shared::Entity
         attr_reader :id, :name, :specialties
 
-        # specialties: 担当できる TaxonClass の配列。
         def initialize(name:, specialties:, id: Shared::Identifier.new)
           raise ArgumentError, '飼育員名は必須です' if name.to_s.empty?
           raise ArgumentError, '専門分野を1つ以上指定してください' if specialties.nil? || specialties.empty?
@@ -22,7 +17,6 @@ module Zoo
           @assigned_enclosures = []
         end
 
-        # 保存済みの状態から復元する(永続化からの読み戻し用)。担当エリアは保存しない。
         def self.reconstitute(id:, name:, specialties:)
           allocate.tap do |keeper|
             keeper.instance_variable_set(:@id, id)
@@ -32,19 +26,16 @@ module Zoo
           end
         end
 
-        # この動物を担当できるか(綱が専門に含まれるか)。
         def qualified_for?(animal)
           @specialties.include?(animal.species.taxon_class)
         end
 
-        # 動物に給餌する。専門外の動物には給餌できない。
         def feed(animal, food)
           ensure_qualified!(animal)
           animal.eat(food)
           self
         end
 
-        # 担当エリアを割り当てる。
         def assign_to(enclosure)
           @assigned_enclosures << enclosure unless @assigned_enclosures.include?(enclosure)
           self
@@ -54,7 +45,6 @@ module Zoo
           @assigned_enclosures.dup
         end
 
-        # エリアを清掃する。
         def clean(enclosure, amount = 100)
           enclosure.clean(amount)
           self

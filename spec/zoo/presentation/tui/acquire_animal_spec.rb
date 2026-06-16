@@ -12,7 +12,7 @@ RSpec.describe Zoo::Presentation::Tui::AcquireAnimal do
 
   describe '#call' do
     it '選択した種・性別と入力名で個体を受け入れ、Container に保存すること' do
-      allow(prompt).to receive(:select).and_return(:lion, 'male') # 種 → 性別
+      allow(prompt).to receive(:select).and_return(:lion, 'male')
       allow(prompt).to receive(:ask).and_return('レオ')
 
       action.call

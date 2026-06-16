@@ -2,9 +2,6 @@
 
 require 'spec_helper'
 
-# 栄養バランスと餌の多様性の知識。満腹かどうか(量)とは別に、種の食性が求める
-# 餌カテゴリの「多様性」が満たされているか(質)を評価する。
-# 幅広い食性(雑食・草食)ほど多様な餌を必要とし、単一カテゴリの食性は1種で足りる。
 RSpec.describe '栄養バランスと餌の多様性' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   foods   = Zoo::Domain::Feeding::FoodCatalog

@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 検疫の知識。新しく導入した個体は、感染症を園内に持ち込まないよう一定期間隔離して
-# 観察する。期間を満たし、かつ病気が出ていないことを確認できて初めて群れに合流できる。
 RSpec.describe '検疫' do
   catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
   illnesses  = Zoo::Domain::Medical::IllnessCatalog

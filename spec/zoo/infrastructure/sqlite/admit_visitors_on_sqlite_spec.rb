@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# AdmitVisitors ユースケースを SQLite 実装の上で動かす。ユースケース自体は
-# in-memory と同じコードのまま(ポート差し替えの実証)。
 RSpec.describe 'AdmitVisitors on SQLite' do
   shared = Zoo::Domain::Shared
   sqlite = Zoo::Infrastructure::Sqlite

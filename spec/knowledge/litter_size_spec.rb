@@ -2,9 +2,6 @@
 
 require 'spec_helper'
 
-# 産仔数(一度の出産・産卵で生まれる数)の知識。
-# 種の生活史戦略(r/K戦略)に応じて、一度に少数を産み手厚く育てる種と、
-# 多数を産んで多くを失う種がいる。産仔数は個体群の回復力を左右する。
 RSpec.describe '産仔数' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex

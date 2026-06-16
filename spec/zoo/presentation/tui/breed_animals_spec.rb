@@ -25,7 +25,7 @@ RSpec.describe Zoo::Presentation::Tui::BreedAnimals do
       sire, dam = pair
       container.animals.save(sire)
       container.animals.save(dam)
-      # 父 → 母 → 収容先 → 性別 の順に select、name は ask
+
       allow(prompt).to receive(:select).and_return(sire.id.to_s, dam.id.to_s, enclosure.id.to_s, 'male')
       allow(prompt).to receive(:ask).and_return('シンバ')
 

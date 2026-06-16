@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 養育と離乳の知識。幼体には授乳期があり、離乳適齢に達するまで親に依存する。
-# 離乳前に親から引き離すと、幼体は強い分離ストレスを受ける(早期分離)。
 RSpec.describe '養育と離乳' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex
@@ -15,7 +13,6 @@ RSpec.describe '養育と離乳' do
     )
   end
 
-  # 親(母)と、その子(指定日齢)を作る。
   def dam_and_cub(cub_age_in_days:)
     lion = Zoo::Domain::Taxonomy::SpeciesCatalog.lion
     s = Zoo::Domain::Animal::Sex
@@ -57,7 +54,7 @@ RSpec.describe '養育と離乳' do
         _dam, cub = dam_and_cub(cub_age_in_days: 0)
         enclosure = savanna
         enclosure.admit(cub)
-        # 親ではない成体を2頭同居(孤独ではないが親はいない)
+
         enclosure.admit(build_adult(catalog.lion, name: '他1'))
         enclosure.admit(build_adult(catalog.lion, name: '他2', sex: sex.female))
 

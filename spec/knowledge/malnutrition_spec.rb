@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 栄養失調の知識。満腹かどうか(量)とは別に、食性の求める餌カテゴリの多様性(質)が
-# 満たされないと、栄養が偏り福祉・健康・繁殖に悪影響が及ぶ。
 RSpec.describe '栄養失調' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   foods   = Zoo::Domain::Feeding::FoodCatalog
@@ -11,7 +9,6 @@ RSpec.describe '栄養失調' do
   season  = Zoo::Domain::Operations::Season
   macaque = Zoo::Domain::Taxonomy::SpeciesCatalog.japanese_macaque
 
-  # 群れ(仲間あり)・適温・清潔なニホンザルのエリア。栄養以外のストレス源を除く。
   def troop
     enclosure = Zoo::Domain::Husbandry::Enclosure.new(
       name: 'モンキーマウンテン', temperature: Zoo::Domain::Shared::Temperature.celsius(20), capacity: 8
@@ -23,7 +20,6 @@ RSpec.describe '栄養失調' do
     [enclosure, subject_monkey]
   end
 
-  # 果実だけ(偏り)を与え続けて栄養失調にする。
   def malnourish(animal, times: 4)
     times.times { animal.dine([Zoo::Domain::Feeding::FoodCatalog.banana]) }
     animal
@@ -71,7 +67,7 @@ RSpec.describe '栄養失調' do
     it '妊娠中の母体の栄養失調は流産の要因になること' do
       sire, dam = build_pair(macaque)
       pair = Zoo::Domain::Breeding::BreedingPair.new(sire: sire, dam: dam)
-      pair.mate(season: season.autumn) # ニホンザルの繁殖期
+      pair.mate(season: season.autumn)
       malnourish(dam)
       pair.advance(10)
 

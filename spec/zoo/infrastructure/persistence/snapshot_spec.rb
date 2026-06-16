@@ -24,7 +24,7 @@ RSpec.describe Zoo::Infrastructure::Persistence::Snapshot do
 
       loaded = described_class.load(path)
 
-      expect(loaded[:x]).to equal(loaded[:y]) # 同一オブジェクト
+      expect(loaded[:x]).to equal(loaded[:y])
     end
   end
 end

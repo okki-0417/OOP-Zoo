@@ -3,10 +3,6 @@
 module Zoo
   module Domain
     module Taxonomy
-      # 体重を表す不変の値オブジェクト。内部はグラムで保持する。
-      #
-      # ゾウ(数トン)からハチドリ(数グラム)まで扱うため、最小単位を
-      # グラムに統一し、kg/t での生成・表示を補助する。
       class Weight
         include Shared::ValueObject
         include Comparable

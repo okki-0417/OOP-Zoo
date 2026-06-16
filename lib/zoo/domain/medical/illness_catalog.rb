@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     module Medical
-      # 代表的な疾病のカタログ。
       module IllnessCatalog
         module_function
 
@@ -33,7 +32,6 @@ module Zoo
           KEYS.map { |name| public_send(name) }
         end
 
-        # キーから疾病を引く。未知のキーは nil。
         def find(key)
           symbol = key.to_s.to_sym
           return nil unless KEYS.include?(symbol)

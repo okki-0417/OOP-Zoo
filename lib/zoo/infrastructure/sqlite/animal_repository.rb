@@ -3,7 +3,6 @@
 module Zoo
   module Infrastructure
     module Sqlite
-      # AnimalRepository ポートの SQLite 実装。SQL を担い、行⇄集約は AnimalMapper に委譲。
       class AnimalRepository
         include Domain::Repositories::AnimalRepository
 

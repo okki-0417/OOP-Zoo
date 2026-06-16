@@ -3,9 +3,6 @@
 module Zoo
   module Presentation
     class Web
-      # 読み取りモデル/ドメイン値を JSON 化可能なプリミティブ(文字列・整数・真偽・配列)へ
-      # 射影する唯一の場所。ここで定める形が HTTP の契約(= openapi.yaml / フロントの生成型)と
-      # 一致する。金額は整数(円)で返し、整形はクライアントに委ねる。
       module Serializer
         module_function
 

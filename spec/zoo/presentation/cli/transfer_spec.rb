@@ -24,7 +24,7 @@ RSpec.describe Zoo::Presentation::Cli::Transfer do
 
   describe '#run' do
     it 'ANIMAL_ID TO_ENCLOSURE_ID を渡すと移送され、移送メッセージを出すこと' do
-      from # 先住エリアを用意
+      from
       handler.run([lion.id.to_s, to.id.to_s])
 
       expect(container.enclosures.find(to.id).occupants).to include(lion)

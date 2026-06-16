@@ -3,8 +3,6 @@
 module Zoo
   module Application
     module Services
-      # 個体を移送先エリアへ移す。収容できない場合は admit が(副作用の前に)例外を
-      # 上げるので、移送元からの release に進まず、個体は元エリアに残る。
       class TransferAnimal
         def initialize(enclosures:, animals:, unit_of_work:)
           @enclosures = enclosures

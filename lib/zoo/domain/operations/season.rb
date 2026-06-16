@@ -3,8 +3,6 @@
 module Zoo
   module Domain
     module Operations
-      # 季節を表す値オブジェクト。季節ごとに気温のオフセットを持ち、区画の気温に足した
-      # 「実効気温(felt temperature)」で動物が感じる暑さ・寒さを表す。
       class Season
         include Shared::ValueObject
 
@@ -33,12 +31,10 @@ module Zoo
           SEASONS.fetch(@value)[:temperature_offset]
         end
 
-        # 繁殖期(本園では春)か。
         def breeding_season?
           @value == :spring
         end
 
-        # 区画の気温にこの季節のオフセットを足した実効気温。
         def felt_temperature(base)
           Shared::Temperature.celsius(base.celsius + temperature_offset)
         end

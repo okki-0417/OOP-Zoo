@@ -3,11 +3,6 @@
 module Zoo
   module Application
     module Services
-      # 1日の運営を実行するユースケース。
-      #
-      # 加齢・死亡(OpenForADay)を回し、1日のサイクル(DailyOperation ドメインサービス)に
-      # 編成を委ねる。本サービスはトランザクション境界・永続化・read model への変換に徹する
-      # (「何が起きるか」はドメイン、「いつ回して保存するか」はここ)。
       class OperateDay
         def initialize(open_for_a_day:, enclosures:, animals:, keepers:, veterinarians:, zoo:, unit_of_work:,
                        random: Random.new)

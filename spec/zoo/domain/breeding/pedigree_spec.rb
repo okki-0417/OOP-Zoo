@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# Pedigree の計算上の保証(基底ケース・祖先が辿れないときの扱い)。
-# 近縁度・近交係数の値そのものの意味は spec/knowledge/「血統と近親交配」を参照。
 RSpec.describe Zoo::Domain::Breeding::Pedigree do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sex = Zoo::Domain::Animal::Sex
@@ -31,7 +29,7 @@ RSpec.describe Zoo::Domain::Breeding::Pedigree do
       mother = lion('母', sex: sex.female, age: 4000)
       child = lion('子', sex: sex.male, age: 100, sire: father, dam: mother)
       stranger = lion('他人', sex: sex.female, age: 100)
-      # 親(father/mother)を lookup に含めない → child は創始個体扱いになり無縁
+
       expect(described_class.kinship(child, stranger, lookup_for(child, stranger))).to eq(0.0)
     end
   end

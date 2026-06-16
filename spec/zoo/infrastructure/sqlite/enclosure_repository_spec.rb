@@ -24,6 +24,6 @@ RSpec.describe Zoo::Infrastructure::Sqlite::EnclosureRepository do
     restored = repository.find(enclosure.id)
 
     expect(restored.occupants.map { |a| a.name.to_s }).to eq(['レオ'])
-    expect(restored.houses?(lion)).to be(true) # 復元後も id 同値で照合できる
+    expect(restored.houses?(lion)).to be(true)
   end
 end

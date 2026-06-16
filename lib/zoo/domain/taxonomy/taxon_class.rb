@@ -3,10 +3,6 @@
 module Zoo
   module Domain
     module Taxonomy
-      # 生物分類の「綱(class)」を表す値オブジェクト。
-      #
-      # 恒温/変温、胎生/卵生といった綱に固有の性質を持ち、
-      # 繁殖方法(出産か産卵か)や飼育環境の判断に用いる。
       class TaxonClass
         include Shared::ValueObject
 
@@ -33,22 +29,18 @@ module Zoo
           freeze
         end
 
-        # 恒温動物か。
         def warm_blooded?
           CLASSES.fetch(@value)[:warm_blooded]
         end
 
-        # 変温動物か。
         def cold_blooded?
           !warm_blooded?
         end
 
-        # 胎生(出産)か。
         def viviparous?
           CLASSES.fetch(@value)[:reproduction] == :viviparous
         end
 
-        # 卵生(産卵)か。
         def oviparous?
           !viviparous?
         end

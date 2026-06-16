@@ -1,4 +1,3 @@
-# カバレッジ計測は COVERAGE=1 のときだけ有効にする(通常実行は素のまま)。
 if ENV['COVERAGE']
   require 'simplecov'
   SimpleCov.start do

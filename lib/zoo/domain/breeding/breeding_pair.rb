@@ -3,12 +3,9 @@
 module Zoo
   module Domain
     module Breeding
-      # 繁殖ペアを表す集約。一組の雌雄を結びつけ、交尾→妊娠/抱卵→出産/孵化の
-      # ライフサイクルを管理し、誕生(AnimalBorn)イベントを記録する。
       class BreedingPair
         include Events::Recorder
 
-        # 新生個体の初期最大体力(指定がなければこの値)。
         NEWBORN_HEALTH = 50
 
         attr_reader :sire, :dam
@@ -30,8 +27,6 @@ module Zoo
           @dam.species
         end
 
-        # 交尾する。妊娠/抱卵を開始する。種ごとの繁殖季節でなければ成立しない
-        # (周年繁殖種はどの季節でも成立する)。
         def mate(season: Operations::Season.spring)
           raise Errors::BreedingNotAllowed, '既に妊娠/抱卵中です' if expecting?
           raise Errors::BreedingNotAllowed, "#{species.name_ja}は#{season.label}には繁殖しません" unless species.breeds_in?(season)
@@ -45,7 +40,6 @@ module Zoo
           !@gestation_days.nil?
         end
 
-        # 妊娠/抱卵を日数ぶん進める。母体が飢餓や過度のストレスに陥っていれば流産する。
         def advance(days = 1)
           return self unless expecting?
           return miscarry if pregnancy_failing?
@@ -54,18 +48,14 @@ module Zoo
           self
         end
 
-        # 母体の不調で妊娠が継続できず流産したか。
         def miscarried?
           @miscarried
         end
 
-        # 出産/孵化できる状態か(妊娠/抱卵期間に達したか)。
         def ready_to_deliver?
           expecting? && @gestation_days >= species.gestation_period_days
         end
 
-        # 出産/孵化する。新生個体を生成して返し、AnimalBornを記録する。
-        # inbreeding(近交係数 0〜1)が高いほど近交弱勢で最大体力が下がる。
         def deliver(name:, sex:, max_health: NEWBORN_HEALTH, inbreeding: 0.0)
           raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
 
@@ -79,8 +69,6 @@ module Zoo
           offspring
         end
 
-        # 一腹(litter/clutch)を出産/孵化する。種の産仔数ぶんの新生個体をまとめて生み、
-        # 各個体について AnimalBorn を記録する。性別は雌雄交互に割り当てる。
         def deliver_litter(name:, max_health: NEWBORN_HEALTH, inbreeding: 0.0)
           raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
 
@@ -104,7 +92,6 @@ module Zoo
 
         private
 
-        # 妊娠を継続できない母体の状態か(飢餓・過度のストレス・栄養失調)。
         def pregnancy_failing?
           @dam.starving? || @dam.stress.severe? || @dam.malnourished?
         end
@@ -115,7 +102,6 @@ module Zoo
           self
         end
 
-        # 近交弱勢: 近交係数に比例して最大体力を下げる。最低1は保証する。
         def newborn_vitality(base, inbreeding)
           (base * (1.0 - inbreeding)).round.clamp(1, base)
         end

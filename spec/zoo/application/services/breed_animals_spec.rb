@@ -23,7 +23,7 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
     Zoo::Application::EventDispatcher.new(event_store: event_store, subscribers: [birth_announcements])
   end
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, enclosures]) }
-  # 既定は0日目=春(繁殖期)。
+
   let(:zoo) do
     in_memory::InMemoryZooRepository.new(
       Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
@@ -71,7 +71,7 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
 
       expect { service.call(command(enclosure_id: full.id)) }
         .to raise_error(Zoo::Domain::Errors::CapacityExceeded)
-      expect(animals.all.size).to eq(2) # sire と dam のみ。子は巻き戻された
+      expect(animals.all.size).to eq(2)
     end
 
     it 'ロールバックされた出産のイベントは EventStore に残らないこと' do
@@ -106,7 +106,7 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
       m_enclosures = in_memory::InMemoryEnclosureRepository.new([m_enclosure])
 
       summer = Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
-      100.times { summer.advance_day } # 約100日目=夏(ニホンザルの繁殖期=秋ではない)
+      100.times { summer.advance_day }
       summer_service = described_class.new(
         animals: m_animals, enclosures: m_enclosures, zoo: in_memory::InMemoryZooRepository.new(summer),
         event_dispatcher: event_dispatcher,
@@ -134,7 +134,7 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
 
       child = service.call(command(sire_id: grandpa.id, dam_id: granddaughter.id, name: '近交子'))
 
-      expect(child.health.max).to eq(44) # 近交係数1/8 → 50 ×(1 − 0.125)= 43.75 → 44
+      expect(child.health.max).to eq(44)
     end
   end
 end

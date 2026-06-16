@@ -3,8 +3,6 @@
 module Zoo
   module Application
     module Services
-      # 獣医が個体を診察して状態(:dead/:sick/:injured/:healthy)を返す。状態を変えない
-      # 読み取りだが、一貫した観測のため UnitOfWork の isolation 内で実行する。
       class ExamineAnimal
         def initialize(veterinarians:, animals:, unit_of_work:)
           @veterinarians = veterinarians

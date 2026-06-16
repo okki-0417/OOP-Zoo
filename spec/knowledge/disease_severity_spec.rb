@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 疾病の重症度・脆弱性・伝播の知識。病気の被害は個体の状態に左右され、幼体・老齢・
-# 高ストレス・栄養失調の個体ほど重症化しやすい。伝播は接触の度合いに応じて確率的に起こる。
 RSpec.describe '疾病の重症度と伝播' do
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   illnesses = Zoo::Domain::Medical::IllnessCatalog
@@ -50,7 +48,7 @@ RSpec.describe '疾病の重症度と伝播' do
     end
 
     it '老齢個体は成体より重症化しやすいこと' do
-      old = sick_lion(age_in_days: 365 * 13) # 寿命15年の8割超で老齢
+      old = sick_lion(age_in_days: 365 * 13)
       adult = sick_lion(age_in_days: 365 * 5)
       old.grow_older(3)
       adult.grow_older(3)

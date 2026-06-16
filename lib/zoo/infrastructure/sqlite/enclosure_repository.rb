@@ -3,8 +3,6 @@
 module Zoo
   module Infrastructure
     module Sqlite
-      # EnclosureRepository ポートの SQLite 実装。エリア行は自身で持ち、occupants は
-      # animals テーブルの個体を AnimalRepository 経由で解決してグラフを組み直す。
       class EnclosureRepository
         include Domain::Repositories::EnclosureRepository
 

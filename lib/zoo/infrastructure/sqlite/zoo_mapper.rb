@@ -3,8 +3,6 @@
 module Zoo
   module Infrastructure
     module Sqlite
-      # Zoo 集約 ⇄ 行 の変換(Data Mapper)。値オブジェクトを列に平坦化し、
-      # 読み戻しはドメインの復元ファクトリ(Zoo.reconstitute)に委ねる。
       class ZooMapper
         def to_row(zoo)
           {

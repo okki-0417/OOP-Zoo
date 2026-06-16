@@ -11,8 +11,6 @@ module Zoo
           @unit_of_work = unit_of_work
         end
 
-        # 死亡した個体の一覧を返す。日次バッチは全体を1トランザクションにせず、
-        # エリアごとに区切る(1エリアの失敗が他エリアを巻き込まない)。
         def call(season: Domain::Operations::Season.spring)
           deceased = []
 

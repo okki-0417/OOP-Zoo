@@ -3,10 +3,6 @@
 module Zoo
   module Domain
     module Husbandry
-      # 環境エンリッチメント(刺激)の度合いを表す不変の値オブジェクト。0(殺風景)〜100(豊か)。
-      #
-      # 採食装置・遊具・隠れ場所などがもたらす刺激の量。動物が暮らすほど新奇性は薄れ(減少)、
-      # 飼育員が新たな刺激を補充して回復(増加)する。一定以下になると退屈し常同行動を招く。
       class Enrichment
         include Shared::ValueObject
         include Comparable
@@ -40,7 +36,6 @@ module Zoo
           self.class.new(@level + amount)
         end
 
-        # 殺風景か(しきい値以下)。退屈・常同行動の要因になる。
         def barren?
           @level <= BARREN_THRESHOLD
         end

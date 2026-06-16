@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Domain::Animal::LifeStage do
-  let(:lion) { Zoo::Domain::Taxonomy::SpeciesCatalog.lion } # 寿命15年, 性成熟3年
+  let(:lion) { Zoo::Domain::Taxonomy::SpeciesCatalog.lion }
 
   describe '.for(age_in_days:, species:)' do
     it 'age=0 のライオンは baby を返すこと(性成熟3年の半分=1.5年未満)' do

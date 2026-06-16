@@ -2,16 +2,10 @@
 
 module Zoo
   module Composition
-    # 合成の起点。in-memory 実装で依存を組み立て、ユースケース/クエリを供給する。
-    # 永続化実装を差し替えるなら、変更はこのクラスに閉じる。
     class Container
       attr_reader :animals, :enclosures, :keepers, :veterinarians, :zoo,
                   :event_store, :memorial_log, :birth_announcements
 
-      # 永続化の選択:
-      #   database: を渡すと SQLite(実トランザクション・ファイル永続化)
-      #   state:    を渡すと Snapshot から復元(in-memory)
-      #   どちらも無ければ in-memory(揮発)
       def initialize(state: nil, database: nil)
         database ? setup_sqlite(database) : setup_in_memory(state)
 
@@ -22,12 +16,10 @@ module Zoo
         )
       end
 
-      # 保存ファイルから状態を復元したコンテナを作る。
       def self.load(path)
         new(state: Infrastructure::Persistence::Snapshot.load(path))
       end
 
-      # 全状態を1ファイルに保存する。
       def save(path)
         Infrastructure::Persistence::Snapshot.dump(
           {
@@ -191,7 +183,7 @@ module Zoo
         @zoo = store::InMemoryZooRepository.new(state ? state[:zoo] : default_zoo)
         @event_store = store::InMemoryEventStore.new
         (state ? state[:events] : []).each { |event| @event_store.append(event) }
-        # 書き込みを伴う(Snapshotable な)リポジトリのみ登録する。
+
         @unit_of_work = store::InMemoryUnitOfWork.new(
           repositories: [@animals, @enclosures, @keepers, @veterinarians]
         )

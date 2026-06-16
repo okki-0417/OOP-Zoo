@@ -3,8 +3,6 @@
 module Zoo
   module Infrastructure
     module Sqlite
-      # Enclosure 集約 ⇄ 行。occupants は id の CSV で持ち(子は animals テーブル)、
-      # 復元時は呼び手(EnclosureRepository)が解決した occupants を渡す。
       class EnclosureMapper
         def to_row(enclosure)
           {
@@ -28,7 +26,6 @@ module Zoo
           )
         end
 
-        # 行に保存された occupant の id 一覧。
         def occupant_ids(row)
           row['occupant_ids'].to_s.split(',').reject(&:empty?)
         end

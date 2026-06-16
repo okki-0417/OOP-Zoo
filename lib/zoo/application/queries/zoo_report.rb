@@ -3,8 +3,6 @@
 module Zoo
   module Application
     module Queries
-      # 在園状況(リポジトリ)とこれまでの出来事(EventStore)を突き合わせ、園全体の
-      # 統計を読み取りモデルにまとめる。書き込みモデルを読んで射影するだけの読み取り。
       class ZooReport
         def initialize(enclosures:, event_store:, zoo:)
           @enclosures = enclosures

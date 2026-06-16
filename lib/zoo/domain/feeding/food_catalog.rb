@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     module Feeding
-      # 餌のカタログ。現実の動物園で与えられる代表的な餌を提供する。
       module FoodCatalog
         module_function
 
@@ -68,7 +67,6 @@ module Zoo
           KEYS.map { |name| public_send(name) }
         end
 
-        # キーから餌を引く。未知のキーは nil。
         def find(key)
           symbol = key.to_s.to_sym
           return nil unless KEYS.include?(symbol)

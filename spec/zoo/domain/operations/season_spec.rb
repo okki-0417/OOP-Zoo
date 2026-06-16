@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# Season / Calendar の実装上の保証。季節と気候の意味は spec/knowledge/「季節と気候」を参照。
 RSpec.describe Zoo::Domain::Operations::Season do
   shared = Zoo::Domain::Shared
 
@@ -18,7 +17,7 @@ RSpec.describe Zoo::Domain::Operations::Season do
   describe '#felt_temperature' do
     it '区画の気温にオフセットを足して返すこと' do
       base = shared::Temperature.celsius(10)
-      expect(described_class.winter.felt_temperature(base).celsius).to eq(2.0) # 10 - 8
+      expect(described_class.winter.felt_temperature(base).celsius).to eq(2.0)
     end
   end
 

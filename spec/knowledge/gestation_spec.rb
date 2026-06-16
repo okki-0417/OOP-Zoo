@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 妊娠/抱卵から出産/孵化に至る知識。交尾で妊娠が始まり、種ごとに定まった妊娠期間が
-# 満ちると出産できる。妊娠中の母体が飢餓や過度のストレスに陥ると流産する(福祉×繁殖)。
 RSpec.describe '妊娠と出産' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex
@@ -35,7 +33,7 @@ RSpec.describe '妊娠と出産' do
     end
 
     it '妊娠期間に満たないうちは出産できないこと' do
-      pair = pair_of(catalog.lion) # ライオンの妊娠期間は110日
+      pair = pair_of(catalog.lion)
       pair.mate
       pair.advance(109)
       expect(pair).not_to be_ready_to_deliver
@@ -77,7 +75,7 @@ RSpec.describe '妊娠と出産' do
       it '流産し、妊娠が解けて出産できないこと' do
         pair = pair_of(catalog.lion)
         pair.mate
-        pair.dam.get_hungrier(100) # 飢餓
+        pair.dam.get_hungrier(100)
         pair.advance(50)
 
         expect(pair).to be_miscarried
@@ -90,7 +88,7 @@ RSpec.describe '妊娠と出産' do
       it '流産すること' do
         pair = pair_of(catalog.lion)
         pair.mate
-        pair.dam.add_stress(90) # 過度のストレス
+        pair.dam.add_stress(90)
         pair.advance(50)
 
         expect(pair).to be_miscarried

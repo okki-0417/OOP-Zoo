@@ -3,7 +3,6 @@
 module Zoo
   module Application
     module Queries
-      # EventStore の AnimalDied を慰霊記録として読み出す。
       class DeceasedList
         def initialize(event_store:)
           @event_store = event_store

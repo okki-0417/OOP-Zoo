@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 必要面積の知識。必要な広さは体重だけでなく、行動様式(行動圏の広さ・遊泳・飛翔)と
-# 群れの規模に依存する。広く動き回る種は体重比以上の空間を要する。
 RSpec.describe '必要面積' do
   catalog  = Zoo::Domain::Taxonomy::SpeciesCatalog
   species  = Zoo::Domain::Taxonomy::Species

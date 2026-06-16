@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     module Events
-      # 個体が誕生したことを表すドメインイベント。
       class AnimalBorn
         attr_reader :animal, :sire_id, :dam_id
 

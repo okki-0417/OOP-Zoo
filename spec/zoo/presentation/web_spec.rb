@@ -27,7 +27,6 @@ RSpec.describe Zoo::Presentation::Web do
     patch path, payload.to_json, 'CONTENT_TYPE' => 'application/json'
   end
 
-  # よく使う準備をまとめたヘルパー。返り値は id。
   def acquire(species: 'lion', name: 'レオ', sex: 'male')
     post_json '/animals', species: species, name: name, sex: sex
     body['id']

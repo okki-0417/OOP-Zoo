@@ -29,7 +29,7 @@ RSpec.describe 'Zoo::Composition::Container 永続化' do
 
       expect(restored.population.call).to eq(1)
       expect(restored.revenue.call).to eq(shared::Money.yen(20_000))
-      # 収容関係(同一性)が保たれ、退去できること＝occupants と animals が同じ個体を指す
+
       housed = restored.enclosures.all.first.occupants.first
       expect(restored.animals.find(housed.id)).to equal(housed)
     end

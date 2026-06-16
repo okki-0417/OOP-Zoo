@@ -3,8 +3,6 @@
 require 'spec_helper'
 require 'tmpdir'
 
-# Container の SQLite モードで、ユースケース一式が実トランザクション・ファイル永続化の上で
-# 動き、別インスタンス(別接続)でも状態が復元されることを確認する。
 RSpec.describe 'Container on SQLite (end-to-end)' do
   shared   = Zoo::Domain::Shared
   catalog  = Zoo::Domain::Taxonomy::SpeciesCatalog
@@ -25,11 +23,11 @@ RSpec.describe 'Container on SQLite (end-to-end)' do
       container.house_animal.call(
         commands::HouseAnimalCommand.new(enclosure_id: enclosure.id, animal_id: zebra.id)
       )
-      container.operate_day.call # 実トランザクション(ネストする OpenForADay も合流)
+      container.operate_day.call
 
       reopened = Zoo::Composition::Container.new(database: path)
 
-      expect(reopened.population.call).to eq(1) # 収容グラフ(occupants)が復元される
+      expect(reopened.population.call).to eq(1)
       expect(reopened.animal_list.call.map(&:name)).to include('シマオ')
       expect(reopened.revenue.call.yen).to be >= 0
     end

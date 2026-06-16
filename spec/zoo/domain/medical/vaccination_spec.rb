@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# 予防接種の技術契約。意味は spec/knowledge/「予防接種と免疫」を参照。
 RSpec.describe 'Animal#vaccinate' do
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
   illnesses = Zoo::Domain::Medical::IllnessCatalog

@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     module Operations
-      # 経過日数から季節を導くドメインサービス。1年(365日)を4等分し、春→夏→秋→冬と巡る。
       module Calendar
         module_function
 

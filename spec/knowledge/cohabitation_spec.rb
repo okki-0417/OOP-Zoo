@@ -2,9 +2,6 @@
 
 require 'spec_helper'
 
-# 同一飼育エリアに2個体(2種)を同居させてよいかの知識。
-# 種の本来の性質(捕食性・単独性・気候適性)という事実から、安全側に倒した
-# 同居の可否を導く。同居できない場合は飼育員に理由を返す。
 RSpec.describe '同居適性' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   policy  = Zoo::Domain::Husbandry::CohabitationPolicy

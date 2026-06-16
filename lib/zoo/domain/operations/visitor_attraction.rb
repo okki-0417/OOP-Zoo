@@ -3,22 +3,9 @@
 module Zoo
   module Domain
     module Operations
-      # 展示内容・評判・話題・福祉から、その日の期待来園者数を算出するドメインサービス。
-      #
-      # 集客 = f(魅力, 評判, 料金)。状態を持たない純粋な関数。
-      # 魅力(appeal) … カリスマ性＋話題(buzz)。「何が見られるか」。種数(多様性)そのものは
-      #   引きにならない(数を揃えても引きの無い種は無意味)。多様化が効くのは、カリスマある種を
-      #   増やすぶん charisma の合計が増えるから=charisma に内包される。
-      # 評判(reputation) … 運営の質・信用。集客の母数(Qmax)と支払意思(Pmax)を押し上げる。
-      #
-      # 需要は線形: 来園(p) = Qmax × max(0, 1 − p/Pmax)。
-      #   Qmax … 無料なら来る最大客数（魅力 × 評判）
-      #   Pmax … 支払意思の上限(choke price)。これ以上の料金では誰も来ない
-      # 収益(料金 × 来園)は上に凸となり、最適料金 ≒ Pmax/2 が存在する（単位弾力ではない）。
       module VisitorAttraction
         module_function
 
-        # 支払意思(choke price)の下限と、魅力1点あたりの押し上げ額(評判満点時)。
         WILLINGNESS_BASE_YEN = 3_000
         WILLINGNESS_PER_APPEAL_YEN = 15
 
@@ -34,19 +21,15 @@ module Zoo
           (q_max * (1.0 - (price.to_f / p_max))).to_i
         end
 
-        # 魅力: カリスマ性＋話題。種ごとのカリスマ合計が、引きのある種を増やすほど大きくなる
-        # (=多様化はここに内包される。種数そのものは加点しない)。
         def appeal_of(animals, buzz = 0)
           species = animals.map(&:species).uniq
           species.sum(&:charisma) + buzz
         end
 
-        # 無料時の最大客数(Qmax)。魅力と評判の積。
         def max_demand(appeal, reputation)
           appeal * reputation.score / Reputation::MAX
         end
 
-        # 支払意思の上限(Pmax/choke price)。良い園(魅力・評判が高い)ほど高くても来る。
         def willingness_to_pay(appeal, reputation)
           WILLINGNESS_BASE_YEN + (appeal * WILLINGNESS_PER_APPEAL_YEN * reputation.score / Reputation::MAX)
         end

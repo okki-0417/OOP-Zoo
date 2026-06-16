@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 生殖の老化の知識。生殖の老化は分類群によって異なる。哺乳類・鳥類は高齢期に繁殖力が
-# 衰えるが、不確定成長する魚類・爬虫類などは終生繁殖しうる。
 RSpec.describe '生殖の老化' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex

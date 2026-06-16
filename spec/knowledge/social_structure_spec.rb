@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 群れの社会構造の知識。群れで暮らす種は成熟したオスの間に序列ができ、優位な1頭以外の
-# 成熟オス(余剰オス)は闘争でストレスを受ける。バチェラーは分けて飼うべき、という判断に繋がる。
 RSpec.describe '群れと社会構造' do
   welfare = Zoo::Domain::Husbandry::Welfare
   shared  = Zoo::Domain::Shared
@@ -21,7 +19,7 @@ RSpec.describe '群れと社会構造' do
       it '最も年長でない(序列下位の)オスは闘争でストレスを受けること' do
         enclosure = savanna
         senior = build_animal(catalog.lion, name: '長老', sex: sex.male, age_in_days: 4000)
-        junior = build_adult(catalog.lion, name: '若オス', sex: sex.male) # 長老より年下
+        junior = build_adult(catalog.lion, name: '若オス', sex: sex.male)
         enclosure.admit(senior)
         enclosure.admit(junior)
 
@@ -43,7 +41,7 @@ RSpec.describe '群れと社会構造' do
       it '序列闘争は起きないこと' do
         enclosure = savanna
         male = build_adult(catalog.lion, name: 'オス', sex: sex.male)
-        female = build_adult(catalog.lion, name: 'メス', sex: sex.female) # 仲間(闘争相手ではない)
+        female = build_adult(catalog.lion, name: 'メス', sex: sex.female)
         enclosure.admit(male)
         enclosure.admit(female)
 

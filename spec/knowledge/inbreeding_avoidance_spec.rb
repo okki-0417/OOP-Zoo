@@ -2,9 +2,6 @@
 
 require 'spec_helper'
 
-# 近親交配を避ける、という飼育下の遺伝管理の知識。
-# 個体としての繁殖適性(同種・異性・成熟・健康)を満たしても、血縁が近い
-# (親子・きょうだい・半きょうだい)ペアは繁殖させない。近交弱勢を防ぐため。
 RSpec.describe '近親交配の回避' do
   sex     = Zoo::Domain::Animal::Sex
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog

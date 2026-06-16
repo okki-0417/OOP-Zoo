@@ -3,8 +3,6 @@
 module Zoo
   module Infrastructure
     module Sqlite
-      # ZooRepository ポートの SQLite 実装。SQL の発行を担い、行⇄集約の変換は
-      # ZooMapper に委譲する。未保存なら既定の動物園を返す。
       class ZooRepository
         include Domain::Repositories::ZooRepository
 

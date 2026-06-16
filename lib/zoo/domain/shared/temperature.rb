@@ -3,10 +3,6 @@
 module Zoo
   module Domain
     module Shared
-      # 気温・体温を表す不変の値オブジェクト(摂氏)。
-      #
-      # 飼育エリアの気候適合(寒帯の動物を熱帯エリアに入れない等)や、
-      # 動物の体調管理で用いる。
       class Temperature
         include ValueObject
         include Comparable
@@ -29,7 +25,6 @@ module Zoo
           @celsius * 9 / 5 + 32
         end
 
-        # 指定範囲(Range of Temperature)に収まるか。
         def within?(range)
           range.cover?(self)
         end

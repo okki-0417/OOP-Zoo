@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# AcquireAnimal ユースケースを SQLite 実装の上で動かす(ポート差し替えの実証)。
 RSpec.describe 'AcquireAnimal on SQLite' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sqlite  = Zoo::Infrastructure::Sqlite

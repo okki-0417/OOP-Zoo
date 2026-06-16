@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 
-# Contagion の計算上の保証。感染の意味は spec/knowledge/「病気の感染と免疫」を参照。
 RSpec.describe Zoo::Domain::Medical::Contagion do
   shared    = Zoo::Domain::Shared
   catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog

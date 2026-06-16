@@ -3,7 +3,6 @@
 require 'spec_helper'
 require 'stringio'
 
-# 獣医まわりの TUI アクション（治療・診察）と来園者受け入れ。
 RSpec.describe 'Zoo::Presentation::Tui スタッフ系アクション' do
   taxonomy = Zoo::Domain::Taxonomy
   staff    = Zoo::Domain::Staff

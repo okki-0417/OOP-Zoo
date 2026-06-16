@@ -3,14 +3,9 @@
 module Zoo
   module Domain
     module Taxonomy
-      # 食性を表す値オブジェクト。
-      #
-      # 各食性が受け入れられる餌のカテゴリ(肉・魚・植物など)を定義し、
-      # 給餌時の整合性チェック(肉食動物に草を与えていないか)に用いる。
       class DietType
         include Shared::ValueObject
 
-        # 餌のカテゴリ。Feedingコンテキストの FoodCategory と対応する。
         DIETS = {
           carnivore: { label: '肉食', categories: %i[meat] },
           piscivore: { label: '魚食', categories: %i[fish] },
@@ -34,7 +29,6 @@ module Zoo
           freeze
         end
 
-        # 指定した餌カテゴリを食べられるか。
         def accepts?(food_category)
           acceptable_categories.include?(food_category.to_sym)
         end
@@ -43,7 +37,6 @@ module Zoo
           DIETS.fetch(@value)[:categories]
         end
 
-        # 肉を食べる食性か(捕食関係の判定に使う)。
         def predatory?
           acceptable_categories.include?(:meat) || acceptable_categories.include?(:fish)
         end

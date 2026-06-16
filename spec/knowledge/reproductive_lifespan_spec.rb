@@ -2,13 +2,10 @@
 
 require 'spec_helper'
 
-# 繁殖適齢期の知識。繁殖できるのは性成熟(下限)から高齢期(上限)までの窓に限られる。
-# 高齢になると繁殖力が衰え(生殖の老化)、健康であっても繁殖できなくなる。
 RSpec.describe '繁殖適齢期' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex
 
-  # 健康で生きた、指定年齢のライオン(寿命15年)。
   def lion_aged(years)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,

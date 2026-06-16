@@ -3,10 +3,6 @@
 module Zoo
   module Domain
     class Animal
-      # 栄養状態を表す不変の値オブジェクト。0(栄養失調)〜100(良好)。
-      #
-      # 満腹度(量)とは別の軸で、食性に見合った多様な餌を与えられているか(質)を表す。
-      # バランスの取れた食事で改善し、偏った食事で悪化する。一定以下で栄養失調とみなす。
       class Nutrition
         include Shared::ValueObject
         include Comparable

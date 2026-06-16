@@ -2,15 +2,12 @@
 
 require 'spec_helper'
 
-# 代謝と体格の知識。空腹の進み方・満腹に要する餌量・飼料費は、種の体格と代謝に依存する。
-# 小型・高代謝の種は速く空腹になり、大型の種は長く絶食に耐える。
 RSpec.describe '代謝と体格' do
   catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
   metabolism = Zoo::Domain::Husbandry::Metabolism
   foods      = Zoo::Domain::Feeding::FoodCatalog
   taxonomy   = Zoo::Domain::Taxonomy
 
-  # 体格と食性だけを変えた検証用の種を作る。
   def species_of(diet, kg)
     Zoo::Domain::Taxonomy::Species.new(
       name_ja: '検証種', scientific_name: "Test #{diet.label} #{kg}",

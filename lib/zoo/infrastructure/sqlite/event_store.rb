@@ -3,9 +3,6 @@
 module Zoo
   module Infrastructure
     module Sqlite
-      # EventStore ポートの SQLite 実装。種類・対象個体id・死因を保存し、読み出しは
-      # AnimalRepository で個体を解決してイベントを再構成する。改名の旧名や誕生の親idの
-      # 一部は保存しない(クエリ側が参照しないため)簡略化。
       class EventStore
         include Application::EventStore
 

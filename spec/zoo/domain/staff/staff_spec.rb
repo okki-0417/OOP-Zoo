@@ -47,7 +47,7 @@ module Zoo
           )
           mammal_keeper.assign_to(enclosure)
           expect(mammal_keeper.assigned_enclosures).to contain_exactly(enclosure)
-          mammal_keeper.assigned_enclosures.clear # 複製なので内部は変わらない
+          mammal_keeper.assigned_enclosures.clear
           expect(mammal_keeper.assigned_enclosures).to contain_exactly(enclosure)
         end
 
@@ -77,7 +77,7 @@ module Zoo
         end
 
         it '衰弱した個体を診断し、治療で回復させること' do
-          90.times { animal.cry_out } # 体力を削る
+          90.times { animal.cry_out }
           expect(vet.examine(animal)).to eq(:injured)
           vet.treat(animal)
           expect(animal.health.weak?).to be(false)
@@ -94,7 +94,7 @@ module Zoo
         let(:animal) { build_adult(Taxonomy::SpeciesCatalog.lion, max_health: 30) }
 
         it '治療しないと病気で衰弱し、やがて死亡すること' do
-          animal.fall_ill(Medical::IllnessCatalog.pneumonia) # 1日6ダメージ
+          animal.fall_ill(Medical::IllnessCatalog.pneumonia)
           animal.grow_older(5)
           expect(animal).to be_dead
           expect(animal.death.cause).to eq(:illness)

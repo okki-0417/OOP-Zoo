@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     class Animal
-      # 個体名を表す値オブジェクト。1文字以上の文字列を保持する。
       class Name
         include Shared::ValueObject
 

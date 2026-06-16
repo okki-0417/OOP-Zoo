@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-# 繁殖の季節性の知識。繁殖期は種ごとに異なり、季節を持たず周年繁殖する種もいれば、
-# 特定の季節(発情期)にしか交配しない季節繁殖種もいる。
 RSpec.describe '繁殖の季節性' do
   catalog  = Zoo::Domain::Taxonomy::SpeciesCatalog
   season   = Zoo::Domain::Operations::Season
@@ -49,10 +47,10 @@ RSpec.describe '繁殖の季節性' do
     end
 
     it '繁殖季節は季節の巡り(Calendar)と連動して訪れること' do
-      autumn_day = calendar.season_for(200) # 200日目は秋
+      autumn_day = calendar.season_for(200)
       expect(autumn_day.value).to eq(:autumn)
       expect(catalog.japanese_macaque.breeds_in?(autumn_day)).to be(true)
-      expect(catalog.japanese_macaque.breeds_in?(calendar.season_for(0))).to be(false) # 春
+      expect(catalog.japanese_macaque.breeds_in?(calendar.season_for(0))).to be(false)
     end
   end
 end

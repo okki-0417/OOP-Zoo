@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     module Shared
-      # 金額を表す不変の値オブジェクト(日本円)。入園料や収益の計算に用いる。
       class Money
         include ValueObject
         include Comparable

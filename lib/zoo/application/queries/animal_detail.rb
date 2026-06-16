@@ -3,7 +3,6 @@
 module Zoo
   module Application
     module Queries
-      # 1個体の詳細を読み取りモデルに射影する。見つからなければ nil。
       class AnimalDetail
         def initialize(animals:, enclosures:)
           @animals = animals

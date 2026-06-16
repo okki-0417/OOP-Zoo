@@ -2,11 +2,6 @@
 
 require 'spec_helper'
 
-# 固定費と休園の知識。運営費(飼料費・維持費・人件費)は集客=収入に依存せず、
-# 在園頭数・職員・エリアで決まる。ゆえに集客のない休園日でもコストは止まらず、
-# 収入が落ちた日ほど収支を圧迫する(固定費の非対称＝「収支＝命」の核)。
-#
-# 経済ドメイン共通の用語(集客=f(魅力,評判,料金) 等)は economy_spec.rb 冒頭に集約。
 RSpec.describe '固定費と休園' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
 

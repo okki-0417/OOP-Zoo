@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-# ZooRepository ポートが満たすべき契約。in-memory と SQLite の両実装で共有し、
-# 「同じ口は同じ振る舞い」を保証する(fake と本物のドリフト防止)。
-# ホスト側で let(:repository) を提供すること。
 RSpec.shared_examples 'a zoo repository' do
   money = Zoo::Domain::Shared::Money
 
@@ -12,7 +9,7 @@ RSpec.shared_examples 'a zoo repository' do
 
   it 'save した状態(収益・残高・来園者数・経過日数)を load で復元できること' do
     zoo = repository.load
-    zoo.admit_visitors(10) # 収益 2000*10=20,000
+    zoo.admit_visitors(10)
     3.times { zoo.advance_day }
 
     repository.save(zoo)
