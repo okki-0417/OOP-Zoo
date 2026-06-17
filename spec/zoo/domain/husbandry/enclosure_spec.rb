@@ -100,6 +100,29 @@ module Zoo
           expect(savanna.area_sqm).to eq(300)
         end
 
+        describe '#required_area / #overcrowded?' do
+          def pen(capacity, temp)
+            described_class.new(name: '区画', temperature: Shared::Temperature.celsius(temp), capacity: capacity)
+          end
+
+          it '収容個体の必要面積を合計すること' do
+            enclosure = pen(4, 28)
+            enclosure.admit(build_adult(zebra, name: 'z1'))
+            enclosure.admit(build_adult(zebra, name: 'z2'))
+            expect(enclosure.required_area).to eq(200.0)
+          end
+
+          it '空のエリアは過密でないこと' do
+            expect(pen(2, 28)).not_to be_overcrowded
+          end
+
+          it '必要面積が広さを超えると過密であること' do
+            enclosure = pen(1, 25)
+            enclosure.admit(build_adult(giraffe))
+            expect(enclosure).to be_overcrowded
+          end
+        end
+
         describe '#pass_day' do
           it '収容個体が歳をとり、エリアが汚れること' do
             savanna.admit(build_adult(zebra))

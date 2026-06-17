@@ -30,7 +30,7 @@ module Zoo
         def transmission_chance(enclosure)
           chance = BASE_CHANCE
           chance += FILTH_BONUS if enclosure.filthy?
-          chance += CROWDING_BONUS if Husbandry::Stocking.overcrowded?(enclosure)
+          chance += CROWDING_BONUS if enclosure.overcrowded?
           [chance, 100].min
         end
 

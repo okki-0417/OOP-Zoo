@@ -16,6 +16,8 @@ module Zoo
 
       MALNUTRITION_DAMAGE_PER_DAY = 2
 
+      ILLNESS_VULNERABILITY_INCREMENT = 0.5
+
       attr_reader :id, :species, :name, :sex, :health, :hunger, :age_in_days, :death,
                   :parent_ids, :illness, :stress, :nutrition
 
@@ -275,10 +277,16 @@ module Zoo
         "#{@name}(#{@species.name_ja}/#{@sex.label}/#{life_stage.label})"
       end
 
+      def illness_susceptibility
+        stage = life_stage
+        vulnerable = [stage.baby?, stage.elderly?, stressed?, malnourished?]
+        1.0 + (vulnerable.count(true) * ILLNESS_VULNERABILITY_INCREMENT)
+      end
+
       private
 
       def illness_damage(days)
-        (@illness.daily_damage * Medical::Vulnerability.multiplier(self) * days).round
+        (@illness.daily_damage * illness_susceptibility * days).round
       end
 
       def lethal_cause

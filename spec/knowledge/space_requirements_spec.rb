@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe '必要面積' do
   catalog  = Zoo::Domain::Taxonomy::SpeciesCatalog
   species  = Zoo::Domain::Taxonomy::Species
-  stocking = Zoo::Domain::Husbandry::Stocking
   welfare  = Zoo::Domain::Husbandry::Welfare
   shared   = Zoo::Domain::Shared
 
@@ -35,7 +34,7 @@ RSpec.describe '必要面積' do
       enclosure.admit(build_adult(catalog.lion, name: 'A'))
       enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
 
-      expect(stocking.required_area(enclosure)).to eq(2 * catalog.lion.space_requirement_sqm)
+      expect(enclosure.required_area).to eq(2 * catalog.lion.space_requirement_sqm)
     end
   end
 
@@ -47,7 +46,7 @@ RSpec.describe '必要面積' do
       bear = build_adult(catalog.polar_bear)
       den.admit(bear)
 
-      expect(stocking).to be_overcrowded(den)
+      expect(den).to be_overcrowded
       expect(welfare.daily_stress(bear, den)).to be > 0
     end
   end

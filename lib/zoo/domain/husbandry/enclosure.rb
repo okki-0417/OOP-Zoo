@@ -84,6 +84,14 @@ module Zoo
           @area_sqm || (capacity * AREA_PER_SLOT_SQM)
         end
 
+        def required_area
+          @occupants.sum { |animal| animal.species.space_requirement_sqm }
+        end
+
+        def overcrowded?
+          required_area > area_sqm
+        end
+
         def vacancies
           @capacity - population
         end

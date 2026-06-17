@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe '飼育密度と過密' do
   catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
-  stocking = Zoo::Domain::Husbandry::Stocking
 
   def pen(capacity, temp)
     Zoo::Domain::Husbandry::Enclosure.new(
@@ -25,14 +24,14 @@ RSpec.describe '飼育密度と過密' do
       enclosure.admit(build_adult(catalog.lion, name: 'A'))
       enclosure.admit(build_adult(catalog.lion, name: 'B'))
 
-      expect(stocking.overcrowded?(enclosure)).to be(false)
+      expect(enclosure.overcrowded?).to be(false)
     end
 
     it '必要面積の合計が区画の広さを超えると過密になること' do
       enclosure = pen(4, 25)
       enclosure.admit(build_adult(catalog.african_elephant))
 
-      expect(stocking.overcrowded?(enclosure)).to be(true)
+      expect(enclosure.overcrowded?).to be(true)
     end
   end
 end

@@ -14,7 +14,7 @@ module Zoo
           return 0 unless SocialStructure.subordinate_male?(animal, enclosure)
 
           injury = BASE_INJURY
-          injury += CROWDING_AGGRAVATION if Stocking.overcrowded?(enclosure)
+          injury += CROWDING_AGGRAVATION if enclosure.overcrowded?
           injury += NO_REFUGE_AGGRAVATION if enclosure.barren?
           injury
         end
