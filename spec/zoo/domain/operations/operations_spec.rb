@@ -21,7 +21,7 @@ module Zoo
             Husbandry::Enclosure.new(name: 'A', temperature: Shared::Temperature.celsius(20), capacity: 4)
           end
           zebras = Array.new(5) { Taxonomy::SpeciesCatalog.grevys_zebra }
-          food = zebras.sum { |s| Husbandry::Metabolism.daily_food_cost(s).yen }
+          food = zebras.sum { |s| s.daily_food_cost.yen }
 
           cost = described_class.daily(enclosures: enclosures, staff: 3, species: zebras)
 

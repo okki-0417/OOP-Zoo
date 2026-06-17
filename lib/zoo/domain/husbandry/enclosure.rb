@@ -212,7 +212,7 @@ module Zoo
           end
 
           species_present.each do |resident|
-            reason = CohabitationPolicy.incompatibility_reason(resident, animal.species)
+            reason = resident.cohabitation_conflict_with(animal.species)
             return Errors::IncompatibleCohabitation.new(reason) if reason
           end
 

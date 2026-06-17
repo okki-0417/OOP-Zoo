@@ -25,7 +25,7 @@ RSpec.describe Zoo::Domain::Operations::DailyOperation do
   describe '.run' do
     it 'リポジトリ無しで1日を回し、日送り・収支・評判を集約に反映すること' do
       enclosure, zebra = savanna_with_zebra
-      zebra_food = husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
+      zebra_food = catalog.grevys_zebra.daily_food_cost.yen
       upkeep = operations::OperatingCost::UPKEEP_PER_ENCLOSURE
 
       outcome = described_class.run(

@@ -44,7 +44,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
     it '展示1種(EN)・評判50・料金¥2,000で来園12人を集め、収入¥24,000・費用を計上すること' do
       report = service.call
 
-      zebra_food = husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
+      zebra_food = catalog.grevys_zebra.daily_food_cost.yen
       upkeep = Zoo::Domain::Operations::OperatingCost::UPKEEP_PER_ENCLOSURE
 
       expect(report.visitors).to eq(12)
@@ -58,7 +58,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
 
     it '死亡が無い日は評判が体験へドリフトするが、来場12人と露出が小さく単日では表示は据え置き(50のまま)、残高に純益が反映されること' do
       cost = Zoo::Domain::Operations::OperatingCost::UPKEEP_PER_ENCLOSURE +
-             husbandry::Metabolism.daily_food_cost(catalog.grevys_zebra).yen
+             catalog.grevys_zebra.daily_food_cost.yen
       report = service.call
 
       expect(report.deaths).to eq(0)

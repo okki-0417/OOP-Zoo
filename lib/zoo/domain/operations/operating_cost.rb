@@ -15,7 +15,7 @@ module Zoo
             UPKEEP_PER_ENCLOSURE + (e.climate_controlled? ? CLIMATE_CONTROL_RUNNING_YEN : 0)
           end
           salaries = SALARY_PER_STAFF * staff
-          food = species.sum { |s| Husbandry::Metabolism.daily_food_cost(s).yen }
+          food = species.sum { |s| s.daily_food_cost.yen }
           Shared::Money.yen(upkeep + salaries + food)
         end
       end

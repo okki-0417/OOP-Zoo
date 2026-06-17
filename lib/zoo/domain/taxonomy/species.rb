@@ -120,8 +120,69 @@ module Zoo
           low <= high
         end
 
+        def can_cohabit_with?(other)
+          cohabitation_conflict_with(other).nil?
+        end
+
+        def cohabitation_conflict_with(other)
+          return "#{@name_ja}と#{other.name_ja}は適温域が両立しません" unless climate_overlaps?(other)
+
+          if same_species?(other)
+            return "#{@name_ja}は単独性のため同種を同居させられません" if solitary?
+
+            return nil
+          end
+
+          return "#{@name_ja}と#{other.name_ja}は捕食関係の恐れがあり同居させられません" if predatory? || other.predatory?
+
+          nil
+        end
+
+        REQUIRED_FOOD_VARIETY_CAP = 2
+
+        def required_food_variety
+          [@diet_type.acceptable_categories.size, REQUIRED_FOOD_VARIETY_CAP].min
+        end
+
+        def diet_satisfied_by?(foods)
+          offered_food_categories(foods).size >= required_food_variety
+        end
+
+        METABOLIC_REFERENCE_KG = 190.0
+        BASE_HUNGER_PER_DAY = 10
+        HUNGER_MIN = 1
+        HUNGER_MAX = 30
+        FOOD_COST_REFERENCE_KG = 100.0
+        FOOD_COST_BASE_YEN = 450
+        FOOD_COST_MIN_YEN = 100
+        PREDATORY_DIET_FOOD_FACTOR = 3.5
+        SATIETY_FACTOR_RANGE = (0.3..3.0)
+
+        def daily_hunger
+          factor = (METABOLIC_REFERENCE_KG / @adult_weight.kilograms)**0.25
+          (BASE_HUNGER_PER_DAY * factor).round.clamp(HUNGER_MIN, HUNGER_MAX)
+        end
+
+        def satiety_from(food)
+          factor = ((METABOLIC_REFERENCE_KG / @adult_weight.kilograms)**0.25)
+                   .clamp(SATIETY_FACTOR_RANGE.begin, SATIETY_FACTOR_RANGE.end)
+          [(food.satiety * factor).round, 1].max
+        end
+
+        def daily_food_cost
+          mass_factor = (@adult_weight.kilograms / FOOD_COST_REFERENCE_KG)**0.75
+          diet_factor = predatory? ? PREDATORY_DIET_FOOD_FACTOR : 1.0
+          Shared::Money.yen([(FOOD_COST_BASE_YEN * mass_factor * diet_factor).round, FOOD_COST_MIN_YEN].max)
+        end
+
         def to_s
           "#{@name_ja}(#{@scientific_name})"
+        end
+
+        private
+
+        def offered_food_categories(foods)
+          foods.select { |food| @diet_type.accepts?(food.category) }.map(&:category).uniq
         end
 
         protected

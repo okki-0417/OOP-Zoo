@@ -90,6 +90,57 @@ module Zoo
           expect(lion.climate_overlaps?(zebra)).to be(true)
           expect(lion.climate_overlaps?(SpeciesCatalog.emperor_penguin)).to be(false)
         end
+
+        describe '#required_food_variety' do
+          it '受け入れカテゴリが1つの肉食は1であること' do
+            expect(lion.required_food_variety).to eq(1)
+          end
+
+          it '受け入れカテゴリが多い雑食でも上限2であること' do
+            expect(SpeciesCatalog.japanese_macaque.required_food_variety).to eq(2)
+          end
+        end
+
+        describe '#diet_satisfied_by?' do
+          let(:foods) { Feeding::FoodCatalog }
+
+          it '必要カテゴリ数を満たせば true であること' do
+            expect(lion.diet_satisfied_by?([foods.horse_meat])).to be(true)
+          end
+
+          it '必要カテゴリ数に届かなければ false であること' do
+            expect(SpeciesCatalog.african_elephant.diet_satisfied_by?([foods.hay])).to be(false)
+          end
+
+          it '食性に合わない餌はカテゴリに数えないこと' do
+            expect(SpeciesCatalog.african_elephant.diet_satisfied_by?([foods.hay, foods.horse_meat])).to be(false)
+          end
+
+          it '空の給餌は false であること' do
+            expect(lion.diet_satisfied_by?([])).to be(false)
+          end
+        end
+
+        describe '#daily_hunger' do
+          it 'HUNGER_MIN..HUNGER_MAX にクランプされること' do
+            expect(SpeciesCatalog.african_elephant.daily_hunger)
+              .to be_between(described_class::HUNGER_MIN, described_class::HUNGER_MAX)
+          end
+        end
+
+        describe '#satiety_from' do
+          it '満腹度は最低1を返すこと' do
+            expect(SpeciesCatalog.african_elephant.satiety_from(Feeding::FoodCatalog.hay)).to be >= 1
+          end
+        end
+
+        describe '#daily_food_cost' do
+          it 'FOOD_COST_MIN_YEN を下回らない Money を返すこと' do
+            cost = SpeciesCatalog.hercules_beetle.daily_food_cost
+            expect(cost).to be_a(Shared::Money)
+            expect(cost.yen).to be >= described_class::FOOD_COST_MIN_YEN
+          end
+        end
       end
 
       RSpec.describe SpeciesCatalog do

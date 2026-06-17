@@ -5,7 +5,7 @@ require 'spec_helper'
 module Zoo
   module Domain
     module Husbandry
-      RSpec.describe CohabitationPolicy do
+      RSpec.describe '同居の相性' do
         let(:lion) { Taxonomy::SpeciesCatalog.lion }
         let(:zebra) { Taxonomy::SpeciesCatalog.grevys_zebra }
         let(:giraffe) { Taxonomy::SpeciesCatalog.reticulated_giraffe }
@@ -13,23 +13,23 @@ module Zoo
         let(:penguin) { Taxonomy::SpeciesCatalog.emperor_penguin }
 
         it '草食動物同士は混合展示できること' do
-          expect(described_class.compatible?(zebra, giraffe)).to be(true)
+          expect(zebra.can_cohabit_with?(giraffe)).to be(true)
         end
 
         it '肉食動物は異種と同居できないこと' do
-          expect(described_class.compatible?(lion, zebra)).to be(false)
+          expect(lion.can_cohabit_with?(zebra)).to be(false)
         end
 
         it '群れで暮らす種は同種を同居できること' do
-          expect(described_class.compatible?(lion, lion)).to be(true)
+          expect(lion.can_cohabit_with?(lion)).to be(true)
         end
 
         it '単独性の種は同種でも同居できないこと' do
-          expect(described_class.compatible?(polar_bear, polar_bear)).to be(false)
+          expect(polar_bear.can_cohabit_with?(polar_bear)).to be(false)
         end
 
         it '適温域が両立しない種同士は同居できないこと' do
-          expect(described_class.compatible?(lion, penguin)).to be(false)
+          expect(lion.can_cohabit_with?(penguin)).to be(false)
         end
       end
 

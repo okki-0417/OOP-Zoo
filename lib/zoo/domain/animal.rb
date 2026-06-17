@@ -174,7 +174,7 @@ module Zoo
         return self if dead?
 
         @age_in_days = @age_in_days.advanced_by(days)
-        get_hungrier(Husbandry::Metabolism.daily_hunger(@species) * days)
+        get_hungrier(@species.daily_hunger * days)
         @health = @health.decreased_by(STARVATION_DAMAGE_PER_DAY * days) if @hunger.starving?
         @health = @health.decreased_by(illness_damage(days)) if sick?
         @health = @health.decreased_by(STRESS_DAMAGE_PER_DAY * days) if @stress.severe?
@@ -206,7 +206,7 @@ module Zoo
                 "#{@species.name_ja}(#{@species.diet_type.label})に#{food.name_ja}は与えられません"
         end
 
-        satisfy_hunger(Husbandry::Metabolism.satiety(@species, food))
+        satisfy_hunger(@species.satiety_from(food))
         self
       end
 
@@ -222,7 +222,7 @@ module Zoo
       NUTRITION_LOSS = 25
 
       def dine(foods)
-        @nutrition = if Feeding::NutritionPolicy.balanced?(@species, foods)
+        @nutrition = if @species.diet_satisfied_by?(foods)
                        @nutrition.improved_by(NUTRITION_GAIN)
                      else
                        @nutrition.declined_by(NUTRITION_LOSS)
