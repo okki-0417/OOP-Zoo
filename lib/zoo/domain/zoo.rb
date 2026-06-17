@@ -41,7 +41,7 @@ module Zoo
       end
 
       def season
-        Operations::Calendar.season_for(@day)
+        Operations::Season.on_day(@day)
       end
 
       def advance_day

@@ -19,28 +19,7 @@ module Zoo
             expect(described_class.score([lion.die])).to eq(50)
           end
 
-          it '健康で落ち着いた1頭は満点(100)になること' do
-            expect(described_class.score([lion])).to eq(100)
-          end
-
-          it 'ストレス個体は STRESSED_PENALTY(40)を引いた60になること' do
-            expect(described_class.score([lion.tap { |a| a.add_stress(70) }])).to eq(60)
-          end
-
-          it '病気の個体は SICK_PENALTY(40)を引いた60になること' do
-            sick = lion.tap { |a| a.fall_ill(Medical::IllnessCatalog.parasite) }
-            expect(described_class.score([sick])).to eq(60)
-          end
-
-          it 'ストレスと病気が重なると両方引かれること(100-40-40=20)' do
-            both = lion.tap do |a|
-              a.add_stress(70)
-              a.fall_ill(Medical::IllnessCatalog.parasite)
-            end
-            expect(described_class.score([both])).to eq(20)
-          end
-
-          it '生存個体の平均になること(健康100とストレス60で80)' do
+          it '生存個体の visible_condition の平均になること(健康100とストレス60で80)' do
             stressed = lion.tap { |a| a.add_stress(70) }
             expect(described_class.score([lion, stressed])).to eq(80)
           end

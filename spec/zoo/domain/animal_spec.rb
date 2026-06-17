@@ -39,6 +39,33 @@ module Zoo
         end
       end
 
+      describe '#visible_condition' do
+        it '健康で落ち着いた個体は満点(100)であること' do
+          expect(build.visible_condition).to eq(100)
+        end
+
+        it 'ストレス個体は VISIBLE_STRESSED_PENALTY(40)引かれること' do
+          expect(build.tap { |a| a.add_stress(70) }.visible_condition).to eq(60)
+        end
+
+        it '病気の個体は VISIBLE_SICK_PENALTY(40)引かれること' do
+          expect(build.tap { |a| a.fall_ill(illnesses.parasite) }.visible_condition).to eq(60)
+        end
+
+        it '衰弱した個体は VISIBLE_WEAK_PENALTY(20)引かれること' do
+          expect(build.tap { |a| a.injure(85) }.visible_condition).to eq(80)
+        end
+
+        it '複数要因が重なっても0未満にはならないこと' do
+          animal = build.tap do |a|
+            a.add_stress(70)
+            a.fall_ill(illnesses.parasite)
+            a.injure(85)
+          end
+          expect(animal.visible_condition).to eq(0)
+        end
+      end
+
       describe '#parent_of? / #sibling_of?' do
         it '動物でない引数には false を返すこと' do
           animal = build

@@ -26,15 +26,13 @@ RSpec.describe Zoo::Domain::Operations::Season do
       expect { described_class.new(:monsoon) }.to raise_error(ArgumentError)
     end
   end
-end
 
-RSpec.describe Zoo::Domain::Operations::Calendar do
-  describe '.season_for' do
+  describe '.on_day' do
     it '四半期の境界で季節が切り替わること' do
-      expect(described_class.season_for(0).value).to eq(:spring)
-      expect(described_class.season_for(91).value).to eq(:summer)
-      expect(described_class.season_for(182).value).to eq(:autumn)
-      expect(described_class.season_for(273).value).to eq(:winter)
+      expect(described_class.on_day(0).value).to eq(:spring)
+      expect(described_class.on_day(91).value).to eq(:summer)
+      expect(described_class.on_day(182).value).to eq(:autumn)
+      expect(described_class.on_day(273).value).to eq(:winter)
     end
   end
 end

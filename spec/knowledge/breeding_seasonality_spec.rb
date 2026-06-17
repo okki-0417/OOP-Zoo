@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe '繁殖の季節性' do
   catalog  = Zoo::Domain::Taxonomy::SpeciesCatalog
   season   = Zoo::Domain::Operations::Season
-  calendar = Zoo::Domain::Operations::Calendar
   errors   = Zoo::Domain::Errors
 
   def pair_of(species)
@@ -46,11 +45,11 @@ RSpec.describe '繁殖の季節性' do
       expect(catalog.japanese_macaque.breeds_year_round?).to be(false)
     end
 
-    it '繁殖季節は季節の巡り(Calendar)と連動して訪れること' do
-      autumn_day = calendar.season_for(200)
+    it '繁殖季節は季節の巡り(Season.on_day)と連動して訪れること' do
+      autumn_day = season.on_day(200)
       expect(autumn_day.value).to eq(:autumn)
       expect(catalog.japanese_macaque.breeds_in?(autumn_day)).to be(true)
-      expect(catalog.japanese_macaque.breeds_in?(calendar.season_for(0))).to be(false)
+      expect(catalog.japanese_macaque.breeds_in?(season.on_day(0))).to be(false)
     end
   end
 end

@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe '季節と気候' do
   shared = Zoo::Domain::Shared
-  calendar  = Zoo::Domain::Operations::Calendar
   season    = Zoo::Domain::Operations::Season
   welfare   = Zoo::Domain::Husbandry::Welfare
 
@@ -20,11 +19,11 @@ RSpec.describe '季節と気候' do
 
   describe '季節の巡り' do
     it '経過日数に応じて春→夏→秋→冬と巡り、1年で一周すること' do
-      expect(calendar.season_for(0).label).to eq('春')
-      expect(calendar.season_for(100).label).to eq('夏')
-      expect(calendar.season_for(200).label).to eq('秋')
-      expect(calendar.season_for(300).label).to eq('冬')
-      expect(calendar.season_for(365).label).to eq('春')
+      expect(season.on_day(0).label).to eq('春')
+      expect(season.on_day(100).label).to eq('夏')
+      expect(season.on_day(200).label).to eq('秋')
+      expect(season.on_day(300).label).to eq('冬')
+      expect(season.on_day(365).label).to eq('春')
     end
   end
 

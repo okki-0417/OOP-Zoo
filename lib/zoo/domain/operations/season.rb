@@ -15,8 +15,16 @@ module Zoo
 
         attr_reader :value
 
+        DAYS_PER_YEAR = 365
+        ORDER = %i[spring summer autumn winter].freeze
+
         SEASONS.each_key do |key|
           define_singleton_method(key) { new(key) }
+        end
+
+        def self.on_day(elapsed_days)
+          index = (elapsed_days % DAYS_PER_YEAR) / (DAYS_PER_YEAR / ORDER.size)
+          new(ORDER[index.clamp(0, ORDER.size - 1)])
         end
 
         def initialize(value)

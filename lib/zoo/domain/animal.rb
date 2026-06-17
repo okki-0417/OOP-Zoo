@@ -238,6 +238,18 @@ module Zoo
         !malnourished?
       end
 
+      VISIBLE_STRESSED_PENALTY = 40
+      VISIBLE_SICK_PENALTY = 40
+      VISIBLE_WEAK_PENALTY = 20
+
+      def visible_condition
+        score = 100
+        score -= VISIBLE_STRESSED_PENALTY if stressed?
+        score -= VISIBLE_SICK_PENALTY if sick?
+        score -= VISIBLE_WEAK_PENALTY if @health.weak?
+        [score, 0].max
+      end
+
       def life_stage
         @age_in_days.life_stage(@species)
       end
