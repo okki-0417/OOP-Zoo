@@ -123,6 +123,33 @@ module Zoo
           end
         end
 
+        describe '#subordinate_male?' do
+          def pride
+            described_class.new(name: '丘', temperature: Shared::Temperature.celsius(28), capacity: 6)
+          end
+
+          it '成熟オスが複数いると、年長でない方が序列下位であること' do
+            enclosure = pride
+            senior = build_animal(lion, name: '長老', sex: Animal::Sex.male, age_in_days: 4000)
+            junior = build_adult(lion, name: '若', sex: Animal::Sex.male)
+            enclosure.admit(senior)
+            enclosure.admit(junior)
+            expect(enclosure.subordinate_male?(junior)).to be(true)
+            expect(enclosure.subordinate_male?(senior)).to be(false)
+          end
+
+          it 'オス1頭・メス・未成熟は序列下位でないこと' do
+            enclosure = pride
+            male = build_adult(lion, sex: Animal::Sex.male)
+            female = build_adult(lion, sex: Animal::Sex.female)
+            cub = build_animal(lion, name: '仔', sex: Animal::Sex.male, age_in_days: 0)
+            [male, female, cub].each { |a| enclosure.admit(a) }
+            expect(enclosure.subordinate_male?(male)).to be(false)
+            expect(enclosure.subordinate_male?(female)).to be(false)
+            expect(enclosure.subordinate_male?(cub)).to be(false)
+          end
+        end
+
         describe '#pass_day' do
           it '収容個体が歳をとり、エリアが汚れること' do
             savanna.admit(build_adult(zebra))

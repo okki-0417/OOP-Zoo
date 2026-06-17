@@ -12,6 +12,12 @@ module Zoo
 
         ENRICHMENT_DECAY_PER_DAY = 2
 
+        SOCIAL_CONFLICT_INJURY = 5
+
+        CROWDING_AGGRAVATION = 5
+
+        NO_REFUGE_AGGRAVATION = 5
+
         def initialize(name:, temperature:, capacity:, area_sqm: nil, climate_controlled: false,
                        id: Shared::Identifier.new)
           raise ArgumentError, 'エリア名は必須です' if name.to_s.empty?
@@ -140,6 +146,24 @@ module Zoo
           @enrichment.barren?
         end
 
+        def subordinate_male?(animal)
+          return false unless contender?(animal)
+
+          rivals = @occupants.select { |other| contender?(other) && other.species.same_species?(animal.species) }
+          return false if rivals.size < 2
+
+          animal.id != rivals.max_by { |male| male.age_in_days.value }.id
+        end
+
+        def injury_for(animal)
+          return 0 unless subordinate_male?(animal)
+
+          injury = SOCIAL_CONFLICT_INJURY
+          injury += CROWDING_AGGRAVATION if overcrowded?
+          injury += NO_REFUGE_AGGRAVATION if barren?
+          injury
+        end
+
         def pass_day(season: Operations::Season.spring)
           spread_disease_if_filthy
           Medical::Contagion.spread(self)
@@ -147,7 +171,7 @@ module Zoo
             next if animal.dead?
 
             apply_welfare(animal, season)
-            animal.injure(Aggression.injury_for(animal, self))
+            animal.injure(injury_for(animal))
             animal.grow_older(1) unless animal.dead?
           end
           soil(@occupants.size)
@@ -162,6 +186,10 @@ module Zoo
         def apply_welfare(animal, season)
           delta = Welfare.daily_stress(animal, self, season: season)
           delta.negative? ? animal.relieve_stress(-delta) : animal.add_stress(delta)
+        end
+
+        def contender?(animal)
+          animal.alive? && animal.sex.male? && animal.mature? && animal.species.group_living?
         end
 
         def spread_disease_if_filthy

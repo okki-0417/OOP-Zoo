@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe '種内闘争と外傷' do
   catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
-  aggression = Zoo::Domain::Husbandry::Aggression
   sex        = Zoo::Domain::Animal::Sex
 
   def pride(capacity: 6, area_sqm: nil)
@@ -28,7 +27,7 @@ RSpec.describe '種内闘争と外傷' do
       enclosure = pride
       _senior, junior = senior_and_junior(enclosure)
 
-      expect(aggression.injury_for(junior, enclosure)).to be > 0
+      expect(enclosure.injury_for(junior)).to be > 0
     end
 
     it '過密や逃げ場(刺激)の不足は負傷を深めること' do
@@ -39,7 +38,7 @@ RSpec.describe '種内闘争と外傷' do
       _s2, j2 = senior_and_junior(cramped)
       cramped.deplete_enrichment(100)
 
-      expect(aggression.injury_for(j2, cramped)).to be > aggression.injury_for(j1, spacious)
+      expect(cramped.injury_for(j2)).to be > spacious.injury_for(j1)
     end
   end
 
@@ -66,7 +65,7 @@ RSpec.describe '種内闘争と外傷' do
       enclosure.admit(lone_male)
       enclosure.admit(build_adult(catalog.lion, name: 'メス', sex: sex.female))
 
-      expect(aggression.injury_for(lone_male, enclosure)).to eq(0)
+      expect(enclosure.injury_for(lone_male)).to eq(0)
     end
   end
 end
