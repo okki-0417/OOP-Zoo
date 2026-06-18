@@ -4,7 +4,7 @@ require 'spec_helper'
 
 module Zoo
   module Domain
-    RSpec.describe Enrichment do
+    RSpec.describe Enclosure::Enrichment do
       it '.stimulating は満点(100)であること' do
         expect(described_class.stimulating.level).to eq(100)
       end

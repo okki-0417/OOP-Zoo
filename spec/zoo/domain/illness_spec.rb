@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Zoo::Domain::Illness do
+RSpec.describe Zoo::Domain::Animal::Illness do
   describe '.new' do
     it "name_ja='風邪'、daily_damage=2 で生成できること" do
       illness = described_class.new(name_ja: '風邪', daily_damage: 2)

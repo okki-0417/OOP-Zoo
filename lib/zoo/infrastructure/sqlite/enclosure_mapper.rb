@@ -21,7 +21,7 @@ module Zoo
             name: row['name'],
             temperature: Domain::Shared::Temperature.celsius(row['celsius']),
             capacity: row['capacity'],
-            cleanliness: Domain::Cleanliness.new(row['cleanliness']),
+            cleanliness: Domain::Enclosure::Cleanliness.new(row['cleanliness']),
             occupants: occupants
           )
         end

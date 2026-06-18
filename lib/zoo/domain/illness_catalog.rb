@@ -6,19 +6,19 @@ module Zoo
       module_function
 
       def cold
-        Illness.new(name_ja: '風邪', daily_damage: 2, contagious: true)
+        Animal::Illness.new(name_ja: '風邪', daily_damage: 2, contagious: true)
       end
 
       def parasite
-        Illness.new(name_ja: '寄生虫感染', daily_damage: 3, contagious: true)
+        Animal::Illness.new(name_ja: '寄生虫感染', daily_damage: 3, contagious: true)
       end
 
       def pneumonia
-        Illness.new(name_ja: '肺炎', daily_damage: 6, contagious: true)
+        Animal::Illness.new(name_ja: '肺炎', daily_damage: 6, contagious: true)
       end
 
       def fracture
-        Illness.new(name_ja: '骨折', daily_damage: 4, contagious: false)
+        Animal::Illness.new(name_ja: '骨折', daily_damage: 4, contagious: false)
       end
 
       KEYS = %i[cold parasite pneumonia fracture].freeze

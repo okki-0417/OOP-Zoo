@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Zoo::Domain::Cleanliness do
+RSpec.describe Zoo::Domain::Enclosure::Cleanliness do
   describe '.new' do
     it '50 を渡すと level が 50 を返すこと' do
       expect(described_class.new(50).level).to eq(50)

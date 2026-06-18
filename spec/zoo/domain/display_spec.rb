@@ -33,11 +33,11 @@ module Zoo
         end
 
         it 'Cleanliness は レベル/100 を返すこと' do
-          expect(Cleanliness.spotless.to_s).to eq('100/100')
+          expect(Enclosure::Cleanliness.spotless.to_s).to eq('100/100')
         end
 
         it 'Enrichment は レベル/100 を返すこと' do
-          expect(Enrichment.stimulating.to_s).to eq('100/100')
+          expect(Enclosure::Enrichment.stimulating.to_s).to eq('100/100')
         end
 
         it 'Reputation は スコア/100 を返すこと' do
