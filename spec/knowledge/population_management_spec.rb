@@ -4,18 +4,18 @@ require 'spec_helper'
 
 RSpec.describe '個体群管理(交配推奨)' do
   sex         = Zoo::Domain::Animal::Sex
-  recommender = Zoo::Domain::Breeding::MatingRecommendation
+  recommender = Zoo::Domain::MatingRecommendation
 
   def founder(name, sex, age: 3000)
     Zoo::Domain::Animal.new(
-      species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,
+      species: Zoo::Domain::SpeciesCatalog.lion,
       name: name, sex: sex, max_health: 100, age_in_days: age
     )
   end
 
   def offspring(name, sex, sire:, dam:, age: 1500)
     Zoo::Domain::Animal.new(
-      species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,
+      species: Zoo::Domain::SpeciesCatalog.lion,
       name: name, sex: sex, max_health: 100, age_in_days: age, sire: sire, dam: dam
     )
   end

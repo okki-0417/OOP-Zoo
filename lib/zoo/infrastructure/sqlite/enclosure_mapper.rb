@@ -16,12 +16,12 @@ module Zoo
         end
 
         def to_aggregate(row, occupants)
-          Domain::Husbandry::Enclosure.reconstitute(
+          Domain::Enclosure.reconstitute(
             id: Domain::Shared::Identifier.new(row['id']),
             name: row['name'],
             temperature: Domain::Shared::Temperature.celsius(row['celsius']),
             capacity: row['capacity'],
-            cleanliness: Domain::Husbandry::Cleanliness.new(row['cleanliness']),
+            cleanliness: Domain::Cleanliness.new(row['cleanliness']),
             occupants: occupants
           )
         end

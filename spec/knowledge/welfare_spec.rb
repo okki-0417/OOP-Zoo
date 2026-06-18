@@ -3,12 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe '動物福祉' do
-  welfare   = Zoo::Domain::Husbandry::Welfare
+  welfare   = Zoo::Domain::Welfare
   shared    = Zoo::Domain::Shared
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
 
   def savanna(temp = 28, capacity: 4)
-    Zoo::Domain::Husbandry::Enclosure.new(
+    Zoo::Domain::Enclosure.new(
       name: 'サバンナ', temperature: Zoo::Domain::Shared::Temperature.celsius(temp), capacity: capacity
     )
   end
@@ -48,7 +48,7 @@ RSpec.describe '動物福祉' do
 
   context '単独性の種が一頭で暮らすとき' do
     it '孤独にはならず、良好な環境ならストレスが和らぐこと' do
-      den = Zoo::Domain::Husbandry::Enclosure.new(
+      den = Zoo::Domain::Enclosure.new(
         name: '極地', temperature: shared::Temperature.celsius(0), capacity: 3
       )
       bear = build_adult(catalog.polar_bear)
@@ -60,7 +60,7 @@ RSpec.describe '動物福祉' do
 
   context '過密なエリアにいると' do
     it 'ストレスが増すこと' do
-      den = Zoo::Domain::Husbandry::Enclosure.new(
+      den = Zoo::Domain::Enclosure.new(
         name: '狭い獣舎', temperature: shared::Temperature.celsius(0), capacity: 1
       )
       bear = build_adult(catalog.polar_bear)
@@ -97,7 +97,7 @@ RSpec.describe '動物福祉' do
     it 'ストレスが増すこと' do
       enclosure = savanna
       a = build_adult(catalog.lion, name: 'A')
-      a.fall_ill(Zoo::Domain::Medical::IllnessCatalog.cold)
+      a.fall_ill(Zoo::Domain::IllnessCatalog.cold)
       enclosure.admit(a)
       enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
 

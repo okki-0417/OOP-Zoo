@@ -3,21 +3,21 @@
 require 'spec_helper'
 
 RSpec.describe '評判の動学' do
-  reputation = Zoo::Domain::Operations::Reputation
-  policy     = Zoo::Domain::Operations::ReputationPolicy
-  condition  = Zoo::Domain::Husbandry::Condition
-  experience = Zoo::Domain::Operations::VisitorExperience
+  reputation = Zoo::Domain::Reputation
+  policy     = Zoo::Domain::ReputationPolicy
+  condition  = Zoo::Domain::Condition
+  experience = Zoo::Domain::VisitorExperience
   money      = Zoo::Domain::Shared::Money
 
   def healthy_exhibit
-    Array.new(3) { build_adult(Zoo::Domain::Taxonomy::SpeciesCatalog.lion) }
+    Array.new(3) { build_adult(Zoo::Domain::SpeciesCatalog.lion) }
   end
 
   def stressed_exhibit
-    Array.new(3) { build_adult(Zoo::Domain::Taxonomy::SpeciesCatalog.lion).tap { |a| a.add_stress(70) } }
+    Array.new(3) { build_adult(Zoo::Domain::SpeciesCatalog.lion).tap { |a| a.add_stress(70) } }
   end
 
-  CROWD = Zoo::Domain::Operations::ReputationPolicy::EXPOSURE_REFERENCE
+  CROWD = Zoo::Domain::ReputationPolicy::EXPOSURE_REFERENCE
 
   describe '体験経路(来た人が評判を育てる)' do
     context '良い体験(健康で落ち着いた展示)の日がにぎわうと' do
@@ -38,7 +38,7 @@ RSpec.describe '評判の動学' do
 
     it '1日の評判の上げ幅は緩やか(ドリフト上限 DRIFT_CAP 以内)であること' do
       after = policy.after_day(reputation.new(0), experience: 100, exposure: CROWD)
-      expect(after.score).to be <= Zoo::Domain::Operations::ReputationPolicy::DRIFT_CAP
+      expect(after.score).to be <= Zoo::Domain::ReputationPolicy::DRIFT_CAP
     end
   end
 
@@ -68,7 +68,7 @@ RSpec.describe '評判の動学' do
   end
 
   describe 'ニュースの重み(評判をどれだけ下げるか)' do
-    event = Zoo::Domain::Operations::ReputationEvent
+    event = Zoo::Domain::ReputationEvent
 
     context '死因(帰責性)で重みが変わる' do
       it '予防可能な死(餓死)は、老衰死より評判を大きく下げること' do

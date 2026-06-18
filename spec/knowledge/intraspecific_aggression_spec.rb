@@ -3,18 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe '種内闘争と外傷' do
-  catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog    = Zoo::Domain::SpeciesCatalog
   sex        = Zoo::Domain::Animal::Sex
 
   def pride(capacity: 6, area_sqm: nil)
-    Zoo::Domain::Husbandry::Enclosure.new(
+    Zoo::Domain::Enclosure.new(
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(28),
       capacity: capacity, area_sqm: area_sqm
     )
   end
 
   def senior_and_junior(enclosure)
-    lion = Zoo::Domain::Taxonomy::SpeciesCatalog.lion
+    lion = Zoo::Domain::SpeciesCatalog.lion
     senior = build_animal(lion, name: '長老', sex: Zoo::Domain::Animal::Sex.male, age_in_days: 4000)
     junior = build_adult(lion, name: '若オス', sex: Zoo::Domain::Animal::Sex.male)
     enclosure.admit(senior)

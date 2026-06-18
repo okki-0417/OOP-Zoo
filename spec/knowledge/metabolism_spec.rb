@@ -3,18 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe '代謝と体格' do
-  catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
-  foods      = Zoo::Domain::Feeding::FoodCatalog
-  taxonomy   = Zoo::Domain::Taxonomy
+  catalog    = Zoo::Domain::SpeciesCatalog
+  foods      = Zoo::Domain::FoodCatalog
+  taxonomy   = Zoo::Domain
 
   def species_of(diet, kg)
-    Zoo::Domain::Taxonomy::Species.new(
+    Zoo::Domain::Species.new(
       name_ja: '検証種', scientific_name: "Test #{diet.label} #{kg}",
-      taxon_class: Zoo::Domain::Taxonomy::TaxonClass.mammal, diet_type: diet,
-      conservation_status: Zoo::Domain::Taxonomy::ConservationStatus.least_concern,
+      taxon_class: Zoo::Domain::TaxonClass.mammal, diet_type: diet,
+      conservation_status: Zoo::Domain::ConservationStatus.least_concern,
       habitable_temperature_range: Zoo::Domain::Shared::Temperature.celsius(10)..Zoo::Domain::Shared::Temperature.celsius(30),
       lifespan_years: 10, maturity_age_years: 2, gestation_period_days: 60,
-      adult_weight: Zoo::Domain::Taxonomy::Weight.from_kilograms(kg)
+      adult_weight: Zoo::Domain::Weight.from_kilograms(kg)
     )
   end
 

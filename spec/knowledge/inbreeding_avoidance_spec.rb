@@ -4,18 +4,18 @@ require 'spec_helper'
 
 RSpec.describe '近親交配の回避' do
   sex = Zoo::Domain::Animal::Sex
-  policy = Zoo::Domain::Breeding::BreedingPolicy
+  policy = Zoo::Domain::BreedingPolicy
 
   def founder(name, sex)
     Zoo::Domain::Animal.new(
-      species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,
+      species: Zoo::Domain::SpeciesCatalog.lion,
       name: name, sex: sex, max_health: 100, age_in_days: 4000
     )
   end
 
   def offspring(name, sex, sire:, dam:)
     Zoo::Domain::Animal.new(
-      species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,
+      species: Zoo::Domain::SpeciesCatalog.lion,
       name: name, sex: sex, max_health: 100, age_in_days: 365 * 4, sire: sire, dam: dam
     )
   end

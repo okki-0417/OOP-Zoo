@@ -23,7 +23,7 @@ RSpec.describe Zoo::Infrastructure::InMemory::InMemoryUnitOfWork do
     end
 
     it 'ブロック内で例外が起きると、登録リポジトリへの save が巻き戻されること' do
-      catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+      catalog = Zoo::Domain::SpeciesCatalog
       animals = Zoo::Infrastructure::InMemory::InMemoryAnimalRepository.new
       lion = build_adult(catalog.lion, name: 'レオ')
       uow = described_class.new(repositories: [animals])

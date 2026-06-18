@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Queries::AnimalList do
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:lion) { build_adult(catalog.lion, name: 'レオ') }

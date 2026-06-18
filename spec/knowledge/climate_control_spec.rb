@@ -3,21 +3,21 @@
 require 'spec_helper'
 
 RSpec.describe '空調と屋内施設' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
-  season  = Zoo::Domain::Operations::Season
-  pricing = Zoo::Domain::Operations::Pricing
-  welfare = Zoo::Domain::Husbandry::Welfare
+  catalog = Zoo::Domain::SpeciesCatalog
+  season  = Zoo::Domain::Season
+  pricing = Zoo::Domain::Pricing
+  welfare = Zoo::Domain::Welfare
   shared  = Zoo::Domain::Shared
 
   def enclosure(climate_controlled:)
-    Zoo::Domain::Husbandry::Enclosure.new(
+    Zoo::Domain::Enclosure.new(
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(20),
       capacity: 4, climate_controlled: climate_controlled
     )
   end
 
   def pride(climate_controlled:)
-    lion = Zoo::Domain::Taxonomy::SpeciesCatalog.lion
+    lion = Zoo::Domain::SpeciesCatalog.lion
     enc = enclosure(climate_controlled: climate_controlled)
     enc.admit(build_adult(lion, name: 'A'))
     enc.admit(build_adult(lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))

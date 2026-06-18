@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::FeedAnimal do
-  taxonomy  = Zoo::Domain::Taxonomy
-  staff     = Zoo::Domain::Staff
-  feeding   = Zoo::Domain::Feeding
+  taxonomy  = Zoo::Domain
+  staff     = Zoo::Domain
+  feeding   = Zoo::Domain
   catalog   = taxonomy::SpeciesCatalog
   commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory

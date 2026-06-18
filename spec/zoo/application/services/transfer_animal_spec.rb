@@ -3,12 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::TransferAnimal do
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog   = Zoo::Domain::SpeciesCatalog
   commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
 
   def enclosure(name, capacity)
-    Zoo::Domain::Husbandry::Enclosure.new(
+    Zoo::Domain::Enclosure.new(
       name: name, temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: capacity
     )
   end

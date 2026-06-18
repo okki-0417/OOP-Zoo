@@ -13,7 +13,7 @@ module Zoo
         end
 
         def to_aggregate(row)
-          Domain::Staff::Keeper.reconstitute(
+          Domain::Keeper.reconstitute(
             id: Domain::Shared::Identifier.new(row['id']),
             name: row['name'],
             specialties: parse_specialties(row['specialties'])
@@ -23,7 +23,7 @@ module Zoo
         private
 
         def parse_specialties(value)
-          value.to_s.split(',').reject(&:empty?).map { |key| Domain::Taxonomy::TaxonClass.new(key) }
+          value.to_s.split(',').reject(&:empty?).map { |key| Domain::TaxonClass.new(key) }
         end
       end
     end

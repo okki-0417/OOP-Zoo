@@ -12,9 +12,9 @@ module Zoo
 
         def call(command)
           @unit_of_work.run do
-            keeper = Domain::Staff::Keeper.new(name: command.name, specialties: command.specialties)
+            keeper = Domain::Keeper.new(name: command.name, specialties: command.specialties)
 
-            charge(Domain::Operations::Pricing.keeper_signing_fee)
+            charge(Domain::Pricing.keeper_signing_fee)
             @keepers.save(keeper)
             keeper
           end

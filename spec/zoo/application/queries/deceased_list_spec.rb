@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Queries::DeceasedList do
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog   = Zoo::Domain::SpeciesCatalog
   events    = Zoo::Domain::Events
   in_memory = Zoo::Infrastructure::InMemory
 

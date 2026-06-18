@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe '必要面積' do
-  catalog  = Zoo::Domain::Taxonomy::SpeciesCatalog
-  species  = Zoo::Domain::Taxonomy::Species
-  welfare  = Zoo::Domain::Husbandry::Welfare
+  catalog  = Zoo::Domain::SpeciesCatalog
+  species  = Zoo::Domain::Species
+  welfare  = Zoo::Domain::Welfare
   shared   = Zoo::Domain::Shared
 
   describe '行動様式による違い' do
@@ -28,7 +28,7 @@ RSpec.describe '必要面積' do
 
   describe '群れの規模' do
     it '群れで暮らす種は、個体数に応じた面積を要すること' do
-      enclosure = Zoo::Domain::Husbandry::Enclosure.new(
+      enclosure = Zoo::Domain::Enclosure.new(
         name: 'サバンナ', temperature: shared::Temperature.celsius(28), capacity: 6
       )
       enclosure.admit(build_adult(catalog.lion, name: 'A'))
@@ -40,7 +40,7 @@ RSpec.describe '必要面積' do
 
   describe '過密の帰結' do
     it '必要な空間を欠く(過密)と福祉が損なわれること' do
-      den = Zoo::Domain::Husbandry::Enclosure.new(
+      den = Zoo::Domain::Enclosure.new(
         name: '狭い獣舎', temperature: shared::Temperature.celsius(0), capacity: 1
       )
       bear = build_adult(catalog.polar_bear)

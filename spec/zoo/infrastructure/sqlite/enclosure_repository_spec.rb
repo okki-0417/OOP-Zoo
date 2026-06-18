@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Zoo::Infrastructure::Sqlite::EnclosureRepository do
   shared = Zoo::Domain::Shared
-  husbandry = Zoo::Domain::Husbandry
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  husbandry = Zoo::Domain
+  catalog = Zoo::Domain::SpeciesCatalog
   sqlite = Zoo::Infrastructure::Sqlite
 
   let(:database) { sqlite::Database.new }

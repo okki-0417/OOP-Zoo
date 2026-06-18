@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::RenameAnimal do
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog   = Zoo::Domain::SpeciesCatalog
   commands  = Zoo::Application::Commands
   events    = Zoo::Domain::Events
   in_memory = Zoo::Infrastructure::InMemory

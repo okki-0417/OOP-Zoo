@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Zoo::Application::Queries::AnimalDetail do
   shared    = Zoo::Domain::Shared
-  husbandry = Zoo::Domain::Husbandry
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  husbandry = Zoo::Domain
+  catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:lion) { build_adult(catalog.lion, name: 'レオ') }

@@ -5,12 +5,12 @@ require 'spec_helper'
 module Zoo
   module Domain
     RSpec.describe Animal do
-      Taxonomy::SpeciesCatalog.lion
-      illnesses = Medical::IllnessCatalog
+      SpeciesCatalog.lion
+      illnesses = IllnessCatalog
 
       def build(name: 'Jack', sex: Animal::Sex.male, max_health: 100, age_in_days: 0, sire: nil, dam: nil)
         Animal.new(
-          species: Taxonomy::SpeciesCatalog.lion, name: name, sex: sex,
+          species: SpeciesCatalog.lion, name: name, sex: sex,
           max_health: max_health, age_in_days: age_in_days, sire: sire, dam: dam
         )
       end
@@ -86,7 +86,7 @@ module Zoo
       describe '.reconstitute' do
         def reconstitute(health:, hunger:, stress:, illness:, death:, immunities: [], parent_ids: [])
           Animal.reconstitute(
-            id: Shared::Identifier.new, species: Taxonomy::SpeciesCatalog.lion,
+            id: Shared::Identifier.new, species: SpeciesCatalog.lion,
             name: Animal::Name.new('レオ'), sex: Animal::Sex.male,
             health: health, hunger: hunger, age_in_days: Animal::AgeInDays.new(365 * 5),
             illness: illness, death: death, parent_ids: parent_ids,

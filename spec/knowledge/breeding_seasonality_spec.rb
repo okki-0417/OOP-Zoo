@@ -3,13 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe '繁殖の季節性' do
-  catalog  = Zoo::Domain::Taxonomy::SpeciesCatalog
-  season   = Zoo::Domain::Operations::Season
+  catalog  = Zoo::Domain::SpeciesCatalog
+  season   = Zoo::Domain::Season
   errors   = Zoo::Domain::Errors
 
   def pair_of(species)
     sire, dam = build_pair(species)
-    Zoo::Domain::Breeding::BreedingPair.new(sire: sire, dam: dam)
+    Zoo::Domain::BreedingPair.new(sire: sire, dam: dam)
   end
 
   describe '周年繁殖種' do

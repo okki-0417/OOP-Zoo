@@ -9,7 +9,7 @@ module Zoo
         end
 
         def to_aggregate(row)
-          Domain::Staff::Veterinarian.reconstitute(
+          Domain::Veterinarian.reconstitute(
             id: Domain::Shared::Identifier.new(row['id']), name: row['name']
           )
         end

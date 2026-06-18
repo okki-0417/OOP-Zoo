@@ -5,12 +5,12 @@ require 'spec_helper'
 RSpec.describe '現実の動物園の再現' do
   shared    = Zoo::Domain::Shared
   animal    = Zoo::Domain::Animal
-  taxonomy  = Zoo::Domain::Taxonomy
-  husbandry = Zoo::Domain::Husbandry
-  staff     = Zoo::Domain::Staff
-  feeding   = Zoo::Domain::Feeding
-  breeding  = Zoo::Domain::Breeding
-  medical   = Zoo::Domain::Medical
+  taxonomy  = Zoo::Domain
+  husbandry = Zoo::Domain
+  staff     = Zoo::Domain
+  feeding   = Zoo::Domain
+  breeding  = Zoo::Domain
+  medical   = Zoo::Domain
   catalog   = taxonomy::SpeciesCatalog
 
   def deg(value)

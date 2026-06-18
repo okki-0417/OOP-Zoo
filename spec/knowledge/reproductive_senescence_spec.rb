@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe '生殖の老化' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
 
   def aged(species, years)
     Zoo::Domain::Animal.new(

@@ -3,12 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe '疾病の重症度と伝播' do
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
-  illnesses = Zoo::Domain::Medical::IllnessCatalog
-  contagion = Zoo::Domain::Medical::Contagion
+  catalog   = Zoo::Domain::SpeciesCatalog
+  illnesses = Zoo::Domain::IllnessCatalog
+  contagion = Zoo::Domain::Contagion
 
-  def sick_lion(age_in_days:, stress: 0, illness: Zoo::Domain::Medical::IllnessCatalog.cold)
-    lion = Zoo::Domain::Taxonomy::SpeciesCatalog.lion
+  def sick_lion(age_in_days:, stress: 0, illness: Zoo::Domain::IllnessCatalog.cold)
+    lion = Zoo::Domain::SpeciesCatalog.lion
     animal = Zoo::Domain::Animal.new(
       species: lion, name: 'X', sex: Zoo::Domain::Animal::Sex.male, max_health: 100, age_in_days: age_in_days
     )
@@ -18,7 +18,7 @@ RSpec.describe '疾病の重症度と伝播' do
   end
 
   def pride(*animals)
-    enclosure = Zoo::Domain::Husbandry::Enclosure.new(
+    enclosure = Zoo::Domain::Enclosure.new(
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 6
     )
     animals.each { |a| enclosure.admit(a) }

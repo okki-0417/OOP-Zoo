@@ -3,11 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe 'ニュース性' do
-  catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
-  policy     = Zoo::Domain::Operations::ReputationPolicy
-  reputation = Zoo::Domain::Operations::Reputation
-  attraction = Zoo::Domain::Operations::VisitorAttraction
-  event      = Zoo::Domain::Operations::ReputationEvent
+  catalog    = Zoo::Domain::SpeciesCatalog
+  policy     = Zoo::Domain::ReputationPolicy
+  reputation = Zoo::Domain::Reputation
+  attraction = Zoo::Domain::VisitorAttraction
+  event      = Zoo::Domain::ReputationEvent
   money      = Zoo::Domain::Shared::Money
 
   fee = money.yen(2_000)

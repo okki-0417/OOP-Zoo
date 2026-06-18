@@ -12,13 +12,13 @@ module Zoo
 
         def call(command)
           @unit_of_work.run do
-            enclosure = Domain::Husbandry::Enclosure.new(
+            enclosure = Domain::Enclosure.new(
               name: command.name,
               temperature: command.temperature,
               capacity: command.capacity
             )
 
-            charge(Domain::Operations::Pricing.enclosure_construction_cost(capacity: command.capacity))
+            charge(Domain::Pricing.enclosure_construction_cost(capacity: command.capacity))
             @enclosures.save(enclosure)
             enclosure
           end

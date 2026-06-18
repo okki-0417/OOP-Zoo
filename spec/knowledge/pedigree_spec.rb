@@ -4,19 +4,19 @@ require 'spec_helper'
 
 RSpec.describe '血統と近親交配' do
   sex      = Zoo::Domain::Animal::Sex
-  pedigree = Zoo::Domain::Breeding::Pedigree
-  catalog  = Zoo::Domain::Taxonomy::SpeciesCatalog
+  pedigree = Zoo::Domain::Pedigree
+  catalog  = Zoo::Domain::SpeciesCatalog
 
   def founder(name, sex)
     Zoo::Domain::Animal.new(
-      species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,
+      species: Zoo::Domain::SpeciesCatalog.lion,
       name: name, sex: sex, max_health: 100, age_in_days: 4000
     )
   end
 
   def offspring(name, sex, sire:, dam:, age: 100)
     Zoo::Domain::Animal.new(
-      species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,
+      species: Zoo::Domain::SpeciesCatalog.lion,
       name: name, sex: sex, max_health: 100, age_in_days: age, sire: sire, dam: dam
     )
   end
@@ -86,7 +86,7 @@ RSpec.describe '血統と近親交配' do
 
   describe '近交弱勢(inbreeding depression)' do
     it '近交係数が高い親から生まれた子ほど虚弱に(最大体力が低く)生まれること' do
-      pair = Zoo::Domain::Breeding::BreedingPair.new(
+      pair = Zoo::Domain::BreedingPair.new(
         sire: build_adult(catalog.lion, name: '父', sex: sex.male),
         dam: build_adult(catalog.lion, name: '母', sex: sex.female)
       )

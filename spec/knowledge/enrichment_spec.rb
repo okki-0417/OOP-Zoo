@@ -3,16 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe '環境エンリッチメントと常同行動' do
-  welfare = Zoo::Domain::Husbandry::Welfare
+  welfare = Zoo::Domain::Welfare
 
   def savanna(temp = 28)
-    Zoo::Domain::Husbandry::Enclosure.new(
+    Zoo::Domain::Enclosure.new(
       name: 'サバンナ', temperature: Zoo::Domain::Shared::Temperature.celsius(temp), capacity: 4
     )
   end
 
   def with_company(enclosure)
-    lion = Zoo::Domain::Taxonomy::SpeciesCatalog.lion
+    lion = Zoo::Domain::SpeciesCatalog.lion
     enclosure.admit(build_adult(lion, name: 'A'))
     enclosure.admit(build_adult(lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
     enclosure
@@ -54,7 +54,7 @@ RSpec.describe '環境エンリッチメントと常同行動' do
   describe '放置による刺激の減衰' do
     it '日々の暮らしで刺激は少しずつ薄れること' do
       enclosure = with_company(savanna)
-      expect { enclosure.pass_day }.to change { enclosure.enrichment.level }.by(-Zoo::Domain::Husbandry::Enclosure::ENRICHMENT_DECAY_PER_DAY)
+      expect { enclosure.pass_day }.to change { enclosure.enrichment.level }.by(-Zoo::Domain::Enclosure::ENRICHMENT_DECAY_PER_DAY)
     end
   end
 end

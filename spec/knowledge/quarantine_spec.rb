@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe '検疫' do
-  catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
-  illnesses  = Zoo::Domain::Medical::IllnessCatalog
-  quarantine = Zoo::Domain::Medical::Quarantine
+  catalog    = Zoo::Domain::SpeciesCatalog
+  illnesses  = Zoo::Domain::IllnessCatalog
+  quarantine = Zoo::Domain::Quarantine
 
   describe '隔離期間' do
     it '導入直後はまだ観察期間を終えていないこと' do

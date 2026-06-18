@@ -3,13 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe '予防接種と免疫' do
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
-  illnesses = Zoo::Domain::Medical::IllnessCatalog
-  contagion = Zoo::Domain::Medical::Contagion
+  catalog   = Zoo::Domain::SpeciesCatalog
+  illnesses = Zoo::Domain::IllnessCatalog
+  contagion = Zoo::Domain::Contagion
   errors    = Zoo::Domain::Errors
 
   def pride(*animals)
-    enclosure = Zoo::Domain::Husbandry::Enclosure.new(
+    enclosure = Zoo::Domain::Enclosure.new(
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 6
     )
     animals.each { |a| enclosure.admit(a) }

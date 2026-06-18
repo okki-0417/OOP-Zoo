@@ -7,8 +7,8 @@ RSpec.describe Zoo::Application::Services::AcquireAnimal do
   domain    = Zoo::Domain
   money     = Zoo::Domain::Shared::Money
   balance   = Zoo::Domain::Shared::Balance
-  pricing   = Zoo::Domain::Operations::Pricing
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  pricing   = Zoo::Domain::Pricing
+  catalog   = Zoo::Domain::SpeciesCatalog
   commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
 

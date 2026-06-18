@@ -5,7 +5,7 @@ module Zoo
     class Zoo
       include Events::Recorder
 
-      def initialize(name:, admission_fee:, funds: Shared::Money.zero, reputation: Operations::Reputation.default)
+      def initialize(name:, admission_fee:, funds: Shared::Money.zero, reputation: Reputation.default)
         raise ArgumentError, '動物園名は必須です' if name.to_s.empty?
 
         @name = name
@@ -41,7 +41,7 @@ module Zoo
       end
 
       def season
-        Operations::Season.on_day(@day)
+        Season.on_day(@day)
       end
 
       def advance_day

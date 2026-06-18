@@ -12,9 +12,9 @@ module Zoo
 
         def call(command)
           @unit_of_work.run do
-            veterinarian = Domain::Staff::Veterinarian.new(name: command.name)
+            veterinarian = Domain::Veterinarian.new(name: command.name)
 
-            charge(Domain::Operations::Pricing.veterinarian_signing_fee)
+            charge(Domain::Pricing.veterinarian_signing_fee)
             @veterinarians.save(veterinarian)
             veterinarian
           end

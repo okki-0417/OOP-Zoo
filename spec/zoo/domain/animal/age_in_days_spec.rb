@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Domain::Animal::AgeInDays do
-  let(:lion) { Zoo::Domain::Taxonomy::SpeciesCatalog.lion }
+  let(:lion) { Zoo::Domain::SpeciesCatalog.lion }
 
   describe '.new' do
     it '0 を渡すと value が 0 を返すこと' do

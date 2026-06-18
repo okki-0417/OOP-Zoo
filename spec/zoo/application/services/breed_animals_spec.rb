@@ -5,9 +5,9 @@ require 'spec_helper'
 RSpec.describe Zoo::Application::Services::BreedAnimals do
   shared    = Zoo::Domain::Shared
   animal    = Zoo::Domain::Animal
-  husbandry = Zoo::Domain::Husbandry
+  husbandry = Zoo::Domain
   events    = Zoo::Domain::Events
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:pair) { build_pair(catalog.lion) }

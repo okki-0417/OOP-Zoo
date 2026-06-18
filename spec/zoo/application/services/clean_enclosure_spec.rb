@@ -4,9 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::CleanEnclosure do
   shared    = Zoo::Domain::Shared
-  taxonomy  = Zoo::Domain::Taxonomy
-  husbandry = Zoo::Domain::Husbandry
-  staff     = Zoo::Domain::Staff
+  taxonomy  = Zoo::Domain
+  husbandry = Zoo::Domain
+  staff     = Zoo::Domain
   commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
 

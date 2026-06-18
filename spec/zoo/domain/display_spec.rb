@@ -5,7 +5,7 @@ require 'spec_helper'
 module Zoo
   module Domain
     RSpec.describe '値オブジェクトの表示と比較' do
-      catalog = Taxonomy::SpeciesCatalog
+      catalog = SpeciesCatalog
 
       describe '#to_s' do
         it 'Sex はラベルを返すこと' do
@@ -13,7 +13,7 @@ module Zoo
         end
 
         it 'Season はラベルを返すこと' do
-          expect(Operations::Season.spring.to_s).to eq(Operations::Season.spring.label)
+          expect(Season.spring.to_s).to eq(Season.spring.label)
         end
 
         it 'LifeStage はラベルを返すこと' do
@@ -33,15 +33,15 @@ module Zoo
         end
 
         it 'Cleanliness は レベル/100 を返すこと' do
-          expect(Husbandry::Cleanliness.spotless.to_s).to eq('100/100')
+          expect(Cleanliness.spotless.to_s).to eq('100/100')
         end
 
         it 'Enrichment は レベル/100 を返すこと' do
-          expect(Husbandry::Enrichment.stimulating.to_s).to eq('100/100')
+          expect(Enrichment.stimulating.to_s).to eq('100/100')
         end
 
         it 'Reputation は スコア/100 を返すこと' do
-          expect(Operations::Reputation.new(30).to_s).to eq('30/100')
+          expect(Reputation.new(30).to_s).to eq('30/100')
         end
 
         it 'Species は 和名(学名) を返すこと' do
@@ -61,17 +61,17 @@ module Zoo
         end
 
         it 'Food は和名を返すこと' do
-          expect(Feeding::FoodCatalog.horse_meat.to_s).to eq('馬肉')
+          expect(FoodCatalog.horse_meat.to_s).to eq('馬肉')
         end
       end
 
       describe 'Reputation#<=>' do
         it 'スコアの大小で比較されること' do
-          expect(Operations::Reputation.new(10)).to be < Operations::Reputation.new(20)
+          expect(Reputation.new(10)).to be < Reputation.new(20)
         end
 
         it 'Reputation でない相手とは比較不能(nil)であること' do
-          expect(Operations::Reputation.new(10) <=> 'x').to be_nil
+          expect(Reputation.new(10) <=> 'x').to be_nil
         end
       end
     end

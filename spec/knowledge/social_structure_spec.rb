@@ -3,12 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe '群れと社会構造' do
-  welfare = Zoo::Domain::Husbandry::Welfare
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  welfare = Zoo::Domain::Welfare
+  catalog = Zoo::Domain::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex
 
   def savanna(capacity: 4, temp: 28)
-    Zoo::Domain::Husbandry::Enclosure.new(
+    Zoo::Domain::Enclosure.new(
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(temp), capacity: capacity
     )
   end

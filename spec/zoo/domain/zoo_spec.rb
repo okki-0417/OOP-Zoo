@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Zoo::Domain::Zoo do
   S = Zoo::Domain::Shared
-  T = Zoo::Domain::Taxonomy
-  H = Zoo::Domain::Husbandry
+  T = Zoo::Domain
+  H = Zoo::Domain
 
   def savanna
     H::Enclosure.new(name: 'サバンナ', temperature: S::Temperature.celsius(30), capacity: 5)
@@ -129,8 +129,8 @@ RSpec.describe Zoo::Domain::Zoo do
   describe '構成要素の参照' do
     it 'enclosures / keepers / veterinarians は登録したものを返し、複製であること' do
       area = zoo.add_enclosure(savanna)
-      keeper = zoo.hire_keeper(Zoo::Domain::Staff::Keeper.new(name: '田中', specialties: [T::TaxonClass.mammal]))
-      vet = zoo.hire_veterinarian(Zoo::Domain::Staff::Veterinarian.new(name: '佐藤'))
+      keeper = zoo.hire_keeper(Zoo::Domain::Keeper.new(name: '田中', specialties: [T::TaxonClass.mammal]))
+      vet = zoo.hire_veterinarian(Zoo::Domain::Veterinarian.new(name: '佐藤'))
 
       expect(zoo.enclosures).to contain_exactly(area)
       expect(zoo.keepers).to contain_exactly(keeper)

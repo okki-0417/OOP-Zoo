@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe '同居適性' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
 
   describe '同種を同居させるか' do
     context '群れで暮らす種(ライオン)どうしのとき' do

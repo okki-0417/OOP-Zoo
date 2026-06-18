@@ -11,7 +11,7 @@ module Zoo
           @unit_of_work = unit_of_work
         end
 
-        def call(season: Domain::Operations::Season.spring)
+        def call(season: Domain::Season.spring)
           deceased = []
 
           @enclosures.all.each do |enclosure|

@@ -21,7 +21,7 @@ module Zoo
             zoo = @zoo.load
             dead = @open_for_a_day.call(season: zoo.season)
 
-            outcome = Domain::Operations::DailyOperation.run(
+            outcome = Domain::DailyOperation.run(
               zoo: zoo, enclosures: @enclosures.all, animals: @animals.all,
               dead: dead, staff_count: staff_count, random: @random
             )

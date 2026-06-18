@@ -5,7 +5,7 @@ module Zoo
     class Web
       class AcquireAnimal < Action
         def call(params)
-          species = Domain::Taxonomy::SpeciesCatalog.find(params['species']) or
+          species = Domain::SpeciesCatalog.find(params['species']) or
             raise ArgumentError, "未知の種です: #{params['species']}"
 
           command = Application::Commands::AcquireAnimalCommand.new(

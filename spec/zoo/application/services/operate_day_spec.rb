@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::OperateDay do
   shared     = Zoo::Domain::Shared
-  husbandry  = Zoo::Domain::Husbandry
-  catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
+  husbandry  = Zoo::Domain
+  catalog    = Zoo::Domain::SpeciesCatalog
   in_memory  = Zoo::Infrastructure::InMemory
 
   let(:zebra) { build_adult(catalog.grevys_zebra, name: 'シマオ') }
@@ -45,7 +45,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       report = service.call
 
       zebra_food = catalog.grevys_zebra.daily_food_cost.yen
-      upkeep = Zoo::Domain::Operations::OperatingCost::UPKEEP_PER_ENCLOSURE
+      upkeep = Zoo::Domain::OperatingCost::UPKEEP_PER_ENCLOSURE
 
       expect(report.visitors).to eq(12)
       expect(report.income).to eq(shared::Money.yen(24_000))
@@ -57,7 +57,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
     end
 
     it '死亡が無い日は評判が体験へドリフトするが、来場12人と露出が小さく単日では表示は据え置き(50のまま)、残高に純益が反映されること' do
-      cost = Zoo::Domain::Operations::OperatingCost::UPKEEP_PER_ENCLOSURE +
+      cost = Zoo::Domain::OperatingCost::UPKEEP_PER_ENCLOSURE +
              catalog.grevys_zebra.daily_food_cost.yen
       report = service.call
 

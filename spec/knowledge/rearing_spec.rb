@@ -3,18 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe '養育と離乳' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex
-  welfare = Zoo::Domain::Husbandry::Welfare
+  welfare = Zoo::Domain::Welfare
 
   def savanna
-    Zoo::Domain::Husbandry::Enclosure.new(
+    Zoo::Domain::Enclosure.new(
       name: 'サバンナ', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 6
     )
   end
 
   def dam_and_cub(cub_age_in_days:)
-    lion = Zoo::Domain::Taxonomy::SpeciesCatalog.lion
+    lion = Zoo::Domain::SpeciesCatalog.lion
     s = Zoo::Domain::Animal::Sex
     sire = build_adult(lion, name: '父', sex: s.male)
     dam = build_adult(lion, name: '母', sex: s.female)

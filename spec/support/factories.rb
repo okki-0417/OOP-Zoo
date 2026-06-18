@@ -2,8 +2,8 @@
 
 module Factories
   A = Zoo::Domain::Animal
-  T = Zoo::Domain::Taxonomy
-  H = Zoo::Domain::Husbandry
+  T = Zoo::Domain
+  H = Zoo::Domain
 
   def build_adult(species, name: 'X', sex: A::Sex.male, max_health: 100)
     age = (species.maturity_age_years + 1) * A::LifeStage::DAYS_PER_YEAR

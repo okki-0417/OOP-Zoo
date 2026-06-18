@@ -5,28 +5,28 @@ require 'spec_helper'
 RSpec.describe '動物' do
   sex       = Zoo::Domain::Animal::Sex
   name_vo   = Zoo::Domain::Animal::Name
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
-  foods     = Zoo::Domain::Feeding::FoodCatalog
-  illnesses = Zoo::Domain::Medical::IllnessCatalog
+  catalog   = Zoo::Domain::SpeciesCatalog
+  foods     = Zoo::Domain::FoodCatalog
+  illnesses = Zoo::Domain::IllnessCatalog
   events    = Zoo::Domain::Events
   errors    = Zoo::Domain::Errors
 
   def build_animal(name: 'Jack', voice: 'Woof', max_health: 10, age_in_days: 0,
                    sex: Zoo::Domain::Animal::Sex.male)
     Zoo::Domain::Animal.new(
-      species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,
+      species: Zoo::Domain::SpeciesCatalog.lion,
       name: name, sex: sex, voice: voice, max_health: max_health, age_in_days: age_in_days
     )
   end
 
   def adult_lion(sex: Zoo::Domain::Animal::Sex.male, max_health: 100,
-                 species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion)
+                 species: Zoo::Domain::SpeciesCatalog.lion)
     Zoo::Domain::Animal.new(species: species, name: 'X', sex: sex, max_health: max_health, age_in_days: 365 * 5)
   end
 
   def build_cub(name, sire:, dam:)
     Zoo::Domain::Animal.new(
-      species: Zoo::Domain::Taxonomy::SpeciesCatalog.lion,
+      species: Zoo::Domain::SpeciesCatalog.lion,
       name: name, sex: Zoo::Domain::Animal::Sex.male, max_health: 10, sire: sire, dam: dam
     )
   end

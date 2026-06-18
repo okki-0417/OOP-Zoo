@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Zoo::Composition::Container do
   shared    = Zoo::Domain::Shared
-  husbandry = Zoo::Domain::Husbandry
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  husbandry = Zoo::Domain
+  catalog   = Zoo::Domain::SpeciesCatalog
   commands  = Zoo::Application::Commands
 
   let(:container) { described_class.new }

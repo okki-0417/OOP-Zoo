@@ -3,11 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe '産仔数' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
 
   def delivered_litter(species, inbreeding: 0.0)
     sire, dam = build_pair(species)
-    pair = Zoo::Domain::Breeding::BreedingPair.new(sire: sire, dam: dam)
+    pair = Zoo::Domain::BreedingPair.new(sire: sire, dam: dam)
     pair.mate
     pair.advance(species.gestation_period_days)
     pair.deliver_litter(name: '仔', inbreeding: inbreeding)
@@ -53,7 +53,7 @@ RSpec.describe '産仔数' do
 
     it '同腹の全個体に同じ両親が血統として記録されること' do
       sire, dam = build_pair(catalog.lion)
-      pair = Zoo::Domain::Breeding::BreedingPair.new(sire: sire, dam: dam)
+      pair = Zoo::Domain::BreedingPair.new(sire: sire, dam: dam)
       pair.mate
       pair.advance(catalog.lion.gestation_period_days)
       litter = pair.deliver_litter(name: '仔')
@@ -65,7 +65,7 @@ RSpec.describe '産仔数' do
       litter = delivered_litter(catalog.lion, inbreeding: 0.25)
       maxes = litter.map { |cub| cub.health.max }.uniq
       expect(maxes.size).to eq(1)
-      expect(maxes.first).to be < Zoo::Domain::Breeding::BreedingPair::NEWBORN_HEALTH
+      expect(maxes.first).to be < Zoo::Domain::BreedingPair::NEWBORN_HEALTH
     end
   end
 

@@ -5,8 +5,8 @@ module Zoo
     module Sqlite
       class AnimalMapper
         Domain = Zoo::Domain
-        Catalog = Domain::Taxonomy::SpeciesCatalog
-        Illnesses = Domain::Medical::IllnessCatalog
+        Catalog = Domain::SpeciesCatalog
+        Illnesses = Domain::IllnessCatalog
 
         def to_row(animal)
           {

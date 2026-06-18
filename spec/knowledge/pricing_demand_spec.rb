@@ -4,13 +4,13 @@ require 'spec_helper'
 
 RSpec.describe '入園料と需要' do
   def exhibit
-    catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+    catalog = Zoo::Domain::SpeciesCatalog
     [build_adult(catalog.lion, name: 'A'), build_adult(catalog.grevys_zebra, name: 'B')]
   end
 
   def visitors_at(fee)
-    Zoo::Domain::Operations::VisitorAttraction.expected_visitors(
-      exhibit, Zoo::Domain::Operations::Reputation.default, Zoo::Domain::Shared::Money.yen(fee)
+    Zoo::Domain::VisitorAttraction.expected_visitors(
+      exhibit, Zoo::Domain::Reputation.default, Zoo::Domain::Shared::Money.yen(fee)
     )
   end
 
@@ -55,16 +55,16 @@ RSpec.describe '入園料と需要' do
   describe '入場の上限(需要を超えない)' do
     it '需要を超える人数を手動で入れても、実際の入場は需要が上限になること' do
       pending('需要を上限とする入場の導入で対応予定。現状 admit_visitors は無制限に受け入れる')
-      catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+      catalog = Zoo::Domain::SpeciesCatalog
       zoo = Zoo::Domain::Zoo.new(name: '園', admission_fee: Zoo::Domain::Shared::Money.yen(2_000))
       enc = zoo.add_enclosure(
-        Zoo::Domain::Husbandry::Enclosure.new(
+        Zoo::Domain::Enclosure.new(
           name: 'サバンナ', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 4
         )
       )
       zoo.house(build_adult(catalog.lion, name: 'レオ'), enc)
 
-      demand = Zoo::Domain::Operations::VisitorAttraction.expected_visitors(
+      demand = Zoo::Domain::VisitorAttraction.expected_visitors(
         zoo.animals, zoo.reputation, zoo.admission_fee
       )
       zoo.admit_visitors(1_000_000)

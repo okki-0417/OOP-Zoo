@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Zoo::Application::EventDispatcher do
   events    = Zoo::Domain::Events
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
   subscribers = Zoo::Infrastructure::Subscribers
 

@@ -5,7 +5,7 @@ require 'tmpdir'
 
 RSpec.describe 'Container on SQLite (end-to-end)' do
   shared   = Zoo::Domain::Shared
-  catalog  = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog  = Zoo::Domain::SpeciesCatalog
   commands = Zoo::Application::Commands
   sex_male = Zoo::Domain::Animal::Sex.male
 

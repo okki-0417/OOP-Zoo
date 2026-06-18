@@ -3,10 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe '飼育密度と過密' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
 
   def pen(capacity, temp)
-    Zoo::Domain::Husbandry::Enclosure.new(
+    Zoo::Domain::Enclosure.new(
       name: '区画', temperature: Zoo::Domain::Shared::Temperature.celsius(temp), capacity: capacity
     )
   end

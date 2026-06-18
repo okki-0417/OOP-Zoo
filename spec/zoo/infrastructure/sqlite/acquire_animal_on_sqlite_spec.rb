@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'AcquireAnimal on SQLite' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
   sqlite  = Zoo::Infrastructure::Sqlite
 
   it '実トランザクションで個体を受け入れ、永続化されること' do

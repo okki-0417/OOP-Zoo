@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'SQLite staff repositories' do
-  taxonomy = Zoo::Domain::Taxonomy
-  staff    = Zoo::Domain::Staff
+  taxonomy = Zoo::Domain
+  staff    = Zoo::Domain
   sqlite   = Zoo::Infrastructure::Sqlite
 
   let(:database) { sqlite::Database.new }

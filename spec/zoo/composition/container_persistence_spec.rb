@@ -5,7 +5,7 @@ require 'tmpdir'
 
 RSpec.describe 'Zoo::Composition::Container 永続化' do
   shared = Zoo::Domain::Shared
-  catalog   = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog   = Zoo::Domain::SpeciesCatalog
   commands  = Zoo::Application::Commands
 
   it 'save→load で在園・収益・収容関係が復元され、復元後も同一性が保たれること' do

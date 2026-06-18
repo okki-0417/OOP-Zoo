@@ -5,7 +5,7 @@ module Zoo
     class Web
       class ListFoods < Action
         def call(_params)
-          catalog = Domain::Feeding::FoodCatalog
+          catalog = Domain::FoodCatalog
           [200, catalog.keys.map { |key| Serializer.food_ref(key, catalog.find(key)) }]
         end
       end

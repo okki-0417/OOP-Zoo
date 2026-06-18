@@ -5,9 +5,9 @@ require 'spec_helper'
 RSpec.describe '運営の経済' do
   money   = Zoo::Domain::Shared::Money
   balance = Zoo::Domain::Shared::Balance
-  pricing = Zoo::Domain::Operations::Pricing
+  pricing = Zoo::Domain::Pricing
   errors  = Zoo::Domain::Errors
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
 
   def zoo(funds:)
     Zoo::Domain::Zoo.new(

@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe '栄養バランスと餌の多様性' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
-  foods   = Zoo::Domain::Feeding::FoodCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
+  foods   = Zoo::Domain::FoodCatalog
 
   describe '単一カテゴリの食性(肉食ライオン)' do
     it '肉を与えれば栄養が満たされること(多様性は問われない)' do

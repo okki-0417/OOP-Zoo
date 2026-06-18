@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Zoo::Infrastructure::Subscribers::BirthAnnouncementLog do
   events  = Zoo::Domain::Events
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
 
   let(:animal) { build_adult(catalog.lion, name: 'シンバ') }
 

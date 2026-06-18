@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'an animal repository' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
-  medical = Zoo::Domain::Medical
+  catalog = Zoo::Domain::SpeciesCatalog
+  medical = Zoo::Domain
 
   it 'save した個体を find で取り出せること' do
     lion = build_adult(catalog.lion, name: 'レオ')

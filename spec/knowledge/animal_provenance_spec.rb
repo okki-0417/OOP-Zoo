@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe '個体の入手経路' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
-  pricing = Zoo::Domain::Operations::Pricing
+  catalog = Zoo::Domain::SpeciesCatalog
+  pricing = Zoo::Domain::Pricing
 
   describe '取引で入手できる種' do
     it '保全上の懸念が低い一般的な種(ニホンザル=低危険)は取引可能であること' do

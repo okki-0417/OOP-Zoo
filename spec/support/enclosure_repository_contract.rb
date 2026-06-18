@@ -2,7 +2,7 @@
 
 RSpec.shared_examples 'an enclosure repository' do
   def sample_enclosure(name = '丘')
-    Zoo::Domain::Husbandry::Enclosure.new(
+    Zoo::Domain::Enclosure.new(
       name: name, temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 4
     )
   end

@@ -5,7 +5,7 @@ module Zoo
     class Web
       class FeedAnimal < Action
         def call(params)
-          food = Domain::Feeding::FoodCatalog.find(params['food']) or
+          food = Domain::FoodCatalog.find(params['food']) or
             raise ArgumentError, "未知の餌です: #{params['food']}"
 
           command = Application::Commands::FeedAnimalCommand.new(

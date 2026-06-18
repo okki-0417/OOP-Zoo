@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::HireKeeper do
-  taxonomy  = Zoo::Domain::Taxonomy
+  taxonomy  = Zoo::Domain
   domain    = Zoo::Domain
   money     = Zoo::Domain::Shared::Money
   balance   = Zoo::Domain::Shared::Balance

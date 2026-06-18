@@ -3,11 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe '集客の見応え' do
-  catalog    = Zoo::Domain::Taxonomy::SpeciesCatalog
-  attraction = Zoo::Domain::Operations::VisitorAttraction
+  catalog    = Zoo::Domain::SpeciesCatalog
+  attraction = Zoo::Domain::VisitorAttraction
   money = Zoo::Domain::Shared::Money
 
-  rep = Zoo::Domain::Operations::Reputation.new(100)
+  rep = Zoo::Domain::Reputation.new(100)
   fee = Zoo::Domain::Shared::Money.yen(2_000)
 
   def herd(species, count: 1, stress: 0)

@@ -3,13 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe '妊娠と出産' do
-  catalog = Zoo::Domain::Taxonomy::SpeciesCatalog
+  catalog = Zoo::Domain::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex
   errors = Zoo::Domain::Errors
 
   def pair_of(species)
     sire, dam = build_pair(species)
-    Zoo::Domain::Breeding::BreedingPair.new(sire: sire, dam: dam)
+    Zoo::Domain::BreedingPair.new(sire: sire, dam: dam)
   end
 
   describe '妊娠の始まり' do

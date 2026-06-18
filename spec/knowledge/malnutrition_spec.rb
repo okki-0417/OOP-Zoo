@@ -3,16 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe '栄養失調' do
-  foods   = Zoo::Domain::Feeding::FoodCatalog
-  welfare = Zoo::Domain::Husbandry::Welfare
-  season  = Zoo::Domain::Operations::Season
-  macaque = Zoo::Domain::Taxonomy::SpeciesCatalog.japanese_macaque
+  foods   = Zoo::Domain::FoodCatalog
+  welfare = Zoo::Domain::Welfare
+  season  = Zoo::Domain::Season
+  macaque = Zoo::Domain::SpeciesCatalog.japanese_macaque
 
   def troop
-    enclosure = Zoo::Domain::Husbandry::Enclosure.new(
+    enclosure = Zoo::Domain::Enclosure.new(
       name: 'モンキーマウンテン', temperature: Zoo::Domain::Shared::Temperature.celsius(20), capacity: 8
     )
-    macaque = Zoo::Domain::Taxonomy::SpeciesCatalog.japanese_macaque
+    macaque = Zoo::Domain::SpeciesCatalog.japanese_macaque
     subject_monkey = build_adult(macaque, name: '主役')
     enclosure.admit(subject_monkey)
     enclosure.admit(build_adult(macaque, name: '仲間', sex: Zoo::Domain::Animal::Sex.female))
@@ -20,7 +20,7 @@ RSpec.describe '栄養失調' do
   end
 
   def malnourish(animal, times: 4)
-    times.times { animal.dine([Zoo::Domain::Feeding::FoodCatalog.banana]) }
+    times.times { animal.dine([Zoo::Domain::FoodCatalog.banana]) }
     animal
   end
 
@@ -65,7 +65,7 @@ RSpec.describe '栄養失調' do
 
     it '妊娠中の母体の栄養失調は流産の要因になること' do
       sire, dam = build_pair(macaque)
-      pair = Zoo::Domain::Breeding::BreedingPair.new(sire: sire, dam: dam)
+      pair = Zoo::Domain::BreedingPair.new(sire: sire, dam: dam)
       pair.mate(season: season.autumn)
       malnourish(dam)
       pair.advance(10)
