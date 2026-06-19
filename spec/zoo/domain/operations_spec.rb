@@ -40,6 +40,17 @@ module Zoo
 
         expect(controlled_cost).to be > plain_cost
       end
+
+      it 'charge は算出した運営費を zoo に課して cost を返すこと' do
+        zoo = Zoo.new(name: 'テスト', admission_fee: Shared::Money.yen(0), funds: Shared::Money.yen(50_000))
+        enclosure = Enclosure.new(name: 'A', temperature: Shared::Temperature.celsius(20), capacity: 4)
+        zebra = Animal.new(species: SpeciesCatalog.grevys_zebra, name: 'Z', sex: Animal::Sex.male, max_health: 100)
+
+        cost = described_class.charge(zoo:, enclosures: [enclosure], staff_count: 0, animals: [zebra])
+
+        expect(cost).to eq(described_class.daily(enclosures: [enclosure], staff: 0, species: [SpeciesCatalog.grevys_zebra]))
+        expect(zoo.balance).to eq(Shared::Balance.new(50_000 - cost.yen))
+      end
     end
 
     RSpec.describe VisitorAttraction do

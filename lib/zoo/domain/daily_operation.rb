@@ -17,13 +17,7 @@ module Zoo
 
         income = zoo.admit_visitors(visitors)
 
-        cost = OperatingCost.daily(
-          enclosures:,
-          staff: staff_count,
-          species: animals.map(&:species)
-        )
-
-        zoo.spend(cost)
+        cost = OperatingCost.charge(zoo:, enclosures:, staff_count:, animals:)
 
         afflicted = SpontaneousInfection.apply(on_exhibit, random)
 
