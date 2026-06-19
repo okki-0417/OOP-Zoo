@@ -24,17 +24,30 @@ RSpec.describe Zoo::Composition::Container do
     expect(container.population.call).to eq(1)
   end
 
-  it 'breed を実行すると、配線された購読者(birth_announcements)に通知が届くこと' do
+  it 'conceive を実行すると、配線された dam が妊娠状態になること' do
     sire, dam = build_pair(catalog.lion)
     container.animals.save(sire)
+    container.animals.save(dam)
+
+    container.conceive_animals.call(
+      commands::ConceiveAnimalsCommand.new(sire_id: sire.id, dam_id: dam.id)
+    )
+
+    expect(container.animals.find(dam.id)).to be_expecting
+  end
+
+  it 'deliver を実行すると、配線された購読者(birth_announcements)に通知が届くこと' do
+    sire, dam = build_pair(catalog.lion)
+    container.animals.save(sire)
+    dam.conceive(sire_id: sire.id)
+    catalog.lion.gestation_period_days.times { dam.gestate }
     container.animals.save(dam)
     enclosure = container.enclosures.save(
       husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
     )
 
-    container.breed_animals.call(
-      commands::BreedAnimalsCommand.new(sire_id: sire.id, dam_id: dam.id, enclosure_id: enclosure.id,
-                                        name: 'シンバ', sex: Zoo::Domain::Animal::Sex.male)
+    container.deliver_animal.call(
+      commands::DeliverAnimalCommand.new(dam_id: dam.id, enclosure_id: enclosure.id)
     )
 
     expect(container.birth_announcements.announcements.size).to eq(1)

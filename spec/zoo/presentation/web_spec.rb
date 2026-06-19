@@ -260,17 +260,6 @@ RSpec.describe Zoo::Presentation::Web do
     end
   end
 
-  describe 'POST /breedings' do
-    it '存在しない親を指定すると AnimalNotFound で404に翻訳されること' do
-      enclosure_id = build_enclosure
-
-      post_json '/breedings', sire_id: 'x', dam_id: 'y', enclosure_id: enclosure_id, name: '仔', sex: 'male'
-
-      expect(last_response.status).to eq(404)
-      expect(body['error']).to include('code' => 'AnimalNotFound')
-    end
-  end
-
   describe 'スタッフ' do
     it 'POST /keepers は専門綱つきで採用し、GET /keepers に現れること' do
       post_json '/keepers', name: '田中', specialties: %w[mammal bird]

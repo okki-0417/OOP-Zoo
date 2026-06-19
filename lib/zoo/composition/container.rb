@@ -101,9 +101,23 @@ module Zoo
         )
       end
 
-      def breed_animals
-        Application::Services::BreedAnimals.new(
-          animals: @animals, enclosures: @enclosures, zoo: @zoo,
+      def conceive_animals
+        Application::Services::ConceiveAnimals.new(
+          animals: @animals, keepers: @keepers, zoo: @zoo,
+          event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
+        )
+      end
+
+      def deliver_animal
+        Application::Services::DeliverAnimal.new(
+          animals: @animals, enclosures: @enclosures, keepers: @keepers, zoo: @zoo,
+          event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
+        )
+      end
+
+      def name_animal
+        Application::Services::NameAnimal.new(
+          animals: @animals, keepers: @keepers, zoo: @zoo,
           event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
         )
       end

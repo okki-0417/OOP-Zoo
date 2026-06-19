@@ -7,9 +7,9 @@ RSpec.describe '産仔数' do
 
   def delivered_litter(species, inbreeding: 0.0)
     sire, dam = build_pair(species)
-    dam.conceive(sire_id: sire.id)
+    dam.conceive(sire_id: sire.id, inbreeding: inbreeding)
     dam.gestate(species.gestation_period_days)
-    dam.deliver_litter(name: '仔', inbreeding: inbreeding)
+    dam.deliver_litter(name: '仔')
   end
 
   describe '種ごとの産仔数' do

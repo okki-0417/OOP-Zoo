@@ -74,8 +74,6 @@ module Zoo
       delete('/enclosures/:id/occupants/:animal_id') { dispatch(ReleaseAnimal) }
       post('/enclosures/:id/cleanings') { dispatch(CleanEnclosure) }
 
-      post('/breedings') { dispatch(BreedAnimals) }
-
       get('/keepers') { dispatch(ListKeepers) }
       post('/keepers') { dispatch(HireKeeper) }
       get('/veterinarians') { dispatch(ListVeterinarians) }

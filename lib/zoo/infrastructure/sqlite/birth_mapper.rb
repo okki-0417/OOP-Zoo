@@ -12,7 +12,8 @@ module Zoo
             dam_id: birth.dam_id.to_s,
             offspring_id: birth.offspring.id.to_s,
             occurred_on: birth.occurred_on,
-            season: birth.season.value.to_s
+            season: birth.season.value.to_s,
+            keeper_id: birth.keeper_id&.to_s
           }
         end
 
@@ -25,7 +26,8 @@ module Zoo
             sire_id: Domain::Shared::Identifier.new(row['sire_id']),
             dam_id: Domain::Shared::Identifier.new(row['dam_id']),
             occurred_on: row['occurred_on'],
-            season: Domain::Season.new(row['season'])
+            season: Domain::Season.new(row['season']),
+            keeper_id: row['keeper_id'] && Domain::Shared::Identifier.new(row['keeper_id'])
           )
         end
       end

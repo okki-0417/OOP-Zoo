@@ -54,7 +54,7 @@ RSpec.describe '妊娠と出産' do
     it '生まれた子は0日齢の幼体で、両親が血統に記録されること' do
       sire, dam = mated_dam(catalog.lion)
       dam.gestate(catalog.lion.gestation_period_days)
-      cub = dam.deliver(name: '仔', sex: sex.male)
+      cub = dam.deliver(name: '仔')
 
       expect(cub.age_in_days.value).to eq(0)
       expect(cub.life_stage).to be_baby
@@ -64,7 +64,7 @@ RSpec.describe '妊娠と出産' do
     it '出産すると妊娠が解け、再び交尾できること' do
       sire, dam = mated_dam(catalog.lion)
       dam.gestate(catalog.lion.gestation_period_days)
-      dam.deliver(name: '仔', sex: sex.female)
+      dam.deliver(name: '仔')
 
       expect(dam).not_to be_expecting
       expect { dam.conceive(sire_id: sire.id) }.not_to raise_error
@@ -80,7 +80,7 @@ RSpec.describe '妊娠と出産' do
 
         expect(dam).to be_miscarried
         expect(dam).not_to be_expecting
-        expect { dam.deliver(name: '仔', sex: sex.male) }.to raise_error(errors::BreedingNotAllowed)
+        expect { dam.deliver(name: '仔') }.to raise_error(errors::BreedingNotAllowed)
       end
     end
 

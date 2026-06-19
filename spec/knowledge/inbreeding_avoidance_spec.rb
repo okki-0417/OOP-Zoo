@@ -39,8 +39,8 @@ RSpec.describe '近親交配の回避' do
       mother = founder('母', sex.female)
       daughter = offspring('娘', sex.female, sire: father, dam: mother)
       expect do
-        breeding.mate(sire: father, dam: daughter, name: '近交子',
-                      sex: sex.female, animal_lookup: ->(_id) { nil }, day: 0)
+        breeding.conceive(sire: father, dam: daughter,
+                          animal_lookup: ->(_id) {}, day: 0)
       end.to raise_error(Zoo::Domain::Errors::BreedingNotAllowed, /近親/)
     end
   end

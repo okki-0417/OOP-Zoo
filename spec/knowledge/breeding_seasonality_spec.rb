@@ -9,9 +9,8 @@ RSpec.describe '繁殖の季節性' do
 
   def mate_in(species, season)
     sire, dam = build_pair(species)
-    Zoo::Domain::Breeding.mate(sire: sire, dam: dam, season: season,
-                               name: '仔', sex: Zoo::Domain::Animal::Sex.male,
-                               animal_lookup: ->(_id) { nil }, day: 0)
+    Zoo::Domain::Breeding.conceive(sire: sire, dam: dam, season: season,
+                                   animal_lookup: ->(_id) {}, day: 0)
   end
 
   describe '周年繁殖種' do

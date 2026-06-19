@@ -5,7 +5,7 @@ module Zoo
     module Breeding
       module_function
 
-      def mate(sire:, dam:, name:, sex:, animal_lookup:, day:, season: Season.spring)
+      def conceive(sire:, dam:, animal_lookup:, day:, keeper: nil, season: Season.spring)
         error_messages = []
         error_messages << 'sireはオスでなければなりません' unless sire.male?
         error_messages << 'damはメスでなければなりません' unless dam.female?
@@ -18,11 +18,12 @@ module Zoo
 
         raise Errors::BreedingNotAllowed, error_messages.join(', ') unless error_messages.empty?
 
-        dam.conceive(sire_id: sire.id)
-        dam.gestate(dam.gestation_period_days)
-
-        inbreeding = dam.inbreeding_of_offspring_with(sire, animal_lookup)
-        dam.deliver(name:, sex:, inbreeding:, occurred_on: day, season:)
+        inbreeding = dam.kinship_with(sire, animal_lookup)
+        dam.conceive(
+          sire_id: sire.id, inbreeding: inbreeding,
+          keeper_id: keeper&.id, occurred_on: day, season: season
+        )
+        dam
       end
     end
   end

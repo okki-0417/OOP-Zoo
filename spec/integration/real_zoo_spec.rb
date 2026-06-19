@@ -101,12 +101,12 @@ RSpec.describe '現実の動物園の再現' do
     sire, dam = lions
     dam.conceive(sire_id: sire.id)
     dam.gestate(catalog.lion.gestation_period_days)
-    cub = dam.deliver(name: 'シンバ', sex: animal::Sex.male)
+    cub = dam.deliver(name: 'シンバ')
 
     zoo.house(cub, lion_hill)
     expect(lion_hill.population).to eq(3)
     expect(zoo.population).to eq(13)
-    expect(dam.pull_events.first).to be_a(Zoo::Domain::Events::Birth)
+    expect(dam.pull_events.last).to be_a(Zoo::Domain::Events::Birth)
     expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
   end
 

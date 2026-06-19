@@ -18,6 +18,10 @@ module Zoo
           new(:female)
         end
 
+        def self.random
+          new(VALUES.keys.sample)
+        end
+
         def initialize(value)
           symbol = value.to_sym
           raise ArgumentError, "未知の性別です: #{value}" unless VALUES.key?(symbol)
