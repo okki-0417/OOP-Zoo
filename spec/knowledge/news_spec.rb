@@ -4,13 +4,13 @@ require 'spec_helper'
 
 RSpec.describe 'ニュース性' do
   catalog    = Zoo::Domain::SpeciesCatalog
-  reputation = Zoo::Domain::Reputation
+  reputation = Zoo::Domain::Zoo::Reputation
   attraction = Zoo::Domain::VisitorAttraction
   event      = Zoo::Domain::ReputationEvent
   money      = Zoo::Domain::Shared::Money
 
   fee = money.yen(2_000)
-  rep = reputation.new(50)
+  rep = reputation.new(50).factor
 
   describe '信頼チャネル(評判を動かすニュース)' do
     it 'カリスマ個体の死はニュースになること(来園ゼロでも評判が下がる)' do

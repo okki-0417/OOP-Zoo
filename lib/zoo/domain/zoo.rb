@@ -24,6 +24,10 @@ module Zoo
 
       attr_reader :name, :admission_fee, :revenue, :visitor_count, :balance, :reputation, :day, :buzz
 
+      def reputation_factor
+        @reputation.factor
+      end
+
       BUZZ_DECAY_PER_DAY = 10
 
       def generate_buzz(amount)

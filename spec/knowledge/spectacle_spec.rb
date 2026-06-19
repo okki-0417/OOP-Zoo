@@ -7,7 +7,7 @@ RSpec.describe '集客の見応え' do
   attraction = Zoo::Domain::VisitorAttraction
   money = Zoo::Domain::Shared::Money
 
-  rep = Zoo::Domain::Reputation.new(100)
+  rep = Zoo::Domain::Zoo::Reputation.new(100).factor
   fee = Zoo::Domain::Shared::Money.yen(2_000)
 
   def herd(species, count: 1, stress: 0)

@@ -10,17 +10,17 @@ module Zoo
       SPECTACLE_SATURATION = 3_000
 
       def receive(zoo:, on_exhibit:)
-        visitors = expected_visitors(on_exhibit, zoo.reputation, zoo.admission_fee, buzz: zoo.buzz)
+        visitors = expected_visitors(on_exhibit, zoo.reputation_factor, zoo.admission_fee, buzz: zoo.buzz)
         income   = zoo.admit_visitors(visitors)
         [visitors, income]
       end
 
-      def expected_visitors(animals, reputation, admission_fee, buzz: 0)
+      def expected_visitors(animals, reputation_factor, admission_fee, buzz: 0)
         return 0 if animals.empty?
 
         spectacle = spectacle_of(animals, buzz)
-        q_max = max_demand(spectacle, reputation)
-        p_max = willingness_to_pay(spectacle, reputation)
+        q_max = max_demand(spectacle, reputation_factor)
+        p_max = willingness_to_pay(spectacle, reputation_factor)
         price = admission_fee.yen
         return 0 if price >= p_max
 
@@ -36,12 +36,12 @@ module Zoo
         SPECTACLE_SATURATION * standing / (standing + SPECTACLE_SATURATION).to_f
       end
 
-      def max_demand(spectacle, reputation)
-        spectacle * reputation.score / Reputation::MAX
+      def max_demand(spectacle, reputation_factor)
+        spectacle * reputation_factor
       end
 
-      def willingness_to_pay(spectacle, reputation)
-        WILLINGNESS_BASE_YEN + (spectacle * WILLINGNESS_PER_SPECTACLE_YEN * reputation.score / Reputation::MAX)
+      def willingness_to_pay(spectacle, reputation_factor)
+        WILLINGNESS_BASE_YEN + (spectacle * WILLINGNESS_PER_SPECTACLE_YEN * reputation_factor)
       end
     end
   end

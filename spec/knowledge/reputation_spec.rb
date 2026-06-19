@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe '評判の動学' do
-  reputation = Zoo::Domain::Reputation
+  reputation = Zoo::Domain::Zoo::Reputation
 
-  CROWD = Zoo::Domain::Reputation::EXPOSURE_REFERENCE
+  CROWD = Zoo::Domain::Zoo::Reputation::EXPOSURE_REFERENCE
 
   describe '体験経路(来た人が評判を育てる)' do
     context '良い体験の日がにぎわうと' do
@@ -24,7 +24,7 @@ RSpec.describe '評判の動学' do
 
     it '1日の評判の上げ幅は緩やか(ドリフト上限 DRIFT_CAP 以内)であること' do
       after = reputation.new(0).after_day(experience: 100, exposure: CROWD)
-      expect(after.score).to be <= Zoo::Domain::Reputation::DRIFT_CAP
+      expect(after.score).to be <= Zoo::Domain::Zoo::Reputation::DRIFT_CAP
     end
   end
 

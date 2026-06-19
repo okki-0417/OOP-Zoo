@@ -41,7 +41,7 @@ module Zoo
         end
 
         it 'Reputation は スコア/100 を返すこと' do
-          expect(Reputation.new(30).to_s).to eq('30/100')
+          expect(Zoo::Reputation.new(30).to_s).to eq('30/100')
         end
 
         it 'Species は 和名(学名) を返すこと' do
@@ -67,11 +67,11 @@ module Zoo
 
       describe 'Reputation#<=>' do
         it 'スコアの大小で比較されること' do
-          expect(Reputation.new(10)).to be < Reputation.new(20)
+          expect(Zoo::Reputation.new(10)).to be < Zoo::Reputation.new(20)
         end
 
         it 'Reputation でない相手とは比較不能(nil)であること' do
-          expect(Reputation.new(10) <=> 'x').to be_nil
+          expect(Zoo::Reputation.new(10) <=> 'x').to be_nil
         end
       end
     end
