@@ -52,11 +52,17 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
       expect(animals.find(child.id)).to eq(child)
     end
 
-    it '出産に成功すると AnimalBorn が EventStore に1件追加されること' do
+    it '出産に成功すると Birth が AnimalRepository 経由で births に1件永続化されること' do
       service.call(command)
 
-      expect(event_store.all.size).to eq(1)
-      expect(event_store.all.first).to be_a(events::AnimalBorn)
+      expect(animals.births.size).to eq(1)
+      expect(animals.births.first).to be_a(events::Birth)
+    end
+
+    it '出産イベントは EventStore には永続化されないこと(births テーブルが台帳)' do
+      service.call(command)
+
+      expect(event_store.all).to be_empty
     end
 
     it '出産に成功すると購読者(BirthAnnouncementLog)に誕生が1件通知されること' do
@@ -76,14 +82,14 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
       expect(animals.all.size).to eq(2)
     end
 
-    it 'ロールバックされた出産のイベントは EventStore に残らないこと' do
+    it 'ロールバックされた出産の記録は births に残らないこと' do
       resident = build_adult(catalog.lion, name: '先住')
       full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
                                  .tap { |e| e.admit(resident) }
       enclosures.save(full)
 
       expect { service.call(command(enclosure_id: full.id)) }.to raise_error(Zoo::Domain::Errors::CapacityExceeded)
-      expect(event_store.all).to be_empty
+      expect(animals.births).to be_empty
     end
 
     it 'オス同士を渡すと Domain::Errors::BreedingNotAllowed が伝播すること' do
@@ -128,10 +134,10 @@ RSpec.describe Zoo::Application::Services::BreedAnimals do
       grandpa = animal.new(species: catalog.lion, name: '祖父', sex: male, max_health: 100, age_in_days: 4000)
       grandma = animal.new(species: catalog.lion, name: '祖母', sex: female, max_health: 100, age_in_days: 6000)
       mother = animal.new(species: catalog.lion, name: '母', sex: female, max_health: 100, age_in_days: 3000,
-                          sire: grandpa, dam: grandma)
+                          sire_id: grandpa.id, dam_id: grandma.id)
       outsider = animal.new(species: catalog.lion, name: '外', sex: male, max_health: 100, age_in_days: 6000)
       granddaughter = animal.new(species: catalog.lion, name: '孫娘', sex: female, max_health: 100, age_in_days: 1200,
-                                 sire: outsider, dam: mother)
+                                 sire_id: outsider.id, dam_id: mother.id)
       [grandpa, grandma, mother, outsider, granddaughter].each { |a| animals.save(a) }
 
       child = service.call(command(sire_id: grandpa.id, dam_id: granddaughter.id, name: '近交子'))

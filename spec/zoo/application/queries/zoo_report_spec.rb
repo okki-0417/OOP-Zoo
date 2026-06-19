@@ -16,11 +16,12 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
   end
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:event_store) { in_memory::InMemoryEventStore.new }
+  let(:animals) { in_memory::InMemoryAnimalRepository.new }
   let(:zoo) do
     in_memory::InMemoryZooRepository.new(Zoo::Domain::Zoo.new(name: 'テスト動物園', admission_fee: shared::Money.yen(2000)))
   end
 
-  let(:query) { described_class.new(enclosures: enclosures, event_store: event_store, zoo: zoo) }
+  let(:query) { described_class.new(enclosures: enclosures, event_store: event_store, zoo: zoo, animals: animals) }
 
   describe '#call' do
     it '在園・種数・絶滅危惧種数を集計すること' do
@@ -31,8 +32,11 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
       expect(stats.threatened_count).to eq(1)
     end
 
-    it 'EventStore の AnimalBorn/AnimalDied を出生数・死因別死亡数に集計すること' do
-      event_store.append(events::AnimalBorn.new(animal: zebra, sire_id: 's', dam_id: 'd'))
+    it '出生数は AnimalRepository の births から、死因別死亡数は EventStore から集計すること' do
+      newborn = build_adult(catalog.grevys_zebra, name: '仔')
+      newborn.record_event(events::Birth.new(offspring: newborn, sire_id: 's', dam_id: 'd',
+                                             occurred_on: 0, season: Zoo::Domain::Season.spring))
+      animals.save(newborn)
       event_store.append(events::AnimalDied.new(animal: zebra, cause: :old_age))
       event_store.append(events::AnimalDied.new(animal: zebra, cause: :starvation))
 

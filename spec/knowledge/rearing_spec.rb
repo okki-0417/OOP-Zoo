@@ -20,7 +20,7 @@ RSpec.describe '養育と離乳' do
     dam = build_adult(lion, name: '母', sex: s.female)
     cub = Zoo::Domain::Animal.new(
       species: lion, name: '仔', sex: s.male, max_health: 100,
-      age_in_days: cub_age_in_days, sire: sire, dam: dam
+      age_in_days: cub_age_in_days, sire_id: sire&.id, dam_id: dam&.id
     )
     [dam, cub]
   end

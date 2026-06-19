@@ -4,10 +4,11 @@ module Zoo
   module Application
     module Queries
       class ZooReport
-        def initialize(enclosures:, event_store:, zoo:)
+        def initialize(enclosures:, event_store:, zoo:, animals:)
           @enclosures = enclosures
           @event_store = event_store
           @zoo = zoo
+          @animals = animals
         end
 
         def call
@@ -20,7 +21,7 @@ module Zoo
             population: occupants.size,
             species_count: species.size,
             threatened_count: species.count { |s| s.conservation_status.threatened? },
-            births: events.count { |event| event.is_a?(Domain::Events::AnimalBorn) },
+            births: @animals.births.size,
             deaths_by_cause: deaths_by_cause(events),
             revenue: zoo.revenue,
             balance: zoo.balance,

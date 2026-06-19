@@ -27,7 +27,7 @@ RSpec.describe '動物' do
   def build_cub(name, sire:, dam:)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::SpeciesCatalog.lion,
-      name: name, sex: Zoo::Domain::Animal::Sex.male, max_health: 10, sire: sire, dam: dam
+      name: name, sex: Zoo::Domain::Animal::Sex.male, max_health: 10, sire_id: sire&.id, dam_id: dam&.id
     )
   end
 

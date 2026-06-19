@@ -11,7 +11,7 @@ module Zoo
       def build(name: 'Jack', sex: Animal::Sex.male, max_health: 100, age_in_days: 0, sire: nil, dam: nil)
         Animal.new(
           species: SpeciesCatalog.lion, name: name, sex: sex,
-          max_health: max_health, age_in_days: age_in_days, sire: sire, dam: dam
+          max_health: max_health, age_in_days: age_in_days, sire_id: sire&.id, dam_id: dam&.id
         )
       end
 
@@ -139,6 +139,15 @@ module Zoo
             stress: Animal::Stress.calm, illness: nil, death: nil
           )
           expect(animal.pull_events).to be_empty
+        end
+      end
+
+      describe '#inbreeding_of_offspring_with' do
+        it '血縁のない個体同士の子の近交係数は 0.0 であること' do
+          a = build(name: '父', sex: Animal::Sex.male, age_in_days: 4000)
+          b = build(name: '母', sex: Animal::Sex.female, age_in_days: 4000)
+          lookup = ->(_id) { nil }
+          expect(b.inbreeding_of_offspring_with(a, lookup)).to eq(0.0)
         end
       end
     end

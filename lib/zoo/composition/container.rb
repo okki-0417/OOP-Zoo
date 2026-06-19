@@ -141,7 +141,8 @@ module Zoo
       end
 
       def zoo_report
-        Application::Queries::ZooReport.new(enclosures: @enclosures, event_store: @event_store, zoo: @zoo)
+        Application::Queries::ZooReport.new(enclosures: @enclosures, event_store: @event_store, zoo: @zoo,
+                                            animals: @animals)
       end
 
       def enclosure_list

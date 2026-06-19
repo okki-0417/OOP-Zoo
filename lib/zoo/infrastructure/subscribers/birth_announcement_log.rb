@@ -11,7 +11,7 @@ module Zoo
         end
 
         def handle(event)
-          return unless event.is_a?(Domain::Events::AnimalBorn)
+          return unless event.is_a?(Domain::Events::Birth)
 
           @announcements << event.to_s
         end

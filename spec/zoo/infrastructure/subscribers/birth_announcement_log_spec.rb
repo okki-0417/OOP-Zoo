@@ -9,10 +9,11 @@ RSpec.describe Zoo::Infrastructure::Subscribers::BirthAnnouncementLog do
   let(:animal) { build_adult(catalog.lion, name: 'シンバ') }
 
   describe '#handle' do
-    it 'AnimalBorn を渡すと announcements が1件増えること' do
+    it 'Birth を渡すと announcements が1件増えること' do
       log = described_class.new
 
-      log.handle(events::AnimalBorn.new(animal: animal, sire_id: 's', dam_id: 'd'))
+      log.handle(events::Birth.new(offspring: animal, sire_id: 's', dam_id: 'd',
+                                   occurred_on: 0, season: Zoo::Domain::Season.spring))
 
       expect(log.announcements.size).to eq(1)
     end

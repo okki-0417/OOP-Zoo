@@ -23,10 +23,6 @@ module Zoo
         kinship(parents[0], parents[1], lookup)
       end
 
-      def inbreeding_of_offspring(sire, dam, lookup)
-        kinship(sire, dam, lookup)
-      end
-
       def mean_kinship(animals, lookup)
         pairs = animals.combination(2).to_a
         return 0.0 if pairs.empty?

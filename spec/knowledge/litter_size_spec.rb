@@ -7,10 +7,9 @@ RSpec.describe '産仔数' do
 
   def delivered_litter(species, inbreeding: 0.0)
     sire, dam = build_pair(species)
-    pair = Zoo::Domain::BreedingPair.new(sire: sire, dam: dam)
-    pair.mate
-    pair.advance(species.gestation_period_days)
-    pair.deliver_litter(name: '仔', inbreeding: inbreeding)
+    dam.conceive(sire_id: sire.id)
+    dam.gestate(species.gestation_period_days)
+    dam.deliver_litter(name: '仔', inbreeding: inbreeding)
   end
 
   describe '種ごとの産仔数' do
@@ -53,10 +52,9 @@ RSpec.describe '産仔数' do
 
     it '同腹の全個体に同じ両親が血統として記録されること' do
       sire, dam = build_pair(catalog.lion)
-      pair = Zoo::Domain::BreedingPair.new(sire: sire, dam: dam)
-      pair.mate
-      pair.advance(catalog.lion.gestation_period_days)
-      litter = pair.deliver_litter(name: '仔')
+      dam.conceive(sire_id: sire.id)
+      dam.gestate(catalog.lion.gestation_period_days)
+      litter = dam.deliver_litter(name: '仔')
 
       litter.each { |cub| expect(cub.parent_ids).to contain_exactly(sire.id, dam.id) }
     end
@@ -65,7 +63,7 @@ RSpec.describe '産仔数' do
       litter = delivered_litter(catalog.lion, inbreeding: 0.25)
       maxes = litter.map { |cub| cub.health.max }.uniq
       expect(maxes.size).to eq(1)
-      expect(maxes.first).to be < Zoo::Domain::BreedingPair::NEWBORN_HEALTH
+      expect(maxes.first).to be < Zoo::Domain::Animal::NEWBORN_HEALTH
     end
   end
 

@@ -36,8 +36,6 @@ module Zoo
           case row['type']
           when 'AnimalDied'
             Domain::Events::AnimalDied.new(animal: animal, cause: row['cause'].to_sym)
-          when 'AnimalBorn'
-            Domain::Events::AnimalBorn.new(animal: animal, sire_id: animal.parent_ids[0], dam_id: animal.parent_ids[1])
           when 'AnimalRenamed'
             Domain::Events::AnimalRenamed.new(animal: animal, old_name: animal.name.to_s, new_name: animal.name.to_s)
           end

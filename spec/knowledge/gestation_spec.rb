@@ -3,26 +3,32 @@
 require 'spec_helper'
 
 RSpec.describe '妊娠と出産' do
-  catalog = Zoo::Domain::SpeciesCatalog
-  sex     = Zoo::Domain::Animal::Sex
-  errors = Zoo::Domain::Errors
+  catalog  = Zoo::Domain::SpeciesCatalog
+  breeding = Zoo::Domain::Breeding
+  sex      = Zoo::Domain::Animal::Sex
+  errors   = Zoo::Domain::Errors
 
-  def pair_of(species)
+  def mated_dam(species)
     sire, dam = build_pair(species)
-    Zoo::Domain::BreedingPair.new(sire: sire, dam: dam)
+    dam.conceive(sire_id: sire.id)
+    [sire, dam]
   end
 
   describe '妊娠の始まり' do
-    it '交尾すると妊娠/抱卵が始まること' do
-      pair = pair_of(catalog.lion)
-      pair.mate
-      expect(pair).to be_expecting
+    it '交尾するとメス(母体)に妊娠/抱卵が宿ること' do
+      _sire, dam = mated_dam(catalog.lion)
+      expect(dam).to be_expecting
+    end
+
+    it '妊娠は母体自身の状態であり、オスは身ごもらないこと' do
+      sire, dam = build_pair(catalog.lion)
+      dam.conceive(sire_id: sire.id)
+      expect(sire).not_to be_expecting
     end
 
     it '妊娠中はさらに交尾できないこと' do
-      pair = pair_of(catalog.lion)
-      pair.mate
-      expect { pair.mate }.to raise_error(errors::BreedingNotAllowed)
+      sire, dam = mated_dam(catalog.lion)
+      expect { dam.conceive(sire_id: sire.id) }.to raise_error(errors::BreedingNotAllowed)
     end
   end
 
@@ -32,66 +38,60 @@ RSpec.describe '妊娠と出産' do
     end
 
     it '妊娠期間に満たないうちは出産できないこと' do
-      pair = pair_of(catalog.lion)
-      pair.mate
-      pair.advance(109)
-      expect(pair).not_to be_ready_to_deliver
+      _sire, dam = mated_dam(catalog.lion)
+      dam.gestate(109)
+      expect(dam).not_to be_ready_to_deliver
     end
 
     it '妊娠期間が満ちると出産できること' do
-      pair = pair_of(catalog.lion)
-      pair.mate
-      pair.advance(110)
-      expect(pair).to be_ready_to_deliver
+      _sire, dam = mated_dam(catalog.lion)
+      dam.gestate(110)
+      expect(dam).to be_ready_to_deliver
     end
   end
 
   describe '出産' do
     it '生まれた子は0日齢の幼体で、両親が血統に記録されること' do
-      pair = pair_of(catalog.lion)
-      pair.mate
-      pair.advance(catalog.lion.gestation_period_days)
-      cub = pair.deliver(name: '仔', sex: sex.male)
+      sire, dam = mated_dam(catalog.lion)
+      dam.gestate(catalog.lion.gestation_period_days)
+      cub = dam.deliver(name: '仔', sex: sex.male)
 
       expect(cub.age_in_days.value).to eq(0)
       expect(cub.life_stage).to be_baby
-      expect(cub.parent_ids).to contain_exactly(pair.sire.id, pair.dam.id)
+      expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
     end
 
     it '出産すると妊娠が解け、再び交尾できること' do
-      pair = pair_of(catalog.lion)
-      pair.mate
-      pair.advance(catalog.lion.gestation_period_days)
-      pair.deliver(name: '仔', sex: sex.female)
+      sire, dam = mated_dam(catalog.lion)
+      dam.gestate(catalog.lion.gestation_period_days)
+      dam.deliver(name: '仔', sex: sex.female)
 
-      expect(pair).not_to be_expecting
-      expect { pair.mate }.not_to raise_error
+      expect(dam).not_to be_expecting
+      expect { dam.conceive(sire_id: sire.id) }.not_to raise_error
     end
   end
 
   describe '流産' do
     context '妊娠中の母体が飢餓に陥ると' do
       it '流産し、妊娠が解けて出産できないこと' do
-        pair = pair_of(catalog.lion)
-        pair.mate
-        pair.dam.get_hungrier(100)
-        pair.advance(50)
+        _sire, dam = mated_dam(catalog.lion)
+        dam.get_hungrier(100)
+        dam.gestate(50)
 
-        expect(pair).to be_miscarried
-        expect(pair).not_to be_expecting
-        expect { pair.deliver(name: '仔', sex: sex.male) }.to raise_error(errors::BreedingNotAllowed)
+        expect(dam).to be_miscarried
+        expect(dam).not_to be_expecting
+        expect { dam.deliver(name: '仔', sex: sex.male) }.to raise_error(errors::BreedingNotAllowed)
       end
     end
 
     context '妊娠中の母体が過度のストレスを抱えると' do
       it '流産すること' do
-        pair = pair_of(catalog.lion)
-        pair.mate
-        pair.dam.add_stress(90)
-        pair.advance(50)
+        _sire, dam = mated_dam(catalog.lion)
+        dam.add_stress(90)
+        dam.gestate(50)
 
-        expect(pair).to be_miscarried
-        expect(pair).not_to be_expecting
+        expect(dam).to be_miscarried
+        expect(dam).not_to be_expecting
       end
     end
   end

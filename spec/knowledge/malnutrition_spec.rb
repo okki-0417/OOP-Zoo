@@ -65,13 +65,12 @@ RSpec.describe '栄養失調' do
 
     it '妊娠中の母体の栄養失調は流産の要因になること' do
       sire, dam = build_pair(macaque)
-      pair = Zoo::Domain::BreedingPair.new(sire: sire, dam: dam)
-      pair.mate(season: season.autumn)
+      dam.conceive(sire_id: sire.id)
       malnourish(dam)
-      pair.advance(10)
+      dam.gestate(10)
 
-      expect(pair).to be_miscarried
-      expect(pair).not_to be_expecting
+      expect(dam).to be_miscarried
+      expect(dam).not_to be_expecting
     end
   end
 end

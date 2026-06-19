@@ -25,25 +25,23 @@ module Zoo
             enclosure = @enclosures.find(command.enclosure_id)
             raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if enclosure.nil?
 
-            pair = Domain::BreedingPair.new(sire: sire, dam: dam)
-            pair.mate(season: @zoo.load.season)
-            pair.advance(dam.species.gestation_period_days)
+            zoo = @zoo.load
 
-            inbreeding = Domain::Pedigree.inbreeding_of_offspring(sire, dam, animal_lookup)
-            child = pair.deliver(name: command.name, sex: command.sex, inbreeding: inbreeding)
+            child = Domain::Breeding.mate(sire:, dam:, season: zoo.season, name: command.name,
+                                          sex: command.sex, animal_lookup: animal_lookup, day: zoo.day)
 
+            @animals.save(dam)
             @animals.save(child)
             enclosure.admit(child)
             @enclosures.save(enclosure)
 
-            zoo = @zoo.load
             zoo.generate_buzz(BIRTH_BUZZ)
             @zoo.save(zoo)
 
-            [child, pair.pull_events]
+            [child, dam.pull_events]
           end
 
-          @event_dispatcher.publish(events)
+          @event_dispatcher.notify(events)
           offspring
         end
 

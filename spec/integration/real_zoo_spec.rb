@@ -99,15 +99,14 @@ RSpec.describe '現実の動物園の再現' do
 
   it 'ライオンを繁殖させ、生まれた子を群れに加えられること' do
     sire, dam = lions
-    pair = breeding::BreedingPair.new(sire: sire, dam: dam)
-    pair.mate
-    pair.advance(catalog.lion.gestation_period_days)
-    cub = pair.deliver(name: 'シンバ', sex: animal::Sex.male)
+    dam.conceive(sire_id: sire.id)
+    dam.gestate(catalog.lion.gestation_period_days)
+    cub = dam.deliver(name: 'シンバ', sex: animal::Sex.male)
 
     zoo.house(cub, lion_hill)
     expect(lion_hill.population).to eq(3)
     expect(zoo.population).to eq(13)
-    expect(pair.pull_events.first).to be_a(Zoo::Domain::Events::AnimalBorn)
+    expect(dam.pull_events.first).to be_a(Zoo::Domain::Events::Birth)
     expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
   end
 

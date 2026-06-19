@@ -8,7 +8,7 @@ RSpec.describe Zoo::Domain::Pedigree do
   def lion(name, sex:, age:, sire: nil, dam: nil)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::SpeciesCatalog.lion,
-      name: name, sex: sex, max_health: 100, age_in_days: age, sire: sire, dam: dam
+      name: name, sex: sex, max_health: 100, age_in_days: age, sire_id: sire&.id, dam_id: dam&.id
     )
   end
 

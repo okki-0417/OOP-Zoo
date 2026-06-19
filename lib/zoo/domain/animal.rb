@@ -18,11 +18,13 @@ module Zoo
 
       ILLNESS_VULNERABILITY_INCREMENT = 0.5
 
+      NEWBORN_HEALTH = 50
+
       attr_reader :id, :species, :name, :sex, :health, :hunger, :age_in_days, :death,
-                  :parent_ids, :illness, :stress, :nutrition
+                  :parent_ids, :illness, :stress, :nutrition, :pregnancy
 
       def initialize(species:, name:, sex:, max_health:, voice: :default,
-                     age_in_days: 0, sire: nil, dam: nil, id: Shared::Identifier.new)
+                     age_in_days: 0, sire_id: nil, dam_id: nil, id: Shared::Identifier.new)
         @id = id
         @species = species
         @name = Name.new(name)
@@ -36,11 +38,14 @@ module Zoo
         @death = nil
         @illness = nil
         @immunities = []
-        @parent_ids = [sire&.id, dam&.id].compact
+        @pregnancy = nil
+        @miscarried = false
+        @parent_ids = [sire_id, dam_id].compact
       end
 
       def self.reconstitute(id:, species:, name:, sex:, health:, hunger:, age_in_days:, illness:, death:, parent_ids:,
-                            stress: Stress.calm, immunities: [], nutrition: Nutrition.nourished)
+                            stress: Stress.calm, immunities: [], nutrition: Nutrition.nourished,
+                            pregnancy: nil, miscarried: false)
         allocate.tap do |animal|
           animal.instance_variable_set(:@id, id)
           animal.instance_variable_set(:@species, species)
@@ -54,6 +59,8 @@ module Zoo
           animal.instance_variable_set(:@voice, Voice.from(species.default_voice))
           animal.instance_variable_set(:@illness, illness)
           animal.instance_variable_set(:@immunities, immunities)
+          animal.instance_variable_set(:@pregnancy, pregnancy)
+          animal.instance_variable_set(:@miscarried, miscarried)
           animal.instance_variable_set(:@death, death)
           animal.instance_variable_set(:@parent_ids, parent_ids)
         end
@@ -137,6 +144,10 @@ module Zoo
 
       def sick?
         !@illness.nil?
+      end
+
+      def healthy?
+        !sick?
       end
 
       def immune_to?(illness)
@@ -278,11 +289,111 @@ module Zoo
           fertile? && other.fertile?
       end
 
+      def breeds_in?(season)
+        @species.breeds_in?(season)
+      end
+
+      def same_species?(other)
+        other.is_a?(Animal) && @species.same_species?(other.species)
+      end
+
+      def sex_opposite?(other)
+        other.is_a?(Animal) && @sex.opposite?(other.sex)
+      end
+
+      def related_to?(other)
+        parent_of?(other) || other.parent_of?(self) || sibling_of?(other)
+      end
+
+      def can_mate_with?(other)
+        can_breed_with?(other) && !related_to?(other)
+      end
+
+      def inbreeding_of_offspring_with(sire, lookup)
+        Pedigree.kinship(sire, self, lookup)
+      end
+
+      def conceive(sire_id:)
+        raise Errors::BreedingNotAllowed, 'メスのみ妊娠できます' unless @sex.female?
+        raise Errors::BreedingNotAllowed, '既に妊娠/抱卵中です' if expecting?
+
+        @pregnancy = Pregnancy.conceived(sire_id)
+        @miscarried = false
+        self
+      end
+
+      def expecting?
+        !@pregnancy.nil?
+      end
+
+      def gestate(days = 1)
+        return self unless expecting?
+
+        if pregnancy_failing?
+          miscarry
+        else
+          @pregnancy = @pregnancy.advanced_by(days)
+        end
+        self
+      end
+
+      def gestation_period_days
+        @species.gestation_period_days
+      end
+
+      def ready_to_deliver?
+        expecting? && @pregnancy.gestation_days >= @species.gestation_period_days
+      end
+
+      def miscarried?
+        @miscarried
+      end
+
+      def deliver(name:, sex:, max_health: NEWBORN_HEALTH, inbreeding: 0.0, occurred_on: 0, season: Season.spring)
+        raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
+
+        sire_id = @pregnancy.sire_id
+        offspring = Animal.new(
+          species: @species, name: name, sex: sex, max_health: newborn_vitality(max_health, inbreeding),
+          age_in_days: 0, sire_id: sire_id, dam_id: @id
+        )
+        @pregnancy = nil
+
+        record_birth(offspring, sire_id, occurred_on, season)
+        offspring
+      end
+
+      def deliver_litter(name:, max_health: NEWBORN_HEALTH, inbreeding: 0.0, occurred_on: 0, season: Season.spring)
+        raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
+
+        sire_id = @pregnancy.sire_id
+        vitality = newborn_vitality(max_health, inbreeding)
+        litter = Array.new(@species.litter_size) do |i|
+          Animal.new(
+            species: @species, name: "#{name}#{i + 1}",
+            sex: i.even? ? Sex.male : Sex.female,
+            max_health: vitality, age_in_days: 0, sire_id: sire_id, dam_id: @id
+          )
+        end
+        @pregnancy = nil
+
+        litter.each { |o| record_birth(o, sire_id, occurred_on, season) }
+        litter
+      end
+
       def change_name(new_name)
         old_name = @name.to_s
         @name = Name.new(new_name)
         record_event(Events::AnimalRenamed.new(animal: self, old_name: old_name, new_name: @name.to_s))
         self
+      end
+
+      def male?
+        @sex.male?
+      end
+
+      def female?
+        @sex.female?
       end
 
       def to_s
@@ -296,6 +407,26 @@ module Zoo
       end
 
       private
+
+      def record_birth(offspring, sire_id, occurred_on, season)
+        record_event(Events::Birth.new(
+                       offspring: offspring, sire_id: sire_id, dam_id: @id,
+                       occurred_on: occurred_on, season: season
+                     ))
+      end
+
+      def pregnancy_failing?
+        starving? || @stress.severe? || malnourished?
+      end
+
+      def miscarry
+        @pregnancy = nil
+        @miscarried = true
+      end
+
+      def newborn_vitality(base, inbreeding)
+        (base * (1.0 - inbreeding)).round.clamp(1, base)
+      end
 
       def illness_damage(days)
         (@illness.daily_damage * illness_susceptibility * days).round

@@ -33,7 +33,7 @@ Metrics/AbcSize:
     - 'lib/zoo/application/services/transfer_animal.rb'
     - 'lib/zoo/composition/container.rb'
     - 'lib/zoo/domain/animal.rb'
-    - 'lib/zoo/domain/breeding/breeding_pair.rb'
+    - 'lib/zoo/domain/breeding.rb'
     - 'lib/zoo/domain/husbandry/welfare.rb'
     - 'lib/zoo/domain/operations/daily_operation.rb'
     - 'lib/zoo/domain/taxonomy/species.rb'
@@ -57,6 +57,7 @@ Metrics/CyclomaticComplexity:
   Exclude:
     - 'lib/zoo/composition/container.rb'
     - 'lib/zoo/domain/animal.rb'
+    - 'lib/zoo/domain/breeding.rb'
     - 'lib/zoo/domain/husbandry/welfare.rb'
     - 'lib/zoo/domain/medical/contagion.rb'
 
@@ -75,7 +76,7 @@ Metrics/MethodLength:
     - 'lib/zoo/application/services/transfer_animal.rb'
     - 'lib/zoo/composition/container.rb'
     - 'lib/zoo/domain/animal.rb'
-    - 'lib/zoo/domain/breeding/breeding_pair.rb'
+    - 'lib/zoo/domain/breeding.rb'
     - 'lib/zoo/domain/husbandry/enclosure.rb'
     - 'lib/zoo/domain/husbandry/welfare.rb'
     - 'lib/zoo/domain/medical/contagion.rb'
@@ -91,6 +92,7 @@ Metrics/ModuleLength:
   Exclude:
     - 'lib/zoo/domain/taxonomy/species_catalog.rb'
     - 'spec/zoo/domain/breeding/breeding_spec.rb'
+    - 'spec/zoo/domain/breeding_spec.rb'
     - 'spec/zoo/domain/husbandry/enclosure_spec.rb'
     - 'spec/zoo/domain/operations/operations_spec.rb'
 
@@ -100,6 +102,7 @@ Metrics/ParameterLists:
   Exclude:
     - 'lib/zoo/application/services/operate_day.rb'
     - 'lib/zoo/domain/animal.rb'
+    - 'lib/zoo/domain/breeding.rb'
     - 'lib/zoo/domain/husbandry/enclosure.rb'
     - 'lib/zoo/domain/operations/daily_operation.rb'
     - 'lib/zoo/domain/taxonomy/species.rb'
@@ -111,6 +114,7 @@ Metrics/ParameterLists:
 Metrics/PerceivedComplexity:
   Exclude:
     - 'lib/zoo/domain/animal.rb'
+    - 'lib/zoo/domain/breeding.rb'
     - 'lib/zoo/domain/husbandry/welfare.rb'
 
 # Offense count: 11
@@ -118,8 +122,7 @@ Metrics/PerceivedComplexity:
 # AllowedNames: as, at, by, cc, db, id, if, in, io, ip, of, on, os, pp, to
 Naming/MethodParameterName:
   Exclude:
-    - 'lib/zoo/domain/breeding/breeding_policy.rb'
-    - 'lib/zoo/domain/breeding/pedigree.rb'
+    - 'lib/zoo/domain/pedigree.rb'
     - 'spec/knowledge/metabolism_spec.rb'
 
 # Offense count: 1

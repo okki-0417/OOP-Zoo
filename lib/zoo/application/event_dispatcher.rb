@@ -11,8 +11,18 @@ module Zoo
       def publish(events)
         events.each do |event|
           @event_store.append(event)
-          @subscribers.each { |subscriber| subscriber.handle(event) }
+          notify_subscribers(event)
         end
+      end
+
+      def notify(events)
+        events.each { |event| notify_subscribers(event) }
+      end
+
+      private
+
+      def notify_subscribers(event)
+        @subscribers.each { |subscriber| subscriber.handle(event) }
       end
     end
   end

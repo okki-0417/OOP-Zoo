@@ -17,7 +17,7 @@ RSpec.describe '血統と近親交配' do
   def offspring(name, sex, sire:, dam:, age: 100)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::SpeciesCatalog.lion,
-      name: name, sex: sex, max_health: 100, age_in_days: age, sire: sire, dam: dam
+      name: name, sex: sex, max_health: 100, age_in_days: age, sire_id: sire&.id, dam_id: dam&.id
     )
   end
 
@@ -86,19 +86,17 @@ RSpec.describe '血統と近親交配' do
 
   describe '近交弱勢(inbreeding depression)' do
     it '近交係数が高い親から生まれた子ほど虚弱に(最大体力が低く)生まれること' do
-      pair = Zoo::Domain::BreedingPair.new(
-        sire: build_adult(catalog.lion, name: '父', sex: sex.male),
-        dam: build_adult(catalog.lion, name: '母', sex: sex.female)
-      )
+      sire = build_adult(catalog.lion, name: '父', sex: sex.male)
+      dam = build_adult(catalog.lion, name: '母', sex: sex.female)
       gestation = catalog.lion.gestation_period_days
 
-      pair.mate
-      pair.advance(gestation)
-      healthy = pair.deliver(name: '健全な子', sex: sex.male)
+      dam.conceive(sire_id: sire.id)
+      dam.gestate(gestation)
+      healthy = dam.deliver(name: '健全な子', sex: sex.male)
 
-      pair.mate
-      pair.advance(gestation)
-      inbred = pair.deliver(name: '近交の子', sex: sex.female, inbreeding: 0.25)
+      dam.conceive(sire_id: sire.id)
+      dam.gestate(gestation)
+      inbred = dam.deliver(name: '近交の子', sex: sex.female, inbreeding: 0.25)
 
       expect(inbred.health.max).to be < healthy.health.max
     end

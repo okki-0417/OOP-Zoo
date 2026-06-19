@@ -5,10 +5,10 @@ module Zoo
     module InMemory
       class InMemoryAnimalRepository
         include Domain::Repositories::AnimalRepository
-        include Snapshotable
 
         def initialize(animals = [])
           @store = {}
+          @births = []
           animals.each { |animal| save(animal) }
         end
 
@@ -18,11 +18,24 @@ module Zoo
 
         def save(animal)
           @store[animal.id.to_s] = animal
+          @births.concat(animal.recorded_events.grep(Domain::Events::Birth))
           animal
         end
 
         def all
           @store.values
+        end
+
+        def births
+          @births.dup
+        end
+
+        def snapshot
+          [@store.dup, @births.dup]
+        end
+
+        def restore(snapshot)
+          @store, @births = snapshot
         end
       end
     end

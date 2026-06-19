@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe '近親交配の回避' do
   sex = Zoo::Domain::Animal::Sex
-  policy = Zoo::Domain::BreedingPolicy
+  breeding = Zoo::Domain::Breeding
 
   def founder(name, sex)
     Zoo::Domain::Animal.new(
@@ -16,13 +16,13 @@ RSpec.describe '近親交配の回避' do
   def offspring(name, sex, sire:, dam:)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::SpeciesCatalog.lion,
-      name: name, sex: sex, max_health: 100, age_in_days: 365 * 4, sire: sire, dam: dam
+      name: name, sex: sex, max_health: 100, age_in_days: 365 * 4, sire_id: sire&.id, dam_id: dam&.id
     )
   end
 
   context '血縁のない成熟ペアのとき' do
     it '繁殖できること' do
-      expect(policy.can_mate?(founder('父系', sex.male), founder('母系', sex.female))).to be(true)
+      expect(founder('父系', sex.male).can_mate_with?(founder('母系', sex.female))).to be(true)
     end
   end
 
@@ -31,14 +31,17 @@ RSpec.describe '近親交配の回避' do
       father = founder('父', sex.male)
       mother = founder('母', sex.female)
       daughter = offspring('娘', sex.female, sire: father, dam: mother)
-      expect(policy.can_mate?(father, daughter)).to be(false)
+      expect(father.can_mate_with?(daughter)).to be(false)
     end
 
     it '近親交配であることが理由として示されること' do
       father = founder('父', sex.male)
       mother = founder('母', sex.female)
       daughter = offspring('娘', sex.female, sire: father, dam: mother)
-      expect(policy.rejection_reason(father, daughter)).to include('近親')
+      expect do
+        breeding.mate(sire: father, dam: daughter, name: '近交子',
+                      sex: sex.female, animal_lookup: ->(_id) { nil }, day: 0)
+      end.to raise_error(Zoo::Domain::Errors::BreedingNotAllowed, /近親/)
     end
   end
 
@@ -48,7 +51,7 @@ RSpec.describe '近親交配の回避' do
       mother = founder('母', sex.female)
       brother = offspring('兄', sex.male, sire: father, dam: mother)
       sister = offspring('妹', sex.female, sire: father, dam: mother)
-      expect(policy.can_mate?(brother, sister)).to be(false)
+      expect(brother.can_mate_with?(sister)).to be(false)
     end
   end
 
@@ -59,7 +62,7 @@ RSpec.describe '近親交配の回避' do
       mother2 = founder('母2', sex.female)
       a = offspring('A', sex.male, sire: father, dam: mother1)
       b = offspring('B', sex.female, sire: father, dam: mother2)
-      expect(policy.can_mate?(a, b)).to be(false)
+      expect(a.can_mate_with?(b)).to be(false)
     end
   end
 end

@@ -16,7 +16,7 @@ RSpec.describe '個体群管理(交配推奨)' do
   def offspring(name, sex, sire:, dam:, age: 1500)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::SpeciesCatalog.lion,
-      name: name, sex: sex, max_health: 100, age_in_days: age, sire: sire, dam: dam
+      name: name, sex: sex, max_health: 100, age_in_days: age, sire_id: sire&.id, dam_id: dam&.id
     )
   end
 

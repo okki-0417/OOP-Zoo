@@ -7,15 +7,17 @@ RSpec.describe '繁殖の季節性' do
   season   = Zoo::Domain::Season
   errors   = Zoo::Domain::Errors
 
-  def pair_of(species)
+  def mate_in(species, season)
     sire, dam = build_pair(species)
-    Zoo::Domain::BreedingPair.new(sire: sire, dam: dam)
+    Zoo::Domain::Breeding.mate(sire: sire, dam: dam, season: season,
+                               name: '仔', sex: Zoo::Domain::Animal::Sex.male,
+                               animal_lookup: ->(_id) { nil }, day: 0)
   end
 
   describe '周年繁殖種' do
     it 'ライオンは季節を問わず周年で交配が成立すること' do
-      expect { pair_of(catalog.lion).mate(season: season.summer) }.not_to raise_error
-      expect { pair_of(catalog.lion).mate(season: season.winter) }.not_to raise_error
+      expect { mate_in(catalog.lion, season.summer) }.not_to raise_error
+      expect { mate_in(catalog.lion, season.winter) }.not_to raise_error
     end
 
     it 'ライオンは周年繁殖種であること' do
@@ -25,11 +27,11 @@ RSpec.describe '繁殖の季節性' do
 
   describe '季節繁殖種' do
     it '季節繁殖種(ニホンザル)は自種の繁殖季節(秋)にのみ交配が成立すること' do
-      expect { pair_of(catalog.japanese_macaque).mate(season: season.autumn) }.not_to raise_error
+      expect { mate_in(catalog.japanese_macaque, season.autumn) }.not_to raise_error
     end
 
     it '繁殖季節でない時期は、健康な成熟ペアでも交配が成立しないこと' do
-      expect { pair_of(catalog.japanese_macaque).mate(season: season.spring) }
+      expect { mate_in(catalog.japanese_macaque, season.spring) }
         .to raise_error(errors::BreedingNotAllowed)
     end
 
