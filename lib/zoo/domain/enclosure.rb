@@ -151,7 +151,7 @@ module Zoo
         rivals = @occupants.select { |other| contender?(other) && other.species.same_species?(animal.species) }
         return false if rivals.size < 2
 
-        animal.id != rivals.max_by { |male| male.age_in_days.value }.id
+        animal.id != rivals.max_by(&:age_in_days).id
       end
 
       def injury_for(animal)
@@ -188,7 +188,7 @@ module Zoo
       end
 
       def contender?(animal)
-        animal.alive? && animal.sex.male? && animal.mature? && animal.species.group_living?
+        animal.alive? && animal.male? && animal.mature? && animal.species.group_living?
       end
 
       def spread_disease_if_filthy

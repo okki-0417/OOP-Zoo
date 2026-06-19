@@ -41,7 +41,7 @@ module Zoo
 
       it '食性に合う餌を食べると空腹が満たされること' do
         expect { lion.eat(FoodCatalog.horse_meat) }
-          .to change { lion.hunger.level }.by(-35)
+          .to change { lion.hunger_level }.by(-35)
       end
 
       it '肉食動物に草を与えられないこと' do

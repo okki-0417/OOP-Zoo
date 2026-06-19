@@ -19,7 +19,7 @@ module Zoo
       it '専門の動物に給餌できること' do
         lion.get_hungrier(50)
         expect { mammal_keeper.feed(lion, FoodCatalog.horse_meat) }
-          .to change { lion.hunger.level }.by(-35)
+          .to change { lion.hunger_level }.by(-35)
       end
 
       it '専門外の動物には給餌できないこと' do
@@ -79,7 +79,7 @@ module Zoo
         90.times { animal.cry_out }
         expect(vet.examine(animal)).to eq(:injured)
         vet.treat(animal)
-        expect(animal.health.weak?).to be(false)
+        expect(animal.weak?).to be(false)
       end
 
       it '死亡個体は治療できないこと' do
@@ -96,7 +96,7 @@ module Zoo
         animal.fall_ill(IllnessCatalog.pneumonia)
         animal.grow_older(5)
         expect(animal).to be_dead
-        expect(animal.death.cause).to eq(:illness)
+        expect(animal.cause_of_death).to eq(:illness)
       end
     end
   end

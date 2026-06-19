@@ -15,7 +15,7 @@ module Zoo
           ReadModels::RunDaysSummary.new(
             days: command.days,
             total_deaths: dead.size,
-            deaths_by_cause: dead.group_by { |animal| animal.death.cause }.transform_values(&:size)
+            deaths_by_cause: dead.group_by(&:cause_of_death).transform_values(&:size)
           )
         end
       end

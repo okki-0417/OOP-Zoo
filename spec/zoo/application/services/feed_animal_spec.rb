@@ -27,7 +27,7 @@ RSpec.describe Zoo::Application::Services::FeedAnimal do
                      keeper_id: mammal_keeper.id, animal_id: lion.id, food: feeding::FoodCatalog.horse_meat
                    ))
 
-      expect(animals.find(lion.id).hunger.level).to eq(5)
+      expect(animals.find(lion.id).hunger_level).to eq(5)
     end
 
     it '哺乳類のライオンに鳥類担当の飼育員が給餌しようとすると Domain::Errors::NotQualified が伝播すること' do

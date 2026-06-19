@@ -45,7 +45,7 @@ RSpec.describe '産仔数' do
 
     it '生まれた各個体は0日齢の幼体であること' do
       delivered_litter(catalog.lion).each do |cub|
-        expect(cub.age_in_days.value).to eq(0)
+        expect(cub.age_in_days).to eq(0)
         expect(cub.life_stage).to be_baby
       end
     end
@@ -61,7 +61,7 @@ RSpec.describe '産仔数' do
 
     it '近交係数は同腹の全個体に等しく適用されること' do
       litter = delivered_litter(catalog.lion, inbreeding: 0.25)
-      maxes = litter.map { |cub| cub.health.max }.uniq
+      maxes = litter.map(&:max_health).uniq
       expect(maxes.size).to eq(1)
       expect(maxes.first).to be < Zoo::Domain::Animal::NEWBORN_HEALTH
     end

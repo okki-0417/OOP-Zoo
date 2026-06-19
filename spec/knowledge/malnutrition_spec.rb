@@ -52,7 +52,7 @@ RSpec.describe '栄養失調' do
       malnourish(monkey)
       monkey.grow_older(2)
       expect(monkey).to be_dead
-      expect(monkey.death.cause).to eq(:malnutrition)
+      expect(monkey.cause_of_death).to eq(:malnutrition)
     end
   end
 

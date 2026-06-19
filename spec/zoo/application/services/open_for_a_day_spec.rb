@@ -34,7 +34,7 @@ RSpec.describe Zoo::Application::Services::OpenForADay do
 
   describe '#call' do
     it '生存個体が1日歳をとること' do
-      expect { service.call }.to change { survivor.age_in_days.value }.by(1)
+      expect { service.call }.to change { survivor.age_in_days }.by(1)
     end
 
     it 'エリアが頭数ぶん汚れて cleanliness.level が100未満になること' do

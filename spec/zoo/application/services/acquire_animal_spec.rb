@@ -32,7 +32,7 @@ RSpec.describe Zoo::Application::Services::AcquireAnimal do
       acquired = service.call(command)
 
       expect(animals.find(acquired.id)).to eq(acquired)
-      expect(acquired.name.to_s).to eq('モンタ')
+      expect(acquired.name).to eq('モンタ')
     end
 
     it '取引可能な種は取得価格ぶん残高が減ること' do

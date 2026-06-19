@@ -78,7 +78,7 @@ module Zoo
 
           cub = dam.deliver(name: 'シンバ')
           expect(cub.species).to eq(lion)
-          expect(cub.age_in_days).to eq(Animal::AgeInDays.zero)
+          expect(cub.age_in_days).to eq(0)
           expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
           expect(cub.life_stage).to be_baby
         end
@@ -100,7 +100,7 @@ module Zoo
         it 'name を省略すると種名ベースの仮名が付くこと' do
           dam.gestate(lion.gestation_period_days)
           cub = dam.deliver
-          expect(cub.name.to_s).to eq("#{lion.name_ja}の赤ちゃん")
+          expect(cub.name).to eq("#{lion.name_ja}の赤ちゃん")
         end
       end
 
@@ -109,14 +109,14 @@ module Zoo
           dam.conceive(sire_id: sire.id, inbreeding: 0.25)
           dam.gestate(lion.gestation_period_days)
           cub = dam.deliver(name: '近交子')
-          expect(cub.health.max).to eq(38)
+          expect(cub.max_health).to eq(38)
         end
 
         it 'inbreeding=1.0 でも最大体力は最低1に保たれること' do
           dam.conceive(sire_id: sire.id, inbreeding: 1.0)
           dam.gestate(lion.gestation_period_days)
           cub = dam.deliver(name: '極端')
-          expect(cub.health.max).to eq(1)
+          expect(cub.max_health).to eq(1)
         end
       end
 
@@ -165,7 +165,7 @@ module Zoo
         it '名前が更新され AnimalNamed イベントが記録されること' do
           animal = build_adult(lion, name: 'ライオンの赤ちゃん', sex: Animal::Sex.female)
           animal.name_animal(name: 'ナラ')
-          expect(animal.name.to_s).to eq('ナラ')
+          expect(animal.name).to eq('ナラ')
           events = animal.pull_events
           expect(events.last).to be_a(Events::AnimalNamed)
           expect(events.last.name).to eq('ナラ')

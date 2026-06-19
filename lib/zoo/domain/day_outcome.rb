@@ -15,7 +15,7 @@ module Zoo
       end
 
       def outbreak_name
-        @afflicted&.name&.to_s
+        @afflicted&.name
       end
     end
   end

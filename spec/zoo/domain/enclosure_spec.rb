@@ -186,7 +186,7 @@ module Zoo
           lone_zebra = build_adult(zebra)
           savanna.admit(lone_zebra)
 
-          expect { savanna.pass_day }.to change { lone_zebra.stress.level }.by_at_least(1)
+          expect { savanna.pass_day }.to change { lone_zebra.stress_level }.by_at_least(1)
         end
 
         it '仲間がいて清潔・適温なら、ストレスは増えないこと' do
@@ -197,7 +197,7 @@ module Zoo
 
           savanna.pass_day
 
-          expect(a.stress).to be_calm
+          expect(a).not_to be_stressed
         end
 
         it '刺激が日々 ENRICHMENT_DECAY_PER_DAY ぶん薄れること' do

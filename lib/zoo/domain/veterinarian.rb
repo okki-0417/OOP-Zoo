@@ -26,7 +26,7 @@ module Zoo
       def examine(animal)
         return :dead if animal.dead?
         return :sick if animal.sick?
-        return :injured if animal.health.weak?
+        return :injured if animal.weak?
 
         :healthy
       end

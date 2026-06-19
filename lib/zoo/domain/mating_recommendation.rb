@@ -11,8 +11,8 @@ module Zoo
       end
 
       def candidate_pairs(animals)
-        males = animals.select { |a| a.sex.male? }
-        females = animals.select { |a| a.sex.female? }
+        males = animals.select(&:male?)
+        females = animals.select(&:female?)
 
         males.product(females).select { |sire, dam| sire.can_mate_with?(dam) }
       end

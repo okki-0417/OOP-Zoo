@@ -65,12 +65,12 @@ RSpec.describe '動物' do
 
       it '死因(例: 捕食)が記録されること' do
         animal.die(cause: :predation)
-        expect(animal.death.cause).to eq(:predation)
+        expect(animal.cause_of_death).to eq(:predation)
       end
 
       it '死因を指定しなければ不明として記録されること' do
         animal.die
-        expect(animal.death.cause).to eq(:unknown)
+        expect(animal.cause_of_death).to eq(:unknown)
       end
 
       it '死亡が一度だけできごととして通知されること' do
@@ -86,7 +86,7 @@ RSpec.describe '動物' do
         animal.pull_events
         animal.die(cause: :illness)
         expect(animal.pull_events).to be_empty
-        expect(animal.death.cause).to eq(:predation)
+        expect(animal.cause_of_death).to eq(:predation)
       end
     end
   end
@@ -204,7 +204,7 @@ RSpec.describe '動物' do
     context '食性に合う餌を食べると' do
       it '満腹度が餌のぶんだけ回復すること' do
         animal.get_hungrier(80)
-        expect { animal.eat(meat) }.to change { animal.hunger.level }.by(-meat.satiety)
+        expect { animal.eat(meat) }.to change { animal.hunger_level }.by(-meat.satiety)
       end
     end
 
@@ -212,7 +212,7 @@ RSpec.describe '動物' do
       it '受け付けず、空腹も変わらないこと' do
         animal.get_hungrier(80)
         expect { animal.eat(hay) }.to raise_error(errors::IncompatibleFood)
-        expect(animal.hunger.level).to eq(80)
+        expect(animal.hunger_level).to eq(80)
       end
     end
 
@@ -229,7 +229,7 @@ RSpec.describe '動物' do
         expect(animal).to be_starving
         animal.grow_older(60)
         expect(animal).to be_dead
-        expect(animal.death.cause).to eq(:starvation)
+        expect(animal.cause_of_death).to eq(:starvation)
       end
     end
   end
@@ -255,7 +255,7 @@ RSpec.describe '動物' do
       animal = build_animal(max_health: 100)
       animal.grow_older(365 * 16)
       expect(animal).to be_dead
-      expect(animal.death.cause).to eq(:old_age)
+      expect(animal.cause_of_death).to eq(:old_age)
     end
   end
 
@@ -290,7 +290,7 @@ RSpec.describe '動物' do
         animal.fall_ill(illnesses.pneumonia)
         animal.grow_older(20)
         expect(animal).to be_dead
-        expect(animal.death.cause).to eq(:illness)
+        expect(animal.cause_of_death).to eq(:illness)
       end
     end
 
@@ -469,7 +469,7 @@ RSpec.describe '動物' do
     context '改名すると' do
       it '新しい名前になること' do
         animal.change_name('Cat')
-        expect(animal.name).to eq(name_vo.new('Cat'))
+        expect(animal.name).to eq('Cat')
       end
 
       it '改名されたことができごととして残ること' do

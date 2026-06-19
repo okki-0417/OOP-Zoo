@@ -20,8 +20,15 @@ module Zoo
 
       NEWBORN_HEALTH = 50
 
-      attr_reader :id, :species, :name, :sex, :health, :hunger, :age_in_days, :death,
-                  :parent_ids, :illness, :stress, :nutrition, :pregnancy
+      attr_reader :id, :species, :parent_ids, :illness
+
+      def name
+        @name.to_s
+      end
+
+      def age_in_days
+        @age_in_days.value
+      end
 
       def initialize(species:, name:, sex:, max_health:, voice: :default,
                      age_in_days: 0, sire_id: nil, dam_id: nil, id: Shared::Identifier.new)
@@ -92,12 +99,24 @@ module Zoo
         @health.current
       end
 
+      def max_health
+        @health.max
+      end
+
+      def weak?
+        @health.weak?
+      end
+
       def alive?
         @death.nil?
       end
 
       def dead?
         !alive?
+      end
+
+      def cause_of_death
+        @death&.cause
       end
 
       def incapacitated?
@@ -150,6 +169,14 @@ module Zoo
         !sick?
       end
 
+      def illness_name
+        @illness&.name_ja
+      end
+
+      def illness_contagious?
+        @illness&.contagious? || false
+      end
+
       def immune_to?(illness)
         @immunities.include?(illness)
       end
@@ -170,6 +197,10 @@ module Zoo
 
       def stressed?
         @stress.stressed?
+      end
+
+      def stress_level
+        @stress.level
       end
 
       def injure(amount)
@@ -227,6 +258,10 @@ module Zoo
 
       def starving?
         @hunger.starving?
+      end
+
+      def hunger_level
+        @hunger.level
       end
 
       NUTRITION_GAIN = 20
@@ -424,6 +459,14 @@ module Zoo
         @sex.female?
       end
 
+      def sex_label
+        @sex.label
+      end
+
+      def sex_value
+        @sex.value
+      end
+
       def to_s
         "#{@name}(#{@species.name_ja}/#{@sex.label}/#{life_stage.label})"
       end
@@ -433,6 +476,10 @@ module Zoo
         vulnerable = [stage.baby?, stage.elderly?, stressed?, malnourished?]
         1.0 + (vulnerable.count(true) * ILLNESS_VULNERABILITY_INCREMENT)
       end
+
+      protected
+
+      attr_reader :sex
 
       private
 

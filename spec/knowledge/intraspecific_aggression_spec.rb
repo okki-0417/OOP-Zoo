@@ -54,7 +54,7 @@ RSpec.describe '種内闘争と外傷' do
       dead = cramped.pass_day
 
       expect(dead).to include(junior)
-      expect(junior.death.cause).to eq(:injury)
+      expect(junior.cause_of_death).to eq(:injury)
     end
   end
 

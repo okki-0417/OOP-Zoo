@@ -10,7 +10,7 @@ RSpec.shared_examples 'an animal repository' do
     repository.save(lion)
     found = repository.find(lion.id)
 
-    expect(found.name.to_s).to eq('レオ')
+    expect(found.name).to eq('レオ')
     expect(found.species).to eq(catalog.lion)
   end
 
@@ -36,8 +36,8 @@ RSpec.shared_examples 'an animal repository' do
     repository.save(lion)
     found = repository.find(lion.id)
 
-    expect(found.hunger.level).to eq(40)
-    expect(found.stress.level).to eq(50)
+    expect(found.hunger_level).to eq(40)
+    expect(found.stress_level).to eq(50)
     expect(found).to be_sick
     expect(found.immune_to?(medical::IllnessCatalog.cold)).to be(true)
   end
@@ -54,7 +54,7 @@ RSpec.shared_examples 'an animal repository' do
 
     births = repository.births
     expect(births.size).to eq(1)
-    expect(births.first.offspring.name.to_s).to eq('仔')
+    expect(births.first.offspring.name).to eq('仔')
     expect(births.first.occurred_on).to eq(120)
     expect(births.first.season).to eq(Zoo::Domain::Season.autumn)
   end

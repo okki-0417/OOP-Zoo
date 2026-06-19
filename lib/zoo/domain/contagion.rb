@@ -35,7 +35,7 @@ module Zoo
 
       def active_contagions(enclosure)
         enclosure.occupants
-                 .select { |a| a.alive? && a.sick? && a.illness.contagious? }
+                 .select { |a| a.alive? && a.sick? && a.illness_contagious? }
                  .map(&:illness)
                  .uniq
       end

@@ -101,8 +101,8 @@ module Zoo
             illness: nil, death: nil
           )
           expect(animal.current_health).to eq(60)
-          expect(animal.hunger.level).to eq(35)
-          expect(animal.stress.level).to eq(50)
+          expect(animal.hunger_level).to eq(35)
+          expect(animal.stress_level).to eq(50)
         end
 
         it '病気と免疫を復元すること' do
@@ -122,7 +122,7 @@ module Zoo
             stress: Animal::Stress.calm, illness: nil, death: Animal::Death.new(cause: :old_age)
           )
           expect(animal).to be_dead
-          expect(animal.death.cause).to eq(:old_age)
+          expect(animal.cause_of_death).to eq(:old_age)
         end
 
         it '鳴き声は保存せず、種の既定の声に戻ること(ライオンはガオー)' do

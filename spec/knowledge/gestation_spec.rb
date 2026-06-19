@@ -56,7 +56,7 @@ RSpec.describe '妊娠と出産' do
       dam.gestate(catalog.lion.gestation_period_days)
       cub = dam.deliver(name: '仔')
 
-      expect(cub.age_in_days.value).to eq(0)
+      expect(cub.age_in_days).to eq(0)
       expect(cub.life_stage).to be_baby
       expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
     end

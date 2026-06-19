@@ -78,7 +78,7 @@ RSpec.describe '現実の動物園の再現' do
     zebras.first.get_hungrier(40)
     satiety = catalog.grevys_zebra.satiety_from(feeding::FoodCatalog.hay)
     mammal_keeper.feed(zebras.first, feeding::FoodCatalog.hay)
-    expect(zebras.first.hunger.level).to eq(40 - satiety)
+    expect(zebras.first.hunger_level).to eq(40 - satiety)
 
     expect { mammal_keeper.feed(penguins.first, feeding::FoodCatalog.sardine) }
       .to raise_error(Zoo::Domain::Errors::NotQualified)
@@ -123,7 +123,7 @@ RSpec.describe '現実の動物園の再現' do
 
   it '一日を開園すると全個体が歳をとり、エリアが汚れること' do
     expect { zoo.open_for_a_day }
-      .to change { zebras.first.age_in_days.value }.by(1)
+      .to change { zebras.first.age_in_days }.by(1)
     expect(savanna.cleanliness.level).to be < 100
     expect(zoo.population).to eq(12)
   end

@@ -97,7 +97,7 @@ RSpec.describe '血統と近親交配' do
       dam.gestate(gestation)
       inbred = dam.deliver(name: '近交の子')
 
-      expect(inbred.health.max).to be < healthy.health.max
+      expect(inbred.max_health).to be < healthy.max_health
     end
   end
 end

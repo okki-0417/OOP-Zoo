@@ -12,16 +12,16 @@ module Zoo
           {
             id: animal.id.to_s,
             species_key: species_key(animal.species).to_s,
-            name: animal.name.to_s,
-            sex: animal.sex.value.to_s,
-            health_current: animal.health.current,
-            health_max: animal.health.max,
-            hunger: animal.hunger.level,
-            stress: animal.stress.level,
-            age_in_days: animal.age_in_days.value,
+            name: animal.name,
+            sex: animal.sex_value.to_s,
+            health_current: animal.current_health,
+            health_max: animal.max_health,
+            hunger: animal.hunger_level,
+            stress: animal.stress_level,
+            age_in_days: animal.age_in_days,
             illness_key: animal.illness && illness_key(animal.illness)&.to_s,
             immunities: animal.immunities.map { |ill| illness_key(ill)&.to_s }.compact.join(','),
-            death_cause: animal.death&.cause&.to_s,
+            death_cause: animal.cause_of_death&.to_s,
             parent_ids: animal.parent_ids.join(',')
           }
         end
