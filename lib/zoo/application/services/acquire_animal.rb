@@ -35,7 +35,7 @@ module Zoo
           if species.tradeable?
             zoo.purchase(Domain::Pricing.acquisition_price(species))
           else
-            zoo.apply_reputation(zoo.reputation.gain(CONSERVATION_REPUTATION_GAIN))
+            zoo.gain_reputation(CONSERVATION_REPUTATION_GAIN)
           end
           @zoo.save(zoo)
         end

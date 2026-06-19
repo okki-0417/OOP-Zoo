@@ -28,17 +28,7 @@ module Zoo
         afflicted = OutbreakPolicy.strike(on_exhibit, random)
         afflicted&.fall_ill(IllnessCatalog.parasite)
 
-        zoo.apply_reputation(
-          ReputationPolicy.after_day(
-            zoo.reputation,
-            experience: VisitorExperience.score(
-              condition: Condition.score(on_exhibit),
-              fee: zoo.admission_fee
-            ),
-            exposure: visitors,
-            events: news_of(dead, afflicted)
-          )
-        )
+        ReputationEvaluation.evaluate(zoo:, on_exhibit:, visitors:, dead:, afflicted:)
 
         zoo.advance_day
 
@@ -51,11 +41,6 @@ module Zoo
         )
       end
 
-      def news_of(dead, afflicted)
-        events = dead.map { |a| ReputationEvent::Death.new(cause: :unknown, charisma: a.species.charisma) }
-        events << ReputationEvent::Outbreak.new if afflicted
-        events
-      end
     end
   end
 end

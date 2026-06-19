@@ -138,8 +138,13 @@ module Zoo
         @balance.negative?
       end
 
-      def apply_reputation(reputation)
-        @reputation = reputation
+      def gain_reputation(amount)
+        @reputation = @reputation.gain(amount)
+        self
+      end
+
+      def update_reputation(experience:, exposure:, events: [])
+        @reputation = @reputation.after_day(experience: experience, exposure: exposure, events: events)
         self
       end
 

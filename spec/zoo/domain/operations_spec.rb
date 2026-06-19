@@ -105,69 +105,57 @@ module Zoo
       end
     end
 
-    RSpec.describe VisitorExperience do
-      money = Shared::Money
-
-      it 'コンディションから ¥500 ごとに1点の期待ペナルティを引くこと(80, ¥2,000→76)' do
-        expect(described_class.score(condition: 80, fee: money.yen(2_000))).to eq(76)
-      end
-
-      it '体験は 0..100 にクランプされること(低コンディション+高料金でも負にならない)' do
-        expect(described_class.score(condition: 10, fee: money.yen(100_000))).to eq(0)
-      end
-    end
-
-    RSpec.describe ReputationPolicy do
+    RSpec.describe Reputation do
       it '体験経路: 露出満杯・体験100・評判0なら、上げ幅は DRIFT_CAP(3)でクランプされること' do
-        expect(described_class.after_day(Reputation.new(0), experience: 100,
-                                                            exposure: described_class::EXPOSURE_REFERENCE).score).to eq(3)
+        expect(Reputation.new(0).after_day(experience: 100,
+                                           exposure: Reputation::EXPOSURE_REFERENCE).score).to eq(3)
       end
 
       it '非対称: 下げは上げの倍速(体験0・評判50・露出満杯で -6 の 44)であること' do
-        expect(described_class.after_day(Reputation.new(50), experience: 0,
-                                                             exposure: described_class::EXPOSURE_REFERENCE).score).to eq(44)
+        expect(Reputation.new(50).after_day(experience: 0,
+                                            exposure: Reputation::EXPOSURE_REFERENCE).score).to eq(44)
       end
 
       it '露出が小さい(来場5)と、同じ体験でも評判はほとんど動かないこと' do
-        expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 5).score).to eq(50)
+        expect(Reputation.new(50).after_day(experience: 100, exposure: 5).score).to eq(50)
       end
 
       it '露出が小さく1日では1点未満の前進でも、続ければ端数が累積して評判が動くこと' do
-        one = described_class.after_day(Reputation.new(50), experience: 96, exposure: 10)
+        one = Reputation.new(50).after_day(experience: 96, exposure: 10)
         expect(one.score).to eq(50)
 
         many = Reputation.new(50)
-        60.times { many = described_class.after_day(many, experience: 96, exposure: 10) }
+        60.times { many = many.after_day(experience: 96, exposure: 10) }
         expect(many.score).to be > 50
       end
 
       it '中立超えの評判は、露出ゼロでも中立へ DECAY_RATE 分だけ減衰すること' do
-        after = described_class.after_day(Reputation.new(70), experience: 100, exposure: 0)
-        expected = 70 - (described_class::DECAY_RATE * (70 - described_class::DECAY_ANCHOR))
+        after = Reputation.new(70).after_day(experience: 100, exposure: 0)
+        expected = 70 - (Reputation::DECAY_RATE * (70 - Reputation::DECAY_ANCHOR))
         expect(after.value).to be_within(1e-9).of(expected)
       end
 
       it '中立以下の評判は自然減衰しないこと' do
-        after = described_class.after_day(Reputation.new(40), experience: 0, exposure: 0)
+        after = Reputation.new(40).after_day(experience: 0, exposure: 0)
         expect(after.value).to eq(40)
       end
 
       it '来場ゼロでもニュース経路(死亡)は効き、events の reputation_delta の和だけ下げること' do
         deaths = Array.new(2) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) }
-        expect(described_class.after_day(Reputation.new(50), experience: 100, exposure: 0,
-                                                             events: deaths).score).to eq(40)
+        expect(Reputation.new(50).after_day(experience: 100, exposure: 0,
+                                            events: deaths).score).to eq(40)
       end
 
       it '疫病(Outbreak)が出ると PENALTY(8)だけ下げること' do
         events = [ReputationEvent::Outbreak.new]
-        expect(described_class.after_day(Reputation.new(50), experience: 50, exposure: 100,
-                                                             events: events).score).to eq(42)
+        expect(Reputation.new(50).after_day(experience: 50, exposure: 100,
+                                            events: events).score).to eq(42)
       end
 
       it '評判は 0..100 にクランプされること(過大なイベントでも負にならない)' do
         deaths = Array.new(5) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) }
-        expect(described_class.after_day(Reputation.new(0), experience: 0, exposure: 100,
-                                                            events: deaths).score).to eq(0)
+        expect(Reputation.new(0).after_day(experience: 0, exposure: 100,
+                                           events: deaths).score).to eq(0)
       end
     end
   end

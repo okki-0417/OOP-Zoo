@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe 'ニュース性' do
   catalog    = Zoo::Domain::SpeciesCatalog
-  policy     = Zoo::Domain::ReputationPolicy
   reputation = Zoo::Domain::Reputation
   attraction = Zoo::Domain::VisitorAttraction
   event      = Zoo::Domain::ReputationEvent
@@ -15,20 +14,20 @@ RSpec.describe 'ニュース性' do
 
   describe '信頼チャネル(評判を動かすニュース)' do
     it 'カリスマ個体の死はニュースになること(来園ゼロでも評判が下がる)' do
-      after = policy.after_day(reputation.new(80), experience: 100, exposure: 0,
-                                                   events: [event::Death.new(cause: :old_age, charisma: 90)])
+      after = reputation.new(80).after_day(experience: 100, exposure: 0,
+                                           events: [event::Death.new(cause: :old_age, charisma: 90)])
       expect(after.score).to be < 80
     end
 
     it '疫病の発生はニュースになること(来園ゼロでも評判が下がる)' do
-      after = policy.after_day(reputation.new(80), experience: 100, exposure: 0,
-                                                   events: [event::Outbreak.new])
+      after = reputation.new(80).after_day(experience: 100, exposure: 0,
+                                           events: [event::Outbreak.new])
       expect(after.score).to be < 80
     end
 
     it '絶滅危惧種の繁殖成功はニュースになること(保全実績で評判が上がる)' do
       breeding = event::ConservationBreeding.for(catalog.red_panda)
-      after = policy.after_day(reputation.new(50), experience: 50, exposure: 0, events: [breeding])
+      after = reputation.new(50).after_day(experience: 50, exposure: 0, events: [breeding])
       expect(after.score).to be > 50
     end
   end
@@ -48,9 +47,9 @@ RSpec.describe 'ニュース性' do
     end
 
     it '日々の世話・清掃など通常運営はニュースにならないこと(信頼チャネルに何も足さない)' do
-      routine = policy.after_day(reputation.new(50), experience: 100, exposure: 0, events: [])
-      with_news = policy.after_day(reputation.new(50), experience: 100, exposure: 0,
-                                                       events: [event::Death.new(cause: :unknown, charisma: 50)])
+      routine   = reputation.new(50).after_day(experience: 100, exposure: 0, events: [])
+      with_news = reputation.new(50).after_day(experience: 100, exposure: 0,
+                                               events: [event::Death.new(cause: :unknown, charisma: 50)])
       expect(routine.score).to be > with_news.score
     end
   end
