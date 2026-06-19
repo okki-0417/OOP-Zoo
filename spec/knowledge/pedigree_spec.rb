@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe '血統と近親交配' do
   sex     = Zoo::Domain::Animal::Sex
   catalog = Zoo::Domain::SpeciesCatalog
+  breeding = Zoo::Domain::Breeding
 
   def founder(name, sex)
     Zoo::Domain::Animal.new(
@@ -20,23 +21,18 @@ RSpec.describe '血統と近親交配' do
     )
   end
 
-  def lookup_for(*animals)
-    table = animals.to_h { |a| [a.id.to_s, a] }
-    ->(id) { table[id.to_s] }
-  end
-
   describe '近縁度(coancestry)' do
     it '血縁のない創始個体同士は0であること' do
       a = founder('A', sex.male)
       b = founder('B', sex.female)
-      expect(a.pedigree.kinship_with(b.pedigree, lookup_for(a, b))).to eq(0.0)
+      expect(breeding.kinship(a, b, [a, b])).to eq(0.0)
     end
 
     it '親と子は1/4であること' do
       father = founder('父', sex.male)
       mother = founder('母', sex.female)
       child = offspring('子', sex.male, sire: father, dam: mother)
-      expect(father.pedigree.kinship_with(child.pedigree, lookup_for(father, mother, child))).to eq(0.25)
+      expect(breeding.kinship(father, child, [father, mother, child])).to eq(0.25)
     end
 
     it '全きょうだい(両親が同じ)は1/4であること' do
@@ -44,7 +40,7 @@ RSpec.describe '血統と近親交配' do
       mother = founder('母', sex.female)
       a = offspring('兄', sex.male, sire: father, dam: mother)
       b = offspring('妹', sex.female, sire: father, dam: mother)
-      expect(a.pedigree.kinship_with(b.pedigree, lookup_for(father, mother, a, b))).to eq(0.25)
+      expect(breeding.kinship(a, b, [father, mother, a, b])).to eq(0.25)
     end
 
     it '半きょうだい(片親だけ同じ)は1/8であること' do
@@ -53,7 +49,7 @@ RSpec.describe '血統と近親交配' do
       mother2 = founder('母2', sex.female)
       a = offspring('A', sex.male, sire: father, dam: mother1)
       b = offspring('B', sex.female, sire: father, dam: mother2)
-      expect(a.pedigree.kinship_with(b.pedigree, lookup_for(father, mother1, mother2, a, b))).to eq(0.125)
+      expect(breeding.kinship(a, b, [father, mother1, mother2, a, b])).to eq(0.125)
     end
   end
 
@@ -61,8 +57,7 @@ RSpec.describe '血統と近親交配' do
     it '血縁のない親から生まれた子は0であること' do
       father = founder('父', sex.male)
       mother = founder('母', sex.female)
-      child = offspring('子', sex.male, sire: father, dam: mother)
-      expect(child.inbreeding_coefficient(lookup_for(father, mother, child))).to eq(0.0)
+      expect(breeding.kinship(father, mother, [father, mother])).to eq(0.0)
     end
 
     it '全きょうだいの親から生まれた子は1/4であること' do
@@ -70,16 +65,14 @@ RSpec.describe '血統と近親交配' do
       gm      = founder('祖母', sex.female)
       brother = offspring('兄', sex.male, sire: gf, dam: gm)
       sister  = offspring('姉', sex.female, sire: gf, dam: gm)
-      child   = offspring('近交子', sex.male, sire: brother, dam: sister, age: 50)
-      lookup  = lookup_for(gf, gm, brother, sister, child)
-      expect(child.inbreeding_coefficient(lookup)).to eq(0.25)
+      expect(breeding.kinship(brother, sister, [gf, gm, brother, sister])).to eq(0.25)
     end
   end
 
   describe '遺伝的多様性' do
     it '血縁のない個体ばかりの集団は平均近縁度が0であること' do
       animals = [founder('A', sex.male), founder('B', sex.female), founder('C', sex.male)]
-      expect(Zoo::Domain::Breeding.mean_kinship(animals, lookup_for(*animals))).to eq(0.0)
+      expect(breeding.mean_kinship(animals, animals)).to eq(0.0)
     end
   end
 

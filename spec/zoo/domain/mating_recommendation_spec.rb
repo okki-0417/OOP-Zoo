@@ -11,14 +11,9 @@ module Zoo
         Animal.new(species: SpeciesCatalog.lion, name: name, sex: sex, max_health: 100, age_in_days: 3000)
       end
 
-      def lookup_for(*animals)
-        table = animals.to_h { |a| [a.id.to_s, a] }
-        ->(id) { table[id.to_s] }
-      end
-
       describe '.candidate_pairs' do
         it '同種・異性・繁殖可能な組をすべて挙げること' do
-          m = founder('M', Animal::Sex.male)
+          m  = founder('M', Animal::Sex.male)
           f1 = founder('F1', Animal::Sex.female)
           f2 = founder('F2', Animal::Sex.female)
 
@@ -34,13 +29,13 @@ module Zoo
 
       describe '.recommend' do
         it '空の集団では nil を返すこと' do
-          expect(described_class.recommend([], lookup_for)).to be_nil
+          expect(described_class.recommend([], [])).to be_nil
         end
 
         it '組める相手が一組だけならそのペアを返すこと' do
           m = founder('M', Animal::Sex.male)
           f = founder('F', Animal::Sex.female)
-          expect(described_class.recommend([m, f], lookup_for(m, f))).to eq([m, f])
+          expect(described_class.recommend([m, f], [m, f])).to eq([m, f])
         end
       end
     end

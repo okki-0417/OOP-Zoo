@@ -20,11 +20,6 @@ RSpec.describe '個体群管理(交配推奨)' do
     )
   end
 
-  def lookup_for(*animals)
-    table = animals.to_h { |a| [a.id.to_s, a] }
-    ->(id) { table[id.to_s] }
-  end
-
   describe '遺伝的多様性を保つ推奨' do
     context '血縁の異なる候補が複数いるとき' do
       it '近縁度が最も低くなるペアを推奨すること' do
@@ -36,9 +31,9 @@ RSpec.describe '個体群管理(交配推奨)' do
         f1      = founder('F1', sex.female, age: 3000)
 
         candidates = [male, f1, f2]
-        lookup = lookup_for(male, granny, mother, outside, f2, f1)
+        parents    = [male, granny, mother, outside, f2, f1]
 
-        expect(recommender.recommend(candidates, lookup)).to eq([male, f1])
+        expect(recommender.recommend(candidates, parents)).to eq([male, f1])
       end
     end
 
@@ -49,9 +44,9 @@ RSpec.describe '個体群管理(交配推奨)' do
         daughter = offspring('娘', sex.female, sire: male, dam: mother, age: 1500)
 
         candidates = [male, daughter]
-        lookup = lookup_for(male, mother, daughter)
+        parents    = [male, mother, daughter]
 
-        expect(recommender.recommend(candidates, lookup)).to be_nil
+        expect(recommender.recommend(candidates, parents)).to be_nil
       end
     end
 
@@ -60,7 +55,7 @@ RSpec.describe '個体群管理(交配推奨)' do
         m1 = founder('M1', sex.male)
         m2 = founder('M2', sex.male)
 
-        expect(recommender.recommend([m1, m2], lookup_for(m1, m2))).to be_nil
+        expect(recommender.recommend([m1, m2], [m1, m2])).to be_nil
       end
     end
   end

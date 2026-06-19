@@ -24,10 +24,8 @@ module Zoo
 
             zoo = @zoo.load
 
-            Domain::Breeding.conceive(
-              sire:, dam:, animal_lookup:,
-              day: zoo.day, keeper:, season: zoo.season
-            )
+            Domain::Breeding.new(sire:, dam:, day: zoo.day, season: zoo.season, parents: @animals.all)
+                            .conceive
 
             @animals.save(dam)
             dam.pull_events
@@ -46,10 +44,6 @@ module Zoo
           raise Errors::KeeperNotFound, "飼育員 #{keeper_id} は存在しません" if keeper.nil?
 
           keeper
-        end
-
-        def animal_lookup
-          ->(id) { @animals.find(id) }
         end
       end
     end

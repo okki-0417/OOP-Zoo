@@ -2,43 +2,86 @@
 
 module Zoo
   module Domain
-    module Breeding
-      module_function
+    class Breeding
+      include Shared::Entity
 
-      def conceive(sire:, dam:, animal_lookup:, day:, keeper: nil, season: Season.spring)
-        error_messages = []
-        error_messages << 'sireはオスでなければなりません' unless sire.male?
-        error_messages << 'damはメスでなければなりません' unless dam.female?
-        error_messages << '同種でなければ繁殖できません' unless sire.same_species?(dam)
-        error_messages << '異性でなければ繁殖できません' unless sire.sex_opposite?(dam)
-        error_messages << '成熟な個体同士でなければ繁殖できません' unless sire.fertile? && dam.fertile?
-        error_messages << '健康な個体同士でなければ繁殖できません' unless sire.healthy? && dam.healthy?
-        error_messages << '近親交配は避ける必要があります' if sire.related_to?(dam)
-        error_messages << "#{dam.species.name_ja}は#{season.label}には繁殖しません" unless dam.breeds_in?(season)
+      attr_reader :id, :sire, :dam, :day, :season
 
-        raise Errors::BreedingNotAllowed, error_messages.join(', ') unless error_messages.empty?
-
-        inbreeding = kinship(dam, sire, animal_lookup)
-        dam.conceive(
-          sire_id: sire.id, inbreeding: inbreeding,
-          keeper_id: keeper&.id, occurred_on: day, season: season
-        )
-        dam
+      def initialize(sire:, dam:, day: 0, season: Season.spring, parents: [], id: Shared::Identifier.new)
+        @id = id
+        @sire = sire
+        @dam = dam
+        @day = day
+        @season = season
+        @parent_lookup = parents.to_h { |a| [a.id, a] }
       end
 
-      def mean_kinship(animals, lookup)
+      def conceive
+        validate!
+        @dam.conceive(
+          sire_id: @sire.id, inbreeding: inbreeding_coefficient,
+          occurred_on: @day, season: @season
+        )
+        self
+      end
+
+      def related?
+        @dam.parent_ids.include?(@sire.id) ||
+          @sire.parent_ids.include?(@dam.id) ||
+          @sire.parent_ids.intersect?(@dam.parent_ids)
+      end
+
+      def self.mean_kinship(animals, parents)
+        lookup = parents.to_h { |a| [a.id, a] }
         pairs = animals.combination(2).to_a
         return 0.0 if pairs.empty?
 
-        pairs.sum { |a, b| kinship(a, b, lookup) } / pairs.size
+        pairs.sum { |a, b| compute_kinship(a, b, lookup) } / pairs.size
       end
 
-      def kinship(a, b, lookup)
-        a.pedigree.kinship_with(b.pedigree, lookup)
+      def self.kinship(a, b, parents)
+        compute_kinship(a, b, parents.to_h { |a| [a.id, a] })
+      end
+
+      private
+
+      def validate!
+        errors = []
+        errors << 'sireはオスでなければなりません' unless @sire.male?
+        errors << 'damはメスでなければなりません' unless @dam.female?
+        errors << '同種でなければ繁殖できません' unless @sire.same_species?(@dam)
+        errors << '異性でなければ繁殖できません' unless @sire.sex_opposite?(@dam)
+        errors << '成熟な個体同士でなければ繁殖できません' unless @sire.fertile? && @dam.fertile?
+        errors << '健康な個体同士でなければ繁殖できません' unless @sire.healthy? && @dam.healthy?
+        errors << '近親交配は避ける必要があります' if related?
+        errors << "#{@dam.species.name_ja}は#{@season.label}には繁殖しません" unless @dam.breeds_in?(@season)
+        raise Errors::BreedingNotAllowed, errors.join(', ') unless errors.empty?
+      end
+
+      def inbreeding_coefficient
+        self.class.send(:compute_kinship, @sire, @dam, @parent_lookup)
       end
 
       class << self
-        private :kinship
+        private
+
+        def compute_kinship(a, b, lookup)
+          return 0.0 if a.nil? || b.nil?
+          return 0.5 * (1.0 + compute_inbreeding(a, lookup)) if a.id == b.id
+          return compute_kinship(b, a, lookup) if a.age_in_days > b.age_in_days
+
+          parents = a.parent_ids.map { |id| lookup[id] }.compact
+          return 0.0 if parents.empty?
+
+          0.5 * parents.sum { |parent| compute_kinship(parent, b, lookup) }
+        end
+
+        def compute_inbreeding(animal, lookup)
+          parents = animal.parent_ids.map { |id| lookup[id] }.compact
+          return 0.0 if parents.size < 2
+
+          compute_kinship(parents[0], parents[1], lookup)
+        end
       end
     end
   end

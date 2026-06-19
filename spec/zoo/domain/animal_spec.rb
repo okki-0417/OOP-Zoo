@@ -66,14 +66,6 @@ module Zoo
         end
       end
 
-      describe '#parent_of? / #sibling_of?' do
-        it '動物でない引数には false を返すこと' do
-          animal = build
-          expect(animal.parent_of?('x')).to be(false)
-          expect(animal.sibling_of?(42)).to be(false)
-        end
-      end
-
       describe '#pull_events' do
         it '取得するとイベントバッファが空になること' do
           animal = build
@@ -142,17 +134,6 @@ module Zoo
         end
       end
 
-      describe '#inbreeding_coefficient' do
-        def lookup_for(*animals)
-          table = animals.to_h { |a| [a.id.to_s, a] }
-          ->(id) { table[id.to_s] }
-        end
-
-        it '親を辿れない個体(創始)の近交係数は0であること' do
-          a = build(name: 'A', sex: Animal::Sex.male, age_in_days: 4000)
-          expect(a.inbreeding_coefficient(lookup_for(a))).to eq(0.0)
-        end
-      end
     end
   end
 end

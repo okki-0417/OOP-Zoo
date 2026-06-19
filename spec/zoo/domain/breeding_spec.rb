@@ -8,48 +8,38 @@ module Zoo
       let(:lion) { SpeciesCatalog.lion }
       let(:sire) { build_adult(lion, name: 'レオ', sex: Animal::Sex.male) }
       let(:dam)  { build_adult(lion, name: 'ナラ', sex: Animal::Sex.female) }
-      let(:animal_lookup) { ->(_id) {} }
-
-      def lookup_for(*animals)
-        table = animals.to_h { |a| [a.id.to_s, a] }
-        ->(id) { table[id.to_s] }
-      end
 
       describe '.mean_kinship' do
         it '個体が1頭以下なら0であること' do
           a = build_adult(lion, name: 'A', sex: Animal::Sex.male)
-          expect(described_class.mean_kinship([a], lookup_for(a))).to eq(0.0)
-          expect(described_class.mean_kinship([], ->(_id) {})).to eq(0.0)
+          expect(described_class.mean_kinship([a], [a])).to eq(0.0)
+          expect(described_class.mean_kinship([], [])).to eq(0.0)
         end
       end
 
-      describe '.conceive' do
-        it '雌雄の成体を受胎させると dam が返り妊娠状態になること' do
-          result = described_class.conceive(sire: sire, dam: dam,
-                                            animal_lookup: animal_lookup, day: 0)
-          expect(result).to eq(dam)
+      describe '#conceive' do
+        it '受胎させると breeding が返り dam が妊娠状態になること' do
+          result = described_class.new(sire:, dam:, day: 0).conceive
+          expect(result).to be_a(described_class)
           expect(dam).to be_expecting
         end
 
         it 'オスとメスを取り違えると BreedingNotAllowed になること' do
           expect do
-            described_class.conceive(sire: dam, dam: sire,
-                                     animal_lookup: animal_lookup, day: 0)
+            described_class.new(sire: dam, dam: sire, day: 0).conceive
           end.to raise_error(Errors::BreedingNotAllowed)
         end
 
         it '異種では BreedingNotAllowed になること' do
           zebra_female = build_adult(SpeciesCatalog.grevys_zebra, sex: Animal::Sex.female)
           expect do
-            described_class.conceive(sire: sire, dam: zebra_female,
-                                     animal_lookup: animal_lookup, day: 0)
+            described_class.new(sire:, dam: zebra_female, day: 0).conceive
           end.to raise_error(Errors::BreedingNotAllowed)
         end
 
         it '周年繁殖種(ライオン)はどの季節でも受胎できること' do
           expect do
-            described_class.conceive(sire: sire, dam: dam,
-                                     season: Season.summer, animal_lookup: animal_lookup, day: 0)
+            described_class.new(sire:, dam:, day: 0, season: Season.summer).conceive
           end.not_to raise_error
         end
 
@@ -58,9 +48,36 @@ module Zoo
           m_sire = build_adult(macaque, name: 'M♂', sex: Animal::Sex.male)
           m_dam  = build_adult(macaque, name: 'M♀', sex: Animal::Sex.female)
           expect do
-            described_class.conceive(sire: m_sire, dam: m_dam,
-                                     season: Season.summer, animal_lookup: animal_lookup, day: 0)
+            described_class.new(sire: m_sire, dam: m_dam, day: 0, season: Season.summer).conceive
           end.to raise_error(Errors::BreedingNotAllowed)
+        end
+      end
+
+      describe '近親回避(Breeding#related?)' do
+        let(:lion) { SpeciesCatalog.lion }
+
+        it '親子は related? が真であること' do
+          sire = build_adult(lion, name: '父', sex: Animal::Sex.male)
+          dam  = build_adult(lion, name: '母', sex: Animal::Sex.female)
+          dam.conceive(sire_id: sire.id)
+          dam.gestate(lion.gestation_period_days)
+          daughter = dam.deliver(name: '娘')
+
+          expect(Breeding.new(sire:, dam: daughter).related?).to be(true)
+        end
+
+        it 'きょうだいは related? が真であること' do
+          sire = build_adult(lion, name: '父', sex: Animal::Sex.male)
+          dam  = build_adult(lion, name: '母', sex: Animal::Sex.female)
+
+          dam.conceive(sire_id: sire.id)
+          dam.gestate(lion.gestation_period_days)
+          brother = dam.deliver(name: '兄')
+          dam.conceive(sire_id: sire.id)
+          dam.gestate(lion.gestation_period_days)
+          sister = dam.deliver(name: '妹')
+
+          expect(Breeding.new(sire: brother, dam: sister).related?).to be(true)
         end
       end
     end
@@ -183,39 +200,6 @@ module Zoo
           expect(events.last).to be_a(Events::AnimalNamed)
           expect(events.last.name).to eq('ナラ')
         end
-      end
-    end
-
-    RSpec.describe '近親回避(Animal#related_to? / can_mate_with?)' do
-      let(:lion) { SpeciesCatalog.lion }
-
-      it '親子は related_to? が真・can_mate_with? が偽であること' do
-        sire = build_adult(lion, name: '父', sex: Animal::Sex.male)
-        dam  = build_adult(lion, name: '母', sex: Animal::Sex.female)
-        dam.conceive(sire_id: sire.id)
-        dam.gestate(lion.gestation_period_days)
-        daughter = dam.deliver(name: '娘')
-
-        daughter.grow_older((lion.maturity_age_years * 365) + 1)
-        daughter.satisfy_hunger(100)
-
-        expect(sire.related_to?(daughter)).to be(true)
-        expect(sire.can_mate_with?(daughter)).to be(false)
-      end
-
-      it 'きょうだいは related_to? が真であること' do
-        sire = build_adult(lion, name: '父', sex: Animal::Sex.male)
-        dam  = build_adult(lion, name: '母', sex: Animal::Sex.female)
-
-        dam.conceive(sire_id: sire.id)
-        dam.gestate(lion.gestation_period_days)
-        brother = dam.deliver(name: '兄')
-        dam.conceive(sire_id: sire.id)
-        dam.gestate(lion.gestation_period_days)
-        sister = dam.deliver(name: '妹')
-
-        expect(brother.sibling_of?(sister)).to be(true)
-        expect(brother.related_to?(sister)).to be(true)
       end
     end
   end

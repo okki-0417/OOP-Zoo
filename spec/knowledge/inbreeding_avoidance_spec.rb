@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe '近親交配の回避' do
-  sex = Zoo::Domain::Animal::Sex
+  sex      = Zoo::Domain::Animal::Sex
   breeding = Zoo::Domain::Breeding
 
   def founder(name, sex)
@@ -22,7 +22,9 @@ RSpec.describe '近親交配の回避' do
 
   context '血縁のない成熟ペアのとき' do
     it '繁殖できること' do
-      expect(founder('父系', sex.male).can_mate_with?(founder('母系', sex.female))).to be(true)
+      sire = founder('父系', sex.male)
+      dam  = founder('母系', sex.female)
+      expect { breeding.new(sire:, dam:).conceive }.not_to raise_error
     end
   end
 
@@ -31,7 +33,7 @@ RSpec.describe '近親交配の回避' do
       father = founder('父', sex.male)
       mother = founder('母', sex.female)
       daughter = offspring('娘', sex.female, sire: father, dam: mother)
-      expect(father.can_mate_with?(daughter)).to be(false)
+      expect(breeding.new(sire: father, dam: daughter).related?).to be(true)
     end
 
     it '近親交配であることが理由として示されること' do
@@ -39,30 +41,29 @@ RSpec.describe '近親交配の回避' do
       mother = founder('母', sex.female)
       daughter = offspring('娘', sex.female, sire: father, dam: mother)
       expect do
-        breeding.conceive(sire: father, dam: daughter,
-                          animal_lookup: ->(_id) {}, day: 0)
+        breeding.new(sire: father, dam: daughter).conceive
       end.to raise_error(Zoo::Domain::Errors::BreedingNotAllowed, /近親/)
     end
   end
 
   context '全きょうだい(両親が同じ)のとき' do
     it '繁殖できないこと' do
-      father = founder('父', sex.male)
-      mother = founder('母', sex.female)
+      father  = founder('父', sex.male)
+      mother  = founder('母', sex.female)
       brother = offspring('兄', sex.male, sire: father, dam: mother)
-      sister = offspring('妹', sex.female, sire: father, dam: mother)
-      expect(brother.can_mate_with?(sister)).to be(false)
+      sister  = offspring('妹', sex.female, sire: father, dam: mother)
+      expect(breeding.new(sire: brother, dam: sister).related?).to be(true)
     end
   end
 
   context '半きょうだい(片親だけ同じ)のとき' do
     it '繁殖できないこと' do
-      father = founder('父', sex.male)
+      father  = founder('父', sex.male)
       mother1 = founder('母1', sex.female)
       mother2 = founder('母2', sex.female)
       a = offspring('A', sex.male, sire: father, dam: mother1)
       b = offspring('B', sex.female, sire: father, dam: mother2)
-      expect(a.can_mate_with?(b)).to be(false)
+      expect(breeding.new(sire: a, dam: b).related?).to be(true)
     end
   end
 end

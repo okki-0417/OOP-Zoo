@@ -422,45 +422,6 @@ RSpec.describe '動物' do
       cub = build_cub('Cub', sire: sire, dam: dam)
       expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
     end
-
-    describe '親子関係' do
-      it '自分の子は親だと分かること' do
-        cub = build_cub('Cub', sire: sire, dam: dam)
-        expect(sire.parent_of?(cub)).to be(true)
-        expect(dam.parent_of?(cub)).to be(true)
-      end
-
-      it '自分の子でなければ親ではないこと' do
-        expect(sire.parent_of?(build_animal(name: 'Stranger'))).to be(false)
-      end
-
-      it '動物でないものは子ではないこと' do
-        expect(sire.parent_of?('not an animal')).to be(false)
-      end
-    end
-
-    describe 'きょうだい関係' do
-      it '父母がともに同じならきょうだいであること' do
-        a = build_cub('A', sire: sire, dam: dam)
-        b = build_cub('B', sire: sire, dam: dam)
-        expect(a.sibling_of?(b)).to be(true)
-      end
-
-      it '片方の親だけ同じでもきょうだいであること' do
-        other_dam = build_animal(name: 'OtherDam', sex: sex.female)
-        a = build_cub('A', sire: sire, dam: dam)
-        b = build_cub('B', sire: sire, dam: other_dam)
-        expect(a.sibling_of?(b)).to be(true)
-      end
-
-      it '父母がどちらも異なればきょうだいではないこと' do
-        other_sire = build_animal(name: 'OtherSire')
-        other_dam = build_animal(name: 'OtherDam', sex: sex.female)
-        a = build_cub('A', sire: sire, dam: dam)
-        b = build_cub('B', sire: other_sire, dam: other_dam)
-        expect(a.sibling_of?(b)).to be(false)
-      end
-    end
   end
 
   describe '名前' do

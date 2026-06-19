@@ -131,13 +131,6 @@ module Zoo
         self
       end
 
-      def parent_of?(other)
-        other.is_a?(Animal) && other.parent_ids.include?(@id)
-      end
-
-      def sibling_of?(other)
-        other.is_a?(Animal) && !!@parent_ids.intersect?(other.parent_ids)
-      end
 
       def fall_ill(illness)
         raise Errors::DeadAnimal, "#{@name}は死亡しています" if dead?
@@ -334,22 +327,6 @@ module Zoo
 
       def sex_opposite?(other)
         other.is_a?(Animal) && @sex.opposite?(other.sex)
-      end
-
-      def related_to?(other)
-        parent_of?(other) || other.parent_of?(self) || sibling_of?(other)
-      end
-
-      def can_mate_with?(other)
-        can_breed_with?(other) && !related_to?(other)
-      end
-
-      def pedigree
-        Pedigree.new(@id, @parent_ids, @age_in_days.value)
-      end
-
-      def inbreeding_coefficient(lookup)
-        pedigree.inbreeding_coefficient(lookup)
       end
 
       def conceive(sire_id:, inbreeding: 0.0, keeper_id: nil, occurred_on: 0, season: Season.spring)
