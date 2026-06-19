@@ -9,6 +9,12 @@ module Zoo
       WILLINGNESS_PER_SPECTACLE_YEN = 15
       SPECTACLE_SATURATION = 3_000
 
+      def admit(zoo:, on_exhibit:)
+        visitors = expected_visitors(on_exhibit, zoo.reputation, zoo.admission_fee, buzz: zoo.buzz)
+        income   = zoo.admit_visitors(visitors)
+        [visitors, income]
+      end
+
       def expected_visitors(animals, reputation, admission_fee, buzz: 0)
         return 0 if animals.empty?
 

@@ -8,14 +8,7 @@ module Zoo
       def run(zoo:, enclosures:, animals:, dead:, staff_count:, random:)
         on_exhibit = enclosures.flat_map(&:occupants)
 
-        visitors = VisitorAttraction.expected_visitors(
-          on_exhibit,
-          zoo.reputation,
-          zoo.admission_fee,
-          buzz: zoo.buzz
-        )
-
-        income = zoo.admit_visitors(visitors)
+        visitors, income = VisitorAttraction.admit(zoo:, on_exhibit:)
 
         cost = OperatingCost.charge(zoo:, enclosures:, staff_count:, animals:)
 

@@ -85,6 +85,18 @@ module Zoo
       it '支払意思(Pmax)以上の料金では来園が0になること(choke price)' do
         expect(described_class.expected_visitors([zebra], Reputation.new(100), Shared::Money.yen(100_000))).to eq(0)
       end
+
+      it 'admit は来園者数と収入を zoo に反映して [visitors, income] を返すこと' do
+        zoo = Zoo.new(name: 'テスト', admission_fee: Shared::Money.yen(2_000), funds: Shared::Money.yen(0))
+        enclosure = Enclosure.new(name: 'A', temperature: Shared::Temperature.celsius(20), capacity: 4)
+        enclosure.admit(zebra)
+
+        visitors, income = described_class.admit(zoo:, on_exhibit: [zebra])
+
+        expect(visitors).to eq(described_class.expected_visitors([zebra], Reputation.default, fee))
+        expect(income).to eq(Shared::Money.yen(visitors * 2_000))
+        expect(zoo.balance).to eq(Shared::Balance.new(visitors * 2_000))
+      end
     end
 
     RSpec.describe SpontaneousInfection do
