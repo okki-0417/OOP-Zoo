@@ -7,6 +7,12 @@ module Zoo
 
       CHANCE_PERCENT = 20
 
+      def apply(animals, random)
+        target = strike(animals, random)
+        target&.fall_ill(IllnessCatalog.parasite)
+        target
+      end
+
       def strike(animals, random)
         healthy = animals.select { |animal| animal.alive? && !animal.sick? }
         return nil if healthy.empty?

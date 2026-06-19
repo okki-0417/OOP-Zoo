@@ -83,25 +83,28 @@ module Zoo
         )
       end
 
-      it '発生する乱数(rand<20)では健康な個体を1頭返すこと' do
+      it '発生する乱数(rand<20)では対象個体を発病させて返すこと' do
         random = instance_double(Random)
         allow(random).to receive(:rand).and_return(0)
         target = animal
 
-        expect(described_class.strike([target], random)).to eq(target)
+        result = described_class.apply([target], random)
+
+        expect(result).to eq(target)
+        expect(target).to be_sick
       end
 
       it '発生しない乱数(rand>=20)では nil を返すこと' do
         random = instance_double(Random, rand: 50)
 
-        expect(described_class.strike([animal], random)).to be_nil
+        expect(described_class.apply([animal], random)).to be_nil
       end
 
       it '健康な個体がいなければ nil を返すこと' do
         sick = animal.fall_ill(IllnessCatalog.parasite)
         random = instance_double(Random, rand: 0)
 
-        expect(described_class.strike([sick], random)).to be_nil
+        expect(described_class.apply([sick], random)).to be_nil
       end
     end
 
