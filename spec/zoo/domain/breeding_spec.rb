@@ -10,6 +10,19 @@ module Zoo
       let(:dam)  { build_adult(lion, name: 'ナラ', sex: Animal::Sex.female) }
       let(:animal_lookup) { ->(_id) {} }
 
+      def lookup_for(*animals)
+        table = animals.to_h { |a| [a.id.to_s, a] }
+        ->(id) { table[id.to_s] }
+      end
+
+      describe '.mean_kinship' do
+        it '個体が1頭以下なら0であること' do
+          a = build_adult(lion, name: 'A', sex: Animal::Sex.male)
+          expect(described_class.mean_kinship([a], lookup_for(a))).to eq(0.0)
+          expect(described_class.mean_kinship([], ->(_id) {})).to eq(0.0)
+        end
+      end
+
       describe '.conceive' do
         it '雌雄の成体を受胎させると dam が返り妊娠状態になること' do
           result = described_class.conceive(sire: sire, dam: dam,

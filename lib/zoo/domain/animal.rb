@@ -348,19 +348,8 @@ module Zoo
         Pedigree.new(@id, @parent_ids, @age_in_days.value)
       end
 
-      def kinship_with(other, lookup)
-        pedigree.kinship_with(other.pedigree, lookup)
-      end
-
       def inbreeding_coefficient(lookup)
         pedigree.inbreeding_coefficient(lookup)
-      end
-
-      def self.mean_kinship(animals, lookup)
-        pairs = animals.combination(2).to_a
-        return 0.0 if pairs.empty?
-
-        pairs.sum { |a, b| a.kinship_with(b, lookup) } / pairs.size
       end
 
       def conceive(sire_id:, inbreeding: 0.0, keeper_id: nil, occurred_on: 0, season: Season.spring)

@@ -142,47 +142,15 @@ module Zoo
         end
       end
 
-      describe '#kinship_with / #inbreeding_coefficient' do
+      describe '#inbreeding_coefficient' do
         def lookup_for(*animals)
           table = animals.to_h { |a| [a.id.to_s, a] }
           ->(id) { table[id.to_s] }
-        end
-
-        it '血縁のない個体同士の子の近交係数は 0.0 であること' do
-          a = build(name: '父', sex: Animal::Sex.male, age_in_days: 4000)
-          b = build(name: '母', sex: Animal::Sex.female, age_in_days: 4000)
-          expect(b.kinship_with(a, lookup_for(a, b))).to eq(0.0)
-        end
-
-        it 'lookup が辿れない祖先は無縁(0)として扱うこと' do
-          father  = build(name: '父', sex: Animal::Sex.male, age_in_days: 4000)
-          mother  = build(name: '母', sex: Animal::Sex.female, age_in_days: 4000)
-          child   = build(name: '子', sex: Animal::Sex.male, age_in_days: 100, sire: father, dam: mother)
-          stranger = build(name: '他人', sex: Animal::Sex.female, age_in_days: 100)
-          expect(child.kinship_with(stranger, lookup_for(child, stranger))).to eq(0.0)
-        end
-
-        it '同一個体(創始)の自分自身との近縁度は1/2であること' do
-          a = build(name: 'A', sex: Animal::Sex.male, age_in_days: 4000)
-          expect(a.kinship_with(a, lookup_for(a))).to eq(0.5)
         end
 
         it '親を辿れない個体(創始)の近交係数は0であること' do
           a = build(name: 'A', sex: Animal::Sex.male, age_in_days: 4000)
           expect(a.inbreeding_coefficient(lookup_for(a))).to eq(0.0)
-        end
-      end
-
-      describe '.mean_kinship' do
-        def lookup_for(*animals)
-          table = animals.to_h { |a| [a.id.to_s, a] }
-          ->(id) { table[id.to_s] }
-        end
-
-        it '個体が1頭以下なら0であること' do
-          a = build(name: 'A', sex: Animal::Sex.male, age_in_days: 4000)
-          expect(described_class.mean_kinship([a], lookup_for(a))).to eq(0.0)
-          expect(described_class.mean_kinship([], ->(_id) {})).to eq(0.0)
         end
       end
     end

@@ -18,12 +18,27 @@ module Zoo
 
         raise Errors::BreedingNotAllowed, error_messages.join(', ') unless error_messages.empty?
 
-        inbreeding = dam.kinship_with(sire, animal_lookup)
+        inbreeding = kinship(dam, sire, animal_lookup)
         dam.conceive(
           sire_id: sire.id, inbreeding: inbreeding,
           keeper_id: keeper&.id, occurred_on: day, season: season
         )
         dam
+      end
+
+      def mean_kinship(animals, lookup)
+        pairs = animals.combination(2).to_a
+        return 0.0 if pairs.empty?
+
+        pairs.sum { |a, b| kinship(a, b, lookup) } / pairs.size
+      end
+
+      def kinship(a, b, lookup)
+        a.pedigree.kinship_with(b.pedigree, lookup)
+      end
+
+      class << self
+        private :kinship
       end
     end
   end

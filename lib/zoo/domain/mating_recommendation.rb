@@ -7,7 +7,7 @@ module Zoo
 
       def recommend(animals, lookup)
         candidate_pairs(animals)
-          .min_by { |sire, dam| dam.kinship_with(sire, lookup) }
+          .min_by { |sire, dam| dam.pedigree.kinship_with(sire.pedigree, lookup) }
       end
 
       def candidate_pairs(animals)
