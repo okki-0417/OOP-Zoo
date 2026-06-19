@@ -25,7 +25,7 @@ module Zoo
 
         zoo.spend(cost)
 
-        afflicted = OutbreakPolicy.apply(on_exhibit, random)
+        afflicted = SpontaneousInfection.apply(on_exhibit, random)
 
         ReputationEvaluation.evaluate(zoo:, on_exhibit:, visitors:, dead:, afflicted:)
 

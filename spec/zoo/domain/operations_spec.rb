@@ -76,7 +76,7 @@ module Zoo
       end
     end
 
-    RSpec.describe OutbreakPolicy do
+    RSpec.describe SpontaneousInfection do
       def animal(name = 'シマオ')
         Animal.new(
           species: SpeciesCatalog.grevys_zebra, name: name, sex: Animal::Sex.male, max_health: 100

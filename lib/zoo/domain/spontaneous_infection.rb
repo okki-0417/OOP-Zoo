@@ -2,14 +2,16 @@
 
 module Zoo
   module Domain
-    module OutbreakPolicy
+    module SpontaneousInfection
       module_function
 
       CHANCE_PERCENT = 20
 
       def apply(animals, random)
         target = strike(animals, random)
-        target&.fall_ill(IllnessCatalog.parasite)
+        return nil unless target
+
+        target.fall_ill(IllnessCatalog.parasite)
         target
       end
 
