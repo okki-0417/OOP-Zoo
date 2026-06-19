@@ -6,6 +6,8 @@ group :development, :test do
   gem 'rack-test'
   gem 'rspec', '~> 3.13'
   gem 'simplecov', require: false
+  gem 'rubocop', require: false
+  gem 'rubocop-rspec', require: false
 end
 
 gem 'puma'
