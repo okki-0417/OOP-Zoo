@@ -18,21 +18,26 @@ module Zoo
 
         def call
           @unit_of_work.run do
-            zoo = @zoo.load
+            zoo  = @zoo.load
             dead = @open_for_a_day.call(season: zoo.season)
 
-            outcome = Domain::DailyOperation.run(
-              zoo: zoo, enclosures: @enclosures.all, animals: @animals.all,
-              dead: dead, staff_count: staff_count, random: @random
-            )
+            enclosures = @enclosures.all
+            animals    = @animals.all
+            on_exhibit = enclosures.flat_map(&:occupants)
 
-            @animals.save(outcome.afflicted) if outcome.afflicted
+            visitors, income = Domain::VisitorAttraction.receive(zoo:, on_exhibit:)
+            cost             = Domain::OperatingCost.charge(zoo:, enclosures:, staff_count: staff_count, animals:)
+            afflicted        = Domain::SpontaneousInfection.apply(on_exhibit, @random)
+            Domain::ReputationEvaluation.evaluate(zoo:, on_exhibit:, visitors:, dead:, afflicted:)
+            zoo.advance_day
+
+            @animals.save(afflicted) if afflicted
             @zoo.save(zoo)
 
             ReadModels::DayReport.new(
-              visitors: outcome.visitors, income: outcome.income, cost: outcome.cost, deaths: outcome.deaths,
+              visitors:, income:, cost:, deaths: dead.size,
               balance: zoo.balance, reputation: zoo.reputation.score, bankrupt: zoo.bankrupt?,
-              outbreak: outcome.outbreak_name
+              outbreak: afflicted&.name
             )
           end
         end
