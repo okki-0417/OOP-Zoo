@@ -4,9 +4,8 @@ module Zoo
   module Application
     module Services
       class ConceiveAnimals
-        def initialize(animals:, keepers:, zoo:, event_dispatcher:, unit_of_work:)
+        def initialize(animals:, zoo:, event_dispatcher:, unit_of_work:)
           @animals = animals
-          @keepers = keepers
           @zoo = zoo
           @event_dispatcher = event_dispatcher
           @unit_of_work = unit_of_work
@@ -20,8 +19,6 @@ module Zoo
             dam = @animals.find(command.dam_id)
             raise Errors::AnimalNotFound, "動物 #{command.dam_id} は存在しません" if dam.nil?
 
-            keeper = find_keeper(command.keeper_id)
-
             zoo = @zoo.load
 
             Domain::Breeding.new(sire:, dam:, day: zoo.day, season: zoo.season, parents: @animals.all)
@@ -33,17 +30,6 @@ module Zoo
 
           @event_dispatcher.notify(events)
           nil
-        end
-
-        private
-
-        def find_keeper(keeper_id)
-          return nil if keeper_id.nil?
-
-          keeper = @keepers.find(keeper_id)
-          raise Errors::KeeperNotFound, "飼育員 #{keeper_id} は存在しません" if keeper.nil?
-
-          keeper
         end
       end
     end

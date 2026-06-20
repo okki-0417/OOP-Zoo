@@ -329,17 +329,12 @@ module Zoo
         other.is_a?(Animal) && @sex.opposite?(other.sex)
       end
 
-      def conceive(sire_id:, inbreeding: 0.0, keeper_id: nil, occurred_on: 0, season: Season.spring)
+      def conceive(sire_id:, inbreeding: 0.0)
         raise Errors::BreedingNotAllowed, 'メスのみ妊娠できます' unless @sex.female?
         raise Errors::BreedingNotAllowed, '既に妊娠/抱卵中です' if expecting?
 
         @pregnancy = Pregnancy.conceived(sire_id, inbreeding: inbreeding)
         @miscarried = false
-        record_event(Events::AnimalConceived.new(
-                       dam: self, sire_id: sire_id, sex: @pregnancy.sex,
-                       inbreeding_coefficient: @pregnancy.inbreeding_coefficient,
-                       keeper_id: keeper_id, occurred_on: occurred_on, season: season
-                     ))
         self
       end
 

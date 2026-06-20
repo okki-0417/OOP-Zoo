@@ -123,7 +123,7 @@ module Zoo
           dam.gestate(lion.gestation_period_days)
           dam.deliver(name: 'シンバ')
           events = dam.pull_events
-          expect(events.size).to eq(2)
+          expect(events.size).to eq(1)
           expect(events.last).to be_a(Events::Birth)
         end
 

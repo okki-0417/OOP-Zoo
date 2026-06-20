@@ -91,16 +91,6 @@ module Zoo
               season       TEXT    NOT NULL,
               keeper_id    TEXT
             );
-            CREATE TABLE IF NOT EXISTS conceptions (
-              id                     INTEGER PRIMARY KEY AUTOINCREMENT,
-              dam_id                 TEXT    NOT NULL,
-              sire_id                TEXT    NOT NULL,
-              sex                    TEXT    NOT NULL,
-              inbreeding_coefficient REAL    NOT NULL DEFAULT 0.0,
-              keeper_id              TEXT,
-              occurred_on            INTEGER NOT NULL,
-              season                 TEXT    NOT NULL
-            );
             CREATE TABLE IF NOT EXISTS namings (
               id          INTEGER PRIMARY KEY AUTOINCREMENT,
               animal_id   TEXT    NOT NULL,

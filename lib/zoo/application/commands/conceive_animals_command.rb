@@ -3,8 +3,8 @@
 module Zoo
   module Application
     module Commands
-      ConceiveAnimalsCommand = Data.define(:sire_id, :dam_id, :keeper_id) do
-        def initialize(sire_id:, dam_id:, keeper_id: nil)
+      ConceiveAnimalsCommand = Data.define(:sire_id, :dam_id) do
+        def initialize(sire_id:, dam_id:)
           raise ArgumentError, 'sire_id は必須です' if sire_id.nil?
           raise ArgumentError, 'dam_id は必須です' if dam_id.nil?
 

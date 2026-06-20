@@ -18,10 +18,7 @@ module Zoo
 
       def conceive
         validate!
-        @dam.conceive(
-          sire_id: @sire.id, inbreeding: inbreeding_coefficient,
-          occurred_on: @day, season: @season
-        )
+        @dam.conceive(sire_id: @sire.id, inbreeding: inbreeding_coefficient)
         self
       end
 
