@@ -9,7 +9,7 @@ RSpec.describe '産仔数' do
     sire, dam = build_pair(species)
     dam.conceive(inbreeding: inbreeding)
     dam.gestate(species.gestation_period_days)
-    dam.deliver_litter(sire_id: sire.id, name: '仔')
+    Zoo::Domain::Birth.new(sire: sire, dam: dam, name: '仔').deliver_litter.offspring
   end
 
   describe '種ごとの産仔数' do
@@ -54,7 +54,7 @@ RSpec.describe '産仔数' do
       sire, dam = build_pair(catalog.lion)
       dam.conceive
       dam.gestate(catalog.lion.gestation_period_days)
-      litter = dam.deliver_litter(sire_id: sire.id, name: '仔')
+      litter = Zoo::Domain::Birth.new(sire: sire, dam: dam, name: '仔').deliver_litter.offspring
 
       litter.each { |cub| expect(cub.parent_ids).to contain_exactly(sire.id, dam.id) }
     end
@@ -63,7 +63,7 @@ RSpec.describe '産仔数' do
       litter = delivered_litter(catalog.lion, inbreeding: 0.25)
       maxes = litter.map(&:max_health).uniq
       expect(maxes.size).to eq(1)
-      expect(maxes.first).to be < Zoo::Domain::Animal::NEWBORN_HEALTH
+      expect(maxes.first).to be < Zoo::Domain::Birth::NEWBORN_HEALTH
     end
   end
 

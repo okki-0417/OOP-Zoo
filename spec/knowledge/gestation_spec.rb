@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe '妊娠と出産' do
   catalog  = Zoo::Domain::SpeciesCatalog
   breeding = Zoo::Domain::Breeding
+  birth    = Zoo::Domain::Birth
   sex      = Zoo::Domain::Animal::Sex
   errors   = Zoo::Domain::Errors
 
@@ -54,7 +55,7 @@ RSpec.describe '妊娠と出産' do
     it '生まれた子は0日齢の幼体で、両親が血統に記録されること' do
       sire, dam = mated_dam(catalog.lion)
       dam.gestate(catalog.lion.gestation_period_days)
-      cub = dam.deliver(sire_id: sire.id, name: '仔')
+      cub = birth.new(sire: sire, dam: dam, name: '仔').deliver.offspring
 
       expect(cub.age_in_days).to eq(0)
       expect(cub.life_stage).to be_baby
@@ -64,7 +65,7 @@ RSpec.describe '妊娠と出産' do
     it '出産すると妊娠が解け、再び交尾できること' do
       sire, dam = mated_dam(catalog.lion)
       dam.gestate(catalog.lion.gestation_period_days)
-      dam.deliver(sire_id: sire.id, name: '仔')
+      birth.new(sire: sire, dam: dam, name: '仔').deliver
 
       expect(dam).not_to be_expecting
       expect { dam.conceive }.not_to raise_error
@@ -80,7 +81,7 @@ RSpec.describe '妊娠と出産' do
 
         expect(dam).to be_miscarried
         expect(dam).not_to be_expecting
-        expect { dam.deliver(sire_id: sire.id, name: '仔') }.to raise_error(errors::BreedingNotAllowed)
+        expect { birth.new(sire: sire, dam: dam, name: '仔').deliver }.to raise_error(errors::BreedingNotAllowed)
       end
     end
 

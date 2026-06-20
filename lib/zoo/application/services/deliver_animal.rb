@@ -31,8 +31,9 @@ module Zoo
 
             zoo = @zoo.load
 
-            child = dam.deliver(sire_id: breeding.sire.id, occurred_on: zoo.day, season: zoo.season,
-                                keeper_id: keeper&.id)
+            child = Domain::Birth.new(
+              sire: breeding.sire, dam: dam, day: zoo.day, season: zoo.season, keeper_id: keeper&.id
+            ).deliver.offspring
 
             @animals.save(dam)
             @animals.save(child)

@@ -61,7 +61,7 @@ module Zoo
           dam  = build_adult(lion, name: '母', sex: Animal::Sex.female)
           dam.conceive
           dam.gestate(lion.gestation_period_days)
-          daughter = dam.deliver(sire_id: sire.id, name: '娘')
+          daughter = Birth.new(sire: sire, dam: dam, name: '娘').deliver.offspring
 
           expect(Breeding.new(sire:, dam: daughter).related?).to be(true)
         end
@@ -72,10 +72,10 @@ module Zoo
 
           dam.conceive
           dam.gestate(lion.gestation_period_days)
-          brother = dam.deliver(sire_id: sire.id, name: '兄')
+          brother = Birth.new(sire: sire, dam: dam, name: '兄').deliver.offspring
           dam.conceive
           dam.gestate(lion.gestation_period_days)
-          sister = dam.deliver(sire_id: sire.id, name: '妹')
+          sister = Birth.new(sire: sire, dam: dam, name: '妹').deliver.offspring
 
           expect(Breeding.new(sire: brother, dam: sister).related?).to be(true)
         end
@@ -106,7 +106,7 @@ module Zoo
           dam.gestate(lion.gestation_period_days)
           expect(dam).to be_ready_to_deliver
 
-          cub = dam.deliver(sire_id: sire.id, name: 'シンバ')
+          cub = Birth.new(sire: sire, dam: dam, name: 'シンバ').deliver.offspring
           expect(cub.species).to eq(lion)
           expect(cub.age_in_days).to eq(0)
           expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
@@ -115,13 +115,13 @@ module Zoo
 
         it '期間を満たす前は出産できないこと' do
           dam.gestate(10)
-          expect { dam.deliver(sire_id: sire.id, name: '早産') }
+          expect { Birth.new(sire: sire, dam: dam, name: '早産').deliver }
             .to raise_error(Errors::BreedingNotAllowed)
         end
 
         it '出産で Birth イベントが記録されること' do
           dam.gestate(lion.gestation_period_days)
-          dam.deliver(sire_id: sire.id, name: 'シンバ')
+          Birth.new(sire: sire, dam: dam, name: 'シンバ').deliver
           events = dam.pull_events
           expect(events.size).to eq(1)
           expect(events.last).to be_a(Events::Birth)
@@ -129,7 +129,7 @@ module Zoo
 
         it 'name を省略すると種名ベースの仮名が付くこと' do
           dam.gestate(lion.gestation_period_days)
-          cub = dam.deliver(sire_id: sire.id)
+          cub = Birth.new(sire: sire, dam: dam).deliver.offspring
           expect(cub.name).to eq("#{lion.name_ja}の赤ちゃん")
         end
       end
@@ -138,14 +138,14 @@ module Zoo
         it 'inbreeding=0.25 で受胎すると最大体力が約75%(50→38)に下がること' do
           dam.conceive(inbreeding: 0.25)
           dam.gestate(lion.gestation_period_days)
-          cub = dam.deliver(sire_id: sire.id, name: '近交子')
+          cub = Birth.new(sire: sire, dam: dam, name: '近交子').deliver.offspring
           expect(cub.max_health).to eq(38)
         end
 
         it 'inbreeding=1.0 でも最大体力は最低1に保たれること' do
           dam.conceive(inbreeding: 1.0)
           dam.gestate(lion.gestation_period_days)
-          cub = dam.deliver(sire_id: sire.id, name: '極端')
+          cub = Birth.new(sire: sire, dam: dam, name: '極端').deliver.offspring
           expect(cub.max_health).to eq(1)
         end
       end

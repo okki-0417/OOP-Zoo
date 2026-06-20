@@ -84,11 +84,11 @@ RSpec.describe '血統と近親交配' do
 
       dam.conceive
       dam.gestate(gestation)
-      healthy = dam.deliver(sire_id: sire.id, name: '健全な子')
+      healthy = Zoo::Domain::Birth.new(sire: sire, dam: dam, name: '健全な子').deliver.offspring
 
       dam.conceive(inbreeding: 0.25)
       dam.gestate(gestation)
-      inbred = dam.deliver(sire_id: sire.id, name: '近交の子')
+      inbred = Zoo::Domain::Birth.new(sire: sire, dam: dam, name: '近交の子').deliver.offspring
 
       expect(inbred.max_health).to be < healthy.max_health
     end

@@ -101,7 +101,7 @@ RSpec.describe '現実の動物園の再現' do
     sire, dam = lions
     dam.conceive
     dam.gestate(catalog.lion.gestation_period_days)
-    cub = dam.deliver(sire_id: sire.id, name: 'シンバ')
+    cub = Zoo::Domain::Birth.new(sire: sire, dam: dam, name: 'シンバ').deliver.offspring
 
     zoo.house(cub, lion_hill)
     expect(lion_hill.population).to eq(3)

@@ -18,8 +18,6 @@ module Zoo
 
       ILLNESS_VULNERABILITY_INCREMENT = 0.5
 
-      NEWBORN_HEALTH = 50
-
       attr_reader :id, :species, :parent_ids, :illness
 
       def name
@@ -130,7 +128,6 @@ module Zoo
         record_event(Events::AnimalDied.new(animal: self, cause: cause))
         self
       end
-
 
       def fall_ill(illness)
         raise Errors::DeadAnimal, "#{@name}は死亡しています" if dead?
@@ -365,38 +362,19 @@ module Zoo
         @miscarried
       end
 
-      def deliver(sire_id:, name: nil, max_health: NEWBORN_HEALTH, occurred_on: 0, season: Season.spring,
-                  keeper_id: nil)
-        raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
-
-        actual_name = name || "#{@species.name_ja}の赤ちゃん"
-        offspring = Animal.new(
-          species: @species, name: actual_name, sex: @pregnancy.sex,
-          max_health: newborn_vitality(max_health, @pregnancy.inbreeding_coefficient),
-          age_in_days: 0, sire_id: sire_id, dam_id: @id
-        )
-        @pregnancy = nil
-
-        record_birth(offspring, sire_id, occurred_on, season, keeper_id)
-        offspring
+      def expected_offspring_sex
+        @pregnancy&.sex
       end
 
-      def deliver_litter(sire_id:, name:, max_health: NEWBORN_HEALTH, occurred_on: 0, season: Season.spring,
-                         keeper_id: nil)
+      def expected_offspring_inbreeding
+        @pregnancy&.inbreeding_coefficient
+      end
+
+      def deliver
         raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
 
-        vitality = newborn_vitality(max_health, @pregnancy.inbreeding_coefficient)
-        litter = Array.new(@species.litter_size) do |i|
-          Animal.new(
-            species: @species, name: "#{name}#{i + 1}",
-            sex: Sex.random,
-            max_health: vitality, age_in_days: 0, sire_id: sire_id, dam_id: @id
-          )
-        end
         @pregnancy = nil
-
-        litter.each { |o| record_birth(o, sire_id, occurred_on, season, keeper_id) }
-        litter
+        self
       end
 
       def name_animal(name:, keeper_id: nil, occurred_on: 0)
@@ -444,13 +422,6 @@ module Zoo
 
       private
 
-      def record_birth(offspring, sire_id, occurred_on, season, keeper_id = nil)
-        record_event(Events::Birth.new(
-                       offspring: offspring, sire_id: sire_id, dam_id: @id,
-                       occurred_on: occurred_on, season: season, keeper_id: keeper_id
-                     ))
-      end
-
       def pregnancy_failing?
         starving? || @stress.severe? || malnourished?
       end
@@ -458,10 +429,6 @@ module Zoo
       def miscarry
         @pregnancy = nil
         @miscarried = true
-      end
-
-      def newborn_vitality(base, inbreeding)
-        (base * (1.0 - inbreeding)).round.clamp(1, base)
       end
 
       def illness_damage(days)
