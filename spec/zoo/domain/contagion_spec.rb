@@ -14,11 +14,11 @@ RSpec.describe Zoo::Domain::Contagion do
     enclosure
   end
 
-  describe '.spread' do
+  describe '#spread' do
     it '感染源がいなければ誰も発病せず、空配列を返すこと' do
       enclosure = pride(build_adult(catalog.lion, name: 'A'), build_adult(catalog.lion, name: 'B'))
 
-      expect(described_class.spread(enclosure)).to eq([])
+      expect(described_class.new(enclosure).spread).to eq([])
     end
 
     it '新たに発病した個体だけを返すこと' do
@@ -27,7 +27,7 @@ RSpec.describe Zoo::Domain::Contagion do
       healthy = build_adult(catalog.lion, name: '健康')
       enclosure = pride(carrier, healthy)
 
-      expect(described_class.spread(enclosure)).to contain_exactly(healthy)
+      expect(described_class.new(enclosure).spread).to contain_exactly(healthy)
     end
   end
 end

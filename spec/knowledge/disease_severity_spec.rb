@@ -72,7 +72,7 @@ RSpec.describe '疾病の重症度と伝播' do
       healthy = build_adult(catalog.lion, name: '健康')
       enclosure = pride(carrier, healthy)
 
-      contagion.spread(enclosure, random: instance_double(Random, rand: 99))
+      contagion.new(enclosure, random: instance_double(Random, rand: 99)).spread
 
       expect(healthy).not_to be_sick
     end
@@ -83,7 +83,7 @@ RSpec.describe '疾病の重症度と伝播' do
       healthy = build_adult(catalog.lion, name: '健康')
       enclosure = pride(carrier, healthy)
 
-      contagion.spread(enclosure, random: instance_double(Random, rand: 0))
+      contagion.new(enclosure, random: instance_double(Random, rand: 0)).spread
 
       expect(healthy).to be_sick
     end
@@ -93,7 +93,7 @@ RSpec.describe '疾病の重症度と伝播' do
       filthy = pride
       filthy.soil(90)
 
-      expect(contagion.transmission_chance(filthy)).to be > contagion.transmission_chance(clean)
+      expect(contagion.new(filthy).transmission_chance).to be > contagion.new(clean).transmission_chance
     end
 
     it '免疫を持つ個体は伝播の対象から外れること' do
@@ -103,7 +103,7 @@ RSpec.describe '疾病の重症度と伝播' do
       carrier.fall_ill(illnesses.cold)
       enclosure = pride(immune, carrier)
 
-      contagion.spread(enclosure, random: instance_double(Random, rand: 0))
+      contagion.new(enclosure, random: instance_double(Random, rand: 0)).spread
 
       expect(immune).not_to be_sick
     end

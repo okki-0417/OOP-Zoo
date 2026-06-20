@@ -165,7 +165,7 @@ module Zoo
 
       def pass_day(season: Season.spring)
         spread_disease_if_filthy
-        Contagion.spread(self)
+        Contagion.new(self).spread
         @occupants.each do |animal|
           next if animal.dead?
 

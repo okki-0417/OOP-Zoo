@@ -22,7 +22,7 @@ RSpec.describe '病気の感染と免疫' do
       carrier.fall_ill(illnesses.cold)
       enclosure = pride(carrier, healthy)
 
-      contagion.spread(enclosure)
+      contagion.new(enclosure).spread
 
       expect(healthy).to be_sick
     end
@@ -33,7 +33,7 @@ RSpec.describe '病気の感染と免疫' do
       injured.fall_ill(illnesses.fracture)
       enclosure = pride(injured, healthy)
 
-      contagion.spread(enclosure)
+      contagion.new(enclosure).spread
 
       expect(healthy).not_to be_sick
     end
@@ -45,7 +45,7 @@ RSpec.describe '病気の感染と免疫' do
       sick_enclosure = pride(carrier)
       pride(faraway)
 
-      contagion.spread(sick_enclosure)
+      contagion.new(sick_enclosure).spread
 
       expect(faraway).not_to be_sick
     end
@@ -68,7 +68,7 @@ RSpec.describe '病気の感染と免疫' do
       carrier.fall_ill(illnesses.cold)
       enclosure = pride(recovered, carrier)
 
-      contagion.spread(enclosure)
+      contagion.new(enclosure).spread
 
       expect(recovered).not_to be_sick
     end

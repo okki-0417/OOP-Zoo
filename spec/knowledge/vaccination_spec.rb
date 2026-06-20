@@ -30,7 +30,7 @@ RSpec.describe '予防接種と免疫' do
       carrier.fall_ill(illnesses.cold)
       enclosure = pride(vaccinated, carrier)
 
-      contagion.spread(enclosure)
+      contagion.new(enclosure).spread
 
       expect(vaccinated).not_to be_sick
     end
