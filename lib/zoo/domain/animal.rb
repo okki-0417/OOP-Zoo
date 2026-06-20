@@ -318,6 +318,10 @@ module Zoo
         @species.breeds_in?(season)
       end
 
+      def threatened?
+        @species.conservation_status.threatened?
+      end
+
       def same_species?(other)
         other.is_a?(Animal) && @species.same_species?(other.species)
       end

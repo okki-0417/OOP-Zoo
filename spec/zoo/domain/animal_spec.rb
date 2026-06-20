@@ -27,6 +27,20 @@ module Zoo
         end
       end
 
+      describe '#threatened?' do
+        it '種の保全状況が危急(VU)のライオンでは true を返すこと' do
+          expect(build.threatened?).to be(true)
+        end
+
+        it '種の保全状況が低危険(LC)のニホンザルでは false を返すこと' do
+          macaque = Animal.new(
+            species: SpeciesCatalog.japanese_macaque, name: 'Saru',
+            sex: Animal::Sex.male, max_health: 100, age_in_days: 0
+          )
+          expect(macaque.threatened?).to be(false)
+        end
+      end
+
       describe '#age_in_years' do
         it '日齢を365で割った端数切り捨ての歳を返すこと' do
           expect(build(age_in_days: (365 * 4) + 200).age_in_years).to eq(4)

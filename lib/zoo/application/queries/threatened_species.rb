@@ -11,7 +11,7 @@ module Zoo
         def call
           @enclosures.all
                      .flat_map(&:occupants)
-                     .select { |animal| animal.species.conservation_status.threatened? }
+                     .select(&:threatened?)
                      .group_by(&:species)
                      .map { |species, members| to_read_model(species, members.size) }
         end
