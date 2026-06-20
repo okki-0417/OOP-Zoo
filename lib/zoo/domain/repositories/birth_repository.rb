@@ -11,6 +11,10 @@ module Zoo
         def all
           raise NotImplementedError, "#{self.class}#all を実装してください"
         end
+
+        def ancestry(*_animals, max_depth: nil)
+          raise NotImplementedError, "#{self.class}#ancestry を実装してください"
+        end
       end
     end
   end

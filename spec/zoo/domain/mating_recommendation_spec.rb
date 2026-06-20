@@ -35,7 +35,7 @@ module Zoo
         it '組める相手が一組だけならそのペアを返すこと' do
           m = founder('M', Animal::Sex.male)
           f = founder('F', Animal::Sex.female)
-          expect(described_class.recommend([m, f], [m, f])).to eq([m, f])
+          expect(described_class.recommend([m, f], [])).to eq([m, f])
         end
       end
     end

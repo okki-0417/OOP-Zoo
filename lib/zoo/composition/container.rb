@@ -103,7 +103,7 @@ module Zoo
 
       def conceive_animals
         Application::Services::ConceiveAnimals.new(
-          animals: @animals, breedings: @breedings, zoo: @zoo,
+          animals: @animals, breedings: @breedings, births: @births, zoo: @zoo,
           event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
         )
       end

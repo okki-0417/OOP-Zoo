@@ -6,6 +6,10 @@ RSpec.describe '個体群管理(交配推奨)' do
   sex         = Zoo::Domain::Animal::Sex
   recommender = Zoo::Domain::MatingRecommendation
 
+  def births
+    @births ||= []
+  end
+
   def founder(name, sex, age: 3000)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::SpeciesCatalog.lion,
@@ -14,10 +18,15 @@ RSpec.describe '個体群管理(交配推奨)' do
   end
 
   def offspring(name, sex, sire:, dam:, age: 1500)
-    Zoo::Domain::Animal.new(
+    child = Zoo::Domain::Animal.new(
       species: Zoo::Domain::SpeciesCatalog.lion,
-      name: name, sex: sex, max_health: 100, age_in_days: age, sire_id: sire&.id, dam_id: dam&.id
+      name: name, sex: sex, max_health: 100, age_in_days: age
     )
+    births << Zoo::Domain::Birth.reconstitute(
+      id: Zoo::Domain::Shared::Identifier.new, sire: sire, dam: dam,
+      offspring: child, day: 0, season: Zoo::Domain::Season.spring
+    )
+    child
   end
 
   describe '遺伝的多様性を保つ推奨' do
@@ -31,9 +40,8 @@ RSpec.describe '個体群管理(交配推奨)' do
         f1      = founder('F1', sex.female, age: 3000)
 
         candidates = [male, f1, f2]
-        parents    = [male, granny, mother, outside, f2, f1]
 
-        expect(recommender.recommend(candidates, parents)).to eq([male, f1])
+        expect(recommender.recommend(candidates, births)).to eq([male, f1])
       end
     end
 
@@ -44,9 +52,8 @@ RSpec.describe '個体群管理(交配推奨)' do
         daughter = offspring('娘', sex.female, sire: male, dam: mother, age: 1500)
 
         candidates = [male, daughter]
-        parents    = [male, mother, daughter]
 
-        expect(recommender.recommend(candidates, parents)).to be_nil
+        expect(recommender.recommend(candidates, births)).to be_nil
       end
     end
 
@@ -55,7 +62,7 @@ RSpec.describe '個体群管理(交配推奨)' do
         m1 = founder('M1', sex.male)
         m2 = founder('M2', sex.male)
 
-        expect(recommender.recommend([m1, m2], [m1, m2])).to be_nil
+        expect(recommender.recommend([m1, m2], [])).to be_nil
       end
     end
   end

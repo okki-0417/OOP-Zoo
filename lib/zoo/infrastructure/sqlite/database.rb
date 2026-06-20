@@ -90,6 +90,7 @@ module Zoo
               day          INTEGER NOT NULL,
               season       TEXT    NOT NULL
             );
+            CREATE INDEX IF NOT EXISTS index_births_on_offspring_id ON births (offspring_id);
             CREATE TABLE IF NOT EXISTS breedings (
               id      TEXT PRIMARY KEY,
               sire_id TEXT    NOT NULL,

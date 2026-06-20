@@ -33,6 +33,14 @@ module Zoo
         end
       end
 
+      def offspring?(animal)
+        @offspring == animal
+      end
+
+      def parents
+        [@sire, @dam].compact
+      end
+
       def deliver
         sex = @dam.expected_offspring_sex
         inbreeding = @dam.expected_offspring_inbreeding

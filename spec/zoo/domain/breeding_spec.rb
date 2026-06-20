@@ -61,9 +61,10 @@ module Zoo
           dam  = build_adult(lion, name: '母', sex: Animal::Sex.female)
           dam.conceive
           dam.gestate(lion.gestation_period_days)
-          daughter = Birth.new(sire: sire, dam: dam, name: '娘').deliver.offspring
+          birth = Birth.new(sire: sire, dam: dam, name: '娘').deliver
+          daughter = birth.offspring
 
-          expect(Breeding.new(sire:, dam: daughter).related?).to be(true)
+          expect(Breeding.new(sire:, dam: daughter, births: [birth]).related?).to be(true)
         end
 
         it 'きょうだいは related? が真であること' do
@@ -72,12 +73,14 @@ module Zoo
 
           dam.conceive
           dam.gestate(lion.gestation_period_days)
-          brother = Birth.new(sire: sire, dam: dam, name: '兄').deliver.offspring
+          brother_birth = Birth.new(sire: sire, dam: dam, name: '兄').deliver
+          brother = brother_birth.offspring
           dam.conceive
           dam.gestate(lion.gestation_period_days)
-          sister = Birth.new(sire: sire, dam: dam, name: '妹').deliver.offspring
+          sister_birth = Birth.new(sire: sire, dam: dam, name: '妹').deliver
+          sister = sister_birth.offspring
 
-          expect(Breeding.new(sire: brother, dam: sister).related?).to be(true)
+          expect(Breeding.new(sire: brother, dam: sister, births: [brother_birth, sister_birth]).related?).to be(true)
         end
       end
     end

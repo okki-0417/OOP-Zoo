@@ -7,37 +7,50 @@ module Zoo
 
       attr_reader :id, :sire, :dam, :day, :season
 
-      def initialize(sire:, dam:, day: 0, season: Season.spring, parents: [], id: Shared::Identifier.new)
+      def initialize(sire: nil, dam: nil, day: 0, season: Season.spring, births: [], id: Shared::Identifier.new)
         @id = id
         @sire = sire
         @dam = dam
         @day = day
         @season = season
-        @parent_lookup = parents.to_h { |a| [a.id, a] }
+        @births = births
       end
 
       def conceive
         validate!
-        @dam.conceive(inbreeding: inbreeding_coefficient)
+        @dam.conceive(inbreeding: coancestry(@sire, @dam))
         self
       end
 
       def related?
-        @dam.parent_ids.include?(@sire.id) ||
-          @sire.parent_ids.include?(@dam.id) ||
-          @sire.parent_ids.intersect?(@dam.parent_ids)
+        sire_parents = parent_ids_of(@sire)
+        dam_parents = parent_ids_of(@dam)
+        dam_parents.include?(@sire.id) ||
+          sire_parents.include?(@dam.id) ||
+          sire_parents.intersect?(dam_parents)
       end
 
-      def self.mean_kinship(animals, parents)
-        lookup = parents.to_h { |a| [a.id, a] }
+      def coancestry(a, b)
+        return 0.0 if a.nil? || b.nil?
+        return 0.5 * (1.0 + inbreeding_of(a)) if a.id == b.id
+        return coancestry(b, a) if a.age_in_days > b.age_in_days
+
+        parents = parents_of(a)
+        return 0.0 if parents.empty?
+
+        0.5 * parents.sum { |parent| coancestry(parent, b) }
+      end
+
+      def self.kinship(a, b, births)
+        new(births:).coancestry(a, b)
+      end
+
+      def self.mean_kinship(animals, births)
+        calc = new(births:)
         pairs = animals.combination(2).to_a
         return 0.0 if pairs.empty?
 
-        pairs.sum { |a, b| compute_kinship(a, b, lookup) } / pairs.size
-      end
-
-      def self.kinship(a, b, parents)
-        compute_kinship(a, b, parents.to_h { |a| [a.id, a] })
+        pairs.sum { |a, b| calc.coancestry(a, b) } / pairs.size
       end
 
       private
@@ -55,30 +68,19 @@ module Zoo
         raise Errors::BreedingNotAllowed, errors.join(', ') unless errors.empty?
       end
 
-      def inbreeding_coefficient
-        self.class.send(:compute_kinship, @sire, @dam, @parent_lookup)
+      def parents_of(animal)
+        @births.find { |birth| birth.offspring?(animal) }&.parents || []
       end
 
-      class << self
-        private
+      def parent_ids_of(animal)
+        parents_of(animal).map(&:id)
+      end
 
-        def compute_kinship(a, b, lookup)
-          return 0.0 if a.nil? || b.nil?
-          return 0.5 * (1.0 + compute_inbreeding(a, lookup)) if a.id == b.id
-          return compute_kinship(b, a, lookup) if a.age_in_days > b.age_in_days
+      def inbreeding_of(animal)
+        parents = parents_of(animal)
+        return 0.0 if parents.size < 2
 
-          parents = a.parent_ids.map { |id| lookup[id] }.compact
-          return 0.0 if parents.empty?
-
-          0.5 * parents.sum { |parent| compute_kinship(parent, b, lookup) }
-        end
-
-        def compute_inbreeding(animal, lookup)
-          parents = animal.parent_ids.map { |id| lookup[id] }.compact
-          return 0.0 if parents.size < 2
-
-          compute_kinship(parents[0], parents[1], lookup)
-        end
+        coancestry(parents[0], parents[1])
       end
     end
   end

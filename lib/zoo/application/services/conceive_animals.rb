@@ -4,9 +4,10 @@ module Zoo
   module Application
     module Services
       class ConceiveAnimals
-        def initialize(animals:, breedings:, zoo:, event_dispatcher:, unit_of_work:)
+        def initialize(animals:, breedings:, births:, zoo:, event_dispatcher:, unit_of_work:)
           @animals = animals
           @breedings = breedings
+          @births = births
           @zoo = zoo
           @event_dispatcher = event_dispatcher
           @unit_of_work = unit_of_work
@@ -22,7 +23,7 @@ module Zoo
 
             zoo = @zoo.load
 
-            breeding = Domain::Breeding.new(sire:, dam:, day: zoo.day, season: zoo.season, parents: @animals.all)
+            breeding = Domain::Breeding.new(sire:, dam:, day: zoo.day, season: zoo.season, births: @births.ancestry(sire, dam))
             breeding.conceive
 
             @animals.save(dam)
