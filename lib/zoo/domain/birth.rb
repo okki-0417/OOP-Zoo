@@ -49,7 +49,7 @@ module Zoo
       def deliver_litter
         inbreeding = @dam.expected_offspring_inbreeding
         @dam.deliver
-        @offspring = Array.new(@dam.species.litter_size) do |i|
+        @offspring = Array.new(@dam.litter_size) do |i|
           build_offspring("#{@name}#{i + 1}", Animal::Sex.random, inbreeding)
         end
         @offspring.each { |o| record_birth(o) }

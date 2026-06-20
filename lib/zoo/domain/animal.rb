@@ -354,6 +354,10 @@ module Zoo
         @species.gestation_period_days
       end
 
+      def litter_size
+        @species.litter_size
+      end
+
       def ready_to_deliver?
         expecting? && @pregnancy.gestation_days >= @species.gestation_period_days
       end
