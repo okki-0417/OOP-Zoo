@@ -3,7 +3,7 @@
 module Zoo
   module Composition
     class Container
-      attr_reader :animals, :enclosures, :keepers, :veterinarians, :breedings, :zoo,
+      attr_reader :animals, :enclosures, :keepers, :veterinarians, :breedings, :births, :zoo,
                   :event_store, :memorial_log, :birth_announcements
 
       def initialize(state: nil, database: nil)
@@ -25,7 +25,7 @@ module Zoo
           {
             animals: @animals.all, enclosures: @enclosures.all,
             keepers: @keepers.all, veterinarians: @veterinarians.all,
-            breedings: @breedings.all, zoo: @zoo.load, events: @event_store.all
+            breedings: @breedings.all, births: @births.all, zoo: @zoo.load, events: @event_store.all
           },
           path
         )
@@ -110,7 +110,8 @@ module Zoo
 
       def deliver_animal
         Application::Services::DeliverAnimal.new(
-          animals: @animals, enclosures: @enclosures, keepers: @keepers, breedings: @breedings, zoo: @zoo,
+          animals: @animals, enclosures: @enclosures, keepers: @keepers,
+          breedings: @breedings, births: @births, zoo: @zoo,
           event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
         )
       end
@@ -156,7 +157,7 @@ module Zoo
 
       def zoo_report
         Application::Queries::ZooReport.new(enclosures: @enclosures, event_store: @event_store, zoo: @zoo,
-                                            animals: @animals)
+                                            animals: @animals, births: @births)
       end
 
       def enclosure_list
@@ -191,17 +192,19 @@ module Zoo
 
       def setup_in_memory(state)
         store = Infrastructure::InMemory
-        @animals = store::InMemoryAnimalRepository.new(state ? state[:animals] : [])
-        @enclosures = store::InMemoryEnclosureRepository.new(state ? state[:enclosures] : [])
-        @keepers = store::InMemoryKeeperRepository.new(state ? state[:keepers] : [])
-        @veterinarians = store::InMemoryVeterinarianRepository.new(state ? state[:veterinarians] : [])
-        @breedings = store::InMemoryBreedingRepository.new(state ? state[:breedings] || [] : [])
-        @zoo = store::InMemoryZooRepository.new(state ? state[:zoo] : default_zoo)
+        state ||= {}
+        @animals = store::InMemoryAnimalRepository.new(state.fetch(:animals, []))
+        @enclosures = store::InMemoryEnclosureRepository.new(state.fetch(:enclosures, []))
+        @keepers = store::InMemoryKeeperRepository.new(state.fetch(:keepers, []))
+        @veterinarians = store::InMemoryVeterinarianRepository.new(state.fetch(:veterinarians, []))
+        @breedings = store::InMemoryBreedingRepository.new(state.fetch(:breedings, []))
+        @births = store::InMemoryBirthRepository.new(state.fetch(:births, []))
+        @zoo = store::InMemoryZooRepository.new(state.fetch(:zoo, default_zoo))
         @event_store = store::InMemoryEventStore.new
-        (state ? state[:events] : []).each { |event| @event_store.append(event) }
+        state.fetch(:events, []).each { |event| @event_store.append(event) }
 
         @unit_of_work = store::InMemoryUnitOfWork.new(
-          repositories: [@animals, @enclosures, @keepers, @veterinarians, @breedings]
+          repositories: [@animals, @enclosures, @keepers, @veterinarians, @breedings, @births]
         )
       end
 
@@ -213,6 +216,7 @@ module Zoo
         @keepers = sqlite::KeeperRepository.new(database)
         @veterinarians = sqlite::VeterinarianRepository.new(database)
         @breedings = sqlite::BreedingRepository.new(database, @animals)
+        @births = sqlite::BirthRepository.new(database, @animals)
         @zoo = sqlite::ZooRepository.new(database, default_zoo)
         @event_store = sqlite::EventStore.new(database, @animals)
         @unit_of_work = sqlite::UnitOfWork.new(database)

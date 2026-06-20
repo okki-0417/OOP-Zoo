@@ -11,14 +11,11 @@ module Zoo
           illness_key immunities death_cause parent_ids
         ].freeze
 
-        BIRTH_COLUMNS = %i[sire_id dam_id offspring_id occurred_on season keeper_id].freeze
         NAMING_COLUMNS = %i[animal_id name keeper_id occurred_on].freeze
 
-        def initialize(database, mapper: AnimalMapper.new, birth_mapper: BirthMapper.new,
-                       naming_mapper: NamingMapper.new)
+        def initialize(database, mapper: AnimalMapper.new, naming_mapper: NamingMapper.new)
           @database = database
           @mapper = mapper
-          @birth_mapper = birth_mapper
           @naming_mapper = naming_mapper
         end
 
@@ -33,7 +30,6 @@ module Zoo
             "INSERT OR REPLACE INTO animals (#{COLUMNS.join(', ')}) VALUES (#{(['?'] * COLUMNS.size).join(', ')})",
             *COLUMNS.map { |column| row[column] }
           )
-          animal.recorded_events.grep(Domain::Events::Birth).each { |birth| append_birth(birth) }
           animal.recorded_events.grep(Domain::Events::AnimalNamed).each { |e| append_naming(e) }
           animal
         end
@@ -42,24 +38,11 @@ module Zoo
           @database.execute('SELECT * FROM animals').map { |row| @mapper.to_aggregate(row) }
         end
 
-        def births
-          @database.execute('SELECT * FROM births ORDER BY id')
-                   .filter_map { |row| @birth_mapper.to_aggregate(row, method(:find)) }
-        end
-
         def namings
           @database.execute('SELECT * FROM namings ORDER BY id')
         end
 
         private
-
-        def append_birth(birth)
-          row = @birth_mapper.to_row(birth)
-          @database.execute(
-            "INSERT INTO births (#{BIRTH_COLUMNS.join(', ')}) VALUES (#{(['?'] * BIRTH_COLUMNS.size).join(', ')})",
-            *BIRTH_COLUMNS.map { |column| row[column] }
-          )
-        end
 
         def append_naming(event)
           row = @naming_mapper.to_row(event)

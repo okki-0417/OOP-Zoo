@@ -83,13 +83,12 @@ module Zoo
               cause      TEXT
             );
             CREATE TABLE IF NOT EXISTS births (
-              id           INTEGER PRIMARY KEY AUTOINCREMENT,
+              id           TEXT PRIMARY KEY,
               sire_id      TEXT    NOT NULL,
               dam_id       TEXT    NOT NULL,
               offspring_id TEXT    NOT NULL,
-              occurred_on  INTEGER NOT NULL,
-              season       TEXT    NOT NULL,
-              keeper_id    TEXT
+              day          INTEGER NOT NULL,
+              season       TEXT    NOT NULL
             );
             CREATE TABLE IF NOT EXISTS breedings (
               id      TEXT PRIMARY KEY,

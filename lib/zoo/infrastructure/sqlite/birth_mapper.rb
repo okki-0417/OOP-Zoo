@@ -8,26 +8,25 @@ module Zoo
 
         def to_row(birth)
           {
-            sire_id: birth.sire_id.to_s,
-            dam_id: birth.dam_id.to_s,
+            id: birth.id.to_s,
+            sire_id: birth.sire.id.to_s,
+            dam_id: birth.dam.id.to_s,
             offspring_id: birth.offspring.id.to_s,
-            occurred_on: birth.occurred_on,
-            season: birth.season.value.to_s,
-            keeper_id: birth.keeper_id&.to_s
+            day: birth.day,
+            season: birth.season.value.to_s
           }
         end
 
         def to_aggregate(row, lookup)
+          sire = lookup.call(Domain::Shared::Identifier.new(row['sire_id']))
+          dam = lookup.call(Domain::Shared::Identifier.new(row['dam_id']))
           offspring = lookup.call(Domain::Shared::Identifier.new(row['offspring_id']))
-          return nil unless offspring
+          return nil unless sire && dam && offspring
 
-          Domain::Events::Birth.new(
-            offspring: offspring,
-            sire_id: Domain::Shared::Identifier.new(row['sire_id']),
-            dam_id: Domain::Shared::Identifier.new(row['dam_id']),
-            occurred_on: row['occurred_on'],
-            season: Domain::Season.new(row['season']),
-            keeper_id: row['keeper_id'] && Domain::Shared::Identifier.new(row['keeper_id'])
+          Domain::Birth.reconstitute(
+            id: Domain::Shared::Identifier.new(row['id']),
+            sire: sire, dam: dam, offspring: offspring,
+            day: row['day'], season: Domain::Season.new(row['season'])
           )
         end
       end

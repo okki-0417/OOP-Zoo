@@ -6,11 +6,12 @@ module Zoo
       class DeliverAnimal
         BIRTH_BUZZ = 40
 
-        def initialize(animals:, enclosures:, keepers:, breedings:, zoo:, event_dispatcher:, unit_of_work:)
+        def initialize(animals:, enclosures:, keepers:, breedings:, births:, zoo:, event_dispatcher:, unit_of_work:)
           @animals = animals
           @enclosures = enclosures
           @keepers = keepers
           @breedings = breedings
+          @births = births
           @zoo = zoo
           @event_dispatcher = event_dispatcher
           @unit_of_work = unit_of_work
@@ -31,12 +32,14 @@ module Zoo
 
             zoo = @zoo.load
 
-            child = Domain::Birth.new(
+            birth = Domain::Birth.new(
               sire: breeding.sire, dam: dam, day: zoo.day, season: zoo.season, keeper_id: keeper&.id
-            ).deliver.offspring
+            ).deliver
+            child = birth.offspring
 
             @animals.save(dam)
             @animals.save(child)
+            @births.save(birth)
             enclosure.admit(child)
             @enclosures.save(enclosure)
 

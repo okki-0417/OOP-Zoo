@@ -20,19 +20,21 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:keepers) { in_memory::InMemoryKeeperRepository.new }
   let(:breedings) { in_memory::InMemoryBreedingRepository.new }
+  let(:births) { in_memory::InMemoryBirthRepository.new }
   let(:event_store) { in_memory::InMemoryEventStore.new }
   let(:birth_announcements) { Zoo::Infrastructure::Subscribers::BirthAnnouncementLog.new }
   let(:event_dispatcher) do
     Zoo::Application::EventDispatcher.new(event_store: event_store, subscribers: [birth_announcements])
   end
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, enclosures, breedings]) }
+  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, enclosures, breedings, births]) }
   let(:zoo) do
     in_memory::InMemoryZooRepository.new(
       Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
     )
   end
   let(:service) do
-    described_class.new(animals: animals, enclosures: enclosures, keepers: keepers, breedings: breedings, zoo: zoo,
+    described_class.new(animals: animals, enclosures: enclosures, keepers: keepers,
+                        breedings: breedings, births: births, zoo: zoo,
                         event_dispatcher: event_dispatcher, unit_of_work: unit_of_work)
   end
 
@@ -68,8 +70,8 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
     it '出産に成功すると Birth が births に1件永続化されること' do
       service.call(command)
 
-      expect(animals.births.size).to eq(1)
-      expect(animals.births.first).to be_a(events::Birth)
+      expect(births.all.size).to eq(1)
+      expect(births.all.first).to be_a(Zoo::Domain::Birth)
     end
 
     it '出産イベントは EventStore には永続化されないこと(births テーブルが台帳)' do
@@ -102,7 +104,7 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
       enclosures.save(full)
 
       expect { service.call(command(enclosure_id: full.id)) }.to raise_error(Zoo::Domain::Errors::CapacityExceeded)
-      expect(animals.births).to be_empty
+      expect(births.all).to be_empty
     end
 
     it '存在しない dam_id を渡すと AnimalNotFound が発生すること' do

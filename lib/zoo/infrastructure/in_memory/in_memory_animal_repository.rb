@@ -8,7 +8,6 @@ module Zoo
 
         def initialize(animals = [])
           @store = {}
-          @births = []
           @namings = []
           animals.each { |animal| save(animal) }
         end
@@ -19,7 +18,6 @@ module Zoo
 
         def save(animal)
           @store[animal.id.to_s] = animal
-          @births.concat(animal.recorded_events.grep(Domain::Events::Birth))
           @namings.concat(animal.recorded_events.grep(Domain::Events::AnimalNamed))
           animal
         end
@@ -28,20 +26,16 @@ module Zoo
           @store.values
         end
 
-        def births
-          @births.dup
-        end
-
         def namings
           @namings.dup
         end
 
         def snapshot
-          [@store.dup, @births.dup, @namings.dup]
+          [@store.dup, @namings.dup]
         end
 
         def restore(snapshot)
-          @store, @births, @namings = snapshot
+          @store, @namings = snapshot
         end
       end
     end

@@ -22,6 +22,17 @@ module Zoo
         @offspring = nil
       end
 
+      def self.reconstitute(id:, sire:, dam:, offspring:, day:, season:)
+        allocate.tap do |birth|
+          birth.instance_variable_set(:@id, id)
+          birth.instance_variable_set(:@sire, sire)
+          birth.instance_variable_set(:@dam, dam)
+          birth.instance_variable_set(:@offspring, offspring)
+          birth.instance_variable_set(:@day, day)
+          birth.instance_variable_set(:@season, season)
+        end
+      end
+
       def deliver
         sex = @dam.expected_offspring_sex
         inbreeding = @dam.expected_offspring_inbreeding
