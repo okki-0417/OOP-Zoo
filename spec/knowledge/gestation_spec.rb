@@ -10,7 +10,7 @@ RSpec.describe '妊娠と出産' do
 
   def mated_dam(species)
     sire, dam = build_pair(species)
-    dam.conceive(sire_id: sire.id)
+    dam.conceive
     [sire, dam]
   end
 
@@ -22,13 +22,13 @@ RSpec.describe '妊娠と出産' do
 
     it '妊娠は母体自身の状態であり、オスは身ごもらないこと' do
       sire, dam = build_pair(catalog.lion)
-      dam.conceive(sire_id: sire.id)
+      dam.conceive
       expect(sire).not_to be_expecting
     end
 
     it '妊娠中はさらに交尾できないこと' do
-      sire, dam = mated_dam(catalog.lion)
-      expect { dam.conceive(sire_id: sire.id) }.to raise_error(errors::BreedingNotAllowed)
+      _sire, dam = mated_dam(catalog.lion)
+      expect { dam.conceive }.to raise_error(errors::BreedingNotAllowed)
     end
   end
 
@@ -54,7 +54,7 @@ RSpec.describe '妊娠と出産' do
     it '生まれた子は0日齢の幼体で、両親が血統に記録されること' do
       sire, dam = mated_dam(catalog.lion)
       dam.gestate(catalog.lion.gestation_period_days)
-      cub = dam.deliver(name: '仔')
+      cub = dam.deliver(sire_id: sire.id, name: '仔')
 
       expect(cub.age_in_days).to eq(0)
       expect(cub.life_stage).to be_baby
@@ -64,23 +64,23 @@ RSpec.describe '妊娠と出産' do
     it '出産すると妊娠が解け、再び交尾できること' do
       sire, dam = mated_dam(catalog.lion)
       dam.gestate(catalog.lion.gestation_period_days)
-      dam.deliver(name: '仔')
+      dam.deliver(sire_id: sire.id, name: '仔')
 
       expect(dam).not_to be_expecting
-      expect { dam.conceive(sire_id: sire.id) }.not_to raise_error
+      expect { dam.conceive }.not_to raise_error
     end
   end
 
   describe '流産' do
     context '妊娠中の母体が飢餓に陥ると' do
       it '流産し、妊娠が解けて出産できないこと' do
-        _sire, dam = mated_dam(catalog.lion)
+        sire, dam = mated_dam(catalog.lion)
         dam.get_hungrier(100)
         dam.gestate(50)
 
         expect(dam).to be_miscarried
         expect(dam).not_to be_expecting
-        expect { dam.deliver(name: '仔') }.to raise_error(errors::BreedingNotAllowed)
+        expect { dam.deliver(sire_id: sire.id, name: '仔') }.to raise_error(errors::BreedingNotAllowed)
       end
     end
 

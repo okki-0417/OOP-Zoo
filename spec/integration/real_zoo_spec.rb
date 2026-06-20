@@ -99,9 +99,9 @@ RSpec.describe '現実の動物園の再現' do
 
   it 'ライオンを繁殖させ、生まれた子を群れに加えられること' do
     sire, dam = lions
-    dam.conceive(sire_id: sire.id)
+    dam.conceive
     dam.gestate(catalog.lion.gestation_period_days)
-    cub = dam.deliver(name: 'シンバ')
+    cub = dam.deliver(sire_id: sire.id, name: 'シンバ')
 
     zoo.house(cub, lion_hill)
     expect(lion_hill.population).to eq(3)

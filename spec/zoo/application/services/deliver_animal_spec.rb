@@ -19,19 +19,20 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
   let(:animals) { in_memory::InMemoryAnimalRepository.new([sire, dam]) }
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:keepers) { in_memory::InMemoryKeeperRepository.new }
+  let(:breedings) { in_memory::InMemoryBreedingRepository.new }
   let(:event_store) { in_memory::InMemoryEventStore.new }
   let(:birth_announcements) { Zoo::Infrastructure::Subscribers::BirthAnnouncementLog.new }
   let(:event_dispatcher) do
     Zoo::Application::EventDispatcher.new(event_store: event_store, subscribers: [birth_announcements])
   end
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, enclosures]) }
+  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, enclosures, breedings]) }
   let(:zoo) do
     in_memory::InMemoryZooRepository.new(
       Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
     )
   end
   let(:service) do
-    described_class.new(animals: animals, enclosures: enclosures, keepers: keepers, zoo: zoo,
+    described_class.new(animals: animals, enclosures: enclosures, keepers: keepers, breedings: breedings, zoo: zoo,
                         event_dispatcher: event_dispatcher, unit_of_work: unit_of_work)
   end
 
@@ -41,8 +42,14 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
     )
   end
 
+  def conceive_dam
+    breeding = Zoo::Domain::Breeding.new(sire: sire, dam: dam)
+    breeding.conceive
+    breedings.save(breeding)
+  end
+
   def prepare_dam_for_delivery
-    dam.conceive(sire_id: sire.id)
+    conceive_dam
     Zoo::Domain::SpeciesCatalog.lion.gestation_period_days.times { dam.gestate }
     animals.save(dam)
   end
@@ -115,9 +122,17 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
   end
 
   describe '出産準備前の dam' do
-    it 'ready_to_deliver でない dam に対して BreedingNotAllowed が伝播すること' do
+    it '受胎済みでも妊娠期間が満ちていない dam には BreedingNotAllowed が伝播すること' do
+      conceive_dam
+      animals.save(dam)
+
       expect { service.call(command) }
         .to raise_error(Zoo::Domain::Errors::BreedingNotAllowed)
+    end
+
+    it '受胎記録のない dam には BreedingNotFound が発生すること' do
+      expect { service.call(command) }
+        .to raise_error(Zoo::Application::Errors::BreedingNotFound)
     end
   end
 end

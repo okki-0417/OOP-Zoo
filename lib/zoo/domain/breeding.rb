@@ -18,7 +18,7 @@ module Zoo
 
       def conceive
         validate!
-        @dam.conceive(sire_id: @sire.id, inbreeding: inbreeding_coefficient)
+        @dam.conceive(inbreeding: inbreeding_coefficient)
         self
       end
 

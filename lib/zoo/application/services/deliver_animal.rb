@@ -6,10 +6,11 @@ module Zoo
       class DeliverAnimal
         BIRTH_BUZZ = 40
 
-        def initialize(animals:, enclosures:, keepers:, zoo:, event_dispatcher:, unit_of_work:)
+        def initialize(animals:, enclosures:, keepers:, breedings:, zoo:, event_dispatcher:, unit_of_work:)
           @animals = animals
           @enclosures = enclosures
           @keepers = keepers
+          @breedings = breedings
           @zoo = zoo
           @event_dispatcher = event_dispatcher
           @unit_of_work = unit_of_work
@@ -25,9 +26,13 @@ module Zoo
 
             keeper = find_keeper(command.keeper_id)
 
+            breeding = @breedings.for_dam(dam.id)
+            raise Errors::BreedingNotFound, "動物 #{command.dam_id} の受胎記録がありません" if breeding.nil?
+
             zoo = @zoo.load
 
-            child = dam.deliver(occurred_on: zoo.day, season: zoo.season, keeper_id: keeper&.id)
+            child = dam.deliver(sire_id: breeding.sire.id, occurred_on: zoo.day, season: zoo.season,
+                                keeper_id: keeper&.id)
 
             @animals.save(dam)
             @animals.save(child)

@@ -13,16 +13,17 @@ RSpec.describe Zoo::Application::Services::ConceiveAnimals do
   let(:dam)  { pair[1] }
 
   let(:animals) { in_memory::InMemoryAnimalRepository.new([sire, dam]) }
+  let(:breedings) { in_memory::InMemoryBreedingRepository.new }
   let(:event_store) { in_memory::InMemoryEventStore.new }
   let(:event_dispatcher) { Zoo::Application::EventDispatcher.new(event_store: event_store, subscribers: []) }
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals]) }
+  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, breedings]) }
   let(:zoo) do
     in_memory::InMemoryZooRepository.new(
       Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
     )
   end
   let(:service) do
-    described_class.new(animals: animals, zoo: zoo,
+    described_class.new(animals: animals, breedings: breedings, zoo: zoo,
                         event_dispatcher: event_dispatcher, unit_of_work: unit_of_work)
   end
 
@@ -34,6 +35,13 @@ RSpec.describe Zoo::Application::Services::ConceiveAnimals do
     it 'sire/dam の id を渡すと dam が妊娠状態になること' do
       service.call(command)
       expect(animals.find(dam.id)).to be_expecting
+    end
+
+    it '受胎イベント(Breeding)が永続化され、dam から父を辿れること' do
+      service.call(command)
+      breeding = breedings.for_dam(dam.id)
+      expect(breeding.sire).to eq(sire)
+      expect(breeding.dam).to eq(dam)
     end
 
     it 'オス同士を渡すと BreedingNotAllowed が伝播すること' do
@@ -52,7 +60,8 @@ RSpec.describe Zoo::Application::Services::ConceiveAnimals do
       summer = Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
       100.times { summer.advance_day }
       m_service = described_class.new(
-        animals: m_animals, zoo: in_memory::InMemoryZooRepository.new(summer),
+        animals: m_animals, breedings: in_memory::InMemoryBreedingRepository.new,
+        zoo: in_memory::InMemoryZooRepository.new(summer),
         event_dispatcher: event_dispatcher,
         unit_of_work: in_memory::InMemoryUnitOfWork.new(repositories: [m_animals])
       )

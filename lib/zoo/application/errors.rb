@@ -8,6 +8,7 @@ module Zoo
       class AnimalNotFound < ApplicationError; end
       class KeeperNotFound < ApplicationError; end
       class VeterinarianNotFound < ApplicationError; end
+      class BreedingNotFound < ApplicationError; end
     end
   end
 end

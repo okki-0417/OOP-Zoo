@@ -7,9 +7,9 @@ RSpec.describe '産仔数' do
 
   def delivered_litter(species, inbreeding: 0.0)
     sire, dam = build_pair(species)
-    dam.conceive(sire_id: sire.id, inbreeding: inbreeding)
+    dam.conceive(inbreeding: inbreeding)
     dam.gestate(species.gestation_period_days)
-    dam.deliver_litter(name: '仔')
+    dam.deliver_litter(sire_id: sire.id, name: '仔')
   end
 
   describe '種ごとの産仔数' do
@@ -52,9 +52,9 @@ RSpec.describe '産仔数' do
 
     it '同腹の全個体に同じ両親が血統として記録されること' do
       sire, dam = build_pair(catalog.lion)
-      dam.conceive(sire_id: sire.id)
+      dam.conceive
       dam.gestate(catalog.lion.gestation_period_days)
-      litter = dam.deliver_litter(name: '仔')
+      litter = dam.deliver_litter(sire_id: sire.id, name: '仔')
 
       litter.each { |cub| expect(cub.parent_ids).to contain_exactly(sire.id, dam.id) }
     end

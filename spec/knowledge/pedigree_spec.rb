@@ -82,13 +82,13 @@ RSpec.describe '血統と近親交配' do
       dam      = build_adult(catalog.lion, name: '母', sex: sex.female)
       gestation = catalog.lion.gestation_period_days
 
-      dam.conceive(sire_id: sire.id)
+      dam.conceive
       dam.gestate(gestation)
-      healthy = dam.deliver(name: '健全な子')
+      healthy = dam.deliver(sire_id: sire.id, name: '健全な子')
 
-      dam.conceive(sire_id: sire.id, inbreeding: 0.25)
+      dam.conceive(inbreeding: 0.25)
       dam.gestate(gestation)
-      inbred = dam.deliver(name: '近交の子')
+      inbred = dam.deliver(sire_id: sire.id, name: '近交の子')
 
       expect(inbred.max_health).to be < healthy.max_health
     end

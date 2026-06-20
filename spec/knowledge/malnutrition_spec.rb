@@ -64,8 +64,8 @@ RSpec.describe '栄養失調' do
     end
 
     it '妊娠中の母体の栄養失調は流産の要因になること' do
-      sire, dam = build_pair(macaque)
-      dam.conceive(sire_id: sire.id)
+      _sire, dam = build_pair(macaque)
+      dam.conceive
       malnourish(dam)
       dam.gestate(10)
 

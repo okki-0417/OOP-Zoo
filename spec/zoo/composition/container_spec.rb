@@ -39,7 +39,10 @@ RSpec.describe Zoo::Composition::Container do
   it 'deliver を実行すると、配線された購読者(birth_announcements)に通知が届くこと' do
     sire, dam = build_pair(catalog.lion)
     container.animals.save(sire)
-    dam.conceive(sire_id: sire.id)
+    container.animals.save(dam)
+    container.conceive_animals.call(
+      commands::ConceiveAnimalsCommand.new(sire_id: sire.id, dam_id: dam.id)
+    )
     catalog.lion.gestation_period_days.times { dam.gestate }
     container.animals.save(dam)
     enclosure = container.enclosures.save(

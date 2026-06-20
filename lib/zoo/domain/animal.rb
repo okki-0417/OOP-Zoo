@@ -329,11 +329,11 @@ module Zoo
         other.is_a?(Animal) && @sex.opposite?(other.sex)
       end
 
-      def conceive(sire_id:, inbreeding: 0.0)
+      def conceive(inbreeding: 0.0)
         raise Errors::BreedingNotAllowed, 'メスのみ妊娠できます' unless @sex.female?
         raise Errors::BreedingNotAllowed, '既に妊娠/抱卵中です' if expecting?
 
-        @pregnancy = Pregnancy.conceived(sire_id, inbreeding: inbreeding)
+        @pregnancy = Pregnancy.conceived(inbreeding: inbreeding)
         @miscarried = false
         self
       end
@@ -365,10 +365,10 @@ module Zoo
         @miscarried
       end
 
-      def deliver(name: nil, max_health: NEWBORN_HEALTH, occurred_on: 0, season: Season.spring, keeper_id: nil)
+      def deliver(sire_id:, name: nil, max_health: NEWBORN_HEALTH, occurred_on: 0, season: Season.spring,
+                  keeper_id: nil)
         raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
 
-        sire_id = @pregnancy.sire_id
         actual_name = name || "#{@species.name_ja}の赤ちゃん"
         offspring = Animal.new(
           species: @species, name: actual_name, sex: @pregnancy.sex,
@@ -381,10 +381,10 @@ module Zoo
         offspring
       end
 
-      def deliver_litter(name:, max_health: NEWBORN_HEALTH, occurred_on: 0, season: Season.spring, keeper_id: nil)
+      def deliver_litter(sire_id:, name:, max_health: NEWBORN_HEALTH, occurred_on: 0, season: Season.spring,
+                         keeper_id: nil)
         raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
 
-        sire_id = @pregnancy.sire_id
         vitality = newborn_vitality(max_health, @pregnancy.inbreeding_coefficient)
         litter = Array.new(@species.litter_size) do |i|
           Animal.new(

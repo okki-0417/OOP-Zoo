@@ -91,6 +91,13 @@ module Zoo
               season       TEXT    NOT NULL,
               keeper_id    TEXT
             );
+            CREATE TABLE IF NOT EXISTS breedings (
+              id      TEXT PRIMARY KEY,
+              sire_id TEXT    NOT NULL,
+              dam_id  TEXT    NOT NULL,
+              day     INTEGER NOT NULL,
+              season  TEXT    NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS namings (
               id          INTEGER PRIMARY KEY AUTOINCREMENT,
               animal_id   TEXT    NOT NULL,
