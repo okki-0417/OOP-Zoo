@@ -44,37 +44,6 @@ module Zoo
           end.to raise_error(Errors::BreedingNotAllowed)
         end
       end
-
-      describe '近親回避(Breeding#related?)' do
-        let(:lion) { SpeciesCatalog.lion }
-
-        it '親子は related? が真であること' do
-          sire = build_adult(lion, name: '父', sex: Animal::Sex.male)
-          dam  = build_adult(lion, name: '母', sex: Animal::Sex.female)
-          dam.conceive
-          dam.gestate(lion.gestation_period_days)
-          birth = Birth.new(sire: sire, dam: dam, name: '娘').deliver
-          daughter = birth.offspring
-
-          expect(Breeding.new(sire:, dam: daughter, births: [birth]).related?).to be(true)
-        end
-
-        it 'きょうだいは related? が真であること' do
-          sire = build_adult(lion, name: '父', sex: Animal::Sex.male)
-          dam  = build_adult(lion, name: '母', sex: Animal::Sex.female)
-
-          dam.conceive
-          dam.gestate(lion.gestation_period_days)
-          brother_birth = Birth.new(sire: sire, dam: dam, name: '兄').deliver
-          brother = brother_birth.offspring
-          dam.conceive
-          dam.gestate(lion.gestation_period_days)
-          sister_birth = Birth.new(sire: sire, dam: dam, name: '妹').deliver
-          sister = sister_birth.offspring
-
-          expect(Breeding.new(sire: brother, dam: sister, births: [brother_birth, sister_birth]).related?).to be(true)
-        end
-      end
     end
 
     RSpec.describe Animal do

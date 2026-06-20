@@ -42,7 +42,9 @@ RSpec.describe '近親交配の回避' do
       father = founder('父', sex.male)
       mother = founder('母', sex.female)
       daughter = offspring('娘', sex.female, sire: father, dam: mother)
-      expect(breeding.new(sire: father, dam: daughter, births:).related?).to be(true)
+      expect do
+        breeding.new(sire: father, dam: daughter, births:).conceive
+      end.to raise_error(Zoo::Domain::Errors::BreedingNotAllowed)
     end
 
     it '近親交配であることが理由として示されること' do
@@ -61,7 +63,9 @@ RSpec.describe '近親交配の回避' do
       mother  = founder('母', sex.female)
       brother = offspring('兄', sex.male, sire: father, dam: mother)
       sister  = offspring('妹', sex.female, sire: father, dam: mother)
-      expect(breeding.new(sire: brother, dam: sister, births:).related?).to be(true)
+      expect do
+        breeding.new(sire: brother, dam: sister, births:).conceive
+      end.to raise_error(Zoo::Domain::Errors::BreedingNotAllowed)
     end
   end
 
@@ -72,7 +76,9 @@ RSpec.describe '近親交配の回避' do
       mother2 = founder('母2', sex.female)
       a = offspring('A', sex.male, sire: father, dam: mother1)
       b = offspring('B', sex.female, sire: father, dam: mother2)
-      expect(breeding.new(sire: a, dam: b, births:).related?).to be(true)
+      expect do
+        breeding.new(sire: a, dam: b, births:).conceive
+      end.to raise_error(Zoo::Domain::Errors::BreedingNotAllowed)
     end
   end
 end
