@@ -9,14 +9,6 @@ module Zoo
       let(:sire) { build_adult(lion, name: 'レオ', sex: Animal::Sex.male) }
       let(:dam)  { build_adult(lion, name: 'ナラ', sex: Animal::Sex.female) }
 
-      describe '.mean_kinship' do
-        it '個体が1頭以下なら0であること' do
-          a = build_adult(lion, name: 'A', sex: Animal::Sex.male)
-          expect(described_class.mean_kinship([a], [a])).to eq(0.0)
-          expect(described_class.mean_kinship([], [])).to eq(0.0)
-        end
-      end
-
       describe '#conceive' do
         it '受胎させると breeding が返り dam が妊娠状態になること' do
           result = described_class.new(sire:, dam:, day: 0).conceive

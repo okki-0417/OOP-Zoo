@@ -5,10 +5,13 @@ require 'spec_helper'
 RSpec.describe '血統と近親交配' do
   sex     = Zoo::Domain::Animal::Sex
   catalog = Zoo::Domain::SpeciesCatalog
-  breeding = Zoo::Domain::Breeding
 
   def births
     @births ||= []
+  end
+
+  def pedigree
+    Zoo::Domain::Pedigree.new(births)
   end
 
   def founder(name, sex)
@@ -34,14 +37,14 @@ RSpec.describe '血統と近親交配' do
     it '血縁のない創始個体同士は0であること' do
       a = founder('A', sex.male)
       b = founder('B', sex.female)
-      expect(breeding.kinship(a, b, births)).to eq(0.0)
+      expect(pedigree.coancestry(a, b)).to eq(0.0)
     end
 
     it '親と子は1/4であること' do
       father = founder('父', sex.male)
       mother = founder('母', sex.female)
       child = offspring('子', sex.male, sire: father, dam: mother)
-      expect(breeding.kinship(father, child, births)).to eq(0.25)
+      expect(pedigree.coancestry(father, child)).to eq(0.25)
     end
 
     it '全きょうだい(両親が同じ)は1/4であること' do
@@ -49,7 +52,7 @@ RSpec.describe '血統と近親交配' do
       mother = founder('母', sex.female)
       a = offspring('兄', sex.male, sire: father, dam: mother)
       b = offspring('妹', sex.female, sire: father, dam: mother)
-      expect(breeding.kinship(a, b, births)).to eq(0.25)
+      expect(pedigree.coancestry(a, b)).to eq(0.25)
     end
 
     it '半きょうだい(片親だけ同じ)は1/8であること' do
@@ -58,7 +61,7 @@ RSpec.describe '血統と近親交配' do
       mother2 = founder('母2', sex.female)
       a = offspring('A', sex.male, sire: father, dam: mother1)
       b = offspring('B', sex.female, sire: father, dam: mother2)
-      expect(breeding.kinship(a, b, births)).to eq(0.125)
+      expect(pedigree.coancestry(a, b)).to eq(0.125)
     end
   end
 
@@ -66,7 +69,7 @@ RSpec.describe '血統と近親交配' do
     it '血縁のない親から生まれた子は0であること' do
       father = founder('父', sex.male)
       mother = founder('母', sex.female)
-      expect(breeding.kinship(father, mother, births)).to eq(0.0)
+      expect(pedigree.coancestry(father, mother)).to eq(0.0)
     end
 
     it '全きょうだいの親から生まれた子は1/4であること' do
@@ -74,14 +77,14 @@ RSpec.describe '血統と近親交配' do
       gm      = founder('祖母', sex.female)
       brother = offspring('兄', sex.male, sire: gf, dam: gm)
       sister  = offspring('姉', sex.female, sire: gf, dam: gm)
-      expect(breeding.kinship(brother, sister, births)).to eq(0.25)
+      expect(pedigree.coancestry(brother, sister)).to eq(0.25)
     end
   end
 
   describe '遺伝的多様性' do
     it '血縁のない個体ばかりの集団は平均近縁度が0であること' do
       animals = [founder('A', sex.male), founder('B', sex.female), founder('C', sex.male)]
-      expect(breeding.mean_kinship(animals, births)).to eq(0.0)
+      expect(pedigree.mean_kinship(animals)).to eq(0.0)
     end
   end
 

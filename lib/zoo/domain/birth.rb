@@ -33,10 +33,6 @@ module Zoo
         end
       end
 
-      def offspring?(animal)
-        @offspring == animal
-      end
-
       def parents
         [@sire, @dam].compact
       end
