@@ -3,8 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe '動物' do
-  sex       = Zoo::Domain::Animal::Sex
-  name_vo   = Zoo::Domain::Animal::Name
+  sex = Zoo::Domain::Animal::Sex
   catalog   = Zoo::Domain::SpeciesCatalog
   foods     = Zoo::Domain::FoodCatalog
   illnesses = Zoo::Domain::IllnessCatalog
@@ -376,39 +375,6 @@ RSpec.describe '動物' do
           lion = adult_lion
           lion.add_stress(70)
           expect(lion).not_to be_fertile
-        end
-      end
-    end
-
-    describe '相手と交配できるか' do
-      let(:male) { adult_lion(sex: sex.male) }
-      let(:female) { adult_lion(sex: sex.female) }
-
-      context '同じ種の異性で、双方が繁殖可能なとき' do
-        it '交配できること' do
-          expect(male.can_breed_with?(female)).to be(true)
-        end
-      end
-
-      context '相手が同性のとき' do
-        it '交配できないこと' do
-          expect(male.can_breed_with?(adult_lion(sex: sex.male))).to be(false)
-        end
-      end
-
-      context '相手が別の種のとき' do
-        it '交配できないこと' do
-          zebra = adult_lion(sex: sex.female, species: catalog.grevys_zebra)
-          expect(male.can_breed_with?(zebra)).to be(false)
-        end
-      end
-
-      context '相手がまだ成熟していないとき' do
-        it '交配できないこと' do
-          cub = Zoo::Domain::Animal.new(
-            species: catalog.lion, name: 'Cub', sex: sex.female, max_health: 100, age_in_days: 0
-          )
-          expect(male.can_breed_with?(cub)).to be(false)
         end
       end
     end

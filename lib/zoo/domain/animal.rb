@@ -307,13 +307,6 @@ module Zoo
           !@health.weak? && !sick? && !stressed? && well_nourished?
       end
 
-      def can_breed_with?(other)
-        other.is_a?(Animal) &&
-          @species == other.species &&
-          @sex.opposite?(other.sex) &&
-          fertile? && other.fertile?
-      end
-
       def breeds_in?(season)
         @species.breeds_in?(season)
       end
