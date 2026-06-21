@@ -22,10 +22,10 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   def house(animal, enclosure)
-    violation = occupancy.admission_violation(enclosure, animal)
-    raise violation if violation
+    housing = Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occupancy: occupancy)
+    housing.admission_violation!
 
-    @housings << housed(animal, enclosure)
+    @housings << housing
     animal
   end
 
@@ -82,13 +82,13 @@ RSpec.describe '現実の動物園の再現' do
   it '肉食獣を草食動物の展示に同居させられないこと' do
     rogue_lion = build_adult(catalog.lion, name: 'はぐれ')
     expect { house(rogue_lion, savanna) }
-      .to raise_error(Zoo::Domain::Errors::IncompatibleCohabitation)
+      .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /捕食/)
   end
 
   it '気候の合わない動物を収容できないこと(ホッキョクグマをサバンナへ)' do
     misplaced = build_adult(catalog.polar_bear, name: '迷子')
     expect { house(misplaced, savanna) }
-      .to raise_error(Zoo::Domain::Errors::ClimateMismatch)
+      .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /適応/)
   end
 
   it '飼育員が専門の動物に給餌でき、専門外には給餌できないこと' do

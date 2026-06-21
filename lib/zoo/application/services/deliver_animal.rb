@@ -40,15 +40,15 @@ module Zoo
             child = birth.offspring
 
             occupancy = Domain::Occupancy.new(@housings.all)
-            violation = occupancy.admission_violation(enclosure, child)
-            raise violation if violation
+            housing = Domain::Housing.new(
+              animal: child, enclosure: enclosure, occupancy: occupancy, occurred_on: zoo.day, keeper_id: keeper&.id
+            )
+            housing.admission_violation!
 
             @animals.save(dam)
             @animals.save(child)
             @births.save(birth)
-            @housings.save(
-              Domain::Housing.record(animal: child, enclosure: enclosure, occurred_on: zoo.day, keeper_id: keeper&.id)
-            )
+            @housings.save(housing)
 
             zoo.generate_buzz(BIRTH_BUZZ)
             @zoo.save(zoo)

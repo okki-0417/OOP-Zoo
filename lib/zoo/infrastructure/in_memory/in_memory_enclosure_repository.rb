@@ -16,6 +16,13 @@ module Zoo
           @store[id.to_s]
         end
 
+        def find_all(ids)
+          ids.map(&:to_s).uniq.each_with_object({}) do |id, found|
+            enclosure = @store[id]
+            found[id] = enclosure if enclosure
+          end
+        end
+
         def save(enclosure)
           @store[enclosure.id.to_s] = enclosure
           enclosure

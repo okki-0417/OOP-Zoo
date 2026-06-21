@@ -4,9 +4,11 @@ RSpec.shared_examples 'a housing repository' do
   catalog = Zoo::Domain::SpeciesCatalog
 
   def pen(name = '区画')
-    Zoo::Domain::Enclosure.new(
+    enclosure = Zoo::Domain::Enclosure.new(
       name: name, temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 4
     )
+    persist_enclosures(enclosure)
+    enclosure
   end
 
   it 'save した収容イベントを all で取り出せること' do
@@ -14,7 +16,7 @@ RSpec.shared_examples 'a housing repository' do
     enclosure = pen
     persist_animals(animal)
 
-    repository.save(Zoo::Domain::Housing.record(animal: animal, enclosure: enclosure, occurred_on: 3))
+    repository.save(Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occurred_on: 3))
 
     record = repository.all.first
     expect(record).to be_a(Zoo::Domain::Housing)
@@ -33,8 +35,8 @@ RSpec.shared_examples 'a housing repository' do
     b = pen('B')
     persist_animals(animal)
 
-    repository.save(Zoo::Domain::Housing.record(animal: animal, enclosure: a))
-    repository.save(Zoo::Domain::Housing.record(animal: animal, enclosure: b))
+    repository.save(Zoo::Domain::Housing.new(animal: animal, enclosure: a))
+    repository.save(Zoo::Domain::Housing.new(animal: animal, enclosure: b))
 
     occupancy = Zoo::Domain::Occupancy.new(repository.all)
     expect(occupancy.occupants_of(a)).to be_empty
@@ -46,7 +48,7 @@ RSpec.shared_examples 'a housing repository' do
     enclosure = pen
     persist_animals(animal)
 
-    housing = Zoo::Domain::Housing.record(animal: animal, enclosure: enclosure)
+    housing = Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure)
     repository.save(housing)
     repository.save(Zoo::Domain::Release.of(housing))
 
@@ -60,7 +62,7 @@ RSpec.shared_examples 'a housing repository' do
     it '収容中はその入居イベントを返すこと' do
       animal = build_adult(catalog.lion, name: 'レオ')
       persist_animals(animal)
-      housing = Zoo::Domain::Housing.record(animal: animal, enclosure: pen)
+      housing = Zoo::Domain::Housing.new(animal: animal, enclosure: pen)
       repository.save(housing)
 
       expect(repository.current_housing_of(animal).id).to eq(housing.id)
@@ -69,7 +71,7 @@ RSpec.shared_examples 'a housing repository' do
     it '解放済みなら nil を返すこと' do
       animal = build_adult(catalog.lion, name: 'レオ')
       persist_animals(animal)
-      housing = Zoo::Domain::Housing.record(animal: animal, enclosure: pen)
+      housing = Zoo::Domain::Housing.new(animal: animal, enclosure: pen)
       repository.save(housing)
       repository.save(Zoo::Domain::Release.of(housing))
 
@@ -81,10 +83,10 @@ RSpec.shared_examples 'a housing repository' do
       a = pen('A')
       b = pen('B')
       persist_animals(animal)
-      first = Zoo::Domain::Housing.record(animal: animal, enclosure: a)
+      first = Zoo::Domain::Housing.new(animal: animal, enclosure: a)
       repository.save(first)
       repository.save(Zoo::Domain::Release.of(first))
-      second = Zoo::Domain::Housing.record(animal: animal, enclosure: b)
+      second = Zoo::Domain::Housing.new(animal: animal, enclosure: b)
       repository.save(second)
 
       current = repository.current_housing_of(animal)
@@ -98,7 +100,7 @@ RSpec.shared_examples 'a housing repository' do
       resident = build_adult(catalog.lion, name: '在住')
       a = pen('A')
       persist_animals(resident)
-      repository.save(Zoo::Domain::Housing.record(animal: resident, enclosure: a))
+      repository.save(Zoo::Domain::Housing.new(animal: resident, enclosure: a))
 
       scoped = Zoo::Domain::Occupancy.new(repository.events_for_enclosure(a.id))
       expect(scoped.occupants_of(a)).to contain_exactly(resident)
@@ -109,10 +111,10 @@ RSpec.shared_examples 'a housing repository' do
       a = pen('A')
       b = pen('B')
       persist_animals(mover)
-      first = Zoo::Domain::Housing.record(animal: mover, enclosure: a)
+      first = Zoo::Domain::Housing.new(animal: mover, enclosure: a)
       repository.save(first)
       repository.save(Zoo::Domain::Release.of(first))
-      repository.save(Zoo::Domain::Housing.record(animal: mover, enclosure: b))
+      repository.save(Zoo::Domain::Housing.new(animal: mover, enclosure: b))
 
       scoped = Zoo::Domain::Occupancy.new(repository.events_for_enclosure(a.id))
       expect(scoped.occupants_of(a)).to be_empty

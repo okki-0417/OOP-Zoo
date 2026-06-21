@@ -16,6 +16,16 @@ module Zoo
           row && @mapper.to_aggregate(row.transform_keys(&:to_s))
         end
 
+        def find_all(ids)
+          keys = ids.map(&:to_s).uniq
+          return {} if keys.empty?
+
+          enclosures.where(id: keys).each_with_object({}) do |row, found|
+            enclosure = @mapper.to_aggregate(row.transform_keys(&:to_s))
+            found[enclosure.id.to_s] = enclosure
+          end
+        end
+
         def save(enclosure)
           enclosures.insert_conflict(:replace).insert(@mapper.to_row(enclosure))
           enclosure

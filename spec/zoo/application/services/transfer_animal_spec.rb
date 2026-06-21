@@ -33,13 +33,13 @@ RSpec.describe Zoo::Application::Services::TransferAnimal do
       expect(occupants_of(housings, from)).not_to include(lion)
     end
 
-    it '移送先が満員だと CapacityExceeded になり、個体は移送元に残ること' do
+    it '移送先が満員だと HousingNotAllowed になり、個体は移送元に残ること' do
       full = enclosure('満室', 1)
       enclosures.save(full)
       housings.save(housed(build_adult(catalog.lion, name: '先住'), full))
 
       expect { service.call(commands::TransferAnimalCommand.new(animal_id: lion.id, enclosure_id: full.id)) }
-        .to raise_error(Zoo::Domain::Errors::CapacityExceeded)
+        .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /定員/)
       expect(occupants_of(housings, from)).to include(lion)
     end
   end

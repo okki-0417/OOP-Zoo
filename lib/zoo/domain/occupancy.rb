@@ -4,9 +4,7 @@ module Zoo
   module Domain
     class Occupancy
       SOCIAL_CONFLICT_INJURY = 5
-
       CROWDING_AGGRAVATION = 5
-
       NO_REFUGE_AGGRAVATION = 5
 
       def initialize(events = [])
@@ -76,33 +74,6 @@ module Zoo
 
       def injury_for(enclosure, animal)
         self.class.injury_for(enclosure, occupants_of(enclosure), animal)
-      end
-
-      def admission_violation(enclosure, animal)
-        return Errors::DeadAnimal.new("#{animal.name}は死亡しているため収容できません") if animal.dead?
-
-        return Errors::CapacityExceeded.new("#{enclosure.name}は定員#{enclosure.capacity}に達しています") if full?(enclosure)
-
-        unless animal.species.habitable?(enclosure.temperature)
-          return Errors::ClimateMismatch.new(
-            "#{animal.species.name_ja}は#{enclosure.temperature}の#{enclosure.name}に適応できません"
-          )
-        end
-
-        species_present_in(enclosure).each do |resident_species|
-          reason = resident_species.cohabitation_conflict_with(animal.species)
-          return Errors::IncompatibleCohabitation.new(reason) if reason
-        end
-
-        nil
-      end
-
-      def can_admit?(enclosure, animal)
-        admission_violation(enclosure, animal).nil?
-      end
-
-      def rejection_reason(enclosure, animal)
-        admission_violation(enclosure, animal)&.message
       end
 
       def self.species_present(occupants)

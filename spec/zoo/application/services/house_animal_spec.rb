@@ -43,7 +43,7 @@ RSpec.describe Zoo::Application::Services::HouseAnimal do
         .to raise_error(Zoo::Application::Errors::AnimalNotFound)
     end
 
-    it '定員1の満員エリアに収容しようとすると Domain::Errors::CapacityExceeded が伝播すること' do
+    it '定員1の満員エリアに収容しようとすると Domain::Errors::HousingNotAllowed が伝播すること' do
       resident = build_adult(catalog.lion, name: '先住')
       full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
       repo = in_memory::InMemoryEnclosureRepository.new([full])
@@ -53,7 +53,7 @@ RSpec.describe Zoo::Application::Services::HouseAnimal do
       expect do
         described_class.new(enclosures: repo, animals: animals, housings: housings, unit_of_work: unit_of_work)
                        .call(command)
-      end.to raise_error(Zoo::Domain::Errors::CapacityExceeded)
+      end.to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /定員/)
     end
   end
 end

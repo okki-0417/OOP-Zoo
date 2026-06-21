@@ -9,9 +9,10 @@ module Zoo
         HOUSED = HousingMapper::HOUSED
         RELEASED = HousingMapper::RELEASED
 
-        def initialize(database, animals, mapper: HousingMapper.new)
+        def initialize(database, animals, enclosures, mapper: HousingMapper.new)
           @database = database
           @animals = animals
+          @enclosures = enclosures
           @mapper = mapper
         end
 
@@ -51,10 +52,11 @@ module Zoo
 
         def build_events(rows)
           rows = rows.map { |row| row.transform_keys(&:to_s) }
-          lookup = animal_lookup(rows)
+          animal_lookup = animal_lookup(rows)
+          enclosure_lookup = enclosure_lookup(rows)
           housings = {}
           rows.filter_map do |row|
-            event = @mapper.to_aggregate(row, lookup, housings)
+            event = @mapper.to_aggregate(row, animal_lookup, enclosure_lookup, housings)
             housings[event.id.to_s] = event if event.is_a?(Domain::Housing)
             event
           end
@@ -63,6 +65,11 @@ module Zoo
         def animal_lookup(rows)
           animals = @animals.find_all(rows.filter_map { |row| row['animal_id'] })
           ->(id) { animals[id.to_s] }
+        end
+
+        def enclosure_lookup(rows)
+          enclosures = @enclosures.find_all(rows.filter_map { |row| row['enclosure_id'] })
+          ->(id) { enclosures[id.to_s] }
         end
       end
     end

@@ -20,7 +20,7 @@ RSpec.describe '収容(どの動物がどの区画にいるか)' do
   end
 
   def house(animal, enclosure, day: 0)
-    housings << Zoo::Domain::Housing.record(animal: animal, enclosure: enclosure, occurred_on: day)
+    housings << Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occurred_on: day)
     animal
   end
 
@@ -116,41 +116,45 @@ RSpec.describe '収容(どの動物がどの区画にいるか)' do
   end
 
   describe '収容可否のルール' do
+    def admit!(animal, enclosure)
+      Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occupancy: occupancy).admission_violation!
+    end
+
     it '定員に達した区画にはこれ以上収容できないこと' do
       savanna = pen('サバンナ', capacity: 1)
       house(build_adult(catalog.lion, name: '先客'), savanna)
 
-      violation = occupancy.admission_violation(savanna, build_adult(catalog.lion, name: '新入り'))
-      expect(violation).to be_a(Zoo::Domain::Errors::CapacityExceeded)
+      expect { admit!(build_adult(catalog.lion, name: '新入り'), savanna) }
+        .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /定員/)
     end
 
     it '適温域に合わない区画には収容できないこと' do
       tropics = pen('熱帯', temp: 35)
 
-      violation = occupancy.admission_violation(tropics, build_adult(catalog.emperor_penguin))
-      expect(violation).to be_a(Zoo::Domain::Errors::ClimateMismatch)
+      expect { admit!(build_adult(catalog.emperor_penguin), tropics) }
+        .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /適応/)
     end
 
     it '捕食関係にある種は同居できないこと' do
       savanna = pen('サバンナ', capacity: 4, temp: 25)
       house(build_adult(catalog.lion, name: 'ライオン'), savanna)
 
-      violation = occupancy.admission_violation(savanna, build_adult(catalog.african_elephant))
-      expect(violation).to be_a(Zoo::Domain::Errors::IncompatibleCohabitation)
+      expect { admit!(build_adult(catalog.african_elephant), savanna) }
+        .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /捕食/)
     end
 
     it '死亡した動物は収容できないこと' do
       savanna = pen('サバンナ')
       carcass = build_adult(catalog.lion).tap { |a| a.die(cause: :illness) }
 
-      violation = occupancy.admission_violation(savanna, carcass)
-      expect(violation).to be_a(Zoo::Domain::Errors::DeadAnimal)
+      expect { admit!(carcass, savanna) }
+        .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /死亡/)
     end
 
     it 'ルールに反しなければ収容できること' do
       savanna = pen('サバンナ', capacity: 4, temp: 25)
 
-      expect(occupancy.can_admit?(savanna, build_adult(catalog.lion))).to be(true)
+      expect { admit!(build_adult(catalog.lion), savanna) }.not_to raise_error
     end
   end
 end

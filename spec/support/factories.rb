@@ -26,7 +26,7 @@ module Factories
   end
 
   def housed(animal, enclosure, day: 0)
-    Zoo::Domain::Housing.record(animal: animal, enclosure: enclosure, occurred_on: day)
+    Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occurred_on: day)
   end
 
   def released(housing, day: 0)

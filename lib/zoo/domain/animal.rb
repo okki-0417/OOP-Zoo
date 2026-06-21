@@ -326,6 +326,18 @@ module Zoo
         other.is_a?(Animal) && @species.same_species?(other.species)
       end
 
+      def species_name
+        @species.name_ja
+      end
+
+      def adapts_to?(temperature)
+        @species.habitable?(temperature)
+      end
+
+      def cohabitation_conflict_with(other_species)
+        @species.cohabitation_conflict_with(other_species)
+      end
+
       def sex_opposite?(other)
         other.is_a?(Animal) && @sex.opposite?(other.sex)
       end

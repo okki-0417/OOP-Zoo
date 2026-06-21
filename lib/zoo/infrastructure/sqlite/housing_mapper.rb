@@ -13,8 +13,8 @@ module Zoo
           event.is_a?(Domain::Release) ? release_row(event) : housing_row(event)
         end
 
-        def to_aggregate(row, lookup, housings)
-          row['kind'] == RELEASED ? released(row, housings) : housed(row, lookup)
+        def to_aggregate(row, animal_lookup, enclosure_lookup, housings)
+          row['kind'] == RELEASED ? released(row, housings) : housed(row, animal_lookup, enclosure_lookup)
         end
 
         private
@@ -43,14 +43,15 @@ module Zoo
           }
         end
 
-        def housed(row, lookup)
-          animal = lookup.call(Domain::Shared::Identifier.new(row['animal_id']))
-          return nil unless animal
+        def housed(row, animal_lookup, enclosure_lookup)
+          animal = animal_lookup.call(Domain::Shared::Identifier.new(row['animal_id']))
+          enclosure = enclosure_lookup.call(Domain::Shared::Identifier.new(row['enclosure_id']))
+          return nil unless animal && enclosure
 
           Domain::Housing.new(
             id: Domain::Shared::Identifier.new(row['id']),
             animal: animal,
-            enclosure_id: Domain::Shared::Identifier.new(row['enclosure_id']),
+            enclosure: enclosure,
             occurred_on: row['occurred_on'],
             keeper_id: keeper_id(row)
           )

@@ -153,41 +153,6 @@ module Zoo
           expect(described_class.new([housed(z, savanna)]).injury_for(savanna, z)).to eq(0)
         end
       end
-
-      describe '#admission_violation / #can_admit? / #rejection_reason' do
-        let(:savanna) { pen('サバンナ', temp: 30) }
-
-        it '収容できる個体は違反なし・can_admit? が真・理由が nil であること' do
-          occupancy = described_class.new([])
-          z = build_adult(zebra)
-          expect(occupancy.admission_violation(savanna, z)).to be_nil
-          expect(occupancy.can_admit?(savanna, z)).to be(true)
-          expect(occupancy.rejection_reason(savanna, z)).to be_nil
-        end
-
-        it '死亡個体は DeadAnimal であること' do
-          dead = build_adult(zebra).tap(&:die)
-          expect(described_class.new([]).admission_violation(savanna, dead)).to be_a(Errors::DeadAnimal)
-        end
-
-        it '満員だと CapacityExceeded であること' do
-          full = pen('小屋', capacity: 1, temp: 30)
-          occupancy = described_class.new([housed(build_adult(zebra, name: '先住'), full)])
-          expect(occupancy.admission_violation(full, build_adult(zebra))).to be_a(Errors::CapacityExceeded)
-        end
-
-        it '適温に合わない個体は ClimateMismatch であること' do
-          cold = pen('極地', temp: -10)
-          expect(described_class.new([]).admission_violation(cold, build_adult(zebra))).to be_a(Errors::ClimateMismatch)
-        end
-
-        it '同居できない種は IncompatibleCohabitation で理由に捕食を含むこと' do
-          occupancy = described_class.new([housed(build_adult(zebra), savanna)])
-          violation = occupancy.admission_violation(savanna, build_adult(lion))
-          expect(violation).to be_a(Errors::IncompatibleCohabitation)
-          expect(occupancy.rejection_reason(savanna, build_adult(lion))).to include('捕食')
-        end
-      end
     end
   end
 end

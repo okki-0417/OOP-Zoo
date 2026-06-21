@@ -88,14 +88,14 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
       expect(birth_announcements.announcements.size).to eq(1)
     end
 
-    it '定員1の満員エリアに収容できず CapacityExceeded になると、子が保存されずロールバックされること' do
+    it '定員1の満員エリアに収容できず HousingNotAllowed になると、子が保存されずロールバックされること' do
       resident = build_adult(catalog.lion, name: '先住')
       full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
       enclosures.save(full)
       housings.save(housed(resident, full))
 
       expect { service.call(command(enclosure_id: full.id)) }
-        .to raise_error(Zoo::Domain::Errors::CapacityExceeded)
+        .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /定員/)
       expect(animals.all.size).to eq(2)
     end
 
@@ -105,7 +105,8 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
       enclosures.save(full)
       housings.save(housed(resident, full))
 
-      expect { service.call(command(enclosure_id: full.id)) }.to raise_error(Zoo::Domain::Errors::CapacityExceeded)
+      expect { service.call(command(enclosure_id: full.id)) }
+        .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /定員/)
       expect(births.all).to be_empty
     end
 

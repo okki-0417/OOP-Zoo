@@ -7,5 +7,7 @@ RSpec.describe Zoo::Infrastructure::InMemory::InMemoryHousingRepository do
 
   def persist_animals(*); end
 
+  def persist_enclosures(*); end
+
   it_behaves_like 'a housing repository'
 end

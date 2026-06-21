@@ -216,7 +216,7 @@ module Zoo
         database = sqlite::Database.new(path)
         @animals = sqlite::AnimalRepository.new(database)
         @enclosures = sqlite::EnclosureRepository.new(database)
-        @housings = sqlite::HousingRepository.new(database, @animals)
+        @housings = sqlite::HousingRepository.new(database, @animals, @enclosures)
         @keepers = sqlite::KeeperRepository.new(database)
         @veterinarians = sqlite::VeterinarianRepository.new(database)
         @breedings = sqlite::BreedingRepository.new(database, @animals)

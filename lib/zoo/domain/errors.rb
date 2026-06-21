@@ -10,6 +10,7 @@ module Zoo
       class DeadAnimal < DomainError; end
       class IncompatibleFood < DomainError; end
       class BreedingNotAllowed < DomainError; end
+      class HousingNotAllowed < DomainError; end
       class NotQualified < DomainError; end
       class VaccineUnavailable < DomainError; end
       class InsufficientFunds < DomainError; end

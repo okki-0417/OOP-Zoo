@@ -8,6 +8,10 @@ module Zoo
           raise NotImplementedError, "#{self.class}#find を実装してください"
         end
 
+        def find_all(_ids)
+          raise NotImplementedError, "#{self.class}#find_all を実装してください"
+        end
+
         def save(_enclosure)
           raise NotImplementedError, "#{self.class}#save を実装してください"
         end

@@ -160,7 +160,7 @@ RSpec.describe Zoo::Presentation::Web do
       expect(body['occupants'].map { |o| o['name'] }).to eq(['レオ'])
     end
 
-    it '定員1のエリアに2頭目を収容すると CapacityExceeded で422に翻訳されること' do
+    it '定員1のエリアに2頭目を収容すると HousingNotAllowed で422に翻訳されること' do
       enclosure_id = build_enclosure(capacity: 1)
       first = acquire(name: '先住')
       post_json "/enclosures/#{enclosure_id}/occupants", animal_id: first
@@ -169,7 +169,7 @@ RSpec.describe Zoo::Presentation::Web do
       post_json "/enclosures/#{enclosure_id}/occupants", animal_id: second
 
       expect(last_response.status).to eq(422)
-      expect(body['error']).to include('code' => 'CapacityExceeded')
+      expect(body['error']).to include('code' => 'HousingNotAllowed')
     end
   end
 
