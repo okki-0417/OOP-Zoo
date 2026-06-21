@@ -147,7 +147,6 @@ module Zoo
           expect(animal.pull_events).to be_empty
         end
       end
-
     end
   end
 end

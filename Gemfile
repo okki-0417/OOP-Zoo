@@ -5,9 +5,9 @@ source 'https://rubygems.org'
 group :development, :test do
   gem 'rack-test'
   gem 'rspec', '~> 3.13'
-  gem 'simplecov', require: false
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
+  gem 'simplecov', require: false
 end
 
 gem 'puma'

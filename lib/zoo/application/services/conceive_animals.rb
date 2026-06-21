@@ -23,7 +23,8 @@ module Zoo
 
             zoo = @zoo.load
 
-            breeding = Domain::Breeding.new(sire:, dam:, day: zoo.day, season: zoo.season, births: @births.ancestry(sire, dam))
+            breeding = Domain::Breeding.new(sire:, dam:, day: zoo.day, season: zoo.season,
+                                            births: @births.ancestry(sire, dam))
             breeding.conceive
 
             @animals.save(dam)
