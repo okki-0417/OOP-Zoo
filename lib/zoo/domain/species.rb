@@ -43,10 +43,6 @@ module Zoo
         @breeding_season == YEAR_ROUND
       end
 
-      def breeds_in?(season)
-        breeds_year_round? || season.value == @breeding_season
-      end
-
       def reproductively_senesces?
         @taxon_class.warm_blooded?
       end

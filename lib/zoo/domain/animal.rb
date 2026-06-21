@@ -307,8 +307,12 @@ module Zoo
           !@health.weak? && !sick? && !stressed? && well_nourished?
       end
 
-      def breeds_in?(season)
-        @species.breeds_in?(season)
+      def breeds_year_round?
+        @species.breeds_year_round?
+      end
+
+      def breeding_season
+        @species.breeding_season
       end
 
       def threatened?

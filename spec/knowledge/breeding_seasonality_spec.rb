@@ -45,11 +45,11 @@ RSpec.describe '繁殖の季節性' do
       expect(catalog.japanese_macaque.breeds_year_round?).to be(false)
     end
 
-    it '繁殖季節は季節の巡り(Season.on_day)と連動して訪れること' do
-      autumn_day = season.on_day(200)
-      expect(autumn_day.value).to eq(:autumn)
-      expect(catalog.japanese_macaque.breeds_in?(autumn_day)).to be(true)
-      expect(catalog.japanese_macaque.breeds_in?(season.on_day(0))).to be(false)
+    it '繁殖季節は季節の巡り(Season.on_day)と連動して訪れ、その日のみ交配が成立すること' do
+      expect(season.on_day(200).value).to eq(:autumn)
+      expect { mate_in(catalog.japanese_macaque, season.on_day(200)) }.not_to raise_error
+      expect { mate_in(catalog.japanese_macaque, season.on_day(0)) }
+        .to raise_error(errors::BreedingNotAllowed)
     end
   end
 end
