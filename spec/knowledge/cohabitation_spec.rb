@@ -11,9 +11,7 @@ RSpec.describe '同居適性' do
   # 気温自体は入園を妨げないようにして同居ルールだけを浮かび上がらせる。
   def admission(newcomer_species, resident_species)
     enclosure = Zoo::Domain::Enclosure.new(
-      name: '展示エリア',
-      temperature: newcomer_species.habitable_temperature_range.begin,
-      capacity: 9
+      name: '展示エリア', temperature: newcomer_species.habitable_temperature_range.begin, capacity: 9
     )
     occupancy = Zoo::Domain::Occupancy.new(enclosure, [build_adult(resident_species, name: '先住')])
     Zoo::Domain::Housing.new(
