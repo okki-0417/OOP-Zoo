@@ -14,7 +14,7 @@ module Zoo
         end
 
         def call
-          occupants = Domain::Occupancy.new(@housings.all).all_occupants
+          occupants = @housings.all_occupants
           species = occupants.map(&:species).uniq
           events = @event_store.all
           zoo = @zoo.load

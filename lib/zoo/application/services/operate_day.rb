@@ -24,7 +24,7 @@ module Zoo
 
             enclosures = @enclosures.all
             animals    = @animals.all
-            on_exhibit = Domain::Occupancy.new(@housings.all).all_occupants
+            on_exhibit = @housings.all_occupants
 
             visitors, income = Domain::VisitorAttraction.receive(zoo:, on_exhibit:)
             cost             = Domain::OperatingCost.charge(zoo:, enclosures:, staff_count: staff_count, animals:)

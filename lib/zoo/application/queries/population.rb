@@ -9,7 +9,7 @@ module Zoo
         end
 
         def call
-          Domain::Occupancy.new(@housings.all).all_occupants.size
+          @housings.all_occupants.size
         end
       end
     end

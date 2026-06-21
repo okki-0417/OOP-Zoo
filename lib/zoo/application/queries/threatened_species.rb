@@ -9,10 +9,10 @@ module Zoo
         end
 
         def call
-          Domain::Occupancy.new(@housings.all).all_occupants
-                           .select(&:threatened?)
-                           .group_by(&:species)
-                           .map { |species, members| to_read_model(species, members.size) }
+          @housings.all_occupants
+                   .select(&:threatened?)
+                   .group_by(&:species)
+                   .map { |species, members| to_read_model(species, members.size) }
         end
 
         private

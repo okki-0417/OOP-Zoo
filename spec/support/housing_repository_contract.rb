@@ -95,6 +95,45 @@ RSpec.shared_examples 'a housing repository' do
     end
   end
 
+  describe '#occupants_of' do
+    it 'その区画の現在の生存収容個体を返すこと' do
+      resident = build_adult(catalog.lion, name: '在住')
+      a = pen('A')
+      persist_animals(resident)
+      repository.save(Zoo::Domain::Housing.new(animal: resident, enclosure: a))
+
+      expect(repository.occupants_of(a)).to contain_exactly(resident)
+    end
+
+    it '転居した個体は移動先の区画にのみ含まれること' do
+      mover = build_adult(catalog.lion, name: '転居')
+      a = pen('A')
+      b = pen('B')
+      persist_animals(mover)
+      first = Zoo::Domain::Housing.new(animal: mover, enclosure: a)
+      repository.save(first)
+      repository.save(Zoo::Domain::Release.of(first))
+      repository.save(Zoo::Domain::Housing.new(animal: mover, enclosure: b))
+
+      expect(repository.occupants_of(a)).to be_empty
+      expect(repository.occupants_of(b)).to contain_exactly(mover)
+    end
+  end
+
+  describe '#all_occupants' do
+    it 'どこかに現在収容されている生存個体をすべて返すこと' do
+      x = build_adult(catalog.lion, name: 'x')
+      y = build_adult(catalog.lion, name: 'y')
+      a = pen('A')
+      b = pen('B')
+      persist_animals(x, y)
+      repository.save(Zoo::Domain::Housing.new(animal: x, enclosure: a))
+      repository.save(Zoo::Domain::Housing.new(animal: y, enclosure: b))
+
+      expect(repository.all_occupants).to contain_exactly(x, y)
+    end
+  end
+
   describe '#events_for_enclosure' do
     it 'その区画の占有を畳み込むと収容中の個体になること' do
       resident = build_adult(catalog.lion, name: '在住')

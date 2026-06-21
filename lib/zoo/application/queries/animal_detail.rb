@@ -16,7 +16,7 @@ module Zoo
 
           species = animal.species
           status = species.conservation_status
-          enclosure_id = animal.alive? ? Domain::Occupancy.new(@housings.all).enclosure_id_of(animal) : nil
+          enclosure_id = animal.alive? ? @housings.current_housing_of(animal)&.enclosure_id : nil
           enclosure = enclosure_id && @enclosures.find(enclosure_id)
           ReadModels::AnimalProfile.new(
             id: animal.id.to_s,

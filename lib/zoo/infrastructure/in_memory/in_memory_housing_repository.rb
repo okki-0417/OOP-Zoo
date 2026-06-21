@@ -34,6 +34,14 @@ module Zoo
           Domain::Occupancy.new(@store).current_housing_of(animal)
         end
 
+        def occupants_of(enclosure)
+          Domain::Occupancy.new(events_for_enclosure(enclosure.id)).occupants_of(enclosure)
+        end
+
+        def all_occupants
+          Domain::Occupancy.new(@store).all_occupants
+        end
+
         private
 
         def housed_in?(event, enclosure_id)

@@ -44,6 +44,14 @@ module Zoo
           build_events(current.all).first
         end
 
+        def occupants_of(enclosure)
+          Domain::Occupancy.new(events_for_enclosure(enclosure.id)).occupants_of(enclosure)
+        end
+
+        def all_occupants
+          Domain::Occupancy.new(all).all_occupants
+        end
+
         private
 
         def events

@@ -14,10 +14,9 @@ module Zoo
 
         def call(season: Domain::Season.spring)
           deceased = []
-          occupancy = Domain::Occupancy.new(@housings.all)
 
           @enclosures.all.each do |enclosure|
-            occupants = occupancy.occupants_of(enclosure)
+            occupants = @housings.occupants_of(enclosure)
 
             dead, events = @unit_of_work.run do
               dead_animals = Domain::EnclosureDay.new(enclosure, occupants, season: season).run

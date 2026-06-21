@@ -10,12 +10,11 @@ module Zoo
         end
 
         def call
-          occupancy = Domain::Occupancy.new(@housings.all)
           @enclosures.all.map do |enclosure|
             ReadModels::EnclosureSummary.new(
               id: enclosure.id.to_s,
               name: enclosure.name,
-              population: occupancy.population_of(enclosure),
+              population: @housings.occupants_of(enclosure).size,
               capacity: enclosure.capacity,
               cleanliness: enclosure.cleanliness.level,
               filthy: enclosure.filthy?
