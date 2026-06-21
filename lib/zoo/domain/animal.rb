@@ -343,10 +343,6 @@ module Zoo
         alive? && male? && mature? && group_living?
       end
 
-      def sex_opposite?(other)
-        other.is_a?(Animal) && @sex.opposite?(other.sex)
-      end
-
       def conceive(inbreeding: 0.0)
         raise Errors::BreedingNotAllowed, 'メスのみ妊娠できます' unless @sex.female?
         raise Errors::BreedingNotAllowed, '既に妊娠/抱卵中です' if expecting?
@@ -440,10 +436,6 @@ module Zoo
         vulnerable = [stage.baby?, stage.elderly?, stressed?, malnourished?]
         1.0 + (vulnerable.count(true) * ILLNESS_VULNERABILITY_INCREMENT)
       end
-
-      protected
-
-      attr_reader :sex
 
       private
 

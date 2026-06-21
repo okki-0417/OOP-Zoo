@@ -29,7 +29,6 @@ module Zoo
         errors << 'sireはオスでなければなりません' unless @sire.male?
         errors << 'damはメスでなければなりません' unless @dam.female?
         errors << '同種でなければ繁殖できません' unless @sire.species == @dam.species
-        errors << '異性でなければ繁殖できません' unless @sire.sex_opposite?(@dam)
         errors << '成熟な個体同士でなければ繁殖できません' unless @sire.fertile? && @dam.fertile?
         errors << '健康な個体同士でなければ繁殖できません' unless @sire.healthy? && @dam.healthy?
         errors << '近親交配は避ける必要があります' if @pedigree.related?(@sire, @dam)

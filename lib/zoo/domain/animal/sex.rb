@@ -38,10 +38,6 @@ module Zoo
           @value == :female
         end
 
-        def opposite?(other)
-          other.is_a?(Sex) && @value != other.value
-        end
-
         def label
           VALUES.fetch(@value)
         end

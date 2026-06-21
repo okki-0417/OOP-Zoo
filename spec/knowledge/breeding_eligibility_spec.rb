@@ -21,11 +21,18 @@ RSpec.describe '繁殖できる相手' do
   end
 
   context '相手が同性のとき' do
-    it '異性でなければ繁殖できないこと' do
+    it 'オス同士では母(メス)役が不在となり繁殖できないこと' do
       sire = adult(catalog.lion, sex.male, name: 'オス1')
       dam  = adult(catalog.lion, sex.male, name: 'オス2')
       expect { breeding.new(sire:, dam:).conceive }
-        .to raise_error(errors::BreedingNotAllowed, /異性/)
+        .to raise_error(errors::BreedingNotAllowed, /メス/)
+    end
+
+    it 'メス同士では父(オス)役が不在となり繁殖できないこと' do
+      sire = adult(catalog.lion, sex.female, name: 'メス1')
+      dam  = adult(catalog.lion, sex.female, name: 'メス2')
+      expect { breeding.new(sire:, dam:).conceive }
+        .to raise_error(errors::BreedingNotAllowed, /オス/)
     end
   end
 
