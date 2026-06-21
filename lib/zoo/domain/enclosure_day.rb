@@ -18,7 +18,7 @@ module Zoo
           next if animal.dead?
 
           apply_welfare(animal)
-          animal.injure(Occupancy.injury_for(@enclosure, @occupants, animal))
+          animal.injure(SocialConflict.new(@enclosure, @occupants, animal).injury)
           animal.grow_older(1) unless animal.dead?
         end
         @enclosure.soil(@occupants.size)

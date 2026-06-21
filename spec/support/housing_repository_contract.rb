@@ -38,9 +38,8 @@ RSpec.shared_examples 'a housing repository' do
     repository.save(Zoo::Domain::Housing.new(animal: animal, enclosure: a))
     repository.save(Zoo::Domain::Housing.new(animal: animal, enclosure: b))
 
-    occupancy = Zoo::Domain::Occupancy.new(repository.all)
-    expect(occupancy.occupants_of(a)).to be_empty
-    expect(occupancy.occupants_of(b)).to contain_exactly(animal)
+    expect(repository.occupants_of(a)).to be_empty
+    expect(repository.occupants_of(b)).to contain_exactly(animal)
   end
 
   it '解放イベントも保持し、解放後はどの区画にも属さないこと' do
@@ -55,7 +54,7 @@ RSpec.shared_examples 'a housing repository' do
     last = repository.all.last
     expect(last).to be_a(Zoo::Domain::Release)
     expect(last.housing.id).to eq(housing.id)
-    expect(Zoo::Domain::Occupancy.new(repository.all).enclosure_id_of(animal)).to be_nil
+    expect(repository.current_housing_of(animal)).to be_nil
   end
 
   describe '#current_housing_of' do
@@ -118,6 +117,29 @@ RSpec.shared_examples 'a housing repository' do
       expect(repository.occupants_of(a)).to be_empty
       expect(repository.occupants_of(b)).to contain_exactly(mover)
     end
+
+    it '解放なしで2回 house すると、後から記録した区画が勝つこと' do
+      animal = build_adult(catalog.lion, name: 'レオ')
+      a = pen('A')
+      b = pen('B')
+      persist_animals(animal)
+      repository.save(Zoo::Domain::Housing.new(animal: animal, enclosure: a))
+      repository.save(Zoo::Domain::Housing.new(animal: animal, enclosure: b))
+
+      expect(repository.occupants_of(a)).to be_empty
+      expect(repository.occupants_of(b)).to contain_exactly(animal)
+    end
+
+    it '死亡した個体は占有から除外されること' do
+      animal = build_adult(catalog.lion, name: 'レオ')
+      a = pen('A')
+      persist_animals(animal)
+      repository.save(Zoo::Domain::Housing.new(animal: animal, enclosure: a))
+      animal.die(cause: :illness)
+      persist_animals(animal)
+
+      expect(repository.occupants_of(a)).to be_empty
+    end
   end
 
   describe '#all_occupants' do
@@ -131,32 +153,6 @@ RSpec.shared_examples 'a housing repository' do
       repository.save(Zoo::Domain::Housing.new(animal: y, enclosure: b))
 
       expect(repository.all_occupants).to contain_exactly(x, y)
-    end
-  end
-
-  describe '#events_for_enclosure' do
-    it 'その区画の占有を畳み込むと収容中の個体になること' do
-      resident = build_adult(catalog.lion, name: '在住')
-      a = pen('A')
-      persist_animals(resident)
-      repository.save(Zoo::Domain::Housing.new(animal: resident, enclosure: a))
-
-      scoped = Zoo::Domain::Occupancy.new(repository.events_for_enclosure(a.id))
-      expect(scoped.occupants_of(a)).to contain_exactly(resident)
-    end
-
-    it '転居で出ていった個体はその区画のスコープから外れること' do
-      mover = build_adult(catalog.lion, name: '転居')
-      a = pen('A')
-      b = pen('B')
-      persist_animals(mover)
-      first = Zoo::Domain::Housing.new(animal: mover, enclosure: a)
-      repository.save(first)
-      repository.save(Zoo::Domain::Release.of(first))
-      repository.save(Zoo::Domain::Housing.new(animal: mover, enclosure: b))
-
-      scoped = Zoo::Domain::Occupancy.new(repository.events_for_enclosure(a.id))
-      expect(scoped.occupants_of(a)).to be_empty
     end
   end
 end

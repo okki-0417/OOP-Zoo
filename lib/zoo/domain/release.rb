@@ -23,14 +23,6 @@ module Zoo
         @housing.animal
       end
 
-      def enclosure
-        @housing.enclosure
-      end
-
-      def enclosure_id
-        @housing.enclosure_id
-      end
-
       def to_s
         "#{animal.name}を解放"
       end

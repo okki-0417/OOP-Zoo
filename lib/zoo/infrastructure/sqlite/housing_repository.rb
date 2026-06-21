@@ -25,37 +25,34 @@ module Zoo
           build_events(events.order(:seq).all)
         end
 
-        def events_for_enclosure(enclosure_id)
-          housed_here = events.where(enclosure_id: enclosure_id.to_s, kind: HOUSED)
-          scoped = events.where(
-            Sequel.|(
-              { enclosure_id: enclosure_id.to_s, kind: HOUSED },
-              { kind: RELEASED, closes_housing_id: housed_here.select(:id) }
-            )
-          )
-          build_events(scoped.order(:seq).all)
-        end
-
         def current_housing_of(animal)
-          released = events.where(kind: RELEASED).exclude(closes_housing_id: nil).select(:closes_housing_id)
-          current = events.where(animal_id: animal.id.to_s, kind: HOUSED)
-                          .exclude(id: released)
-                          .order(Sequel.desc(:seq)).limit(1)
-          build_events(current.all).first
+          build_events(current_housings.where(animal_id: animal.id.to_s).all).first
         end
 
         def occupants_of(enclosure)
-          Domain::Occupancy.new(events_for_enclosure(enclosure.id)).occupants_of(enclosure)
+          occupants(current_housings.where(enclosure_id: enclosure.id.to_s))
         end
 
         def all_occupants
-          Domain::Occupancy.new(all).all_occupants
+          occupants(current_housings)
         end
 
         private
 
         def events
           @database.dataset(:housing_events)
+        end
+
+        def current_housings
+          closed = events.where(kind: RELEASED).exclude(closes_housing_id: nil).select(:closes_housing_id)
+          live = events.where(kind: HOUSED).exclude(id: closed)
+          live.where(seq: live.group(:animal_id).select { max(:seq) })
+        end
+
+        def occupants(dataset)
+          build_events(dataset.order(:seq).all).filter_map do |housing|
+            housing.animal if housing.animal.alive?
+          end
         end
 
         def build_events(rows)

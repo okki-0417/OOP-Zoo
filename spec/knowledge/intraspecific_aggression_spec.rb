@@ -20,8 +20,8 @@ RSpec.describe '種内闘争と外傷' do
     [senior, junior]
   end
 
-  def occupancy_of(enclosure, occupants)
-    Zoo::Domain::Occupancy.new(occupants.map { |a| housed(a, enclosure) })
+  def conflict(enclosure, occupants, animal)
+    Zoo::Domain::SocialConflict.new(enclosure, occupants, animal)
   end
 
   describe '闘争の激化' do
@@ -29,7 +29,7 @@ RSpec.describe '種内闘争と外傷' do
       enclosure = pride
       _senior, junior = occupants = senior_and_junior
 
-      expect(occupancy_of(enclosure, occupants).injury_for(enclosure, junior)).to be > 0
+      expect(conflict(enclosure, occupants, junior).injury).to be > 0
     end
 
     it '過密や逃げ場(刺激)の不足は負傷を深めること' do
@@ -42,8 +42,8 @@ RSpec.describe '種内闘争と外傷' do
       _s2, j2 = cramped_occupants
       cramped.deplete_enrichment(100)
 
-      cramped_injury = occupancy_of(cramped, cramped_occupants).injury_for(cramped, j2)
-      spacious_injury = occupancy_of(spacious, spacious_occupants).injury_for(spacious, j1)
+      cramped_injury = conflict(cramped, cramped_occupants, j2).injury
+      spacious_injury = conflict(spacious, spacious_occupants, j1).injury
       expect(cramped_injury).to be > spacious_injury
     end
   end
@@ -69,7 +69,7 @@ RSpec.describe '種内闘争と外傷' do
       lone_male = build_adult(catalog.lion, name: '独身', sex: sex.male)
       occupants = [lone_male, build_adult(catalog.lion, name: 'メス', sex: sex.female)]
 
-      expect(occupancy_of(enclosure, occupants).injury_for(enclosure, lone_male)).to eq(0)
+      expect(conflict(enclosure, occupants, lone_male).injury).to eq(0)
     end
   end
 end

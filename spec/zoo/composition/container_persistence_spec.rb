@@ -29,8 +29,7 @@ RSpec.describe 'Zoo::Composition::Container 永続化' do
       expect(restored.population.call).to eq(1)
       expect(restored.revenue.call).to eq(shared::Money.yen(20_000))
 
-      occupancy = Zoo::Domain::Occupancy.new(restored.housings.all)
-      resident = occupancy.occupants_of(restored.enclosures.all.first).first
+      resident = restored.housings.occupants_of(restored.enclosures.all.first).first
       expect(restored.animals.find(resident.id)).to equal(resident)
     end
   end

@@ -34,7 +34,7 @@ module Factories
   end
 
   def occupants_of(housings, enclosure)
-    Zoo::Domain::Occupancy.new(housings.all).occupants_of(enclosure)
+    housings.occupants_of(enclosure)
   end
 end
 

@@ -17,20 +17,17 @@ RSpec.describe '現実の動物園の再現' do
     Zoo::Domain::Shared::Temperature.celsius(value)
   end
 
-  def occupancy
-    Zoo::Domain::Occupancy.new(@housings)
-  end
-
   def house(animal, enclosure)
+    occupancy = Zoo::Domain::Occupancy.new(enclosure, @housings.occupants_of(enclosure))
     housing = Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occupancy: occupancy)
     housing.admission_violation!
 
-    @housings << housing
+    @housings.save(housing)
     animal
   end
 
   def pass_a_day
-    zoo.enclosures.flat_map { |e| Zoo::Domain::EnclosureDay.new(e, occupancy.occupants_of(e)).run }
+    zoo.enclosures.flat_map { |e| Zoo::Domain::EnclosureDay.new(e, @housings.occupants_of(e)).run }
   end
 
   let(:zoo) { Zoo::Domain::Zoo.new(name: 'おうきの動物園', admission_fee: shared::Money.yen(2000)) }
@@ -58,7 +55,7 @@ RSpec.describe '現実の動物園の再現' do
   let(:macaques) { build_pair(catalog.japanese_macaque) }
 
   before do
-    @housings = []
+    @housings = Zoo::Infrastructure::InMemory::InMemoryHousingRepository.new
     zebras.each { |z| house(z, savanna) }
     house(giraffe, savanna)
 
@@ -74,9 +71,9 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   it '多様な動物が適切な環境に収容され、混合展示が成立すること' do
-    expect(occupancy.all_occupants.size).to eq(12)
-    expect(occupancy.species_present_in(savanna).size).to eq(2)
-    expect(occupancy.all_occupants.map(&:species).uniq.size).to eq(7)
+    expect(@housings.all_occupants.size).to eq(12)
+    expect(@housings.occupants_of(savanna).map(&:species).uniq.size).to eq(2)
+    expect(@housings.all_occupants.map(&:species).uniq.size).to eq(7)
   end
 
   it '肉食獣を草食動物の展示に同居させられないこと' do
@@ -121,8 +118,8 @@ RSpec.describe '現実の動物園の再現' do
     cub = Zoo::Domain::Birth.new(sire: sire, dam: dam, name: 'シンバ').deliver.offspring
 
     house(cub, lion_hill)
-    expect(occupancy.population_of(lion_hill)).to eq(3)
-    expect(occupancy.all_occupants.size).to eq(13)
+    expect(@housings.occupants_of(lion_hill).size).to eq(3)
+    expect(@housings.all_occupants.size).to eq(13)
     expect(dam.pull_events.last).to be_a(Zoo::Domain::Events::Birth)
     expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
   end
@@ -133,7 +130,7 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   it '展示中の絶滅危惧種を把握できること' do
-    names = occupancy.all_occupants.select(&:threatened?).map(&:species).uniq.map(&:name_ja)
+    names = @housings.all_occupants.select(&:threatened?).map(&:species).uniq.map(&:name_ja)
     expect(names).to include('グレビーシマウマ', 'アミメキリン', 'ライオン', 'ホッキョクグマ', 'ビルマニシキヘビ')
     expect(names).not_to include('ニホンザル')
   end
@@ -142,6 +139,6 @@ RSpec.describe '現実の動物園の再現' do
     expect { pass_a_day }
       .to change { zebras.first.age_in_days }.by(1)
     expect(savanna.cleanliness.level).to be < 100
-    expect(occupancy.all_occupants.size).to eq(12)
+    expect(@housings.all_occupants.size).to eq(12)
   end
 end

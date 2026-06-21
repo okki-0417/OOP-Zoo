@@ -24,7 +24,7 @@ module Zoo
       def admission_violation!
         errors = []
         errors << "#{@animal.name}は死亡しているため収容できません" if @animal.dead?
-        errors << "#{@enclosure.name}は定員#{@enclosure.capacity}に達しています" if @occupancy.full?(@enclosure)
+        errors << "#{@enclosure.name}は定員#{@enclosure.capacity}に達しています" if @occupancy.full?
         unless @animal.adapts_to?(@enclosure.temperature)
           errors << "#{@animal.species_name}は#{@enclosure.temperature}の#{@enclosure.name}に適応できません"
         end
@@ -41,7 +41,7 @@ module Zoo
       private
 
       def cohabitation_conflicts
-        @occupancy.species_present_in(@enclosure).filter_map do |resident_species|
+        @occupancy.species_present_in.filter_map do |resident_species|
           @animal.cohabitation_conflict_with(resident_species)
         end
       end

@@ -21,31 +21,29 @@ module Zoo
           @store.dup
         end
 
-        def events_for_enclosure(enclosure_id)
-          id = enclosure_id.to_s
-          housing_ids = @store.select { |event| housed_in?(event, id) }.map { |event| event.id.to_s }
-          @store.select do |event|
-            housed_in?(event, id) ||
-              (event.is_a?(Domain::Release) && housing_ids.include?(event.housing.id.to_s))
-          end
-        end
-
         def current_housing_of(animal)
-          Domain::Occupancy.new(@store).current_housing_of(animal)
+          current_housings[animal.id.to_s]
         end
 
         def occupants_of(enclosure)
-          Domain::Occupancy.new(events_for_enclosure(enclosure.id)).occupants_of(enclosure)
+          current_housings.values
+                          .select { |housing| housing.enclosure_id.to_s == enclosure.id.to_s && housing.animal.alive? }
+                          .map(&:animal)
         end
 
         def all_occupants
-          Domain::Occupancy.new(@store).all_occupants
+          current_housings.values.filter_map { |housing| housing.animal if housing.animal.alive? }
         end
 
         private
 
-        def housed_in?(event, enclosure_id)
-          event.is_a?(Domain::Housing) && event.enclosure_id.to_s == enclosure_id
+        def current_housings
+          closed = @store.grep(Domain::Release).map { |release| release.housing.id.to_s }
+          @store.each_with_object({}) do |event, current|
+            next unless event.is_a?(Domain::Housing) && !closed.include?(event.id.to_s)
+
+            current[event.animal.id.to_s] = event
+          end
         end
       end
     end

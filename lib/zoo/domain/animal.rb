@@ -338,6 +338,18 @@ module Zoo
         @species.cohabitation_conflict_with(other_species)
       end
 
+      def space_requirement_sqm
+        @species.space_requirement_sqm
+      end
+
+      def group_living?
+        @species.group_living?
+      end
+
+      def contender?
+        alive? && male? && mature? && group_living?
+      end
+
       def sex_opposite?(other)
         other.is_a?(Animal) && @sex.opposite?(other.sex)
       end

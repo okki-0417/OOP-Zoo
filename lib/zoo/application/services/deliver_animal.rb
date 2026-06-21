@@ -39,7 +39,7 @@ module Zoo
             ).deliver
             child = birth.offspring
 
-            occupancy = Domain::Occupancy.new(@housings.all)
+            occupancy = Domain::Occupancy.new(enclosure, @housings.occupants_of(enclosure))
             housing = Domain::Housing.new(
               animal: child, enclosure: enclosure, occupancy: occupancy, occurred_on: zoo.day, keeper_id: keeper&.id
             )

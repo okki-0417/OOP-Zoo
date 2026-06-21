@@ -31,7 +31,7 @@ module Zoo
       def transmission_chance
         chance = BASE_CHANCE
         chance += FILTH_BONUS if @enclosure.filthy?
-        chance += CROWDING_BONUS if Occupancy.overcrowded?(@enclosure, @occupants)
+        chance += CROWDING_BONUS if Occupancy.new(@enclosure, @occupants).overcrowded?
         [chance, 100].min
       end
 

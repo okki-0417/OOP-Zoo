@@ -31,7 +31,8 @@ module Zoo
       describe '#admission_violation!' do
         let(:zebra) { build_adult(SpeciesCatalog.grevys_zebra) }
 
-        def candidate(animal, enclosure, occupancy = Occupancy.new([]))
+        def candidate(animal, enclosure, occupants = [])
+          occupancy = Occupancy.new(enclosure, occupants)
           described_class.new(animal: animal, enclosure: enclosure, occupancy: occupancy)
         end
 
@@ -47,8 +48,7 @@ module Zoo
 
         it '満員だと HousingNotAllowed(定員) であること' do
           full = Enclosure.new(name: '小屋', temperature: Shared::Temperature.celsius(28), capacity: 1)
-          occupancy = Occupancy.new([housed(build_adult(SpeciesCatalog.lion, name: '先住'), full)])
-          expect { candidate(lion, full, occupancy).admission_violation! }
+          expect { candidate(lion, full, [build_adult(SpeciesCatalog.lion, name: '先住')]).admission_violation! }
             .to raise_error(Errors::HousingNotAllowed, /定員/)
         end
 
@@ -59,16 +59,14 @@ module Zoo
         end
 
         it '同居できない種は HousingNotAllowed(捕食) であること' do
-          occupancy = Occupancy.new([housed(zebra, savanna)])
-          expect { candidate(lion, savanna, occupancy).admission_violation! }
+          expect { candidate(lion, savanna, [zebra]).admission_violation! }
             .to raise_error(Errors::HousingNotAllowed, /捕食/)
         end
 
         it '複数の違反を一度にまとめて報告すること' do
           full = Enclosure.new(name: '小屋', temperature: Shared::Temperature.celsius(28), capacity: 1)
-          occupancy = Occupancy.new([housed(build_adult(SpeciesCatalog.lion, name: '先住'), full)])
           dead = build_adult(SpeciesCatalog.lion).tap(&:die)
-          expect { candidate(dead, full, occupancy).admission_violation! }
+          expect { candidate(dead, full, [build_adult(SpeciesCatalog.lion, name: '先住')]).admission_violation! }
             .to raise_error(Errors::HousingNotAllowed, /死亡.*定員/)
         end
       end
@@ -82,12 +80,10 @@ module Zoo
       let(:housing) { Housing.new(animal: lion, enclosure: savanna) }
 
       describe '.of' do
-        it '閉じる入居イベントを持ち、個体と区画はそこから導出されること' do
+        it '閉じる入居イベントを持ち、個体はそこから導出されること' do
           event = described_class.of(housing, occurred_on: 5)
           expect(event.housing).to eq(housing)
           expect(event.animal).to eq(lion)
-          expect(event.enclosure).to eq(savanna)
-          expect(event.enclosure_id).to eq(savanna.id)
           expect(event.occurred_on).to eq(5)
         end
       end
