@@ -4,34 +4,6 @@ require 'spec_helper'
 
 module Zoo
   module Domain
-    RSpec.describe '同居の相性' do
-      let(:lion) { SpeciesCatalog.lion }
-      let(:zebra) { SpeciesCatalog.grevys_zebra }
-      let(:giraffe) { SpeciesCatalog.reticulated_giraffe }
-      let(:polar_bear) { SpeciesCatalog.polar_bear }
-      let(:penguin) { SpeciesCatalog.emperor_penguin }
-
-      it '草食動物同士は混合展示できること' do
-        expect(zebra.can_cohabit_with?(giraffe)).to be(true)
-      end
-
-      it '肉食動物は異種と同居できないこと' do
-        expect(lion.can_cohabit_with?(zebra)).to be(false)
-      end
-
-      it '群れで暮らす種は同種を同居できること' do
-        expect(lion.can_cohabit_with?(lion)).to be(true)
-      end
-
-      it '単独性の種は同種でも同居できないこと' do
-        expect(polar_bear.can_cohabit_with?(polar_bear)).to be(false)
-      end
-
-      it '適温域が両立しない種同士は同居できないこと' do
-        expect(lion.can_cohabit_with?(penguin)).to be(false)
-      end
-    end
-
     RSpec.describe Enclosure do
       let(:savanna) do
         described_class.new(name: 'アフリカサバンナ', temperature: Shared::Temperature.celsius(30), capacity: 3)

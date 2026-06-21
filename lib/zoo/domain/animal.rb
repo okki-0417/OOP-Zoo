@@ -327,10 +327,6 @@ module Zoo
         @species.habitable_temperature_range
       end
 
-      def cohabitation_conflict_with(other_species)
-        @species.cohabitation_conflict_with(other_species)
-      end
-
       def space_requirement_sqm
         @species.space_requirement_sqm
       end

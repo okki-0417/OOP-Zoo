@@ -74,11 +74,6 @@ module Zoo
         expect(SpeciesCatalog.hercules_beetle.space_requirement_sqm).to eq(5)
       end
 
-      it '気候域の重なりを判定できること(ライオンとコウテイペンギンは気候が両立しない)' do
-        expect(lion.climate_overlaps?(zebra)).to be(true)
-        expect(lion.climate_overlaps?(SpeciesCatalog.emperor_penguin)).to be(false)
-      end
-
       describe '#required_food_variety' do
         it '受け入れカテゴリが1つの肉食は1であること' do
           expect(lion.required_food_variety).to eq(1)

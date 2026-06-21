@@ -58,9 +58,23 @@ module Zoo
             .to raise_error(Errors::HousingNotAllowed, /適応/)
         end
 
-        it '同居できない種は HousingNotAllowed(捕食) であること' do
+        it '捕食関係の異種との同居は HousingNotAllowed(捕食) であること' do
           expect { candidate(lion, savanna, [zebra]).admission_violation! }
             .to raise_error(Errors::HousingNotAllowed, /捕食/)
+        end
+
+        it '単独性の同種との同居は HousingNotAllowed(単独性) であること' do
+          cold = Enclosure.new(name: '極地', temperature: Shared::Temperature.celsius(-10), capacity: 4)
+          bear = build_adult(SpeciesCatalog.polar_bear, name: '白')
+          expect { candidate(bear, cold, [build_adult(SpeciesCatalog.polar_bear, name: '先住')]).admission_violation! }
+            .to raise_error(Errors::HousingNotAllowed, /単独性/)
+        end
+
+        it '適温域が両立しない種との同居は HousingNotAllowed(適温域) であること' do
+          tortoise = build_adult(SpeciesCatalog.galapagos_tortoise, name: 'カメ')
+          penguin = build_adult(SpeciesCatalog.emperor_penguin, name: '先住')
+          expect { candidate(tortoise, savanna, [penguin]).admission_violation! }
+            .to raise_error(Errors::HousingNotAllowed, /適温域/)
         end
 
         it '複数の違反を一度にまとめて報告すること' do

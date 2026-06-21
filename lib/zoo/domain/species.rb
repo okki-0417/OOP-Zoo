@@ -94,30 +94,6 @@ module Zoo
         !@group_living
       end
 
-      def climate_overlaps?(other)
-        low = [@habitable_temperature_range.begin, other.habitable_temperature_range.begin].max
-        high = [@habitable_temperature_range.end, other.habitable_temperature_range.end].min
-        low <= high
-      end
-
-      def can_cohabit_with?(other)
-        cohabitation_conflict_with(other).nil?
-      end
-
-      def cohabitation_conflict_with(other)
-        return "#{@name_ja}と#{other.name_ja}は適温域が両立しません" unless climate_overlaps?(other)
-
-        if self == other
-          return "#{@name_ja}は単独性のため同種を同居させられません" if solitary?
-
-          return nil
-        end
-
-        return "#{@name_ja}と#{other.name_ja}は捕食関係の恐れがあり同居させられません" if predatory? || other.predatory?
-
-        nil
-      end
-
       REQUIRED_FOOD_VARIETY_CAP = 2
 
       def required_food_variety
