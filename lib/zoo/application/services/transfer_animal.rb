@@ -19,11 +19,11 @@ module Zoo
             animal = @animals.find(command.animal_id)
             raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
 
-            occupancy = Domain::Occupancy.new(@housings.all)
+            occupancy = Domain::Occupancy.new(@housings.events_for_enclosure(target.id))
             violation = occupancy.admission_violation(target, animal)
             raise violation if violation
 
-            current = occupancy.current_housing_of(animal)
+            current = @housings.current_housing_of(animal)
             @housings.save(Domain::Release.of(current)) if current
             @housings.save(Domain::Housing.record(animal: animal, enclosure: target))
             target

@@ -55,4 +55,67 @@ RSpec.shared_examples 'a housing repository' do
     expect(last.housing.id).to eq(housing.id)
     expect(Zoo::Domain::Occupancy.new(repository.all).enclosure_id_of(animal)).to be_nil
   end
+
+  describe '#current_housing_of' do
+    it '収容中はその入居イベントを返すこと' do
+      animal = build_adult(catalog.lion, name: 'レオ')
+      persist_animals(animal)
+      housing = Zoo::Domain::Housing.record(animal: animal, enclosure: pen)
+      repository.save(housing)
+
+      expect(repository.current_housing_of(animal).id).to eq(housing.id)
+    end
+
+    it '解放済みなら nil を返すこと' do
+      animal = build_adult(catalog.lion, name: 'レオ')
+      persist_animals(animal)
+      housing = Zoo::Domain::Housing.record(animal: animal, enclosure: pen)
+      repository.save(housing)
+      repository.save(Zoo::Domain::Release.of(housing))
+
+      expect(repository.current_housing_of(animal)).to be_nil
+    end
+
+    it '転居後は移送先への入居イベントを返すこと' do
+      animal = build_adult(catalog.lion, name: 'レオ')
+      a = pen('A')
+      b = pen('B')
+      persist_animals(animal)
+      first = Zoo::Domain::Housing.record(animal: animal, enclosure: a)
+      repository.save(first)
+      repository.save(Zoo::Domain::Release.of(first))
+      second = Zoo::Domain::Housing.record(animal: animal, enclosure: b)
+      repository.save(second)
+
+      current = repository.current_housing_of(animal)
+      expect(current.id).to eq(second.id)
+      expect(current.enclosure_id).to eq(b.id)
+    end
+  end
+
+  describe '#events_for_enclosure' do
+    it 'その区画の占有を畳み込むと収容中の個体になること' do
+      resident = build_adult(catalog.lion, name: '在住')
+      a = pen('A')
+      persist_animals(resident)
+      repository.save(Zoo::Domain::Housing.record(animal: resident, enclosure: a))
+
+      scoped = Zoo::Domain::Occupancy.new(repository.events_for_enclosure(a.id))
+      expect(scoped.occupants_of(a)).to contain_exactly(resident)
+    end
+
+    it '転居で出ていった個体はその区画のスコープから外れること' do
+      mover = build_adult(catalog.lion, name: '転居')
+      a = pen('A')
+      b = pen('B')
+      persist_animals(mover)
+      first = Zoo::Domain::Housing.record(animal: mover, enclosure: a)
+      repository.save(first)
+      repository.save(Zoo::Domain::Release.of(first))
+      repository.save(Zoo::Domain::Housing.record(animal: mover, enclosure: b))
+
+      scoped = Zoo::Domain::Occupancy.new(repository.events_for_enclosure(a.id))
+      expect(scoped.occupants_of(a)).to be_empty
+    end
+  end
 end

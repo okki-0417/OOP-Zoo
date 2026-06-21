@@ -13,7 +13,7 @@ module Zoo
           enclosure = @enclosures.find(enclosure_id)
           return nil if enclosure.nil?
 
-          occupancy = Domain::Occupancy.new(@housings.all)
+          occupancy = Domain::Occupancy.new(@housings.events_for_enclosure(enclosure.id))
           ReadModels::EnclosureProfile.new(
             id: enclosure.id.to_s,
             name: enclosure.name,
