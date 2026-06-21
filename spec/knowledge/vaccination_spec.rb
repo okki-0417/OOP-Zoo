@@ -8,12 +8,10 @@ RSpec.describe '予防接種と免疫' do
   contagion = Zoo::Domain::Contagion
   errors    = Zoo::Domain::Errors
 
-  def pride(*animals)
-    enclosure = Zoo::Domain::Enclosure.new(
+  def pen
+    Zoo::Domain::Enclosure.new(
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 6
     )
-    animals.each { |a| enclosure.admit(a) }
-    enclosure
   end
 
   describe '感染性の病気へのワクチン' do
@@ -28,9 +26,8 @@ RSpec.describe '予防接種と免疫' do
       vaccinated.vaccinate(illnesses.cold)
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
-      enclosure = pride(vaccinated, carrier)
 
-      contagion.new(enclosure).spread
+      contagion.new(pen, [vaccinated, carrier]).spread
 
       expect(vaccinated).not_to be_sick
     end

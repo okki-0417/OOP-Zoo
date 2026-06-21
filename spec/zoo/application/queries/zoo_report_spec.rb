@@ -12,9 +12,9 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
   let(:zebra) { build_adult(catalog.grevys_zebra, name: 'シマオ') }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'サバンナ', temperature: shared::Temperature.celsius(30), capacity: 6)
-                        .tap { |e| e.admit(zebra) }
   end
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
+  let(:housings) { in_memory::InMemoryHousingRepository.new([housed(zebra, enclosure)]) }
   let(:event_store) { in_memory::InMemoryEventStore.new }
   let(:animals) { in_memory::InMemoryAnimalRepository.new }
   let(:births) { in_memory::InMemoryBirthRepository.new }
@@ -23,7 +23,8 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
   end
 
   let(:query) do
-    described_class.new(enclosures: enclosures, event_store: event_store, zoo: zoo, animals: animals, births: births)
+    described_class.new(enclosures: enclosures, housings: housings, event_store: event_store, zoo: zoo,
+                        animals: animals, births: births)
   end
 
   describe '#call' do

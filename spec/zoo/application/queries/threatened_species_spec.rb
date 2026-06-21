@@ -14,18 +14,18 @@ RSpec.describe Zoo::Application::Queries::ThreatenedSpecies do
 
   let(:savanna) do
     husbandry::Enclosure.new(name: 'サバンナ', temperature: shared::Temperature.celsius(30), capacity: 6)
-                        .tap do |e|
-      zebras.each { |z| e.admit(z) }
-      e.admit(giraffe)
-    end
   end
   let(:monkey_mountain) do
     husbandry::Enclosure.new(name: 'モンキーマウンテン', temperature: shared::Temperature.celsius(20), capacity: 8)
-                        .tap { |e| macaques.each { |m| e.admit(m) } }
   end
 
-  let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([savanna, monkey_mountain]) }
-  let(:query) { described_class.new(enclosures: enclosures) }
+  let(:housings) do
+    events = zebras.map { |z| housed(z, savanna) }
+    events << housed(giraffe, savanna)
+    events.concat(macaques.map { |m| housed(m, monkey_mountain) })
+    in_memory::InMemoryHousingRepository.new(events)
+  end
+  let(:query) { described_class.new(housings: housings) }
 
   describe '#call' do
     it '展示中の絶滅危惧種だけを種ごとに集計し、LC のニホンザルは含めないこと' do

@@ -4,12 +4,12 @@ module Zoo
   module Application
     module Queries
       class Population
-        def initialize(enclosures:)
-          @enclosures = enclosures
+        def initialize(housings:)
+          @housings = housings
         end
 
         def call
-          @enclosures.all.sum(&:population)
+          Domain::Occupancy.new(@housings.all).all_occupants.size
         end
       end
     end

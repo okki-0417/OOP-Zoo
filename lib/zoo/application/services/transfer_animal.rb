@@ -4,9 +4,10 @@ module Zoo
   module Application
     module Services
       class TransferAnimal
-        def initialize(enclosures:, animals:, unit_of_work:)
+        def initialize(enclosures:, animals:, housings:, unit_of_work:)
           @enclosures = enclosures
           @animals = animals
+          @housings = housings
           @unit_of_work = unit_of_work
         end
 
@@ -18,12 +19,13 @@ module Zoo
             animal = @animals.find(command.animal_id)
             raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
 
-            current = @enclosures.all.find { |enclosure| enclosure.houses?(animal) }
+            occupancy = Domain::Occupancy.new(@housings.all)
+            violation = occupancy.admission_violation(target, animal)
+            raise violation if violation
 
-            target.admit(animal)
-            current&.release(animal)
-            @enclosures.save(target)
-            @enclosures.save(current) if current
+            current = occupancy.current_housing_of(animal)
+            @housings.save(Domain::Release.of(current)) if current
+            @housings.save(Domain::Housing.record(animal: animal, enclosure: target))
             target
           end
         end

@@ -4,22 +4,24 @@ module Zoo
   module Application
     module Queries
       class EnclosureDetail
-        def initialize(enclosures:)
+        def initialize(enclosures:, housings:)
           @enclosures = enclosures
+          @housings = housings
         end
 
         def call(enclosure_id)
           enclosure = @enclosures.find(enclosure_id)
           return nil if enclosure.nil?
 
+          occupancy = Domain::Occupancy.new(@housings.all)
           ReadModels::EnclosureProfile.new(
             id: enclosure.id.to_s,
             name: enclosure.name,
             capacity: enclosure.capacity,
-            population: enclosure.population,
+            population: occupancy.population_of(enclosure),
             cleanliness: enclosure.cleanliness.level,
             filthy: enclosure.filthy?,
-            occupants: enclosure.occupants.map { |animal| occupant(animal) }
+            occupants: occupancy.occupants_of(enclosure).map { |animal| occupant(animal) }
           )
         end
 

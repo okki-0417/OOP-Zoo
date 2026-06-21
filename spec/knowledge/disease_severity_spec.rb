@@ -17,12 +17,10 @@ RSpec.describe '疾病の重症度と伝播' do
     animal
   end
 
-  def pride(*animals)
-    enclosure = Zoo::Domain::Enclosure.new(
+  def pen
+    Zoo::Domain::Enclosure.new(
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 6
     )
-    animals.each { |a| enclosure.admit(a) }
-    enclosure
   end
 
   describe '重症度(進行の速さ)' do
@@ -70,9 +68,8 @@ RSpec.describe '疾病の重症度と伝播' do
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
       healthy = build_adult(catalog.lion, name: '健康')
-      enclosure = pride(carrier, healthy)
 
-      contagion.new(enclosure, random: instance_double(Random, rand: 99)).spread
+      contagion.new(pen, [carrier, healthy], random: instance_double(Random, rand: 99)).spread
 
       expect(healthy).not_to be_sick
     end
@@ -81,19 +78,18 @@ RSpec.describe '疾病の重症度と伝播' do
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
       healthy = build_adult(catalog.lion, name: '健康')
-      enclosure = pride(carrier, healthy)
 
-      contagion.new(enclosure, random: instance_double(Random, rand: 0)).spread
+      contagion.new(pen, [carrier, healthy], random: instance_double(Random, rand: 0)).spread
 
       expect(healthy).to be_sick
     end
 
     it '不衛生なエリアほど伝播の確率が高まること' do
-      clean = pride
-      filthy = pride
+      clean = pen
+      filthy = pen
       filthy.soil(90)
 
-      expect(contagion.new(filthy).transmission_chance).to be > contagion.new(clean).transmission_chance
+      expect(contagion.new(filthy, []).transmission_chance).to be > contagion.new(clean, []).transmission_chance
     end
 
     it '免疫を持つ個体は伝播の対象から外れること' do
@@ -101,9 +97,8 @@ RSpec.describe '疾病の重症度と伝播' do
       immune.vaccinate(illnesses.cold)
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
-      enclosure = pride(immune, carrier)
 
-      contagion.new(enclosure, random: instance_double(Random, rand: 0)).spread
+      contagion.new(pen, [immune, carrier], random: instance_double(Random, rand: 0)).spread
 
       expect(immune).not_to be_sick
     end

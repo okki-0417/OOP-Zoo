@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe Zoo::Application::Services::DeliverAnimal do
   shared    = Zoo::Domain::Shared
   husbandry = Zoo::Domain
-  events    = Zoo::Domain::Events
   catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
 
@@ -19,6 +18,7 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
   let(:animals) { in_memory::InMemoryAnimalRepository.new([sire, dam]) }
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:keepers) { in_memory::InMemoryKeeperRepository.new }
+  let(:housings) { in_memory::InMemoryHousingRepository.new }
   let(:breedings) { in_memory::InMemoryBreedingRepository.new }
   let(:births) { in_memory::InMemoryBirthRepository.new }
   let(:event_store) { in_memory::InMemoryEventStore.new }
@@ -26,14 +26,16 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
   let(:event_dispatcher) do
     Zoo::Application::EventDispatcher.new(event_store: event_store, subscribers: [birth_announcements])
   end
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, enclosures, breedings, births]) }
+  let(:unit_of_work) do
+    in_memory::InMemoryUnitOfWork.new(repositories: [animals, enclosures, housings, breedings, births])
+  end
   let(:zoo) do
     in_memory::InMemoryZooRepository.new(
       Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
     )
   end
   let(:service) do
-    described_class.new(animals: animals, enclosures: enclosures, keepers: keepers,
+    described_class.new(animals: animals, enclosures: enclosures, housings: housings, keepers: keepers,
                         breedings: breedings, births: births, zoo: zoo,
                         event_dispatcher: event_dispatcher, unit_of_work: unit_of_work)
   end
@@ -63,7 +65,7 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
       child = service.call(command)
 
       expect(child.parent_ids).to contain_exactly(sire.id, dam.id)
-      expect(enclosures.find(enclosure.id).occupants).to include(child)
+      expect(occupants_of(housings, enclosure)).to include(child)
       expect(animals.find(child.id)).to eq(child)
     end
 
@@ -89,8 +91,8 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
     it '定員1の満員エリアに収容できず CapacityExceeded になると、子が保存されずロールバックされること' do
       resident = build_adult(catalog.lion, name: '先住')
       full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
-                                 .tap { |e| e.admit(resident) }
       enclosures.save(full)
+      housings.save(housed(resident, full))
 
       expect { service.call(command(enclosure_id: full.id)) }
         .to raise_error(Zoo::Domain::Errors::CapacityExceeded)
@@ -100,8 +102,8 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
     it 'ロールバックされた出産の記録は births に残らないこと' do
       resident = build_adult(catalog.lion, name: '先住')
       full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
-                                 .tap { |e| e.admit(resident) }
       enclosures.save(full)
+      housings.save(housed(resident, full))
 
       expect { service.call(command(enclosure_id: full.id)) }.to raise_error(Zoo::Domain::Errors::CapacityExceeded)
       expect(births.all).to be_empty

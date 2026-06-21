@@ -73,9 +73,19 @@ module Zoo
               name         TEXT    NOT NULL,
               celsius      INTEGER NOT NULL,
               capacity     INTEGER NOT NULL,
-              cleanliness  INTEGER NOT NULL,
-              occupant_ids TEXT    NOT NULL DEFAULT ''
+              cleanliness  INTEGER NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS housing_events (
+              seq               INTEGER PRIMARY KEY AUTOINCREMENT,
+              id                TEXT    NOT NULL,
+              animal_id         TEXT    NOT NULL,
+              enclosure_id      TEXT,
+              kind              TEXT    NOT NULL,
+              occurred_on       INTEGER NOT NULL,
+              keeper_id         TEXT,
+              closes_housing_id TEXT
+            );
+            CREATE INDEX IF NOT EXISTS index_housing_events_on_animal_id ON housing_events (animal_id);
             CREATE TABLE IF NOT EXISTS events (
               id         INTEGER PRIMARY KEY AUTOINCREMENT,
               type       TEXT NOT NULL,

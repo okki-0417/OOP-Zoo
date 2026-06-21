@@ -88,8 +88,6 @@ module Zoo
 
       it 'receive は来園者数と収入を zoo に反映して [visitors, income] を返すこと' do
         zoo = Zoo.new(name: 'テスト', admission_fee: Shared::Money.yen(2_000), funds: Shared::Money.yen(0))
-        enclosure = Enclosure.new(name: 'A', temperature: Shared::Temperature.celsius(20), capacity: 4)
-        enclosure.admit(zebra)
 
         visitors, income = described_class.receive(zoo:, on_exhibit: [zebra])
 

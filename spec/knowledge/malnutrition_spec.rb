@@ -14,9 +14,8 @@ RSpec.describe '栄養失調' do
     )
     macaque = Zoo::Domain::SpeciesCatalog.japanese_macaque
     subject_monkey = build_adult(macaque, name: '主役')
-    enclosure.admit(subject_monkey)
-    enclosure.admit(build_adult(macaque, name: '仲間', sex: Zoo::Domain::Animal::Sex.female))
-    [enclosure, subject_monkey]
+    companion = build_adult(macaque, name: '仲間', sex: Zoo::Domain::Animal::Sex.female)
+    [enclosure, subject_monkey, [subject_monkey, companion]]
   end
 
   def malnourish(animal, times: 4)
@@ -26,17 +25,17 @@ RSpec.describe '栄養失調' do
 
   describe '栄養バランスと福祉' do
     it '偏った餌しか与えられないと、満腹であってもストレスが増すこと' do
-      enclosure, monkey = troop
+      enclosure, monkey, occupants = troop
       malnourish(monkey)
       expect(monkey).to be_malnourished
-      expect(welfare.daily_stress(monkey, enclosure)).to be > 0
+      expect(welfare.daily_stress(monkey, enclosure, occupants)).to be > 0
     end
 
     it 'バランスの取れた給餌(果実と昆虫)は栄養を保ち、福祉を後押しすること' do
-      enclosure, monkey = troop
+      enclosure, monkey, occupants = troop
       4.times { monkey.dine([foods.banana, foods.cricket]) }
       expect(monkey).not_to be_malnourished
-      expect(welfare.daily_stress(monkey, enclosure)).to be < 0
+      expect(welfare.daily_stress(monkey, enclosure, occupants)).to be < 0
     end
   end
 

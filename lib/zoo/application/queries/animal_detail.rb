@@ -4,9 +4,10 @@ module Zoo
   module Application
     module Queries
       class AnimalDetail
-        def initialize(animals:, enclosures:)
+        def initialize(animals:, enclosures:, housings:)
           @animals = animals
           @enclosures = enclosures
+          @housings = housings
         end
 
         def call(animal_id)
@@ -15,7 +16,8 @@ module Zoo
 
           species = animal.species
           status = species.conservation_status
-          enclosure = @enclosures.all.find { |e| e.houses?(animal) }
+          enclosure_id = animal.alive? ? Domain::Occupancy.new(@housings.all).enclosure_id_of(animal) : nil
+          enclosure = enclosure_id && @enclosures.find(enclosure_id)
           ReadModels::AnimalProfile.new(
             id: animal.id.to_s,
             name: animal.name,

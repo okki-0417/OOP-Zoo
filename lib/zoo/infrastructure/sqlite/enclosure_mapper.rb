@@ -10,24 +10,18 @@ module Zoo
             name: enclosure.name,
             celsius: enclosure.temperature.celsius,
             capacity: enclosure.capacity,
-            cleanliness: enclosure.cleanliness.level,
-            occupant_ids: enclosure.occupants.map { |animal| animal.id.to_s }.join(',')
+            cleanliness: enclosure.cleanliness.level
           }
         end
 
-        def to_aggregate(row, occupants)
+        def to_aggregate(row)
           Domain::Enclosure.reconstitute(
             id: Domain::Shared::Identifier.new(row['id']),
             name: row['name'],
             temperature: Domain::Shared::Temperature.celsius(row['celsius']),
             capacity: row['capacity'],
-            cleanliness: Domain::Enclosure::Cleanliness.new(row['cleanliness']),
-            occupants: occupants
+            cleanliness: Domain::Enclosure::Cleanliness.new(row['cleanliness'])
           )
-        end
-
-        def occupant_ids(row)
-          row['occupant_ids'].to_s.split(',').reject(&:empty?)
         end
       end
     end

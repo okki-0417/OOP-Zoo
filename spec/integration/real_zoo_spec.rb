@@ -17,6 +17,22 @@ RSpec.describe '現実の動物園の再現' do
     Zoo::Domain::Shared::Temperature.celsius(value)
   end
 
+  def occupancy
+    Zoo::Domain::Occupancy.new(@housings)
+  end
+
+  def house(animal, enclosure)
+    violation = occupancy.admission_violation(enclosure, animal)
+    raise violation if violation
+
+    @housings << housed(animal, enclosure)
+    animal
+  end
+
+  def pass_a_day
+    zoo.enclosures.flat_map { |e| Zoo::Domain::EnclosureDay.new(e, occupancy.occupants_of(e)).run }
+  end
+
   let(:zoo) { Zoo::Domain::Zoo.new(name: 'おうきの動物園', admission_fee: shared::Money.yen(2000)) }
 
   let(:savanna) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'アフリカサバンナ', temperature: deg(30), capacity: 6)) }
@@ -42,14 +58,15 @@ RSpec.describe '現実の動物園の再現' do
   let(:macaques) { build_pair(catalog.japanese_macaque) }
 
   before do
-    zebras.each { |z| zoo.house(z, savanna) }
-    zoo.house(giraffe, savanna)
+    @housings = []
+    zebras.each { |z| house(z, savanna) }
+    house(giraffe, savanna)
 
-    lions.each { |l| zoo.house(l, lion_hill) }
-    zoo.house(polar_bear, polar_sea)
-    penguins.each { |p| zoo.house(p, penguin_pool) }
-    zoo.house(python, reptile_house)
-    macaques.each { |m| zoo.house(m, monkey_mountain) }
+    lions.each { |l| house(l, lion_hill) }
+    house(polar_bear, polar_sea)
+    penguins.each { |p| house(p, penguin_pool) }
+    house(python, reptile_house)
+    macaques.each { |m| house(m, monkey_mountain) }
 
     mammal_keeper.assign_to(savanna).assign_to(lion_hill).assign_to(polar_sea).assign_to(monkey_mountain)
     bird_keeper.assign_to(penguin_pool)
@@ -57,20 +74,20 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   it '多様な動物が適切な環境に収容され、混合展示が成立すること' do
-    expect(zoo.population).to eq(12)
-    expect(savanna.species_present.size).to eq(2)
-    expect(zoo.species_on_exhibit.size).to eq(7)
+    expect(occupancy.all_occupants.size).to eq(12)
+    expect(occupancy.species_present_in(savanna).size).to eq(2)
+    expect(occupancy.all_occupants.map(&:species).uniq.size).to eq(7)
   end
 
   it '肉食獣を草食動物の展示に同居させられないこと' do
     rogue_lion = build_adult(catalog.lion, name: 'はぐれ')
-    expect { zoo.house(rogue_lion, savanna) }
+    expect { house(rogue_lion, savanna) }
       .to raise_error(Zoo::Domain::Errors::IncompatibleCohabitation)
   end
 
   it '気候の合わない動物を収容できないこと(ホッキョクグマをサバンナへ)' do
     misplaced = build_adult(catalog.polar_bear, name: '迷子')
-    expect { zoo.house(misplaced, savanna) }
+    expect { house(misplaced, savanna) }
       .to raise_error(Zoo::Domain::Errors::ClimateMismatch)
   end
 
@@ -103,9 +120,9 @@ RSpec.describe '現実の動物園の再現' do
     dam.gestate(catalog.lion.gestation_period_days)
     cub = Zoo::Domain::Birth.new(sire: sire, dam: dam, name: 'シンバ').deliver.offspring
 
-    zoo.house(cub, lion_hill)
-    expect(lion_hill.population).to eq(3)
-    expect(zoo.population).to eq(13)
+    house(cub, lion_hill)
+    expect(occupancy.population_of(lion_hill)).to eq(3)
+    expect(occupancy.all_occupants.size).to eq(13)
     expect(dam.pull_events.last).to be_a(Zoo::Domain::Events::Birth)
     expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
   end
@@ -116,15 +133,15 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   it '展示中の絶滅危惧種を把握できること' do
-    names = zoo.threatened_species.map(&:name_ja)
+    names = occupancy.all_occupants.select(&:threatened?).map(&:species).uniq.map(&:name_ja)
     expect(names).to include('グレビーシマウマ', 'アミメキリン', 'ライオン', 'ホッキョクグマ', 'ビルマニシキヘビ')
     expect(names).not_to include('ニホンザル')
   end
 
   it '一日を開園すると全個体が歳をとり、エリアが汚れること' do
-    expect { zoo.open_for_a_day }
+    expect { pass_a_day }
       .to change { zebras.first.age_in_days }.by(1)
     expect(savanna.cleanliness.level).to be < 100
-    expect(zoo.population).to eq(12)
+    expect(occupancy.all_occupants.size).to eq(12)
   end
 end

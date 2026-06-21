@@ -38,12 +38,14 @@ Metrics/AbcSize:
     - 'lib/zoo/application/queries/zoo_report.rb'
     - 'lib/zoo/application/services/conceive_animals.rb'
     - 'lib/zoo/application/services/deliver_animal.rb'
+    - 'lib/zoo/application/services/house_animal.rb'
     - 'lib/zoo/application/services/operate_day.rb'
     - 'lib/zoo/application/services/transfer_animal.rb'
     - 'lib/zoo/composition/container.rb'
     - 'lib/zoo/domain/animal.rb'
     - 'lib/zoo/domain/breeding.rb'
     - 'lib/zoo/domain/daily_operation.rb'
+    - 'lib/zoo/domain/occupancy.rb'
     - 'lib/zoo/domain/species.rb'
     - 'lib/zoo/domain/welfare.rb'
     - 'lib/zoo/infrastructure/sqlite/animal_mapper.rb'
@@ -59,8 +61,10 @@ Metrics/ClassLength:
     - 'lib/zoo/composition/container.rb'
     - 'lib/zoo/domain/animal.rb'
     - 'lib/zoo/domain/enclosure.rb'
+    - 'lib/zoo/domain/occupancy.rb'
     - 'lib/zoo/domain/species.rb'
     - 'lib/zoo/domain/zoo.rb'
+    - 'lib/zoo/infrastructure/sqlite/database.rb'
 
 # Offense count: 4
 # Configuration parameters: AllowedMethods, AllowedPatterns, Max.
@@ -79,10 +83,12 @@ Metrics/MethodLength:
     - 'lib/zoo/application/queries/animal_detail.rb'
     - 'lib/zoo/application/queries/animal_list.rb'
     - 'lib/zoo/application/queries/enclosure_detail.rb'
+    - 'lib/zoo/application/queries/enclosure_list.rb'
     - 'lib/zoo/application/queries/zoo_report.rb'
     - 'lib/zoo/application/services/acquire_animal.rb'
     - 'lib/zoo/application/services/conceive_animals.rb'
     - 'lib/zoo/application/services/deliver_animal.rb'
+    - 'lib/zoo/application/services/house_animal.rb'
     - 'lib/zoo/application/services/name_animal.rb'
     - 'lib/zoo/application/services/open_for_a_day.rb'
     - 'lib/zoo/application/services/operate_day.rb'
@@ -93,6 +99,8 @@ Metrics/MethodLength:
     - 'lib/zoo/domain/contagion.rb'
     - 'lib/zoo/domain/daily_operation.rb'
     - 'lib/zoo/domain/enclosure.rb'
+    - 'lib/zoo/domain/enclosure_day.rb'
+    - 'lib/zoo/domain/occupancy.rb'
     - 'lib/zoo/domain/species.rb'
     - 'lib/zoo/domain/welfare.rb'
     - 'lib/zoo/domain/zoo.rb'
@@ -107,6 +115,7 @@ Metrics/ModuleLength:
     - 'spec/zoo/domain/animal_spec.rb'
     - 'spec/zoo/domain/breeding_spec.rb'
     - 'spec/zoo/domain/enclosure_spec.rb'
+    - 'spec/zoo/domain/occupancy_spec.rb'
     - 'spec/zoo/domain/operations_spec.rb'
     - 'spec/zoo/domain/taxonomy_spec.rb'
 
@@ -114,6 +123,7 @@ Metrics/ModuleLength:
 # Configuration parameters: Max, CountKeywordArgs, MaxOptionalParameters.
 Metrics/ParameterLists:
   Exclude:
+    - 'lib/zoo/application/queries/zoo_report.rb'
     - 'lib/zoo/application/services/deliver_animal.rb'
     - 'lib/zoo/application/services/operate_day.rb'
     - 'lib/zoo/domain/animal.rb'

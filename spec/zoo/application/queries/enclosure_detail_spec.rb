@@ -11,10 +11,10 @@ RSpec.describe Zoo::Application::Queries::EnclosureDetail do
   let(:lion) { build_adult(catalog.lion, name: 'レオ') }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
-                        .tap { |e| e.admit(lion) }
   end
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
-  let(:query) { described_class.new(enclosures: enclosures) }
+  let(:housings) { in_memory::InMemoryHousingRepository.new([housed(lion, enclosure)]) }
+  let(:query) { described_class.new(enclosures: enclosures, housings: housings) }
 
   describe '#call' do
     it '定員・収容数・清潔度・収容個体を含む詳細を返すこと' do

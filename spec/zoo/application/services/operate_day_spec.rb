@@ -11,10 +11,10 @@ RSpec.describe Zoo::Application::Services::OperateDay do
   let(:zebra) { build_adult(catalog.grevys_zebra, name: 'シマオ') }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'サバンナ', temperature: shared::Temperature.celsius(30), capacity: 6)
-                        .tap { |e| e.admit(zebra) }
   end
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([zebra]) }
+  let(:housings) { in_memory::InMemoryHousingRepository.new([housed(zebra, enclosure)]) }
   let(:keepers) { in_memory::InMemoryKeeperRepository.new }
   let(:veterinarians) { in_memory::InMemoryVeterinarianRepository.new }
   let(:zoo) do
@@ -24,17 +24,18 @@ RSpec.describe Zoo::Application::Services::OperateDay do
   end
   let(:event_store) { in_memory::InMemoryEventStore.new }
   let(:dispatcher) { Zoo::Application::EventDispatcher.new(event_store: event_store) }
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals]) }
+  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
   let(:open_for_a_day) do
     Zoo::Application::Services::OpenForADay.new(
-      enclosures: enclosures, animals: animals, event_dispatcher: dispatcher, unit_of_work: unit_of_work
+      enclosures: enclosures, animals: animals, housings: housings,
+      event_dispatcher: dispatcher, unit_of_work: unit_of_work
     )
   end
 
   let(:no_outbreak) { instance_double(Random, rand: 99) }
   let(:service) do
     described_class.new(
-      open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals,
+      open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals, housings: housings,
       keepers: keepers, veterinarians: veterinarians, zoo: zoo, unit_of_work: unit_of_work,
       random: no_outbreak
     )
@@ -71,7 +72,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       outbreak_random = instance_double(Random)
       allow(outbreak_random).to receive(:rand).and_return(0)
       service = described_class.new(
-        open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals,
+        open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals, housings: housings,
         keepers: keepers, veterinarians: veterinarians, zoo: zoo, unit_of_work: unit_of_work,
         random: outbreak_random
       )

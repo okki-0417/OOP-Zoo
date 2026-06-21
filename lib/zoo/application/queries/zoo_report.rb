@@ -4,8 +4,9 @@ module Zoo
   module Application
     module Queries
       class ZooReport
-        def initialize(enclosures:, event_store:, zoo:, animals:, births:)
+        def initialize(enclosures:, housings:, event_store:, zoo:, animals:, births:)
           @enclosures = enclosures
+          @housings = housings
           @event_store = event_store
           @zoo = zoo
           @animals = animals
@@ -13,7 +14,7 @@ module Zoo
         end
 
         def call
-          occupants = @enclosures.all.flat_map(&:occupants)
+          occupants = Domain::Occupancy.new(@housings.all).all_occupants
           species = occupants.map(&:species).uniq
           events = @event_store.all
           zoo = @zoo.load

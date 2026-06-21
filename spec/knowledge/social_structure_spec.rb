@@ -19,20 +19,18 @@ RSpec.describe '群れと社会構造' do
         enclosure = savanna
         senior = build_animal(catalog.lion, name: '長老', sex: sex.male, age_in_days: 4000)
         junior = build_adult(catalog.lion, name: '若オス', sex: sex.male)
-        enclosure.admit(senior)
-        enclosure.admit(junior)
+        occupants = [senior, junior]
 
-        expect(welfare.daily_stress(junior, enclosure)).to be > 0
+        expect(welfare.daily_stress(junior, enclosure, occupants)).to be > 0
       end
 
       it '最も年長のオス(優位)はストレスを受けないこと' do
         enclosure = savanna
         senior = build_animal(catalog.lion, name: '長老', sex: sex.male, age_in_days: 4000)
         junior = build_adult(catalog.lion, name: '若オス', sex: sex.male)
-        enclosure.admit(senior)
-        enclosure.admit(junior)
+        occupants = [senior, junior]
 
-        expect(welfare.daily_stress(senior, enclosure)).to be < 0
+        expect(welfare.daily_stress(senior, enclosure, occupants)).to be < 0
       end
     end
 
@@ -41,10 +39,9 @@ RSpec.describe '群れと社会構造' do
         enclosure = savanna
         male = build_adult(catalog.lion, name: 'オス', sex: sex.male)
         female = build_adult(catalog.lion, name: 'メス', sex: sex.female)
-        enclosure.admit(male)
-        enclosure.admit(female)
+        occupants = [male, female]
 
-        expect(welfare.daily_stress(male, enclosure)).to be < 0
+        expect(welfare.daily_stress(male, enclosure, occupants)).to be < 0
       end
     end
   end

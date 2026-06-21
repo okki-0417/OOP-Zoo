@@ -13,19 +13,17 @@ RSpec.describe Zoo::Application::Services::RunDays do
   let(:elder) { build_animal(catalog.lion, name: '老', age_in_days: 1_000_000) }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
-                        .tap do |e|
-      e.admit(survivor)
-      e.admit(elder)
-    end
   end
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([survivor, elder]) }
+  let(:housings) { in_memory::InMemoryHousingRepository.new([housed(survivor, enclosure), housed(elder, enclosure)]) }
   let(:event_store) { in_memory::InMemoryEventStore.new }
   let(:dispatcher) { Zoo::Application::EventDispatcher.new(event_store: event_store) }
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals]) }
+  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
   let(:open_for_a_day) do
     Zoo::Application::Services::OpenForADay.new(
-      enclosures: enclosures, animals: animals, event_dispatcher: dispatcher, unit_of_work: unit_of_work
+      enclosures: enclosures, animals: animals, housings: housings,
+      event_dispatcher: dispatcher, unit_of_work: unit_of_work
     )
   end
   let(:service) { described_class.new(open_for_a_day: open_for_a_day) }

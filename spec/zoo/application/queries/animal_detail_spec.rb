@@ -11,7 +11,8 @@ RSpec.describe Zoo::Application::Queries::AnimalDetail do
   let(:lion) { build_adult(catalog.lion, name: 'レオ') }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new }
-  let(:query) { described_class.new(animals: animals, enclosures: enclosures) }
+  let(:housings) { in_memory::InMemoryHousingRepository.new }
+  let(:query) { described_class.new(animals: animals, enclosures: enclosures, housings: housings) }
 
   describe '#call' do
     it '個体 id を渡すと種・分類・性別・体力などを含む詳細を返すこと' do
@@ -37,8 +38,8 @@ RSpec.describe Zoo::Application::Queries::AnimalDetail do
       enclosure = husbandry::Enclosure.new(
         name: 'サバンナ', temperature: shared::Temperature.celsius(28), capacity: 4
       )
-      enclosure.admit(lion)
       enclosures.save(enclosure)
+      housings.save(housed(lion, enclosure))
 
       profile = query.call(lion.id)
 

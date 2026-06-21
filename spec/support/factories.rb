@@ -24,6 +24,18 @@ module Factories
       build_adult(species, name: "#{species.name_ja}♀", sex: A::Sex.female, max_health: max_health)
     ]
   end
+
+  def housed(animal, enclosure, day: 0)
+    Zoo::Domain::Housing.record(animal: animal, enclosure: enclosure, occurred_on: day)
+  end
+
+  def released(housing, day: 0)
+    Zoo::Domain::Release.of(housing, occurred_on: day)
+  end
+
+  def occupants_of(housings, enclosure)
+    Zoo::Domain::Occupancy.new(housings.all).occupants_of(enclosure)
+  end
 end
 
 RSpec.configure do |config|

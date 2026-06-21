@@ -31,10 +31,13 @@ RSpec.describe '必要面積' do
       enclosure = Zoo::Domain::Enclosure.new(
         name: 'サバンナ', temperature: shared::Temperature.celsius(28), capacity: 6
       )
-      enclosure.admit(build_adult(catalog.lion, name: 'A'))
-      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
+      occupants = [
+        build_adult(catalog.lion, name: 'A'),
+        build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)
+      ]
+      occupancy = Zoo::Domain::Occupancy.new(occupants.map { |a| housed(a, enclosure) })
 
-      expect(enclosure.required_area).to eq(2 * catalog.lion.space_requirement_sqm)
+      expect(occupancy.required_area_of(enclosure)).to eq(2 * catalog.lion.space_requirement_sqm)
     end
   end
 
@@ -44,10 +47,11 @@ RSpec.describe '必要面積' do
         name: '狭い獣舎', temperature: shared::Temperature.celsius(0), capacity: 1
       )
       bear = build_adult(catalog.polar_bear)
-      den.admit(bear)
+      occupants = [bear]
+      occupancy = Zoo::Domain::Occupancy.new(occupants.map { |a| housed(a, den) })
 
-      expect(den).to be_overcrowded
-      expect(welfare.daily_stress(bear, den)).to be > 0
+      expect(occupancy.overcrowded?(den)).to be(true)
+      expect(welfare.daily_stress(bear, den, occupants)).to be > 0
     end
   end
 end

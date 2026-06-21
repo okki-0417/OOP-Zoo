@@ -7,12 +7,10 @@ RSpec.describe '病気の感染と免疫' do
   illnesses = Zoo::Domain::IllnessCatalog
   contagion = Zoo::Domain::Contagion
 
-  def pride(*animals)
-    enclosure = Zoo::Domain::Enclosure.new(
+  def pen
+    Zoo::Domain::Enclosure.new(
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 6
     )
-    animals.each { |a| enclosure.admit(a) }
-    enclosure
   end
 
   describe '接触感染' do
@@ -20,9 +18,8 @@ RSpec.describe '病気の感染と免疫' do
       carrier = build_adult(catalog.lion, name: '感染源')
       healthy = build_adult(catalog.lion, name: '健康')
       carrier.fall_ill(illnesses.cold)
-      enclosure = pride(carrier, healthy)
 
-      contagion.new(enclosure).spread
+      contagion.new(pen, [carrier, healthy]).spread
 
       expect(healthy).to be_sick
     end
@@ -31,9 +28,8 @@ RSpec.describe '病気の感染と免疫' do
       injured = build_adult(catalog.lion, name: '骨折')
       healthy = build_adult(catalog.lion, name: '健康')
       injured.fall_ill(illnesses.fracture)
-      enclosure = pride(injured, healthy)
 
-      contagion.new(enclosure).spread
+      contagion.new(pen, [injured, healthy]).spread
 
       expect(healthy).not_to be_sick
     end
@@ -42,10 +38,8 @@ RSpec.describe '病気の感染と免疫' do
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
       faraway = build_adult(catalog.lion, name: '別エリア')
-      sick_enclosure = pride(carrier)
-      pride(faraway)
 
-      contagion.new(sick_enclosure).spread
+      contagion.new(pen, [carrier]).spread
 
       expect(faraway).not_to be_sick
     end
@@ -66,9 +60,8 @@ RSpec.describe '病気の感染と免疫' do
       recovered.recover
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
-      enclosure = pride(recovered, carrier)
 
-      contagion.new(enclosure).spread
+      contagion.new(pen, [recovered, carrier]).spread
 
       expect(recovered).not_to be_sick
     end

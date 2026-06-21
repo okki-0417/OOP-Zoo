@@ -3,7 +3,7 @@
 module Zoo
   module Composition
     class Container
-      attr_reader :animals, :enclosures, :keepers, :veterinarians, :breedings, :births, :zoo,
+      attr_reader :animals, :enclosures, :housings, :keepers, :veterinarians, :breedings, :births, :zoo,
                   :event_store, :memorial_log, :birth_announcements
 
       def initialize(state: nil, database: nil)
@@ -23,7 +23,7 @@ module Zoo
       def save(path)
         Infrastructure::Persistence::Snapshot.dump(
           {
-            animals: @animals.all, enclosures: @enclosures.all,
+            animals: @animals.all, enclosures: @enclosures.all, housings: @housings.all,
             keepers: @keepers.all, veterinarians: @veterinarians.all,
             breedings: @breedings.all, births: @births.all, zoo: @zoo.load, events: @event_store.all
           },
@@ -71,18 +71,20 @@ module Zoo
 
       def transfer_animal
         Application::Services::TransferAnimal.new(
-          enclosures: @enclosures, animals: @animals, unit_of_work: @unit_of_work
+          enclosures: @enclosures, animals: @animals, housings: @housings, unit_of_work: @unit_of_work
         )
       end
 
       def release_animal
         Application::Services::ReleaseAnimal.new(
-          enclosures: @enclosures, animals: @animals, unit_of_work: @unit_of_work
+          animals: @animals, housings: @housings, unit_of_work: @unit_of_work
         )
       end
 
       def house_animal
-        Application::Services::HouseAnimal.new(enclosures: @enclosures, animals: @animals, unit_of_work: @unit_of_work)
+        Application::Services::HouseAnimal.new(
+          enclosures: @enclosures, animals: @animals, housings: @housings, unit_of_work: @unit_of_work
+        )
       end
 
       def feed_animal
@@ -110,7 +112,7 @@ module Zoo
 
       def deliver_animal
         Application::Services::DeliverAnimal.new(
-          animals: @animals, enclosures: @enclosures, keepers: @keepers,
+          animals: @animals, enclosures: @enclosures, housings: @housings, keepers: @keepers,
           breedings: @breedings, births: @births, zoo: @zoo,
           event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
         )
@@ -125,7 +127,7 @@ module Zoo
 
       def open_for_a_day
         Application::Services::OpenForADay.new(
-          enclosures: @enclosures, animals: @animals,
+          enclosures: @enclosures, animals: @animals, housings: @housings,
           event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
         )
       end
@@ -137,18 +139,18 @@ module Zoo
       def operate_day
         Application::Services::OperateDay.new(
           open_for_a_day: open_for_a_day,
-          enclosures: @enclosures, animals: @animals,
+          enclosures: @enclosures, animals: @animals, housings: @housings,
           keepers: @keepers, veterinarians: @veterinarians,
           zoo: @zoo, unit_of_work: @unit_of_work
         )
       end
 
       def threatened_species
-        Application::Queries::ThreatenedSpecies.new(enclosures: @enclosures)
+        Application::Queries::ThreatenedSpecies.new(housings: @housings)
       end
 
       def population
-        Application::Queries::Population.new(enclosures: @enclosures)
+        Application::Queries::Population.new(housings: @housings)
       end
 
       def revenue
@@ -156,12 +158,12 @@ module Zoo
       end
 
       def zoo_report
-        Application::Queries::ZooReport.new(enclosures: @enclosures, event_store: @event_store, zoo: @zoo,
-                                            animals: @animals, births: @births)
+        Application::Queries::ZooReport.new(enclosures: @enclosures, housings: @housings, event_store: @event_store,
+                                            zoo: @zoo, animals: @animals, births: @births)
       end
 
       def enclosure_list
-        Application::Queries::EnclosureList.new(enclosures: @enclosures)
+        Application::Queries::EnclosureList.new(enclosures: @enclosures, housings: @housings)
       end
 
       def animal_list
@@ -177,11 +179,11 @@ module Zoo
       end
 
       def animal_detail
-        Application::Queries::AnimalDetail.new(animals: @animals, enclosures: @enclosures)
+        Application::Queries::AnimalDetail.new(animals: @animals, enclosures: @enclosures, housings: @housings)
       end
 
       def enclosure_detail
-        Application::Queries::EnclosureDetail.new(enclosures: @enclosures)
+        Application::Queries::EnclosureDetail.new(enclosures: @enclosures, housings: @housings)
       end
 
       def deceased_list
@@ -195,6 +197,7 @@ module Zoo
         state ||= {}
         @animals = store::InMemoryAnimalRepository.new(state.fetch(:animals, []))
         @enclosures = store::InMemoryEnclosureRepository.new(state.fetch(:enclosures, []))
+        @housings = store::InMemoryHousingRepository.new(state.fetch(:housings, []))
         @keepers = store::InMemoryKeeperRepository.new(state.fetch(:keepers, []))
         @veterinarians = store::InMemoryVeterinarianRepository.new(state.fetch(:veterinarians, []))
         @breedings = store::InMemoryBreedingRepository.new(state.fetch(:breedings, []))
@@ -204,7 +207,7 @@ module Zoo
         state.fetch(:events, []).each { |event| @event_store.append(event) }
 
         @unit_of_work = store::InMemoryUnitOfWork.new(
-          repositories: [@animals, @enclosures, @keepers, @veterinarians, @breedings, @births]
+          repositories: [@animals, @enclosures, @housings, @keepers, @veterinarians, @breedings, @births]
         )
       end
 
@@ -212,7 +215,8 @@ module Zoo
         sqlite = Infrastructure::Sqlite
         database = sqlite::Database.new(path)
         @animals = sqlite::AnimalRepository.new(database)
-        @enclosures = sqlite::EnclosureRepository.new(database, @animals)
+        @enclosures = sqlite::EnclosureRepository.new(database)
+        @housings = sqlite::HousingRepository.new(database, @animals)
         @keepers = sqlite::KeeperRepository.new(database)
         @veterinarians = sqlite::VeterinarianRepository.new(database)
         @breedings = sqlite::BreedingRepository.new(database, @animals)

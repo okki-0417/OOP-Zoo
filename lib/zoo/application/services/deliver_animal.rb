@@ -6,9 +6,11 @@ module Zoo
       class DeliverAnimal
         BIRTH_BUZZ = 40
 
-        def initialize(animals:, enclosures:, keepers:, breedings:, births:, zoo:, event_dispatcher:, unit_of_work:)
+        def initialize(animals:, enclosures:, housings:, keepers:, breedings:, births:, zoo:, event_dispatcher:,
+                       unit_of_work:)
           @animals = animals
           @enclosures = enclosures
+          @housings = housings
           @keepers = keepers
           @breedings = breedings
           @births = births
@@ -37,11 +39,16 @@ module Zoo
             ).deliver
             child = birth.offspring
 
+            occupancy = Domain::Occupancy.new(@housings.all)
+            violation = occupancy.admission_violation(enclosure, child)
+            raise violation if violation
+
             @animals.save(dam)
             @animals.save(child)
             @births.save(birth)
-            enclosure.admit(child)
-            @enclosures.save(enclosure)
+            @housings.save(
+              Domain::Housing.record(animal: child, enclosure: enclosure, occurred_on: zoo.day, keeper_id: keeper&.id)
+            )
 
             zoo.generate_buzz(BIRTH_BUZZ)
             @zoo.save(zoo)

@@ -42,10 +42,9 @@ RSpec.describe '養育と離乳' do
       it '養育されて落ち着き、ストレスが和らぐこと' do
         dam, cub = dam_and_cub(cub_age_in_days: 0)
         enclosure = savanna
-        enclosure.admit(dam)
-        enclosure.admit(cub)
+        occupants = [dam, cub]
 
-        expect(welfare.daily_stress(cub, enclosure)).to be < 0
+        expect(welfare.daily_stress(cub, enclosure, occupants)).to be < 0
       end
     end
 
@@ -53,12 +52,13 @@ RSpec.describe '養育と離乳' do
       it '仲間がいても分離ストレスを受けること' do
         _dam, cub = dam_and_cub(cub_age_in_days: 0)
         enclosure = savanna
-        enclosure.admit(cub)
+        occupants = [
+          cub,
+          build_adult(catalog.lion, name: '他1'),
+          build_adult(catalog.lion, name: '他2', sex: sex.female)
+        ]
 
-        enclosure.admit(build_adult(catalog.lion, name: '他1'))
-        enclosure.admit(build_adult(catalog.lion, name: '他2', sex: sex.female))
-
-        expect(welfare.daily_stress(cub, enclosure)).to be > 0
+        expect(welfare.daily_stress(cub, enclosure, occupants)).to be > 0
       end
     end
 
@@ -66,11 +66,13 @@ RSpec.describe '養育と離乳' do
       it '自立しているので分離ストレスは受けないこと' do
         _dam, weaned = dam_and_cub(cub_age_in_days: 300)
         enclosure = savanna
-        enclosure.admit(weaned)
-        enclosure.admit(build_adult(catalog.lion, name: '他1'))
-        enclosure.admit(build_adult(catalog.lion, name: '他2', sex: sex.female))
+        occupants = [
+          weaned,
+          build_adult(catalog.lion, name: '他1'),
+          build_adult(catalog.lion, name: '他2', sex: sex.female)
+        ]
 
-        expect(welfare.daily_stress(weaned, enclosure)).to be < 0
+        expect(welfare.daily_stress(weaned, enclosure, occupants)).to be < 0
       end
     end
   end

@@ -6,36 +6,28 @@ module Zoo
       class EnclosureRepository
         include Domain::Repositories::EnclosureRepository
 
-        def initialize(database, animal_repository, mapper: EnclosureMapper.new)
+        def initialize(database, mapper: EnclosureMapper.new)
           @database = database
-          @animals = animal_repository
           @mapper = mapper
         end
 
         def find(id)
           row = @database.get_first_row('SELECT * FROM enclosures WHERE id = ?', id.to_s)
-          row && build(row)
+          row && @mapper.to_aggregate(row)
         end
 
         def save(enclosure)
           row = @mapper.to_row(enclosure)
           @database.execute(
-            'INSERT OR REPLACE INTO enclosures (id, name, celsius, capacity, cleanliness, occupant_ids) ' \
-            'VALUES (?, ?, ?, ?, ?, ?)',
-            row[:id], row[:name], row[:celsius], row[:capacity], row[:cleanliness], row[:occupant_ids]
+            'INSERT OR REPLACE INTO enclosures (id, name, celsius, capacity, cleanliness) ' \
+            'VALUES (?, ?, ?, ?, ?)',
+            row[:id], row[:name], row[:celsius], row[:capacity], row[:cleanliness]
           )
           enclosure
         end
 
         def all
-          @database.execute('SELECT * FROM enclosures').map { |row| build(row) }
-        end
-
-        private
-
-        def build(row)
-          occupants = @mapper.occupant_ids(row).map { |id| @animals.find(id) }.compact
-          @mapper.to_aggregate(row, occupants)
+          @database.execute('SELECT * FROM enclosures').map { |row| @mapper.to_aggregate(row) }
         end
       end
     end

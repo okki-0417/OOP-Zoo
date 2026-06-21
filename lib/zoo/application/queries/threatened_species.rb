@@ -4,16 +4,15 @@ module Zoo
   module Application
     module Queries
       class ThreatenedSpecies
-        def initialize(enclosures:)
-          @enclosures = enclosures
+        def initialize(housings:)
+          @housings = housings
         end
 
         def call
-          @enclosures.all
-                     .flat_map(&:occupants)
-                     .select(&:threatened?)
-                     .group_by(&:species)
-                     .map { |species, members| to_read_model(species, members.size) }
+          Domain::Occupancy.new(@housings.all).all_occupants
+                           .select(&:threatened?)
+                           .group_by(&:species)
+                           .map { |species, members| to_read_model(species, members.size) }
         end
 
         private

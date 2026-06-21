@@ -13,32 +13,38 @@ RSpec.describe '種内闘争と外傷' do
     )
   end
 
-  def senior_and_junior(enclosure)
+  def senior_and_junior
     lion = Zoo::Domain::SpeciesCatalog.lion
     senior = build_animal(lion, name: '長老', sex: Zoo::Domain::Animal::Sex.male, age_in_days: 4000)
     junior = build_adult(lion, name: '若オス', sex: Zoo::Domain::Animal::Sex.male)
-    enclosure.admit(senior)
-    enclosure.admit(junior)
     [senior, junior]
+  end
+
+  def occupancy_of(enclosure, occupants)
+    Zoo::Domain::Occupancy.new(occupants.map { |a| housed(a, enclosure) })
   end
 
   describe '闘争の激化' do
     it '余剰オスは、ストレスだけでなく負傷(体力減)を被ること' do
       enclosure = pride
-      _senior, junior = senior_and_junior(enclosure)
+      _senior, junior = occupants = senior_and_junior
 
-      expect(enclosure.injury_for(junior)).to be > 0
+      expect(occupancy_of(enclosure, occupants).injury_for(enclosure, junior)).to be > 0
     end
 
     it '過密や逃げ場(刺激)の不足は負傷を深めること' do
       spacious = pride(capacity: 6)
-      _s1, j1 = senior_and_junior(spacious)
+      spacious_occupants = senior_and_junior
+      _s1, j1 = spacious_occupants
 
       cramped = pride(capacity: 4, area_sqm: 100)
-      _s2, j2 = senior_and_junior(cramped)
+      cramped_occupants = senior_and_junior
+      _s2, j2 = cramped_occupants
       cramped.deplete_enrichment(100)
 
-      expect(cramped.injury_for(j2)).to be > spacious.injury_for(j1)
+      cramped_injury = occupancy_of(cramped, cramped_occupants).injury_for(cramped, j2)
+      spacious_injury = occupancy_of(spacious, spacious_occupants).injury_for(spacious, j1)
+      expect(cramped_injury).to be > spacious_injury
     end
   end
 
@@ -48,10 +54,9 @@ RSpec.describe '種内闘争と外傷' do
       cramped.deplete_enrichment(100)
       senior = build_animal(catalog.lion, name: '長老', sex: sex.male, age_in_days: 4000)
       junior = build_animal(catalog.lion, name: '若オス', sex: sex.male, age_in_days: 365 * 5, max_health: 10)
-      cramped.admit(senior)
-      cramped.admit(junior)
+      occupants = [senior, junior]
 
-      dead = cramped.pass_day
+      dead = Zoo::Domain::EnclosureDay.new(cramped, occupants).run
 
       expect(dead).to include(junior)
       expect(junior.cause_of_death).to eq(:injury)
@@ -62,10 +67,9 @@ RSpec.describe '種内闘争と外傷' do
     it 'バチェラー(独身オス)を別群に分けると、闘争を被らないこと' do
       enclosure = pride
       lone_male = build_adult(catalog.lion, name: '独身', sex: sex.male)
-      enclosure.admit(lone_male)
-      enclosure.admit(build_adult(catalog.lion, name: 'メス', sex: sex.female))
+      occupants = [lone_male, build_adult(catalog.lion, name: 'メス', sex: sex.female)]
 
-      expect(enclosure.injury_for(lone_male)).to eq(0)
+      expect(occupancy_of(enclosure, occupants).injury_for(enclosure, lone_male)).to eq(0)
     end
   end
 end

@@ -12,18 +12,19 @@ RSpec.describe Zoo::Application::Services::ReleaseAnimal do
   let(:lion) { build_adult(catalog.lion, name: 'レオ') }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
-                        .tap { |e| e.admit(lion) }
   end
-  let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals]) }
-  let(:service) { described_class.new(enclosures: enclosures, animals: animals, unit_of_work: unit_of_work) }
+  let(:housings) { in_memory::InMemoryHousingRepository.new([housed(lion, enclosure)]) }
+  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, housings]) }
+  let(:service) do
+    described_class.new(animals: animals, housings: housings, unit_of_work: unit_of_work)
+  end
 
   describe '#call' do
     it '収容中の個体を退去させるとエリアの occupants から外れること' do
       service.call(commands::ReleaseAnimalCommand.new(animal_id: lion.id))
 
-      expect(enclosures.find(enclosure.id).occupants).not_to include(lion)
+      expect(occupants_of(housings, enclosure)).not_to include(lion)
     end
 
     it 'どのエリアにも収容されていない個体だと ArgumentError になること' do

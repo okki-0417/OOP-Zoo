@@ -19,9 +19,11 @@ RSpec.describe '空調と屋内施設' do
   def pride(climate_controlled:)
     lion = Zoo::Domain::SpeciesCatalog.lion
     enc = enclosure(climate_controlled: climate_controlled)
-    enc.admit(build_adult(lion, name: 'A'))
-    enc.admit(build_adult(lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
-    enc
+    occupants = [
+      build_adult(lion, name: 'A'),
+      build_adult(lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)
+    ]
+    [enc, occupants]
   end
 
   describe '気候の緩和' do
@@ -41,11 +43,13 @@ RSpec.describe '空調と屋内施設' do
     end
 
     it '空調が無いと厳しい季節に福祉が下がるが、空調があれば保たれること' do
-      uncontrolled = pride(climate_controlled: false)
-      controlled = pride(climate_controlled: true)
+      uncontrolled, uncontrolled_occupants = pride(climate_controlled: false)
+      controlled, controlled_occupants = pride(climate_controlled: true)
 
-      expect(welfare.daily_stress(uncontrolled.occupants.first, uncontrolled, season: season.winter)).to be > 0
-      expect(welfare.daily_stress(controlled.occupants.first, controlled, season: season.winter)).to be < 0
+      expect(welfare.daily_stress(uncontrolled_occupants.first, uncontrolled, uncontrolled_occupants,
+                                  season: season.winter)).to be > 0
+      expect(welfare.daily_stress(controlled_occupants.first, controlled, controlled_occupants,
+                                  season: season.winter)).to be < 0
     end
   end
 

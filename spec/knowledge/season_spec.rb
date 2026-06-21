@@ -11,10 +11,11 @@ RSpec.describe '季節と気候' do
     enclosure = Zoo::Domain::Enclosure.new(
       name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(temp), capacity: 4
     )
-    enclosure.admit(build_adult(Zoo::Domain::SpeciesCatalog.lion, name: 'A'))
-    enclosure.admit(build_adult(Zoo::Domain::SpeciesCatalog.lion, name: 'B',
-                                                                            sex: Zoo::Domain::Animal::Sex.female))
-    enclosure
+    occupants = [
+      build_adult(Zoo::Domain::SpeciesCatalog.lion, name: 'A'),
+      build_adult(Zoo::Domain::SpeciesCatalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)
+    ]
+    [enclosure, occupants]
   end
 
   describe '季節の巡り' do
@@ -41,17 +42,17 @@ RSpec.describe '季節と気候' do
 
   describe '季節と福祉' do
     it '冬は暖地性の動物が同じ区画でも快適でなくなり、ストレスが増えること' do
-      enclosure = pride(20)
-      occupant = enclosure.occupants.first
+      enclosure, occupants = pride(20)
+      occupant = occupants.first
 
-      expect(welfare.daily_stress(occupant, enclosure, season: season.winter)).to be > 0
+      expect(welfare.daily_stress(occupant, enclosure, occupants, season: season.winter)).to be > 0
     end
 
     it '夏など快適な季節では、良好な飼育ならストレスが和らぐこと' do
-      enclosure = pride(20)
-      occupant = enclosure.occupants.first
+      enclosure, occupants = pride(20)
+      occupant = occupants.first
 
-      expect(welfare.daily_stress(occupant, enclosure, season: season.summer)).to be < 0
+      expect(welfare.daily_stress(occupant, enclosure, occupants, season: season.summer)).to be < 0
     end
   end
 end

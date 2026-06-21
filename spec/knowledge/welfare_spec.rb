@@ -17,10 +17,9 @@ RSpec.describe '動物福祉' do
     it 'ストレスが和らぐこと' do
       enclosure = savanna
       a = build_adult(catalog.lion, name: 'A')
-      enclosure.admit(a)
-      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
+      occupants = [a, build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)]
 
-      expect(welfare.daily_stress(a, enclosure)).to be < 0
+      expect(welfare.daily_stress(a, enclosure, occupants)).to be < 0
     end
   end
 
@@ -28,11 +27,10 @@ RSpec.describe '動物福祉' do
     it 'ストレスが増すこと' do
       enclosure = savanna
       a = build_adult(catalog.lion, name: 'A')
-      enclosure.admit(a)
-      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
+      occupants = [a, build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)]
       enclosure.soil(90)
 
-      expect(welfare.daily_stress(a, enclosure)).to be > 0
+      expect(welfare.daily_stress(a, enclosure, occupants)).to be > 0
     end
   end
 
@@ -40,9 +38,9 @@ RSpec.describe '動物福祉' do
     it '孤独でストレスが増すこと' do
       enclosure = savanna
       lone = build_adult(catalog.lion)
-      enclosure.admit(lone)
+      occupants = [lone]
 
-      expect(welfare.daily_stress(lone, enclosure)).to be > 0
+      expect(welfare.daily_stress(lone, enclosure, occupants)).to be > 0
     end
   end
 
@@ -52,9 +50,9 @@ RSpec.describe '動物福祉' do
         name: '極地', temperature: shared::Temperature.celsius(0), capacity: 3
       )
       bear = build_adult(catalog.polar_bear)
-      den.admit(bear)
+      occupants = [bear]
 
-      expect(welfare.daily_stress(bear, den)).to be < 0
+      expect(welfare.daily_stress(bear, den, occupants)).to be < 0
     end
   end
 
@@ -64,9 +62,9 @@ RSpec.describe '動物福祉' do
         name: '狭い獣舎', temperature: shared::Temperature.celsius(0), capacity: 1
       )
       bear = build_adult(catalog.polar_bear)
-      den.admit(bear)
+      occupants = [bear]
 
-      expect(welfare.daily_stress(bear, den)).to be > 0
+      expect(welfare.daily_stress(bear, den, occupants)).to be > 0
     end
   end
 
@@ -74,10 +72,9 @@ RSpec.describe '動物福祉' do
     it 'ストレスが増すこと' do
       enclosure = savanna(12)
       a = build_adult(catalog.lion, name: 'A')
-      enclosure.admit(a)
-      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
+      occupants = [a, build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)]
 
-      expect(welfare.daily_stress(a, enclosure)).to be > 0
+      expect(welfare.daily_stress(a, enclosure, occupants)).to be > 0
     end
   end
 
@@ -86,10 +83,9 @@ RSpec.describe '動物福祉' do
       enclosure = savanna
       a = build_adult(catalog.lion, name: 'A')
       a.get_hungrier(80)
-      enclosure.admit(a)
-      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
+      occupants = [a, build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)]
 
-      expect(welfare.daily_stress(a, enclosure)).to be > 0
+      expect(welfare.daily_stress(a, enclosure, occupants)).to be > 0
     end
   end
 
@@ -98,10 +94,9 @@ RSpec.describe '動物福祉' do
       enclosure = savanna
       a = build_adult(catalog.lion, name: 'A')
       a.fall_ill(Zoo::Domain::IllnessCatalog.cold)
-      enclosure.admit(a)
-      enclosure.admit(build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female))
+      occupants = [a, build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)]
 
-      expect(welfare.daily_stress(a, enclosure)).to be > 0
+      expect(welfare.daily_stress(a, enclosure, occupants)).to be > 0
     end
   end
 end

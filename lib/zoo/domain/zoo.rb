@@ -85,29 +85,6 @@ module Zoo
         @enclosures.find { |e| e.name == name }
       end
 
-      def house(animal, enclosure)
-        raise ArgumentError, "#{enclosure.name}はこの動物園のエリアではありません" unless @enclosures.include?(enclosure)
-
-        enclosure.admit(animal)
-        animal
-      end
-
-      def animals
-        @enclosures.flat_map(&:occupants)
-      end
-
-      def population
-        animals.size
-      end
-
-      def species_on_exhibit
-        animals.map(&:species).uniq
-      end
-
-      def threatened_species
-        species_on_exhibit.select { |s| s.conservation_status.threatened? }
-      end
-
       def deceased
         @deceased.dup
       end
@@ -157,22 +134,8 @@ module Zoo
         self
       end
 
-      def open_for_a_day
-        dead_today = []
-
-        @enclosures.each do |enclosure|
-          enclosure.pass_day.each do |dead|
-            @deceased << dead
-            dead.pull_events.each { |event| record_event(event) }
-            dead_today << dead
-          end
-        end
-
-        dead_today
-      end
-
       def to_s
-        "#{@name}(#{@enclosures.size}エリア・#{population}頭)"
+        "#{@name}(#{@enclosures.size}エリア)"
       end
     end
   end

@@ -4,11 +4,12 @@ module Zoo
   module Application
     module Services
       class OperateDay
-        def initialize(open_for_a_day:, enclosures:, animals:, keepers:, veterinarians:, zoo:, unit_of_work:,
+        def initialize(open_for_a_day:, enclosures:, animals:, housings:, keepers:, veterinarians:, zoo:, unit_of_work:,
                        random: Random.new)
           @open_for_a_day = open_for_a_day
           @enclosures = enclosures
           @animals = animals
+          @housings = housings
           @keepers = keepers
           @veterinarians = veterinarians
           @zoo = zoo
@@ -23,7 +24,7 @@ module Zoo
 
             enclosures = @enclosures.all
             animals    = @animals.all
-            on_exhibit = enclosures.flat_map(&:occupants)
+            on_exhibit = Domain::Occupancy.new(@housings.all).all_occupants
 
             visitors, income = Domain::VisitorAttraction.receive(zoo:, on_exhibit:)
             cost             = Domain::OperatingCost.charge(zoo:, enclosures:, staff_count: staff_count, animals:)
