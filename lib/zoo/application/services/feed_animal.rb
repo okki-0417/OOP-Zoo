@@ -18,7 +18,7 @@ module Zoo
             animal = @animals.find(command.animal_id)
             raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
 
-            keeper.feed(animal, command.food)
+            Domain::Feeding.new(keeper: keeper, animal: animal, foods: [command.food]).serve
             @animals.save(animal)
             animal
           end

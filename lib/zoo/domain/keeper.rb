@@ -30,11 +30,6 @@ module Zoo
         @specialties.include?(taxon_class)
       end
 
-      def feed(animal, food)
-        Feeding.new(keeper: self, animal: animal, foods: [food]).serve
-        self
-      end
-
       def assign_to(enclosure)
         @assigned_enclosures << enclosure unless @assigned_enclosures.include?(enclosure)
         self

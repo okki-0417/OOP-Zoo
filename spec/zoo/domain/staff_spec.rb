@@ -16,17 +16,6 @@ module Zoo
         expect(mammal_keeper.specialized_in?(penguin.taxon_class)).to be(false)
       end
 
-      it '専門の動物に給餌できること' do
-        lion.get_hungrier(50)
-        expect { mammal_keeper.feed(lion, FoodCatalog.horse_meat) }
-          .to change { lion.hunger_level }.by(-35)
-      end
-
-      it '専門外の動物には給餌できないこと' do
-        expect { mammal_keeper.feed(penguin, FoodCatalog.sardine) }
-          .to raise_error(Errors::FeedingNotAllowed)
-      end
-
       it 'エリアを清掃できること' do
         enclosure = Enclosure.new(
           name: 'サバンナ', temperature: Shared::Temperature.celsius(30), capacity: 5
