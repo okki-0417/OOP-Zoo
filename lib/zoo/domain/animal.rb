@@ -309,7 +309,7 @@ module Zoo
 
       def can_breed_with?(other)
         other.is_a?(Animal) &&
-          @species.same_species?(other.species) &&
+          @species == other.species &&
           @sex.opposite?(other.sex) &&
           fertile? && other.fertile?
       end
@@ -320,10 +320,6 @@ module Zoo
 
       def threatened?
         @species.conservation_status.threatened?
-      end
-
-      def same_species?(other)
-        other.is_a?(Animal) && @species.same_species?(other.species)
       end
 
       def species_name

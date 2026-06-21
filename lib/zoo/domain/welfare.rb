@@ -35,7 +35,7 @@ module Zoo
         return false unless animal.species.group_living?
 
         companions = occupants.count do |other|
-          other.alive? && other.species.same_species?(animal.species)
+          other.alive? && other.species == animal.species
         end
         companions <= 1
       end

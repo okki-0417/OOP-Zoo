@@ -98,10 +98,6 @@ module Zoo
         !@group_living
       end
 
-      def same_species?(other)
-        other.is_a?(Species) && @scientific_name == other.scientific_name
-      end
-
       def habitable?(temperature)
         @habitable_temperature_range.cover?(temperature)
       end
@@ -126,7 +122,7 @@ module Zoo
       def cohabitation_conflict_with(other)
         return "#{@name_ja}と#{other.name_ja}は適温域が両立しません" unless climate_overlaps?(other)
 
-        if same_species?(other)
+        if self == other
           return "#{@name_ja}は単独性のため同種を同居させられません" if solitary?
 
           return nil
