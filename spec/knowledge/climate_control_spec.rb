@@ -35,11 +35,13 @@ RSpec.describe '空調と屋内施設' do
     end
 
     it '空調により、本来その季節に合わない種でも快適に保たれること' do
+      lion = build_adult(catalog.lion, name: '主')
       controlled = enclosure(climate_controlled: true)
       uncontrolled = enclosure(climate_controlled: false)
 
-      expect(catalog.lion.comfortable?(controlled.effective_temperature(season.winter))).to be(true)
-      expect(catalog.lion.comfortable?(uncontrolled.effective_temperature(season.winter))).to be(false)
+      suitability = Zoo::Domain::ThermalSuitability
+      expect(suitability.new(lion, controlled.effective_temperature(season.winter)).comfortable?).to be(true)
+      expect(suitability.new(lion, uncontrolled.effective_temperature(season.winter)).comfortable?).to be(false)
     end
 
     it '空調が無いと厳しい季節に福祉が下がるが、空調があれば保たれること' do

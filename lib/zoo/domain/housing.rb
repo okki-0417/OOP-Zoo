@@ -25,7 +25,7 @@ module Zoo
         errors = []
         errors << "#{@animal.name}は死亡しているため収容できません" if @animal.dead?
         errors << "#{@enclosure.name}は定員#{@enclosure.capacity}に達しています" if @occupancy.full?
-        unless @animal.adapts_to?(@enclosure.temperature)
+        unless ThermalSuitability.new(@animal, @enclosure.temperature).habitable?
           errors << "#{@animal.species_name}は#{@enclosure.temperature}の#{@enclosure.name}に適応できません"
         end
 

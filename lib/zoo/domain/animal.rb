@@ -323,8 +323,8 @@ module Zoo
         @species.name_ja
       end
 
-      def adapts_to?(temperature)
-        @species.habitable?(temperature)
+      def habitable_temperature_range
+        @species.habitable_temperature_range
       end
 
       def cohabitation_conflict_with(other_species)

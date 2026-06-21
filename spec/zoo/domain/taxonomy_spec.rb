@@ -69,20 +69,9 @@ module Zoo
         expect(polar_bear).to be_solitary
       end
 
-      it '適温域への適合を判定できること' do
-        expect(lion.habitable?(Shared::Temperature.celsius(30))).to be(true)
-        expect(polar_bear.habitable?(Shared::Temperature.celsius(30))).to be(false)
-      end
-
       it '体格と行動様式に応じた必要面積を返すこと(最小5m²)' do
         expect(lion.space_requirement_sqm).to eq(95)
         expect(SpeciesCatalog.hercules_beetle.space_requirement_sqm).to eq(5)
-      end
-
-      it '快適か(適温域の内側か)を判定できること' do
-        expect(lion.comfortable?(Shared::Temperature.celsius(25))).to be(true)
-        expect(lion.comfortable?(Shared::Temperature.celsius(12))).to be(false)
-        expect(lion.comfortable?(Shared::Temperature.celsius(50))).to be(false)
       end
 
       it '気候域の重なりを判定できること(ライオンとコウテイペンギンは気候が両立しない)' do

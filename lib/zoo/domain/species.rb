@@ -94,17 +94,6 @@ module Zoo
         !@group_living
       end
 
-      def habitable?(temperature)
-        @habitable_temperature_range.cover?(temperature)
-      end
-
-      def comfortable?(temperature)
-        low = @habitable_temperature_range.begin.celsius
-        high = @habitable_temperature_range.end.celsius
-        margin = (high - low) * 0.15
-        temperature.celsius.between?(low + margin, high - margin)
-      end
-
       def climate_overlaps?(other)
         low = [@habitable_temperature_range.begin, other.habitable_temperature_range.begin].max
         high = [@habitable_temperature_range.end, other.habitable_temperature_range.end].min
