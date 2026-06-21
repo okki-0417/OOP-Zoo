@@ -5,10 +5,10 @@ AllCops:
   NewCops: enable
   SuggestExtensions: false
   Exclude:
-    - 'frontend/**/*'
-    - 'vendor/**/*'
-    - 'tmp/**/*'
-    - 'coverage/**/*'
+    - "frontend/**/*"
+    - "vendor/**/*"
+    - "tmp/**/*"
+    - "coverage/**/*"
 
 # コメントを書かない方針(CLAUDE.md)のため、ドキュメントコメントを要求しない
 Style/Documentation:
@@ -17,4 +17,7 @@ Style/Documentation:
 # RSpec の describe/it ブロックは長くなる
 Metrics/BlockLength:
   Exclude:
-    - 'spec/**/*'
+    - "spec/**/*"
+
+Style/IfUnlessModifier:
+  Enabled: false
