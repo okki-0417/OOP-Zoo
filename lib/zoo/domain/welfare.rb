@@ -46,7 +46,8 @@ module Zoo
         total += LONELINESS if lonely?(animal, occupants)
         total += SOCIAL_CONFLICT if SocialConflict.new(enclosure, occupants, animal).subordinate_male?
         total += CROWDING if Occupancy.new(enclosure, occupants).overcrowded?
-        total += CLIMATE_DISCOMFORT unless ThermalSuitability.new(animal, enclosure.effective_temperature(season)).comfortable?
+        comfortable = ThermalSuitability.new(animal, enclosure.effective_temperature(season)).comfortable?
+        total += CLIMATE_DISCOMFORT unless comfortable
         total += HUNGER if animal.hungry?
         total += ILLNESS if animal.sick?
         total += MALNUTRITION if animal.malnourished?

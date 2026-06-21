@@ -32,7 +32,8 @@ module Zoo
         errors << '成熟な個体同士でなければ繁殖できません' unless @sire.fertile? && @dam.fertile?
         errors << '健康な個体同士でなければ繁殖できません' unless @sire.healthy? && @dam.healthy?
         errors << '近親交配は避ける必要があります' if @pedigree.related?(@sire, @dam)
-        errors << "#{@dam.species.name_ja}は#{@season.label}には繁殖しません" if @dam.female? && !Estrus.new(@dam, @season).active?
+        out_of_season = @dam.female? && !Estrus.new(@dam, @season).active?
+        errors << "#{@dam.species.name_ja}は#{@season.label}には繁殖しません" if out_of_season
         raise Errors::BreedingNotAllowed, errors.join(', ') unless errors.empty?
       end
     end
