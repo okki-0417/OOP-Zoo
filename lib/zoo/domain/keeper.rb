@@ -26,13 +26,12 @@ module Zoo
         end
       end
 
-      def qualified_for?(animal)
-        @specialties.include?(animal.species.taxon_class)
+      def specialized_in?(taxon_class)
+        @specialties.include?(taxon_class)
       end
 
       def feed(animal, food)
-        ensure_qualified!(animal)
-        animal.eat(food)
+        Feeding.new(keeper: self, animal: animal, foods: [food]).serve
         self
       end
 
@@ -52,15 +51,6 @@ module Zoo
 
       def to_s
         "飼育員 #{@name}(#{@specialties.map(&:label).join('・')}担当)"
-      end
-
-      private
-
-      def ensure_qualified!(animal)
-        return if qualified_for?(animal)
-
-        raise Errors::NotQualified,
-              "飼育員#{@name}は#{animal.species.taxon_class.label}を担当できません"
       end
     end
   end

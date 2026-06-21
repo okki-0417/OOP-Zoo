@@ -100,8 +100,8 @@ module Zoo
         [@diet_type.acceptable_categories.size, REQUIRED_FOOD_VARIETY_CAP].min
       end
 
-      def diet_satisfied_by?(foods)
-        offered_food_categories(foods).size >= required_food_variety
+      def accepts?(food_category)
+        @diet_type.accepts?(food_category)
       end
 
       METABOLIC_REFERENCE_KG = 190.0
@@ -112,17 +112,13 @@ module Zoo
       FOOD_COST_BASE_YEN = 450
       FOOD_COST_MIN_YEN = 100
       PREDATORY_DIET_FOOD_FACTOR = 3.5
-      SATIETY_FACTOR_RANGE = (0.3..3.0)
 
-      def daily_hunger
-        factor = (METABOLIC_REFERENCE_KG / @adult_weight.kilograms)**0.25
-        (BASE_HUNGER_PER_DAY * factor).round.clamp(HUNGER_MIN, HUNGER_MAX)
+      def metabolic_factor
+        (METABOLIC_REFERENCE_KG / @adult_weight.kilograms)**0.25
       end
 
-      def satiety_from(food)
-        factor = ((METABOLIC_REFERENCE_KG / @adult_weight.kilograms)**0.25)
-                 .clamp(SATIETY_FACTOR_RANGE.begin, SATIETY_FACTOR_RANGE.end)
-        [(food.satiety * factor).round, 1].max
+      def daily_hunger
+        (BASE_HUNGER_PER_DAY * metabolic_factor).round.clamp(HUNGER_MIN, HUNGER_MAX)
       end
 
       def daily_food_cost
@@ -133,12 +129,6 @@ module Zoo
 
       def to_s
         "#{@name_ja}(#{@scientific_name})"
-      end
-
-      private
-
-      def offered_food_categories(foods)
-        foods.select { |food| @diet_type.accepts?(food.category) }.map(&:category).uniq
       end
 
       protected

@@ -230,18 +230,6 @@ module Zoo
         self
       end
 
-      def eat(food)
-        raise Errors::DeadAnimal, "#{@name}は死亡しているため給餌できません" if dead?
-
-        unless @species.diet_type.accepts?(food.category)
-          raise Errors::IncompatibleFood,
-                "#{@species.name_ja}(#{@species.diet_type.label})に#{food.name_ja}は与えられません"
-        end
-
-        satisfy_hunger(@species.satiety_from(food))
-        self
-      end
-
       def hungry?
         @hunger.hungry?
       end
@@ -257,12 +245,13 @@ module Zoo
       NUTRITION_GAIN = 20
       NUTRITION_LOSS = 25
 
-      def dine(foods)
-        @nutrition = if @species.diet_satisfied_by?(foods)
-                       @nutrition.improved_by(NUTRITION_GAIN)
-                     else
-                       @nutrition.declined_by(NUTRITION_LOSS)
-                     end
+      def improve_nutrition
+        @nutrition = @nutrition.improved_by(NUTRITION_GAIN)
+        self
+      end
+
+      def decline_nutrition
+        @nutrition = @nutrition.declined_by(NUTRITION_LOSS)
         self
       end
 
@@ -321,6 +310,22 @@ module Zoo
 
       def species_name
         @species.name_ja
+      end
+
+      def taxon_class
+        @species.taxon_class
+      end
+
+      def accepts?(food_category)
+        @species.accepts?(food_category)
+      end
+
+      def metabolic_factor
+        @species.metabolic_factor
+      end
+
+      def required_food_variety
+        @species.required_food_variety
       end
 
       def habitable_temperature_range

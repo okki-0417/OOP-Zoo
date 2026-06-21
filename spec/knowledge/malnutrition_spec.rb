@@ -18,8 +18,13 @@ RSpec.describe '栄養失調' do
     [enclosure, subject_monkey, [subject_monkey, companion]]
   end
 
+  def feed_daily(animal, foods)
+    keeper = build_keeper(Zoo::Domain::TaxonClass.mammal)
+    Zoo::Domain::Feeding.new(keeper: keeper, animal: animal, foods: foods).nourish
+  end
+
   def malnourish(animal, times: 4)
-    times.times { animal.dine([Zoo::Domain::FoodCatalog.banana]) }
+    times.times { feed_daily(animal, [Zoo::Domain::FoodCatalog.banana]) }
     animal
   end
 
@@ -33,7 +38,7 @@ RSpec.describe '栄養失調' do
 
     it 'バランスの取れた給餌(果実と昆虫)は栄養を保ち、福祉を後押しすること' do
       enclosure, monkey, occupants = troop
-      4.times { monkey.dine([foods.banana, foods.cricket]) }
+      4.times { feed_daily(monkey, [foods.banana, foods.cricket]) }
       expect(monkey).not_to be_malnourished
       expect(welfare.daily_stress(monkey, enclosure, occupants)).to be < 0
     end

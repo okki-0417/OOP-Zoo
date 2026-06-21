@@ -30,12 +30,12 @@ RSpec.describe Zoo::Application::Services::FeedAnimal do
       expect(animals.find(lion.id).hunger_level).to eq(5)
     end
 
-    it '哺乳類のライオンに鳥類担当の飼育員が給餌しようとすると Domain::Errors::NotQualified が伝播すること' do
+    it '哺乳類のライオンに鳥類担当の飼育員が給餌しようとすると Domain::Errors::FeedingNotAllowed が伝播すること' do
       command = commands::FeedAnimalCommand.new(
         keeper_id: bird_keeper.id, animal_id: lion.id, food: feeding::FoodCatalog.horse_meat
       )
 
-      expect { service.call(command) }.to raise_error(Zoo::Domain::Errors::NotQualified)
+      expect { service.call(command) }.to raise_error(Zoo::Domain::Errors::FeedingNotAllowed)
     end
 
     it '存在しない keeper_id=\'missing\' を渡すと Application::Errors::KeeperNotFound が発生すること' do

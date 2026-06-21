@@ -12,8 +12,8 @@ module Zoo
       let(:penguin) { build_adult(SpeciesCatalog.emperor_penguin) }
 
       it '専門の綱の動物を担当できること' do
-        expect(mammal_keeper.qualified_for?(lion)).to be(true)
-        expect(mammal_keeper.qualified_for?(penguin)).to be(false)
+        expect(mammal_keeper.specialized_in?(lion.taxon_class)).to be(true)
+        expect(mammal_keeper.specialized_in?(penguin.taxon_class)).to be(false)
       end
 
       it '専門の動物に給餌できること' do
@@ -24,7 +24,7 @@ module Zoo
 
       it '専門外の動物には給餌できないこと' do
         expect { mammal_keeper.feed(penguin, FoodCatalog.sardine) }
-          .to raise_error(Errors::NotQualified)
+          .to raise_error(Errors::FeedingNotAllowed)
       end
 
       it 'エリアを清掃できること' do

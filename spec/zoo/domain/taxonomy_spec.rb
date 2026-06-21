@@ -84,23 +84,10 @@ module Zoo
         end
       end
 
-      describe '#diet_satisfied_by?' do
-        let(:foods) { FoodCatalog }
-
-        it '必要カテゴリ数を満たせば true であること' do
-          expect(lion.diet_satisfied_by?([foods.horse_meat])).to be(true)
-        end
-
-        it '必要カテゴリ数に届かなければ false であること' do
-          expect(SpeciesCatalog.african_elephant.diet_satisfied_by?([foods.hay])).to be(false)
-        end
-
-        it '食性に合わない餌はカテゴリに数えないこと' do
-          expect(SpeciesCatalog.african_elephant.diet_satisfied_by?([foods.hay, foods.horse_meat])).to be(false)
-        end
-
-        it '空の給餌は false であること' do
-          expect(lion.diet_satisfied_by?([])).to be(false)
+      describe '#accepts?' do
+        it '食性が受け入れるカテゴリに true、それ以外に false を返すこと' do
+          expect(lion.accepts?(:meat)).to be(true)
+          expect(lion.accepts?(:plant)).to be(false)
         end
       end
 
@@ -111,9 +98,10 @@ module Zoo
         end
       end
 
-      describe '#satiety_from' do
-        it '満腹度は最低1を返すこと' do
-          expect(SpeciesCatalog.african_elephant.satiety_from(FoodCatalog.hay)).to be >= 1
+      describe '#metabolic_factor' do
+        it '小型種ほど大きく、大型種ほど小さいこと' do
+          expect(SpeciesCatalog.japanese_macaque.metabolic_factor)
+            .to be > SpeciesCatalog.african_elephant.metabolic_factor
         end
       end
 

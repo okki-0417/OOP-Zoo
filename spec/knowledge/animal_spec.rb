@@ -200,25 +200,32 @@ RSpec.describe '動物' do
       end
     end
 
-    context '食性に合う餌を食べると' do
+    def serve(animal, food)
+      Zoo::Domain::Feeding.new(
+        keeper: build_keeper(Zoo::Domain::TaxonClass.mammal), animal: animal, foods: [food]
+      )
+    end
+
+    context '食性に合う餌を与えると' do
       it '満腹度が餌のぶんだけ回復すること' do
         animal.get_hungrier(80)
-        expect { animal.eat(meat) }.to change { animal.hunger_level }.by(-meat.satiety)
+        feeding = serve(animal, meat)
+        expect { feeding.serve }.to change { animal.hunger_level }.by(-feeding.satiety)
       end
     end
 
     context '食性に合わない餌を与えられると' do
       it '受け付けず、空腹も変わらないこと' do
         animal.get_hungrier(80)
-        expect { animal.eat(hay) }.to raise_error(errors::IncompatibleFood)
+        expect { serve(animal, hay).serve }.to raise_error(errors::FeedingNotAllowed)
         expect(animal.hunger_level).to eq(80)
       end
     end
 
     context '死んでいるとき' do
-      it '餌を食べられないこと' do
+      it '餌を与えられないこと' do
         animal.die
-        expect { animal.eat(meat) }.to raise_error(errors::DeadAnimal)
+        expect { serve(animal, meat).serve }.to raise_error(errors::FeedingNotAllowed)
       end
     end
 

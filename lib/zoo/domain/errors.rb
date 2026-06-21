@@ -8,10 +8,9 @@ module Zoo
       class ClimateMismatch < DomainError; end
       class IncompatibleCohabitation < DomainError; end
       class DeadAnimal < DomainError; end
-      class IncompatibleFood < DomainError; end
       class BreedingNotAllowed < DomainError; end
       class HousingNotAllowed < DomainError; end
-      class NotQualified < DomainError; end
+      class FeedingNotAllowed < DomainError; end
       class VaccineUnavailable < DomainError; end
       class InsufficientFunds < DomainError; end
     end

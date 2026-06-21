@@ -18,6 +18,11 @@ module Factories
     )
   end
 
+  def build_keeper(*taxon_classes)
+    taxon_classes = [Zoo::Domain::TaxonClass.mammal] if taxon_classes.empty?
+    Zoo::Domain::Keeper.new(name: '飼育員', specialties: taxon_classes)
+  end
+
   def build_pair(species, max_health: 100)
     [
       build_adult(species, name: "#{species.name_ja}♂", sex: A::Sex.male, max_health: max_health),

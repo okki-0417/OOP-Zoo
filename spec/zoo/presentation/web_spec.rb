@@ -226,14 +226,14 @@ RSpec.describe Zoo::Presentation::Web do
       expect(body['hunger']).to be_a(Integer)
     end
 
-    it '専門外の飼育員が給餌すると NotQualified で422に翻訳されること' do
+    it '専門外の飼育員が給餌すると FeedingNotAllowed で422に翻訳されること' do
       keeper_id = hire_keeper(specialties: ['bird'])
       animal_id = acquire(species: 'lion')
 
       post_json "/animals/#{animal_id}/feedings", keeper_id: keeper_id, food: 'horse_meat'
 
       expect(last_response.status).to eq(422)
-      expect(body['error']).to include('code' => 'NotQualified')
+      expect(body['error']).to include('code' => 'FeedingNotAllowed')
     end
   end
 

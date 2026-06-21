@@ -31,10 +31,14 @@ RSpec.describe '代謝と体格' do
   end
 
   describe '必要採食量' do
+    def satiety(species, food)
+      Zoo::Domain::Feeding.new(animal: build_adult(species), foods: [food]).satiety
+    end
+
     it '同じ餌でも小型種はよく満たされ、大型種はあまり満たされないこと(サル > ゾウ)' do
       banana = foods.banana
-      expect(catalog.japanese_macaque.satiety_from(banana))
-        .to be > catalog.african_elephant.satiety_from(banana)
+      expect(satiety(catalog.japanese_macaque, banana))
+        .to be > satiety(catalog.african_elephant, banana)
     end
   end
 
