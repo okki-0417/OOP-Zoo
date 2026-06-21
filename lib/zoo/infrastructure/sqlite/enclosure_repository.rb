@@ -12,22 +12,23 @@ module Zoo
         end
 
         def find(id)
-          row = @database.get_first_row('SELECT * FROM enclosures WHERE id = ?', id.to_s)
-          row && @mapper.to_aggregate(row)
+          row = enclosures.where(id: id.to_s).first
+          row && @mapper.to_aggregate(row.transform_keys(&:to_s))
         end
 
         def save(enclosure)
-          row = @mapper.to_row(enclosure)
-          @database.execute(
-            'INSERT OR REPLACE INTO enclosures (id, name, celsius, capacity, cleanliness) ' \
-            'VALUES (?, ?, ?, ?, ?)',
-            row[:id], row[:name], row[:celsius], row[:capacity], row[:cleanliness]
-          )
+          enclosures.insert_conflict(:replace).insert(@mapper.to_row(enclosure))
           enclosure
         end
 
         def all
-          @database.execute('SELECT * FROM enclosures').map { |row| @mapper.to_aggregate(row) }
+          enclosures.all.map { |row| @mapper.to_aggregate(row.transform_keys(&:to_s)) }
+        end
+
+        private
+
+        def enclosures
+          @database.dataset(:enclosures)
         end
       end
     end

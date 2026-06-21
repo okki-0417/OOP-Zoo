@@ -12,25 +12,31 @@ module Zoo
         end
 
         def append(event)
-          @database.execute(
-            'INSERT INTO events (type, animal_id, cause) VALUES (?, ?, ?)',
-            event.class.name.split('::').last, event.animal.id.to_s, cause_of(event)
+          events.insert(
+            type: event.class.name.split('::').last,
+            animal_id: event.animal.id.to_s,
+            cause: cause_of(event)
           )
           event
         end
 
         def all
-          @database.execute('SELECT * FROM events ORDER BY id').filter_map { |row| build(row) }
+          rows = events.order(:id).all.map { |row| row.transform_keys(&:to_s) }
+          animals = @animals.find_all(rows.filter_map { |row| row['animal_id'] })
+          rows.filter_map { |row| build(row, animals[row['animal_id']]) }
         end
 
         private
+
+        def events
+          @database.dataset(:events)
+        end
 
         def cause_of(event)
           event.respond_to?(:cause) ? event.cause.to_s : nil
         end
 
-        def build(row)
-          animal = @animals.find(row['animal_id'])
+        def build(row, animal)
           return nil unless animal
 
           case row['type']

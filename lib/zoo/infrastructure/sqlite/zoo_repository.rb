@@ -13,19 +13,19 @@ module Zoo
         end
 
         def load
-          row = @database.get_first_row('SELECT * FROM zoo WHERE id = 1')
-          row ? @mapper.to_zoo(row) : @default_zoo
+          row = zoo.where(id: 1).first
+          row ? @mapper.to_zoo(row.transform_keys(&:to_s)) : @default_zoo
         end
 
-        def save(zoo)
-          row = @mapper.to_row(zoo)
-          @database.execute(
-            'INSERT OR REPLACE INTO zoo (id, name, admission_fee, revenue, visitor_count, balance, reputation, day) ' \
-            'VALUES (1, ?, ?, ?, ?, ?, ?, ?)',
-            row[:name], row[:admission_fee], row[:revenue], row[:visitor_count], row[:balance], row[:reputation],
-            row[:day]
-          )
-          zoo
+        def save(zoo_aggregate)
+          zoo.insert_conflict(:replace).insert(@mapper.to_row(zoo_aggregate).merge(id: 1))
+          zoo_aggregate
+        end
+
+        private
+
+        def zoo
+          @database.dataset(:zoo)
         end
       end
     end

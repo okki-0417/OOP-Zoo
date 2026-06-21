@@ -12,6 +12,7 @@ end
 
 gem 'puma'
 gem 'rackup'
+gem 'sequel', '~> 5.0'
 gem 'sinatra', '~> 4.1'
 gem 'sqlite3', '~> 2.9'
 gem 'zeitwerk', '~> 2.8'

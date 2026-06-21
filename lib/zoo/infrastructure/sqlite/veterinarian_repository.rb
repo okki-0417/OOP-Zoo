@@ -12,18 +12,23 @@ module Zoo
         end
 
         def find(id)
-          row = @database.get_first_row('SELECT * FROM veterinarians WHERE id = ?', id.to_s)
-          row && @mapper.to_aggregate(row)
+          row = veterinarians.where(id: id.to_s).first
+          row && @mapper.to_aggregate(row.transform_keys(&:to_s))
         end
 
         def save(veterinarian)
-          row = @mapper.to_row(veterinarian)
-          @database.execute('INSERT OR REPLACE INTO veterinarians (id, name) VALUES (?, ?)', row[:id], row[:name])
+          veterinarians.insert_conflict(:replace).insert(@mapper.to_row(veterinarian))
           veterinarian
         end
 
         def all
-          @database.execute('SELECT * FROM veterinarians').map { |row| @mapper.to_aggregate(row) }
+          veterinarians.all.map { |row| @mapper.to_aggregate(row.transform_keys(&:to_s)) }
+        end
+
+        private
+
+        def veterinarians
+          @database.dataset(:veterinarians)
         end
       end
     end

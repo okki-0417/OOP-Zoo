@@ -6,7 +6,6 @@ module Zoo
       class BirthRepository
         include Domain::Repositories::BirthRepository
 
-        COLUMNS = %i[id sire_id dam_id offspring_id day season].freeze
         DEFAULT_MAX_DEPTH = 20
 
         def initialize(database, animals, mapper: BirthMapper.new)
@@ -16,17 +15,12 @@ module Zoo
         end
 
         def save(birth)
-          row = @mapper.to_row(birth)
-          @database.execute(
-            "INSERT OR REPLACE INTO births (#{COLUMNS.join(', ')}) VALUES (#{(['?'] * COLUMNS.size).join(', ')})",
-            *COLUMNS.map { |column| row[column] }
-          )
+          births.insert_conflict(:replace).insert(@mapper.to_row(birth))
           birth
         end
 
         def all
-          @database.execute('SELECT * FROM births ORDER BY rowid')
-                   .filter_map { |row| @mapper.to_aggregate(row, @animals.method(:find)) }
+          build_births(births.order(:rowid).all)
         end
 
         def ancestry(*animals, max_depth: DEFAULT_MAX_DEPTH)
@@ -34,11 +28,26 @@ module Zoo
           return [] if ids.empty?
 
           placeholders = (['?'] * ids.size).join(', ')
-          @database.execute(ancestry_sql(placeholders), *ids, max_depth)
-                   .filter_map { |row| @mapper.to_aggregate(row, @animals.method(:find)) }
+          build_births(@database.execute(ancestry_sql(placeholders), *ids, max_depth))
         end
 
         private
+
+        def births
+          @database.dataset(:births)
+        end
+
+        def build_births(rows)
+          rows = rows.map { |row| row.transform_keys(&:to_s) }
+          lookup = animal_lookup(rows)
+          rows.filter_map { |row| @mapper.to_aggregate(row, lookup) }
+        end
+
+        def animal_lookup(rows)
+          ids = rows.flat_map { |row| [row['sire_id'], row['dam_id'], row['offspring_id']] }
+          animals = @animals.find_all(ids.compact)
+          ->(id) { animals[id.to_s] }
+        end
 
         def ancestry_sql(placeholders)
           <<~SQL

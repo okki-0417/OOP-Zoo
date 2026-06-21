@@ -1,23 +1,22 @@
 # frozen_string_literal: true
 
-require 'sqlite3'
+require 'sequel'
 
 module Zoo
   module Infrastructure
     module Sqlite
       class Database
         def initialize(path = ':memory:')
-          @db = SQLite3::Database.new(path)
-          @db.results_as_hash = true
+          @db = path == ':memory:' ? Sequel.sqlite : Sequel.sqlite(path)
           create_schema
         end
 
-        def get_first_row(sql, *params)
-          @db.get_first_row(sql, params)
+        def execute(sql, *params)
+          @db.fetch(sql, *params).all.map { |row| row.transform_keys(&:to_s) }
         end
 
-        def execute(sql, *params)
-          @db.execute(sql, params)
+        def dataset(name)
+          @db[name]
         end
 
         def transaction
@@ -27,13 +26,13 @@ module Zoo
         end
 
         def transaction_active?
-          @db.transaction_active?
+          @db.in_transaction?
         end
 
         private
 
         def create_schema
-          @db.execute_batch(<<~SQL)
+          @db.run(<<~SQL)
             CREATE TABLE IF NOT EXISTS zoo (
               id            INTEGER PRIMARY KEY CHECK (id = 1),
               name          TEXT    NOT NULL,

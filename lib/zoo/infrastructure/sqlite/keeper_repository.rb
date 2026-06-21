@@ -12,21 +12,23 @@ module Zoo
         end
 
         def find(id)
-          row = @database.get_first_row('SELECT * FROM keepers WHERE id = ?', id.to_s)
-          row && @mapper.to_aggregate(row)
+          row = keepers.where(id: id.to_s).first
+          row && @mapper.to_aggregate(row.transform_keys(&:to_s))
         end
 
         def save(keeper)
-          row = @mapper.to_row(keeper)
-          @database.execute(
-            'INSERT OR REPLACE INTO keepers (id, name, specialties) VALUES (?, ?, ?)',
-            row[:id], row[:name], row[:specialties]
-          )
+          keepers.insert_conflict(:replace).insert(@mapper.to_row(keeper))
           keeper
         end
 
         def all
-          @database.execute('SELECT * FROM keepers').map { |row| @mapper.to_aggregate(row) }
+          keepers.all.map { |row| @mapper.to_aggregate(row.transform_keys(&:to_s)) }
+        end
+
+        private
+
+        def keepers
+          @database.dataset(:keepers)
         end
       end
     end

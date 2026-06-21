@@ -16,6 +16,13 @@ module Zoo
           @store[id.to_s]
         end
 
+        def find_all(ids)
+          ids.map(&:to_s).uniq.each_with_object({}) do |id, found|
+            animal = @store[id]
+            found[id] = animal if animal
+          end
+        end
+
         def save(animal)
           @store[animal.id.to_s] = animal
           @namings.concat(animal.recorded_events.grep(Domain::Events::AnimalNamed))

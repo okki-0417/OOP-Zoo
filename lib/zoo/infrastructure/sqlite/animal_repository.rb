@@ -6,13 +6,6 @@ module Zoo
       class AnimalRepository
         include Domain::Repositories::AnimalRepository
 
-        COLUMNS = %i[
-          id species_key name sex health_current health_max hunger stress age_in_days
-          illness_key immunities death_cause parent_ids
-        ].freeze
-
-        NAMING_COLUMNS = %i[animal_id name keeper_id occurred_on].freeze
-
         def initialize(database, mapper: AnimalMapper.new, naming_mapper: NamingMapper.new)
           @database = database
           @mapper = mapper
@@ -20,36 +13,46 @@ module Zoo
         end
 
         def find(id)
-          row = @database.get_first_row('SELECT * FROM animals WHERE id = ?', id.to_s)
-          row && @mapper.to_aggregate(row)
+          row = animals.where(id: id.to_s).first
+          row && @mapper.to_aggregate(row.transform_keys(&:to_s))
+        end
+
+        def find_all(ids)
+          keys = ids.map(&:to_s).uniq
+          return {} if keys.empty?
+
+          animals.where(id: keys).each_with_object({}) do |row, found|
+            animal = @mapper.to_aggregate(row.transform_keys(&:to_s))
+            found[animal.id.to_s] = animal
+          end
         end
 
         def save(animal)
-          row = @mapper.to_row(animal)
-          @database.execute(
-            "INSERT OR REPLACE INTO animals (#{COLUMNS.join(', ')}) VALUES (#{(['?'] * COLUMNS.size).join(', ')})",
-            *COLUMNS.map { |column| row[column] }
-          )
-          animal.recorded_events.grep(Domain::Events::AnimalNamed).each { |e| append_naming(e) }
+          animals.insert_conflict(:replace).insert(@mapper.to_row(animal))
+          animal.recorded_events.grep(Domain::Events::AnimalNamed).each { |event| append_naming(event) }
           animal
         end
 
         def all
-          @database.execute('SELECT * FROM animals').map { |row| @mapper.to_aggregate(row) }
+          animals.all.map { |row| @mapper.to_aggregate(row.transform_keys(&:to_s)) }
         end
 
         def namings
-          @database.execute('SELECT * FROM namings ORDER BY id')
+          naming_events.order(:id).all.map { |row| row.transform_keys(&:to_s) }
         end
 
         private
 
+        def animals
+          @database.dataset(:animals)
+        end
+
+        def naming_events
+          @database.dataset(:namings)
+        end
+
         def append_naming(event)
-          row = @naming_mapper.to_row(event)
-          @database.execute(
-            "INSERT INTO namings (#{NAMING_COLUMNS.join(', ')}) VALUES (#{(['?'] * NAMING_COLUMNS.size).join(', ')})",
-            *NAMING_COLUMNS.map { |column| row[column] }
-          )
+          naming_events.insert(@naming_mapper.to_row(event))
         end
       end
     end

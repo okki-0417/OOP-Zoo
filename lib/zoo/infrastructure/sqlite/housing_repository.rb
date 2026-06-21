@@ -6,23 +6,8 @@ module Zoo
       class HousingRepository
         include Domain::Repositories::HousingRepository
 
-        COLUMNS = %i[id animal_id enclosure_id kind occurred_on keeper_id closes_housing_id].freeze
-
-        EVENTS_FOR_ENCLOSURE = <<~SQL
-          SELECT * FROM housing_events
-          WHERE (enclosure_id = ? AND kind = ?)
-             OR (kind = ? AND closes_housing_id IN
-                 (SELECT id FROM housing_events WHERE enclosure_id = ? AND kind = ?))
-          ORDER BY seq
-        SQL
-
-        CURRENT_HOUSING_OF = <<~SQL
-          SELECT * FROM housing_events h
-          WHERE h.animal_id = ? AND h.kind = ?
-            AND NOT EXISTS (SELECT 1 FROM housing_events r
-                            WHERE r.kind = ? AND r.closes_housing_id = h.id)
-          ORDER BY seq DESC LIMIT 1
-        SQL
+        HOUSED = HousingMapper::HOUSED
+        RELEASED = HousingMapper::RELEASED
 
         def initialize(database, animals, mapper: HousingMapper.new)
           @database = database
@@ -31,45 +16,53 @@ module Zoo
         end
 
         def save(event)
-          row = @mapper.to_row(event)
-          @database.execute(
-            "INSERT INTO housing_events (#{COLUMNS.join(', ')}) VALUES (#{(['?'] * COLUMNS.size).join(', ')})",
-            *COLUMNS.map { |column| row[column] }
-          )
+          events.insert(@mapper.to_row(event))
           event
         end
 
         def all
-          build_events(@database.execute('SELECT * FROM housing_events ORDER BY seq'))
+          build_events(events.order(:seq).all)
         end
 
         def events_for_enclosure(enclosure_id)
-          build_events(
-            @database.execute(
-              EVENTS_FOR_ENCLOSURE,
-              enclosure_id.to_s, HousingMapper::HOUSED,
-              HousingMapper::RELEASED, enclosure_id.to_s, HousingMapper::HOUSED
+          housed_here = events.where(enclosure_id: enclosure_id.to_s, kind: HOUSED)
+          scoped = events.where(
+            Sequel.|(
+              { enclosure_id: enclosure_id.to_s, kind: HOUSED },
+              { kind: RELEASED, closes_housing_id: housed_here.select(:id) }
             )
           )
+          build_events(scoped.order(:seq).all)
         end
 
         def current_housing_of(animal)
-          build_events(
-            @database.execute(
-              CURRENT_HOUSING_OF, animal.id.to_s, HousingMapper::HOUSED, HousingMapper::RELEASED
-            )
-          ).first
+          released = events.where(kind: RELEASED).exclude(closes_housing_id: nil).select(:closes_housing_id)
+          current = events.where(animal_id: animal.id.to_s, kind: HOUSED)
+                          .exclude(id: released)
+                          .order(Sequel.desc(:seq)).limit(1)
+          build_events(current.all).first
         end
 
         private
 
+        def events
+          @database.dataset(:housing_events)
+        end
+
         def build_events(rows)
+          rows = rows.map { |row| row.transform_keys(&:to_s) }
+          lookup = animal_lookup(rows)
           housings = {}
           rows.filter_map do |row|
-            event = @mapper.to_aggregate(row, @animals.method(:find), housings)
+            event = @mapper.to_aggregate(row, lookup, housings)
             housings[event.id.to_s] = event if event.is_a?(Domain::Housing)
             event
           end
+        end
+
+        def animal_lookup(rows)
+          animals = @animals.find_all(rows.filter_map { |row| row['animal_id'] })
+          ->(id) { animals[id.to_s] }
         end
       end
     end
