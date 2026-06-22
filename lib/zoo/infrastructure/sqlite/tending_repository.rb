@@ -3,13 +3,13 @@
 module Zoo
   module Infrastructure
     module Sqlite
-      class EnclosureAssignmentRepository
-        include Domain::Repositories::EnclosureAssignmentRepository
+      class TendingRepository
+        include Domain::Repositories::TendingRepository
 
-        ASSIGNED = EnclosureAssignmentMapper::ASSIGNED
-        DISCHARGED = EnclosureAssignmentMapper::DISCHARGED
+        TENDING = TendingMapper::TENDING
+        RELIEVING = TendingMapper::RELIEVING
 
-        def initialize(database, keepers, enclosures, mapper: EnclosureAssignmentMapper.new)
+        def initialize(database, keepers, enclosures, mapper: TendingMapper.new)
           @database = database
           @keepers = keepers
           @enclosures = enclosures
@@ -17,37 +17,43 @@ module Zoo
         end
 
         def save(event)
-          assignments.insert(@mapper.to_row(event))
+          tendings.insert(@mapper.to_row(event))
           event
         end
 
         def all
-          build_events(assignments.order(:seq).all)
+          build_events(tendings.order(:seq).all)
         end
 
         def enclosures_of(keeper)
-          build_events(current_assignments.where(keeper_id: keeper.id.to_s).order(:seq).all)
+          build_events(current_tendings.where(keeper_id: keeper.id.to_s).order(:seq).all)
             .map(&:enclosure)
             .uniq(&:id)
         end
 
-        def assignment_of(keeper, enclosure)
+        def tending_of(keeper, enclosure)
           build_events(
-            current_assignments.where(keeper_id: keeper.id.to_s, enclosure_id: enclosure.id.to_s).order(:seq).all
+            current_tendings.where(keeper_id: keeper.id.to_s, enclosure_id: enclosure.id.to_s).order(:seq).all
           ).first
+        end
+
+        def keepers_of(enclosure)
+          build_events(current_tendings.where(enclosure_id: enclosure.id.to_s).order(:seq).all)
+            .map(&:keeper)
+            .uniq(&:id)
         end
 
         private
 
-        def assignments
-          @database.dataset(:enclosure_assignments)
+        def tendings
+          @database.dataset(:tendings)
         end
 
-        def current_assignments
-          closed = assignments.where(kind: DISCHARGED)
-                              .exclude(closes_enclosure_assignment_id: nil)
-                              .select(:closes_enclosure_assignment_id)
-          assignments.where(kind: ASSIGNED).exclude(id: closed)
+        def current_tendings
+          relieved = tendings.where(kind: RELIEVING)
+                             .exclude(closes_tending_id: nil)
+                             .select(:closes_tending_id)
+          tendings.where(kind: TENDING).exclude(id: relieved)
         end
 
         def build_events(rows)
@@ -57,7 +63,7 @@ module Zoo
           built = {}
           rows.filter_map do |row|
             event = @mapper.to_aggregate(row, keeper_lookup, enclosure_lookup, built)
-            built[event.id.to_s] = event if event.is_a?(Domain::EnclosureAssignment)
+            built[event.id.to_s] = event if event.is_a?(Domain::Tending)
             event
           end
         end

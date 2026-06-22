@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Zoo::Infrastructure::Sqlite::EnclosureAssignmentRepository do
+RSpec.describe Zoo::Infrastructure::Sqlite::TendingRepository do
   let(:database) { Zoo::Infrastructure::Sqlite::Database.new }
   let(:keepers) { Zoo::Infrastructure::Sqlite::KeeperRepository.new(database) }
   let(:enclosures) { Zoo::Infrastructure::Sqlite::EnclosureRepository.new(database) }
@@ -16,5 +16,5 @@ RSpec.describe Zoo::Infrastructure::Sqlite::EnclosureAssignmentRepository do
     list.each { |enclosure| enclosures.save(enclosure) }
   end
 
-  it_behaves_like 'an enclosure assignment repository'
+  it_behaves_like 'a tending repository'
 end

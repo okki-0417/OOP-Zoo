@@ -3,7 +3,7 @@
 module Zoo
   module Composition
     class Container
-      attr_reader :animals, :enclosures, :housings, :keepers, :veterinarians, :breedings, :births, :assignments,
+      attr_reader :animals, :enclosures, :housings, :keepers, :veterinarians, :breedings, :births, :tendings,
                   :zoo, :event_store, :memorial_log, :birth_announcements
 
       def initialize(state: nil, database: nil)
@@ -25,7 +25,7 @@ module Zoo
           {
             animals: @animals.all, enclosures: @enclosures.all, housings: @housings.all,
             keepers: @keepers.all, veterinarians: @veterinarians.all,
-            breedings: @breedings.all, births: @births.all, assignments: @assignments.all,
+            breedings: @breedings.all, births: @births.all, tendings: @tendings.all,
             zoo: @zoo.load, events: @event_store.all
           },
           path
@@ -107,14 +107,14 @@ module Zoo
       def assign_keeper
         Application::Services::AssignKeeper.new(
           keepers: @keepers, enclosures: @enclosures, housings: @housings,
-          assignments: @assignments, unit_of_work: @unit_of_work
+          tendings: @tendings, unit_of_work: @unit_of_work
         )
       end
 
       def discharge_keeper
         Application::Services::DischargeKeeper.new(
           keepers: @keepers, enclosures: @enclosures,
-          assignments: @assignments, unit_of_work: @unit_of_work
+          tendings: @tendings, unit_of_work: @unit_of_work
         )
       end
 
@@ -217,14 +217,14 @@ module Zoo
         @veterinarians = store::InMemoryVeterinarianRepository.new(state.fetch(:veterinarians, []))
         @breedings = store::InMemoryBreedingRepository.new(state.fetch(:breedings, []))
         @births = store::InMemoryBirthRepository.new(state.fetch(:births, []))
-        @assignments = store::InMemoryEnclosureAssignmentRepository.new(state.fetch(:assignments, []))
+        @tendings = store::InMemoryTendingRepository.new(state.fetch(:tendings, []))
         @zoo = store::InMemoryZooRepository.new(state.fetch(:zoo, default_zoo))
         @event_store = store::InMemoryEventStore.new
         state.fetch(:events, []).each { |event| @event_store.append(event) }
 
         @unit_of_work = store::InMemoryUnitOfWork.new(
           repositories: [@animals, @enclosures, @housings, @keepers, @veterinarians, @breedings, @births,
-                         @assignments]
+                         @tendings]
         )
       end
 
@@ -238,7 +238,7 @@ module Zoo
         @veterinarians = sqlite::VeterinarianRepository.new(database)
         @breedings = sqlite::BreedingRepository.new(database, @animals)
         @births = sqlite::BirthRepository.new(database, @animals)
-        @assignments = sqlite::EnclosureAssignmentRepository.new(database, @keepers, @enclosures)
+        @tendings = sqlite::TendingRepository.new(database, @keepers, @enclosures)
         @zoo = sqlite::ZooRepository.new(database, default_zoo)
         @event_store = sqlite::EventStore.new(database, @animals)
         @unit_of_work = sqlite::UnitOfWork.new(database)

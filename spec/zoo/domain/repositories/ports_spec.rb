@@ -37,12 +37,12 @@ module Zoo
           expect { adapter.all }.to raise_error(NotImplementedError)
         end
 
-        it 'EnclosureAssignmentRepository#save / #all / #enclosures_of / #assignment_of は未実装だと NotImplementedError' do
-          adapter = adapter_including(EnclosureAssignmentRepository)
+        it 'TendingRepository#save / #all / #enclosures_of / #tending_of は未実装だと NotImplementedError' do
+          adapter = adapter_including(TendingRepository)
           expect { adapter.save(:a) }.to raise_error(NotImplementedError)
           expect { adapter.all }.to raise_error(NotImplementedError)
           expect { adapter.enclosures_of(:k) }.to raise_error(NotImplementedError)
-          expect { adapter.assignment_of(:k, :e) }.to raise_error(NotImplementedError)
+          expect { adapter.tending_of(:k, :e) }.to raise_error(NotImplementedError)
         end
 
         it 'ZooRepository#load / #save は未実装だと NotImplementedError' do

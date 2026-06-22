@@ -4,11 +4,11 @@ module Zoo
   module Application
     module Services
       class AssignKeeper
-        def initialize(keepers:, enclosures:, housings:, assignments:, unit_of_work:)
+        def initialize(keepers:, enclosures:, housings:, tendings:, unit_of_work:)
           @keepers = keepers
           @enclosures = enclosures
           @housings = housings
-          @assignments = assignments
+          @tendings = tendings
           @unit_of_work = unit_of_work
         end
 
@@ -21,9 +21,12 @@ module Zoo
             raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if enclosure.nil?
 
             occupants = @housings.occupants_of(enclosure)
-            assignment = Domain::EnclosureAssignment.new(keeper: keeper, enclosure: enclosure, occupants: occupants)
-            assignment.assignment_violation!
-            @assignments.save(assignment)
+            keepers = @tendings.keepers_of(enclosure)
+            tending = Domain::Tending.new(
+              keeper: keeper, enclosure: enclosure, occupants: occupants, keepers: keepers
+            )
+            tending.assignment_violation!
+            @tendings.save(tending)
           end
         end
       end

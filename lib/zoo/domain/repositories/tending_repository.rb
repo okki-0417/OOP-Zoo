@@ -3,8 +3,8 @@
 module Zoo
   module Domain
     module Repositories
-      module EnclosureAssignmentRepository
-        def save(_assignment)
+      module TendingRepository
+        def save(_tending)
           raise NotImplementedError, "#{self.class}#save を実装してください"
         end
 
@@ -16,8 +16,12 @@ module Zoo
           raise NotImplementedError, "#{self.class}#enclosures_of を実装してください"
         end
 
-        def assignment_of(_keeper, _enclosure)
-          raise NotImplementedError, "#{self.class}#assignment_of を実装してください"
+        def tending_of(_keeper, _enclosure)
+          raise NotImplementedError, "#{self.class}#tending_of を実装してください"
+        end
+
+        def keepers_of(_enclosure)
+          raise NotImplementedError, "#{self.class}#keepers_of を実装してください"
         end
       end
     end
