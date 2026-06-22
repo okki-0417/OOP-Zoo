@@ -26,6 +26,16 @@ RSpec.describe '現実の動物園の再現' do
     animal
   end
 
+  def assign(keeper, enclosure)
+    assignment = Zoo::Domain::EnclosureAssignment.new(
+      keeper: keeper, enclosure: enclosure, occupants: @housings.occupants_of(enclosure)
+    )
+    assignment.assignment_violation!
+
+    @assignments.save(assignment)
+    keeper
+  end
+
   def pass_a_day
     zoo.enclosures.flat_map { |e| Zoo::Domain::EnclosureDay.new(e, @housings.occupants_of(e)).run }
   end
@@ -56,6 +66,7 @@ RSpec.describe '現実の動物園の再現' do
 
   before do
     @housings = Zoo::Infrastructure::InMemory::InMemoryHousingRepository.new
+    @assignments = Zoo::Infrastructure::InMemory::InMemoryEnclosureAssignmentRepository.new
     zebras.each { |z| house(z, savanna) }
     house(giraffe, savanna)
 
@@ -65,15 +76,26 @@ RSpec.describe '現実の動物園の再現' do
     house(python, reptile_house)
     macaques.each { |m| house(m, monkey_mountain) }
 
-    mammal_keeper.assign_to(savanna).assign_to(lion_hill).assign_to(polar_sea).assign_to(monkey_mountain)
-    bird_keeper.assign_to(penguin_pool)
-    reptile_keeper.assign_to(reptile_house)
+    [savanna, lion_hill, polar_sea, monkey_mountain].each { |e| assign(mammal_keeper, e) }
+    assign(bird_keeper, penguin_pool)
+    assign(reptile_keeper, reptile_house)
   end
 
   it '多様な動物が適切な環境に収容され、混合展示が成立すること' do
     expect(@housings.all_occupants.size).to eq(12)
     expect(@housings.occupants_of(savanna).map(&:species).uniq.size).to eq(2)
     expect(@housings.all_occupants.map(&:species).uniq.size).to eq(7)
+  end
+
+  it '飼育員が専門の綱の動物がいるエリアに担当割り当てされること' do
+    expect(@assignments.enclosures_of(mammal_keeper))
+      .to contain_exactly(savanna, lion_hill, polar_sea, monkey_mountain)
+    expect(@assignments.enclosures_of(bird_keeper)).to contain_exactly(penguin_pool)
+  end
+
+  it '専門外の綱の動物がいるエリアには担当割り当てできないこと' do
+    expect { assign(bird_keeper, savanna) }
+      .to raise_error(Zoo::Domain::Errors::EnclosureAssignmentNotAllowed, /哺乳類/)
   end
 
   it '肉食獣を草食動物の展示に同居させられないこと' do

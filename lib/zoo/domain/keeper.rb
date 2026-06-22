@@ -14,7 +14,6 @@ module Zoo
         @id = id
         @name = name
         @specialties = specialties
-        @assigned_enclosures = []
       end
 
       def self.reconstitute(id:, name:, specialties:)
@@ -22,21 +21,11 @@ module Zoo
           keeper.instance_variable_set(:@id, id)
           keeper.instance_variable_set(:@name, name)
           keeper.instance_variable_set(:@specialties, specialties)
-          keeper.instance_variable_set(:@assigned_enclosures, [])
         end
       end
 
       def specialized_in?(taxon_class)
         @specialties.include?(taxon_class)
-      end
-
-      def assign_to(enclosure)
-        @assigned_enclosures << enclosure unless @assigned_enclosures.include?(enclosure)
-        self
-      end
-
-      def assigned_enclosures
-        @assigned_enclosures.dup
       end
 
       def clean(enclosure, amount = 100)

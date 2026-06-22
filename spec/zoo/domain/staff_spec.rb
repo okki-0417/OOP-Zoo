@@ -29,16 +29,6 @@ module Zoo
         expect { described_class.new(name: '空', specialties: []) }.to raise_error(ArgumentError)
       end
 
-      it '担当エリアを割り当てると assigned_enclosures に現れ、複製を返すこと' do
-        enclosure = Enclosure.new(
-          name: 'サバンナ', temperature: Shared::Temperature.celsius(30), capacity: 5
-        )
-        mammal_keeper.assign_to(enclosure)
-        expect(mammal_keeper.assigned_enclosures).to contain_exactly(enclosure)
-        mammal_keeper.assigned_enclosures.clear
-        expect(mammal_keeper.assigned_enclosures).to contain_exactly(enclosure)
-      end
-
       it '#to_s は 飼育員 名前(専門担当) の形で表されること' do
         expect(mammal_keeper.to_s).to start_with('飼育員 田中(')
         expect(mammal_keeper.to_s).to end_with('担当)')

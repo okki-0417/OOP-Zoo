@@ -114,6 +114,17 @@ module Zoo
               keeper_id   TEXT,
               occurred_on INTEGER NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS enclosure_assignments (
+              seq                            INTEGER PRIMARY KEY AUTOINCREMENT,
+              id                             TEXT    NOT NULL,
+              keeper_id                      TEXT,
+              enclosure_id                   TEXT,
+              kind                           TEXT    NOT NULL,
+              occurred_on                    INTEGER NOT NULL,
+              closes_enclosure_assignment_id TEXT
+            );
+            CREATE INDEX IF NOT EXISTS index_enclosure_assignments_on_keeper_id
+              ON enclosure_assignments (keeper_id);
           SQL
         end
       end
