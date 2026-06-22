@@ -6,18 +6,20 @@ module Zoo
       class AssignmentRepository
         include Domain::Repositories::AssignmentRepository
 
-        def initialize(database, keepers, enclosures, mapper: AssignmentMapper.new)
+        def initialize(database, keepers, enclosures,
+                       tending_mapper: TendingMapper.new, relieving_mapper: RelievingMapper.new)
           @database = database
           @keepers = keepers
           @enclosures = enclosures
-          @mapper = mapper
+          @tending_mapper = tending_mapper
+          @relieving_mapper = relieving_mapper
         end
 
         def save(event)
           if event.is_a?(Domain::Relieving)
-            relievings.insert(@mapper.relieving_row(event))
+            relievings.insert(@relieving_mapper.to_row(event))
           else
-            tendings.insert(@mapper.tending_row(event))
+            tendings.insert(@tending_mapper.to_row(event))
           end
           event
         end
@@ -69,13 +71,13 @@ module Zoo
           rows = rows.map { |row| row.transform_keys(&:to_s) }
           keeper_lookup = keeper_lookup(rows)
           enclosure_lookup = enclosure_lookup(rows)
-          rows.filter_map { |row| @mapper.to_tending(row, keeper_lookup, enclosure_lookup) }
+          rows.filter_map { |row| @tending_mapper.to_aggregate(row, keeper_lookup, enclosure_lookup) }
         end
 
         def build_relievings(rows, tendings_by_id)
           rows.each_with_object({}) do |row, found|
             row = row.transform_keys(&:to_s)
-            relieving = @mapper.to_relieving(row, tendings_by_id)
+            relieving = @relieving_mapper.to_aggregate(row, tendings_by_id)
             found[relieving.tending.id.to_s] = relieving if relieving
           end
         end

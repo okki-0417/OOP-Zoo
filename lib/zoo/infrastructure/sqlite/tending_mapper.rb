@@ -3,10 +3,10 @@
 module Zoo
   module Infrastructure
     module Sqlite
-      class AssignmentMapper
+      class TendingMapper
         Domain = Zoo::Domain
 
-        def tending_row(tending)
+        def to_row(tending)
           {
             id: tending.id.to_s,
             keeper_id: tending.keeper_id.to_s,
@@ -15,15 +15,7 @@ module Zoo
           }
         end
 
-        def relieving_row(relieving)
-          {
-            id: relieving.id.to_s,
-            tending_id: relieving.tending.id.to_s,
-            occurred_on: relieving.occurred_on
-          }
-        end
-
-        def to_tending(row, keeper_lookup, enclosure_lookup)
+        def to_aggregate(row, keeper_lookup, enclosure_lookup)
           keeper = keeper_lookup.call(Domain::Shared::Identifier.new(row['keeper_id']))
           enclosure = enclosure_lookup.call(Domain::Shared::Identifier.new(row['enclosure_id']))
           return nil unless keeper && enclosure
@@ -33,15 +25,6 @@ module Zoo
             keeper: keeper,
             enclosure: enclosure,
             occurred_on: row['occurred_on']
-          )
-        end
-
-        def to_relieving(row, tendings_by_id)
-          tending = tendings_by_id[row['tending_id']]
-          return nil unless tending
-
-          Domain::Relieving.of(
-            tending, occurred_on: row['occurred_on'], id: Domain::Shared::Identifier.new(row['id'])
           )
         end
       end
