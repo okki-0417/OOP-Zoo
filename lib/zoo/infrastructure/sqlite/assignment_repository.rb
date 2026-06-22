@@ -13,50 +13,71 @@ module Zoo
           @mapper = mapper
         end
 
-        def save(assignment)
-          row = @mapper.to_row(assignment)
-          existing = assignments.where(id: assignment.id.to_s)
-          existing.empty? ? assignments.insert(row) : existing.update(row)
-          assignment
+        def save(event)
+          if event.is_a?(Domain::Relieving)
+            relievings.insert(@mapper.relieving_row(event))
+          else
+            tendings.insert(@mapper.tending_row(event))
+          end
+          event
         end
 
         def all
-          build_events(assignments.order(:seq).all)
+          assignments
         end
 
         def enclosures_of(keeper)
-          build_events(active.where(keeper_id: keeper.id.to_s).order(:seq).all)
-            .map(&:enclosure)
-            .uniq(&:id)
+          active_assignments.select { |assignment| assignment.keeper_id.to_s == keeper.id.to_s }
+                            .map(&:enclosure)
+                            .uniq(&:id)
         end
 
         def active_assignment_of(keeper, enclosure)
-          build_events(
-            active.where(keeper_id: keeper.id.to_s, enclosure_id: enclosure.id.to_s).order(:seq).all
-          ).first
+          active_assignments.find do |assignment|
+            assignment.keeper_id.to_s == keeper.id.to_s && assignment.enclosure_id.to_s == enclosure.id.to_s
+          end
         end
 
         def keepers_of(enclosure)
-          build_events(active.where(enclosure_id: enclosure.id.to_s).order(:seq).all)
-            .map(&:keeper)
-            .uniq(&:id)
+          active_assignments.select { |assignment| assignment.enclosure_id.to_s == enclosure.id.to_s }
+                            .map(&:keeper)
+                            .uniq(&:id)
         end
 
         private
 
+        def tendings
+          @database.dataset(:tendings)
+        end
+
+        def relievings
+          @database.dataset(:relievings)
+        end
+
         def assignments
-          @database.dataset(:assignments)
+          built = build_tendings(tendings.order(:seq).all)
+          by_id = built.to_h { |tending| [tending.id.to_s, tending] }
+          relieved = build_relievings(relievings.order(:seq).all, by_id)
+          built.map { |tending| Domain::Assignment.new(tending, relieved[tending.id.to_s]) }
         end
 
-        def active
-          assignments.where(relieved: 0)
+        def active_assignments
+          assignments.select(&:active?)
         end
 
-        def build_events(rows)
+        def build_tendings(rows)
           rows = rows.map { |row| row.transform_keys(&:to_s) }
           keeper_lookup = keeper_lookup(rows)
           enclosure_lookup = enclosure_lookup(rows)
-          rows.filter_map { |row| @mapper.to_aggregate(row, keeper_lookup, enclosure_lookup) }
+          rows.filter_map { |row| @mapper.to_tending(row, keeper_lookup, enclosure_lookup) }
+        end
+
+        def build_relievings(rows, tendings_by_id)
+          rows.each_with_object({}) do |row, found|
+            row = row.transform_keys(&:to_s)
+            relieving = @mapper.to_relieving(row, tendings_by_id)
+            found[relieving.tending.id.to_s] = relieving if relieving
+          end
         end
 
         def keeper_lookup(rows)

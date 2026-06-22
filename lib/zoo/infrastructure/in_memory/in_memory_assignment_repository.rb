@@ -7,42 +7,47 @@ module Zoo
         include Domain::Repositories::AssignmentRepository
         include Snapshotable
 
-        def initialize(assignments = [])
-          @store = {}
-          assignments.each { |assignment| save(assignment) }
+        def initialize(events = [])
+          @store = []
+          events.each { |event| save(event) }
         end
 
-        def save(assignment)
-          @store[assignment.id.to_s] = assignment
-          assignment
+        def save(event)
+          @store << event
+          event
         end
 
         def all
-          @store.values
+          assignments
         end
 
         def enclosures_of(keeper)
-          active.select { |assignment| assignment.keeper_id.to_s == keeper.id.to_s }
-                .map(&:enclosure)
-                .uniq(&:id)
+          active_assignments.select { |assignment| assignment.keeper_id.to_s == keeper.id.to_s }
+                            .map(&:enclosure)
+                            .uniq(&:id)
         end
 
         def active_assignment_of(keeper, enclosure)
-          active.find do |assignment|
+          active_assignments.find do |assignment|
             assignment.keeper_id.to_s == keeper.id.to_s && assignment.enclosure_id.to_s == enclosure.id.to_s
           end
         end
 
         def keepers_of(enclosure)
-          active.select { |assignment| assignment.enclosure_id.to_s == enclosure.id.to_s }
-                .map(&:keeper)
-                .uniq(&:id)
+          active_assignments.select { |assignment| assignment.enclosure_id.to_s == enclosure.id.to_s }
+                            .map(&:keeper)
+                            .uniq(&:id)
         end
 
         private
 
-        def active
-          @store.values.select(&:active?)
+        def assignments
+          relievings = @store.grep(Domain::Relieving).to_h { |relieving| [relieving.tending.id.to_s, relieving] }
+          @store.grep(Domain::Tending).map { |tending| Domain::Assignment.new(tending, relievings[tending.id.to_s]) }
+        end
+
+        def active_assignments
+          assignments.select(&:active?)
         end
       end
     end

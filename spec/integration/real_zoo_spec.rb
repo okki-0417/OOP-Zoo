@@ -32,7 +32,7 @@ RSpec.describe '現実の動物園の再現' do
     )
     tending.violation!
 
-    @assignments.save(tending.assign)
+    @assignments.save(tending)
     keeper
   end
 

@@ -114,16 +114,21 @@ module Zoo
               keeper_id   TEXT,
               occurred_on INTEGER NOT NULL
             );
-            CREATE TABLE IF NOT EXISTS assignments (
+            CREATE TABLE IF NOT EXISTS tendings (
               seq          INTEGER PRIMARY KEY AUTOINCREMENT,
               id           TEXT    NOT NULL UNIQUE,
               keeper_id    TEXT    NOT NULL,
               enclosure_id TEXT    NOT NULL,
-              relieved     INTEGER NOT NULL,
               occurred_on  INTEGER NOT NULL
             );
-            CREATE INDEX IF NOT EXISTS index_assignments_on_keeper_id
-              ON assignments (keeper_id);
+            CREATE INDEX IF NOT EXISTS index_tendings_on_keeper_id ON tendings (keeper_id);
+            CREATE TABLE IF NOT EXISTS relievings (
+              seq         INTEGER PRIMARY KEY AUTOINCREMENT,
+              id          TEXT    NOT NULL UNIQUE,
+              tending_id  TEXT    NOT NULL,
+              occurred_on INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS index_relievings_on_tending_id ON relievings (tending_id);
           SQL
         end
       end

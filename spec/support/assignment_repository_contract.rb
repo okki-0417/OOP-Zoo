@@ -15,35 +15,45 @@ RSpec.shared_examples 'an assignment repository' do
     enclosure
   end
 
-  def assignment(keeper, enclosure, occurred_on: 0)
-    Zoo::Domain::Assignment.new(keeper: keeper, enclosure: enclosure, occurred_on: occurred_on)
+  def tend(keeper, enclosure, occurred_on: 0)
+    tending = Zoo::Domain::Tending.new(keeper: keeper, enclosure: enclosure, occurred_on: occurred_on)
+    repository.save(tending)
+    tending
   end
 
-  it 'save した配属を all で復元できること' do
+  def relieve(keeper, enclosure, occurred_on: 0)
+    tending = repository.active_assignment_of(keeper, enclosure).tending
+    repository.save(Zoo::Domain::Relieving.of(tending, occurred_on: occurred_on))
+  end
+
+  it '就任イベントを束ねた Assignment を all で復元できること' do
     tanaka = keeper
     savanna = pen('サバンナ')
 
-    repository.save(assignment(tanaka, savanna, occurred_on: 2))
+    tend(tanaka, savanna, occurred_on: 2)
 
-    record = repository.all.first
-    expect(record).to be_a(Zoo::Domain::Assignment)
-    expect(record.keeper_id).to eq(tanaka.id)
-    expect(record.enclosure_id).to eq(savanna.id)
-    expect(record.occurred_on).to eq(2)
-    expect(record).to be_active
+    assignment = repository.all.first
+    expect(assignment).to be_a(Zoo::Domain::Assignment)
+    expect(assignment.keeper_id).to eq(tanaka.id)
+    expect(assignment.enclosure_id).to eq(savanna.id)
+    expect(assignment.assigned_on).to eq(2)
+    expect(assignment).to be_active
   end
 
   it '配属が無ければ all は空であること' do
     expect(repository.all).to be_empty
   end
 
-  it '退任した配属も all には経歴として残ること' do
+  it '退任した配属も all には経歴として残り、就任日と退任日を持つこと' do
     tanaka = keeper
     a = pen('A')
-    repository.save(assignment(tanaka, a))
-    repository.save(repository.active_assignment_of(tanaka, a).relieve)
+    tend(tanaka, a, occurred_on: 1)
+    relieve(tanaka, a, occurred_on: 5)
 
-    expect(repository.all.map(&:relieved?)).to eq([true])
+    assignment = repository.all.first
+    expect(assignment).to be_relieved
+    expect(assignment.assigned_on).to eq(1)
+    expect(assignment.relieved_on).to eq(5)
   end
 
   describe '#enclosures_of' do
@@ -51,8 +61,8 @@ RSpec.shared_examples 'an assignment repository' do
       tanaka = keeper
       a = pen('A')
       b = pen('B')
-      repository.save(assignment(tanaka, a))
-      repository.save(assignment(tanaka, b))
+      tend(tanaka, a)
+      tend(tanaka, b)
 
       expect(repository.enclosures_of(tanaka)).to contain_exactly(a, b)
     end
@@ -62,8 +72,8 @@ RSpec.shared_examples 'an assignment repository' do
       suzuki = keeper('鈴木')
       a = pen('A')
       b = pen('B')
-      repository.save(assignment(tanaka, a))
-      repository.save(assignment(suzuki, b))
+      tend(tanaka, a)
+      tend(suzuki, b)
 
       expect(repository.enclosures_of(tanaka)).to contain_exactly(a)
     end
@@ -72,21 +82,21 @@ RSpec.shared_examples 'an assignment repository' do
       tanaka = keeper
       a = pen('A')
       b = pen('B')
-      repository.save(assignment(tanaka, a))
-      repository.save(assignment(tanaka, b))
-      repository.save(repository.active_assignment_of(tanaka, b).relieve)
+      tend(tanaka, a)
+      tend(tanaka, b)
+      relieve(tanaka, b)
 
       expect(repository.enclosures_of(tanaka)).to contain_exactly(a)
     end
   end
 
   describe '#active_assignment_of' do
-    it '現役の配属を返すこと' do
+    it '現役の Assignment を返すこと' do
       tanaka = keeper
       a = pen('A')
-      saved = repository.save(assignment(tanaka, a))
+      tend(tanaka, a)
 
-      expect(repository.active_assignment_of(tanaka, a).id).to eq(saved.id)
+      expect(repository.active_assignment_of(tanaka, a)).to be_active
     end
 
     it '担当していないエリアには nil を返すこと' do
@@ -99,8 +109,8 @@ RSpec.shared_examples 'an assignment repository' do
     it '退任済みのエリアには nil を返すこと' do
       tanaka = keeper
       a = pen('A')
-      repository.save(assignment(tanaka, a))
-      repository.save(repository.active_assignment_of(tanaka, a).relieve)
+      tend(tanaka, a)
+      relieve(tanaka, a)
 
       expect(repository.active_assignment_of(tanaka, a)).to be_nil
     end
@@ -111,8 +121,8 @@ RSpec.shared_examples 'an assignment repository' do
       tanaka = keeper('田中')
       suzuki = keeper('鈴木')
       a = pen('A')
-      repository.save(assignment(tanaka, a))
-      repository.save(assignment(suzuki, a))
+      tend(tanaka, a)
+      tend(suzuki, a)
 
       expect(repository.keepers_of(a)).to contain_exactly(tanaka, suzuki)
     end
@@ -122,8 +132,8 @@ RSpec.shared_examples 'an assignment repository' do
       suzuki = keeper('鈴木')
       a = pen('A')
       b = pen('B')
-      repository.save(assignment(tanaka, a))
-      repository.save(assignment(suzuki, b))
+      tend(tanaka, a)
+      tend(suzuki, b)
 
       expect(repository.keepers_of(a)).to contain_exactly(tanaka)
     end
@@ -131,8 +141,8 @@ RSpec.shared_examples 'an assignment repository' do
     it '退任した飼育員は現在の担当から外れること' do
       tanaka = keeper
       a = pen('A')
-      repository.save(assignment(tanaka, a))
-      repository.save(repository.active_assignment_of(tanaka, a).relieve)
+      tend(tanaka, a)
+      relieve(tanaka, a)
 
       expect(repository.keepers_of(a)).to be_empty
     end

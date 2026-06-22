@@ -4,7 +4,7 @@ module Zoo
   module Domain
     module Repositories
       module AssignmentRepository
-        def save(_assignment)
+        def save(_event)
           raise NotImplementedError, "#{self.class}#save を実装してください"
         end
 

@@ -26,7 +26,7 @@ RSpec.describe Zoo::Application::Services::DischargeKeeper do
   end
 
   def assign
-    assignments.save(Zoo::Domain::Assignment.new(keeper: keeper, enclosure: enclosure))
+    assignments.save(Zoo::Domain::Tending.new(keeper: keeper, enclosure: enclosure))
   end
 
   describe '#call' do

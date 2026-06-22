@@ -26,7 +26,7 @@ module Zoo
               keeper: keeper, enclosure: enclosure, occupants: occupants, keepers: keepers
             )
             tending.violation!
-            @assignments.save(tending.assign)
+            @assignments.save(tending)
           end
         end
       end

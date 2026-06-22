@@ -3,41 +3,47 @@
 module Zoo
   module Domain
     class Assignment
-      include Shared::Entity
+      attr_reader :tending, :relieving
 
-      attr_reader :id, :keeper, :enclosure, :occurred_on
+      def initialize(tending, relieving = nil)
+        @tending = tending
+        @relieving = relieving
+      end
 
-      def initialize(keeper:, enclosure:, relieved: false, occurred_on: 0, id: Shared::Identifier.new)
-        @id = id
-        @keeper = keeper
-        @enclosure = enclosure
-        @relieved = relieved
-        @occurred_on = occurred_on
+      def keeper
+        @tending.keeper
+      end
+
+      def enclosure
+        @tending.enclosure
       end
 
       def keeper_id
-        @keeper.id
+        @tending.keeper_id
       end
 
       def enclosure_id
-        @enclosure.id
+        @tending.enclosure_id
+      end
+
+      def assigned_on
+        @tending.occurred_on
+      end
+
+      def relieved_on
+        @relieving&.occurred_on
       end
 
       def active?
-        !@relieved
+        @relieving.nil?
       end
 
       def relieved?
-        @relieved
-      end
-
-      def relieve
-        @relieved = true
-        self
+        !active?
       end
 
       def to_s
-        "#{@keeper.name}を#{@enclosure.name}に配属"
+        "#{keeper.name}を#{enclosure.name}に配属"
       end
     end
   end
