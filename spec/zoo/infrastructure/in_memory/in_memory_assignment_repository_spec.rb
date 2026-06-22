@@ -2,12 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe Zoo::Infrastructure::InMemory::InMemoryTendingRepository do
+RSpec.describe Zoo::Infrastructure::InMemory::InMemoryAssignmentRepository do
   let(:repository) { described_class.new }
 
   def persist_keepers(*); end
 
   def persist_enclosures(*); end
 
-  it_behaves_like 'a tending repository'
+  it_behaves_like 'an assignment repository'
 end

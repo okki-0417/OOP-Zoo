@@ -19,12 +19,12 @@ RSpec.describe Zoo::Application::Services::AssignKeeper do
   let(:keepers) { in_memory::InMemoryKeeperRepository.new([keeper]) }
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:housings) { in_memory::InMemoryHousingRepository.new }
-  let(:tendings) { in_memory::InMemoryTendingRepository.new }
+  let(:assignments) { in_memory::InMemoryAssignmentRepository.new }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
   let(:service) do
     described_class.new(
       keepers: keepers, enclosures: enclosures, housings: housings,
-      tendings: tendings, unit_of_work: unit_of_work
+      assignments: assignments, unit_of_work: unit_of_work
     )
   end
 
@@ -34,21 +34,21 @@ RSpec.describe Zoo::Application::Services::AssignKeeper do
   end
 
   describe '#call' do
-    it '専門の綱の動物がいるエリアへ担当割り当てすると tendings に保存されること' do
+    it '専門の綱の動物がいるエリアへ担当割り当てすると assignments に保存されること' do
       house(build_adult(catalog.lion), enclosure)
 
       service.call(commands::AssignKeeperCommand.new(keeper_id: keeper.id, enclosure_id: enclosure.id))
 
-      expect(tendings.enclosures_of(keeper)).to contain_exactly(enclosure)
+      expect(assignments.enclosures_of(keeper)).to contain_exactly(enclosure)
     end
 
-    it '専門外の綱の動物がいるエリアへの担当割り当ては TendingNotAllowed で保存されないこと' do
+    it '専門外の綱の動物がいるエリアへの担当割り当ては AssignmentNotAllowed で保存されないこと' do
       house(build_adult(catalog.emperor_penguin), enclosure)
 
       command = commands::AssignKeeperCommand.new(keeper_id: keeper.id, enclosure_id: enclosure.id)
 
-      expect { service.call(command) }.to raise_error(Zoo::Domain::Errors::TendingNotAllowed)
-      expect(tendings.all).to be_empty
+      expect { service.call(command) }.to raise_error(Zoo::Domain::Errors::AssignmentNotAllowed)
+      expect(assignments.all).to be_empty
     end
 
     it '存在しない keeper_id を渡すと KeeperNotFound が発生すること' do

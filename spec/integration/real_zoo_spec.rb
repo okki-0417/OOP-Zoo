@@ -30,9 +30,9 @@ RSpec.describe '現実の動物園の再現' do
     tending = Zoo::Domain::Tending.new(
       keeper: keeper, enclosure: enclosure, occupants: @housings.occupants_of(enclosure)
     )
-    tending.assignment_violation!
+    tending.violation!
 
-    @tendings.save(tending)
+    @assignments.save(tending.assign)
     keeper
   end
 
@@ -66,7 +66,7 @@ RSpec.describe '現実の動物園の再現' do
 
   before do
     @housings = Zoo::Infrastructure::InMemory::InMemoryHousingRepository.new
-    @tendings = Zoo::Infrastructure::InMemory::InMemoryTendingRepository.new
+    @assignments = Zoo::Infrastructure::InMemory::InMemoryAssignmentRepository.new
     zebras.each { |z| house(z, savanna) }
     house(giraffe, savanna)
 
@@ -88,14 +88,14 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   it '飼育員が専門の綱の動物がいるエリアに担当割り当てされること' do
-    expect(@tendings.enclosures_of(mammal_keeper))
+    expect(@assignments.enclosures_of(mammal_keeper))
       .to contain_exactly(savanna, lion_hill, polar_sea, monkey_mountain)
-    expect(@tendings.enclosures_of(bird_keeper)).to contain_exactly(penguin_pool)
+    expect(@assignments.enclosures_of(bird_keeper)).to contain_exactly(penguin_pool)
   end
 
   it '専門外の綱の動物がいるエリアには担当割り当てできないこと' do
     expect { assign(bird_keeper, savanna) }
-      .to raise_error(Zoo::Domain::Errors::TendingNotAllowed, /哺乳類/)
+      .to raise_error(Zoo::Domain::Errors::AssignmentNotAllowed, /哺乳類/)
   end
 
   it '肉食獣を草食動物の展示に同居させられないこと' do

@@ -17,16 +17,16 @@ RSpec.describe Zoo::Application::Services::DischargeKeeper do
 
   let(:keepers) { in_memory::InMemoryKeeperRepository.new([keeper]) }
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
-  let(:tendings) { in_memory::InMemoryTendingRepository.new }
+  let(:assignments) { in_memory::InMemoryAssignmentRepository.new }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
   let(:service) do
     described_class.new(
-      keepers: keepers, enclosures: enclosures, tendings: tendings, unit_of_work: unit_of_work
+      keepers: keepers, enclosures: enclosures, assignments: assignments, unit_of_work: unit_of_work
     )
   end
 
   def assign
-    tendings.save(Zoo::Domain::Tending.new(keeper: keeper, enclosure: enclosure))
+    assignments.save(Zoo::Domain::Assignment.new(keeper: keeper, enclosure: enclosure))
   end
 
   describe '#call' do
@@ -35,13 +35,13 @@ RSpec.describe Zoo::Application::Services::DischargeKeeper do
 
       service.call(commands::DischargeKeeperCommand.new(keeper_id: keeper.id, enclosure_id: enclosure.id))
 
-      expect(tendings.enclosures_of(keeper)).to be_empty
+      expect(assignments.enclosures_of(keeper)).to be_empty
     end
 
-    it '担当していないエリアの退任は TendingNotFound が発生すること' do
+    it '担当していないエリアの退任は AssignmentNotFound が発生すること' do
       command = commands::DischargeKeeperCommand.new(keeper_id: keeper.id, enclosure_id: enclosure.id)
 
-      expect { service.call(command) }.to raise_error(Zoo::Application::Errors::TendingNotFound)
+      expect { service.call(command) }.to raise_error(Zoo::Application::Errors::AssignmentNotFound)
     end
 
     it '存在しない keeper_id を渡すと KeeperNotFound が発生すること' do

@@ -14,7 +14,7 @@ RSpec.describe '飼育員の担当割り当てに対するルール(専門一致
 
   def assign!(keeper, enclosure, occupants = [], keepers = [])
     Zoo::Domain::Tending.new(keeper: keeper, enclosure: enclosure, occupants: occupants, keepers: keepers)
-                                    .assignment_violation!
+                        .violation!
   end
 
   let(:mammal_keeper) { Zoo::Domain::Keeper.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal]) }
@@ -31,7 +31,7 @@ RSpec.describe '飼育員の担当割り当てに対するルール(専門一致
       pool = pen('ペンギンプール', temp: 0)
 
       expect { assign!(mammal_keeper, pool, [build_adult(catalog.emperor_penguin)]) }
-        .to raise_error(Zoo::Domain::Errors::TendingNotAllowed, /鳥類/)
+        .to raise_error(Zoo::Domain::Errors::AssignmentNotAllowed, /鳥類/)
     end
 
     it '専門の綱と専門外の綱が混在するエリアには担当割り当てできないこと' do
@@ -39,7 +39,7 @@ RSpec.describe '飼育員の担当割り当てに対するルール(専門一致
       residents = [build_adult(catalog.lion), build_adult(catalog.emperor_penguin)]
 
       expect { assign!(mammal_keeper, mixed, residents) }
-        .to raise_error(Zoo::Domain::Errors::TendingNotAllowed)
+        .to raise_error(Zoo::Domain::Errors::AssignmentNotAllowed)
     end
 
     it '複数の専門を持つ飼育員は担当できる綱の範囲が広がること' do
@@ -64,7 +64,7 @@ RSpec.describe '飼育員の担当割り当てに対するルール(専門一致
       savanna = pen('サバンナ', temp: 28)
 
       expect { assign!(mammal_keeper, savanna, [], [mammal_keeper]) }
-        .to raise_error(Zoo::Domain::Errors::TendingNotAllowed, /田中.*すでに.*サバンナ/)
+        .to raise_error(Zoo::Domain::Errors::AssignmentNotAllowed, /田中.*すでに.*サバンナ/)
     end
 
     it '別の飼育員が担当しているエリアには配属できること' do
