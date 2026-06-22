@@ -16,8 +16,8 @@ module Zoo
           raise NotImplementedError, "#{self.class}#enclosures_of を実装してください"
         end
 
-        def active_assignment_of(_keeper, _enclosure)
-          raise NotImplementedError, "#{self.class}#active_assignment_of を実装してください"
+        def active_tending_of(_keeper, _enclosure)
+          raise NotImplementedError, "#{self.class}#active_tending_of を実装してください"
         end
 
         def keepers_of(_enclosure)

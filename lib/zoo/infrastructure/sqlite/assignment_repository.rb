@@ -25,25 +25,26 @@ module Zoo
         end
 
         def all
-          assignments
+          built = build_tendings(tendings.order(:seq).all)
+          built + build_relievings(relievings.order(:seq).all, by_id(built))
         end
 
         def enclosures_of(keeper)
-          active_assignments.select { |assignment| assignment.keeper_id.to_s == keeper.id.to_s }
-                            .map(&:enclosure)
-                            .uniq(&:id)
+          active_tendings.select { |tending| tending.keeper_id.to_s == keeper.id.to_s }
+                         .map(&:enclosure)
+                         .uniq(&:id)
         end
 
-        def active_assignment_of(keeper, enclosure)
-          active_assignments.find do |assignment|
-            assignment.keeper_id.to_s == keeper.id.to_s && assignment.enclosure_id.to_s == enclosure.id.to_s
+        def active_tending_of(keeper, enclosure)
+          active_tendings.find do |tending|
+            tending.keeper_id.to_s == keeper.id.to_s && tending.enclosure_id.to_s == enclosure.id.to_s
           end
         end
 
         def keepers_of(enclosure)
-          active_assignments.select { |assignment| assignment.enclosure_id.to_s == enclosure.id.to_s }
-                            .map(&:keeper)
-                            .uniq(&:id)
+          active_tendings.select { |tending| tending.enclosure_id.to_s == enclosure.id.to_s }
+                         .map(&:keeper)
+                         .uniq(&:id)
         end
 
         private
@@ -56,15 +57,12 @@ module Zoo
           @database.dataset(:relievings)
         end
 
-        def assignments
-          built = build_tendings(tendings.order(:seq).all)
-          by_id = built.to_h { |tending| [tending.id.to_s, tending] }
-          relieved = build_relievings(relievings.order(:seq).all, by_id)
-          built.map { |tending| Domain::Assignment.new(tending, relieved[tending.id.to_s]) }
+        def active_tendings
+          build_tendings(tendings.exclude(id: relievings.select(:tending_id)).order(:seq).all)
         end
 
-        def active_assignments
-          assignments.select(&:active?)
+        def by_id(built)
+          built.to_h { |tending| [tending.id.to_s, tending] }
         end
 
         def build_tendings(rows)
@@ -75,10 +73,8 @@ module Zoo
         end
 
         def build_relievings(rows, tendings_by_id)
-          rows.each_with_object({}) do |row, found|
-            row = row.transform_keys(&:to_s)
-            relieving = @relieving_mapper.to_aggregate(row, tendings_by_id)
-            found[relieving.tending.id.to_s] = relieving if relieving
+          rows.filter_map do |row|
+            @relieving_mapper.to_aggregate(row.transform_keys(&:to_s), tendings_by_id)
           end
         end
 

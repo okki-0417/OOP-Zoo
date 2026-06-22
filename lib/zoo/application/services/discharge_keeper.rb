@@ -19,14 +19,14 @@ module Zoo
             enclosure = @enclosures.find(command.enclosure_id)
             raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if enclosure.nil?
 
-            @assignments.save(Domain::Relieving.of(current_assignment!(keeper, enclosure).tending))
+            @assignments.save(Domain::Relieving.of(current_tending!(keeper, enclosure)))
           end
         end
 
         private
 
-        def current_assignment!(keeper, enclosure)
-          @assignments.active_assignment_of(keeper, enclosure) ||
+        def current_tending!(keeper, enclosure)
+          @assignments.active_tending_of(keeper, enclosure) ||
             raise(Errors::AssignmentNotFound, "#{keeper.name}は#{enclosure.name}を担当していません")
         end
       end

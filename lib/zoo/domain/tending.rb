@@ -7,12 +7,12 @@ module Zoo
 
       attr_reader :id, :keeper, :enclosure, :occurred_on
 
-      def initialize(keeper:, enclosure:, occupants: [], keepers: [], occurred_on: 0, id: Shared::Identifier.new)
+      def initialize(keeper:, enclosure:, occupancy: nil, assignment: nil, occurred_on: 0, id: Shared::Identifier.new)
         @id = id
         @keeper = keeper
         @enclosure = enclosure
-        @occupants = occupants
-        @keepers = keepers
+        @occupancy = occupancy
+        @assignment = assignment
         @occurred_on = occurred_on
         freeze
       end
@@ -31,7 +31,7 @@ module Zoo
                 "飼育員#{@keeper.name}はすでに#{@enclosure.name}を担当しています"
         end
 
-        unqualified = @occupants.map(&:taxon_class).uniq.reject { |taxon| @keeper.specialized_in?(taxon) }
+        unqualified = occupant_taxa.reject { |taxon| @keeper.specialized_in?(taxon) }
         return if unqualified.empty?
 
         raise Errors::AssignmentNotAllowed,
@@ -45,7 +45,15 @@ module Zoo
       private
 
       def already_assigned?
-        @keepers.any? { |keeper| keeper.id.to_s == @keeper.id.to_s }
+        return false if @assignment.nil?
+
+        @assignment.assignees.any? { |assignee| assignee.id.to_s == @keeper.id.to_s }
+      end
+
+      def occupant_taxa
+        return [] if @occupancy.nil?
+
+        @occupancy.species_present_in.map(&:taxon_class).uniq
       end
     end
   end

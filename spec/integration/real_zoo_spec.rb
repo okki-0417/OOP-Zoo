@@ -28,7 +28,9 @@ RSpec.describe '現実の動物園の再現' do
 
   def assign(keeper, enclosure)
     tending = Zoo::Domain::Tending.new(
-      keeper: keeper, enclosure: enclosure, occupants: @housings.occupants_of(enclosure)
+      keeper: keeper, enclosure: enclosure,
+      occupancy: Zoo::Domain::Occupancy.new(enclosure, @housings.occupants_of(enclosure)),
+      assignment: Zoo::Domain::Assignment.new(enclosure, @assignments.keepers_of(enclosure))
     )
     tending.violation!
 

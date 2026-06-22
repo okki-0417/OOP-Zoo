@@ -18,36 +18,32 @@ module Zoo
         end
 
         def all
-          assignments
+          @store.dup
         end
 
         def enclosures_of(keeper)
-          active_assignments.select { |assignment| assignment.keeper_id.to_s == keeper.id.to_s }
-                            .map(&:enclosure)
-                            .uniq(&:id)
+          active_tendings.select { |tending| tending.keeper_id.to_s == keeper.id.to_s }
+                         .map(&:enclosure)
+                         .uniq(&:id)
         end
 
-        def active_assignment_of(keeper, enclosure)
-          active_assignments.find do |assignment|
-            assignment.keeper_id.to_s == keeper.id.to_s && assignment.enclosure_id.to_s == enclosure.id.to_s
+        def active_tending_of(keeper, enclosure)
+          active_tendings.find do |tending|
+            tending.keeper_id.to_s == keeper.id.to_s && tending.enclosure_id.to_s == enclosure.id.to_s
           end
         end
 
         def keepers_of(enclosure)
-          active_assignments.select { |assignment| assignment.enclosure_id.to_s == enclosure.id.to_s }
-                            .map(&:keeper)
-                            .uniq(&:id)
+          active_tendings.select { |tending| tending.enclosure_id.to_s == enclosure.id.to_s }
+                         .map(&:keeper)
+                         .uniq(&:id)
         end
 
         private
 
-        def assignments
-          relievings = @store.grep(Domain::Relieving).to_h { |relieving| [relieving.tending.id.to_s, relieving] }
-          @store.grep(Domain::Tending).map { |tending| Domain::Assignment.new(tending, relievings[tending.id.to_s]) }
-        end
-
-        def active_assignments
-          assignments.select(&:active?)
+        def active_tendings
+          relieved = @store.grep(Domain::Relieving).map { |relieving| relieving.tending.id.to_s }
+          @store.grep(Domain::Tending).reject { |tending| relieved.include?(tending.id.to_s) }
         end
       end
     end

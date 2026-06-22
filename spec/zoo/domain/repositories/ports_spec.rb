@@ -42,7 +42,7 @@ module Zoo
           expect { adapter.save(:a) }.to raise_error(NotImplementedError)
           expect { adapter.all }.to raise_error(NotImplementedError)
           expect { adapter.enclosures_of(:k) }.to raise_error(NotImplementedError)
-          expect { adapter.active_assignment_of(:k, :e) }.to raise_error(NotImplementedError)
+          expect { adapter.active_tending_of(:k, :e) }.to raise_error(NotImplementedError)
           expect { adapter.keepers_of(:e) }.to raise_error(NotImplementedError)
         end
 

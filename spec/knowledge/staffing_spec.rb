@@ -12,9 +12,12 @@ RSpec.describe '飼育員の担当割り当てに対するルール(専門一致
     )
   end
 
-  def assign!(keeper, enclosure, occupants = [], keepers = [])
-    Zoo::Domain::Tending.new(keeper: keeper, enclosure: enclosure, occupants: occupants, keepers: keepers)
-                        .violation!
+  def assign!(keeper, enclosure, occupants = [], assignees = [])
+    Zoo::Domain::Tending.new(
+      keeper: keeper, enclosure: enclosure,
+      occupancy: Zoo::Domain::Occupancy.new(enclosure, occupants),
+      assignment: Zoo::Domain::Assignment.new(enclosure, assignees)
+    ).violation!
   end
 
   let(:mammal_keeper) { Zoo::Domain::Keeper.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal]) }
