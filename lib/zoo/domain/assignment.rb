@@ -13,7 +13,6 @@ module Zoo
         @enclosure = enclosure
         @relieved = relieved
         @occurred_on = occurred_on
-        freeze
       end
 
       def keeper_id
@@ -33,9 +32,8 @@ module Zoo
       end
 
       def relieve
-        self.class.new(
-          keeper: @keeper, enclosure: @enclosure, relieved: true, occurred_on: @occurred_on, id: @id
-        )
+        @relieved = true
+        self
       end
 
       def to_s

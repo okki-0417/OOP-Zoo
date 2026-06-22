@@ -33,31 +33,20 @@ module Zoo
       end
 
       describe '#relieve' do
-        it '同じ id のまま退任済みの Assignment を返すこと' do
+        it '自身を退任済みに変更して自身を返すこと' do
           assignment = described_class.new(keeper: keeper, enclosure: enclosure)
-          relieved = assignment.relieve
-          expect(relieved.id).to eq(assignment.id)
-          expect(relieved).to be_relieved
-        end
-
-        it '元の Assignment は現役のまま変化しないこと' do
-          assignment = described_class.new(keeper: keeper, enclosure: enclosure)
-          assignment.relieve
-          expect(assignment).to be_active
+          expect(assignment.relieve).to be(assignment)
+          expect(assignment).to be_relieved
         end
       end
 
-      describe '同一性と不変性' do
+      describe '同一性' do
         it '同じ id の Assignment は状態に関わらず等価で hash が一致すること' do
           id = Shared::Identifier.new
           active = described_class.new(keeper: keeper, enclosure: enclosure, id: id)
           relieved = described_class.new(keeper: keeper, enclosure: enclosure, relieved: true, id: id)
           expect(active).to eq(relieved)
           expect(active.hash).to eq(relieved.hash)
-        end
-
-        it '生成後は frozen であること' do
-          expect(described_class.new(keeper: keeper, enclosure: enclosure)).to be_frozen
         end
       end
 
