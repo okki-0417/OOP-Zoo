@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe '必要面積' do
   catalog  = Zoo::Domain::SpeciesCatalog
   species  = Zoo::Domain::Species
-  welfare  = Zoo::Domain::Welfare
   shared   = Zoo::Domain::Shared
 
   describe '行動様式による違い' do
@@ -51,7 +50,7 @@ RSpec.describe '必要面積' do
       occupancy = Zoo::Domain::Occupancy.new(den, occupants)
 
       expect(occupancy.overcrowded?).to be(true)
-      expect(welfare.daily_stress(bear, den, occupants)).to be > 0
+      expect(welfare_of(bear, den, occupants).daily_stress).to be > 0
     end
   end
 end

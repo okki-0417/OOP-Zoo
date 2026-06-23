@@ -31,7 +31,7 @@ RSpec.describe '予防接種と免疫' do
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
 
-      contagion.new(occupancy(pen, [vaccinated, carrier])).spread
+      contagion.new(pen, occupancy(pen, [vaccinated, carrier])).spread
 
       expect(vaccinated).not_to be_sick
     end

@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe '栄養失調' do
   foods   = Zoo::Domain::FoodCatalog
-  welfare = Zoo::Domain::Welfare
   season  = Zoo::Domain::Season
   macaque = Zoo::Domain::SpeciesCatalog.japanese_macaque
 
@@ -35,14 +34,14 @@ RSpec.describe '栄養失調' do
       enclosure, monkey, occupants = troop
       malnourish(monkey)
       expect(monkey).to be_malnourished
-      expect(welfare.daily_stress(monkey, enclosure, occupants)).to be > 0
+      expect(welfare_of(monkey, enclosure, occupants).daily_stress).to be > 0
     end
 
     it 'バランスの取れた給餌(果実と昆虫)は栄養を保ち、福祉を後押しすること' do
       enclosure, monkey, occupants = troop
       4.times { feed_daily(monkey, [foods.banana, foods.cricket]) }
       expect(monkey).not_to be_malnourished
-      expect(welfare.daily_stress(monkey, enclosure, occupants)).to be < 0
+      expect(welfare_of(monkey, enclosure, occupants).daily_stress).to be < 0
     end
   end
 

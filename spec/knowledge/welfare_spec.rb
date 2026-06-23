@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe '動物福祉' do
-  welfare   = Zoo::Domain::Welfare
   shared    = Zoo::Domain::Shared
   catalog = Zoo::Domain::SpeciesCatalog
 
@@ -19,7 +18,7 @@ RSpec.describe '動物福祉' do
       a = build_adult(catalog.lion, name: 'A')
       occupants = [a, build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)]
 
-      expect(welfare.daily_stress(a, enclosure, occupants)).to be < 0
+      expect(welfare_of(a, enclosure, occupants).daily_stress).to be < 0
     end
   end
 
@@ -30,7 +29,7 @@ RSpec.describe '動物福祉' do
       occupants = [a, build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)]
       enclosure.soil(90)
 
-      expect(welfare.daily_stress(a, enclosure, occupants)).to be > 0
+      expect(welfare_of(a, enclosure, occupants).daily_stress).to be > 0
     end
   end
 
@@ -40,7 +39,7 @@ RSpec.describe '動物福祉' do
       lone = build_adult(catalog.lion)
       occupants = [lone]
 
-      expect(welfare.daily_stress(lone, enclosure, occupants)).to be > 0
+      expect(welfare_of(lone, enclosure, occupants).daily_stress).to be > 0
     end
   end
 
@@ -52,7 +51,7 @@ RSpec.describe '動物福祉' do
       bear = build_adult(catalog.polar_bear)
       occupants = [bear]
 
-      expect(welfare.daily_stress(bear, den, occupants)).to be < 0
+      expect(welfare_of(bear, den, occupants).daily_stress).to be < 0
     end
   end
 
@@ -64,7 +63,7 @@ RSpec.describe '動物福祉' do
       bear = build_adult(catalog.polar_bear)
       occupants = [bear]
 
-      expect(welfare.daily_stress(bear, den, occupants)).to be > 0
+      expect(welfare_of(bear, den, occupants).daily_stress).to be > 0
     end
   end
 
@@ -74,7 +73,7 @@ RSpec.describe '動物福祉' do
       a = build_adult(catalog.lion, name: 'A')
       occupants = [a, build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)]
 
-      expect(welfare.daily_stress(a, enclosure, occupants)).to be > 0
+      expect(welfare_of(a, enclosure, occupants).daily_stress).to be > 0
     end
   end
 
@@ -85,7 +84,7 @@ RSpec.describe '動物福祉' do
       a.get_hungrier(80)
       occupants = [a, build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)]
 
-      expect(welfare.daily_stress(a, enclosure, occupants)).to be > 0
+      expect(welfare_of(a, enclosure, occupants).daily_stress).to be > 0
     end
   end
 
@@ -96,7 +95,7 @@ RSpec.describe '動物福祉' do
       a.fall_ill(Zoo::Domain::IllnessCatalog.cold)
       occupants = [a, build_adult(catalog.lion, name: 'B', sex: Zoo::Domain::Animal::Sex.female)]
 
-      expect(welfare.daily_stress(a, enclosure, occupants)).to be > 0
+      expect(welfare_of(a, enclosure, occupants).daily_stress).to be > 0
     end
   end
 end

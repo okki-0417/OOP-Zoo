@@ -39,7 +39,9 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   def pass_a_day
-    zoo.enclosures.flat_map { |e| Zoo::Domain::EnclosureDay.new(e, @housings.occupants_of(e)).run }
+    zoo.enclosures.flat_map do |e|
+      Zoo::Domain::EnclosureDay.new(e, Zoo::Domain::Occupancy.new(e, @housings.occupants_of(e))).run
+    end
   end
 
   let(:zoo) { Zoo::Domain::Zoo.new(name: 'おうきの動物園', admission_fee: shared::Money.yen(2000)) }

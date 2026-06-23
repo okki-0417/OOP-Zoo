@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe '環境エンリッチメントと常同行動' do
-  welfare = Zoo::Domain::Welfare
 
   def savanna(temp = 28)
     Zoo::Domain::Enclosure.new(
@@ -26,7 +25,7 @@ RSpec.describe '環境エンリッチメントと常同行動' do
         enclosure, occupants = with_company(savanna)
         occupant = occupants.first
 
-        expect(welfare.daily_stress(occupant, enclosure, occupants)).to be < 0
+        expect(welfare_of(occupant, enclosure, occupants).daily_stress).to be < 0
       end
     end
 
@@ -36,7 +35,7 @@ RSpec.describe '環境エンリッチメントと常同行動' do
         enclosure.deplete_enrichment(100)
         occupant = occupants.first
 
-        expect(welfare.daily_stress(occupant, enclosure, occupants)).to be > 0
+        expect(welfare_of(occupant, enclosure, occupants).daily_stress).to be > 0
       end
     end
   end
@@ -56,7 +55,7 @@ RSpec.describe '環境エンリッチメントと常同行動' do
   describe '放置による刺激の減衰' do
     it '日々の暮らしで刺激は少しずつ薄れること' do
       enclosure, occupants = with_company(savanna)
-      expect { Zoo::Domain::EnclosureDay.new(enclosure, occupants).run }
+      expect { Zoo::Domain::EnclosureDay.new(enclosure, Zoo::Domain::Occupancy.new(enclosure, occupants)).run }
         .to change { enclosure.enrichment.level }.by(-Zoo::Domain::EnclosureDay::ENRICHMENT_DECAY_PER_DAY)
     end
   end

@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe '群れと社会構造' do
-  welfare = Zoo::Domain::Welfare
   catalog = Zoo::Domain::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex
 
@@ -21,7 +20,7 @@ RSpec.describe '群れと社会構造' do
         junior = build_adult(catalog.lion, name: '若オス', sex: sex.male)
         occupants = [senior, junior]
 
-        expect(welfare.daily_stress(junior, enclosure, occupants)).to be > 0
+        expect(welfare_of(junior, enclosure, occupants).daily_stress).to be > 0
       end
 
       it '最も年長のオス(優位)はストレスを受けないこと' do
@@ -30,7 +29,7 @@ RSpec.describe '群れと社会構造' do
         junior = build_adult(catalog.lion, name: '若オス', sex: sex.male)
         occupants = [senior, junior]
 
-        expect(welfare.daily_stress(senior, enclosure, occupants)).to be < 0
+        expect(welfare_of(senior, enclosure, occupants).daily_stress).to be < 0
       end
     end
 
@@ -41,7 +40,7 @@ RSpec.describe '群れと社会構造' do
         female = build_adult(catalog.lion, name: 'メス', sex: sex.female)
         occupants = [male, female]
 
-        expect(welfare.daily_stress(male, enclosure, occupants)).to be < 0
+        expect(welfare_of(male, enclosure, occupants).daily_stress).to be < 0
       end
     end
   end

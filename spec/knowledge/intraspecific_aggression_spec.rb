@@ -21,7 +21,9 @@ RSpec.describe '種内闘争と外傷' do
   end
 
   def conflict(enclosure, occupants, animal)
-    Zoo::Domain::SocialConflict.new(enclosure, occupants, animal)
+    Zoo::Domain::Companionship.new(
+      enclosure: enclosure, occupancy: Zoo::Domain::Occupancy.new(enclosure, occupants), member: animal
+    )
   end
 
   describe '闘争の激化' do
@@ -56,7 +58,7 @@ RSpec.describe '種内闘争と外傷' do
       junior = build_animal(catalog.lion, name: '若オス', sex: sex.male, age_in_days: 365 * 5, max_health: 10)
       occupants = [senior, junior]
 
-      dead = Zoo::Domain::EnclosureDay.new(cramped, occupants).run
+      dead = Zoo::Domain::EnclosureDay.new(cramped, Zoo::Domain::Occupancy.new(cramped, occupants)).run
 
       expect(dead).to include(junior)
       expect(junior.cause_of_death).to eq(:injury)

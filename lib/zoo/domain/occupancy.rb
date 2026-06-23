@@ -30,10 +30,6 @@ module Zoo
         required_area > @enclosure.area_sqm
       end
 
-      def filthy?
-        @enclosure.filthy?
-      end
-
       def contagious_illnesses
         @occupants.select(&:contagious?).map(&:illness).uniq
       end

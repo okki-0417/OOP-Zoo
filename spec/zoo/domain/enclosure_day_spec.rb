@@ -11,7 +11,7 @@ module Zoo
       end
 
       def run(enclosure, occupants, season: Season.spring)
-        described_class.new(enclosure, occupants, season: season).run
+        described_class.new(enclosure, Occupancy.new(enclosure, occupants), season: season).run
       end
 
       it '収容個体が歳をとり、エリアが汚れること' do

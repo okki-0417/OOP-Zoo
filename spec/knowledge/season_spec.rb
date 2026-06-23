@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe '季節と気候' do
   shared = Zoo::Domain::Shared
   season    = Zoo::Domain::Season
-  welfare   = Zoo::Domain::Welfare
 
   def pride(temp)
     enclosure = Zoo::Domain::Enclosure.new(
@@ -45,14 +44,14 @@ RSpec.describe '季節と気候' do
       enclosure, occupants = pride(20)
       occupant = occupants.first
 
-      expect(welfare.daily_stress(occupant, enclosure, occupants, season: season.winter)).to be > 0
+      expect(welfare_of(occupant, enclosure, occupants, season: season.winter).daily_stress).to be > 0
     end
 
     it '夏など快適な季節では、良好な飼育ならストレスが和らぐこと' do
       enclosure, occupants = pride(20)
       occupant = occupants.first
 
-      expect(welfare.daily_stress(occupant, enclosure, occupants, season: season.summer)).to be < 0
+      expect(welfare_of(occupant, enclosure, occupants, season: season.summer).daily_stress).to be < 0
     end
   end
 end

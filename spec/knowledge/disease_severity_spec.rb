@@ -73,7 +73,7 @@ RSpec.describe '疾病の重症度と伝播' do
       carrier.fall_ill(illnesses.cold)
       healthy = build_adult(catalog.lion, name: '健康')
 
-      contagion.new(occupancy(pen, [carrier, healthy]), random: instance_double(Random, rand: 99)).spread
+      contagion.new(pen, occupancy(pen, [carrier, healthy]), random: instance_double(Random, rand: 99)).spread
 
       expect(healthy).not_to be_sick
     end
@@ -83,7 +83,7 @@ RSpec.describe '疾病の重症度と伝播' do
       carrier.fall_ill(illnesses.cold)
       healthy = build_adult(catalog.lion, name: '健康')
 
-      contagion.new(occupancy(pen, [carrier, healthy]), random: instance_double(Random, rand: 0)).spread
+      contagion.new(pen, occupancy(pen, [carrier, healthy]), random: instance_double(Random, rand: 0)).spread
 
       expect(healthy).to be_sick
     end
@@ -93,7 +93,7 @@ RSpec.describe '疾病の重症度と伝播' do
         carrier = build_adult(catalog.lion, name: '感染源')
         carrier.fall_ill(illnesses.cold)
         healthy = build_adult(catalog.lion, name: '健康')
-        contagion.new(occupancy(enclosure, [carrier, healthy]), random: instance_double(Random, rand: 60)).spread
+        contagion.new(enclosure, occupancy(enclosure, [carrier, healthy]), random: instance_double(Random, rand: 60)).spread
         healthy
       end
 
@@ -107,7 +107,7 @@ RSpec.describe '疾病の重症度と伝播' do
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
 
-      contagion.new(occupancy(pen, [immune, carrier]), random: instance_double(Random, rand: 0)).spread
+      contagion.new(pen, occupancy(pen, [immune, carrier]), random: instance_double(Random, rand: 0)).spread
 
       expect(immune).not_to be_sick
     end

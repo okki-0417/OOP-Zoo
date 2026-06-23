@@ -23,7 +23,7 @@ RSpec.describe '病気の感染と免疫' do
       healthy = build_adult(catalog.lion, name: '健康')
       carrier.fall_ill(illnesses.cold)
 
-      contagion.new(occupancy(pen, [carrier, healthy])).spread
+      contagion.new(pen, occupancy(pen, [carrier, healthy])).spread
 
       expect(healthy).to be_sick
     end
@@ -33,7 +33,7 @@ RSpec.describe '病気の感染と免疫' do
       healthy = build_adult(catalog.lion, name: '健康')
       injured.fall_ill(illnesses.fracture)
 
-      contagion.new(occupancy(pen, [injured, healthy])).spread
+      contagion.new(pen, occupancy(pen, [injured, healthy])).spread
 
       expect(healthy).not_to be_sick
     end
@@ -43,7 +43,7 @@ RSpec.describe '病気の感染と免疫' do
       carrier.fall_ill(illnesses.cold)
       faraway = build_adult(catalog.lion, name: '別エリア')
 
-      contagion.new(occupancy(pen, [carrier])).spread
+      contagion.new(pen, occupancy(pen, [carrier])).spread
 
       expect(faraway).not_to be_sick
     end
@@ -65,7 +65,7 @@ RSpec.describe '病気の感染と免疫' do
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
 
-      contagion.new(occupancy(pen, [recovered, carrier])).spread
+      contagion.new(pen, occupancy(pen, [recovered, carrier])).spread
 
       expect(recovered).not_to be_sick
     end

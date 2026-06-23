@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe '養育と離乳' do
   catalog = Zoo::Domain::SpeciesCatalog
   sex     = Zoo::Domain::Animal::Sex
-  welfare = Zoo::Domain::Welfare
 
   def savanna
     Zoo::Domain::Enclosure.new(
@@ -44,7 +43,7 @@ RSpec.describe '養育と離乳' do
         enclosure = savanna
         occupants = [dam, cub]
 
-        expect(welfare.daily_stress(cub, enclosure, occupants)).to be < 0
+        expect(welfare_of(cub, enclosure, occupants).daily_stress).to be < 0
       end
     end
 
@@ -58,7 +57,7 @@ RSpec.describe '養育と離乳' do
           build_adult(catalog.lion, name: '他2', sex: sex.female)
         ]
 
-        expect(welfare.daily_stress(cub, enclosure, occupants)).to be > 0
+        expect(welfare_of(cub, enclosure, occupants).daily_stress).to be > 0
       end
     end
 
@@ -72,7 +71,7 @@ RSpec.describe '養育と離乳' do
           build_adult(catalog.lion, name: '他2', sex: sex.female)
         ]
 
-        expect(welfare.daily_stress(weaned, enclosure, occupants)).to be < 0
+        expect(welfare_of(weaned, enclosure, occupants).daily_stress).to be < 0
       end
     end
   end

@@ -41,6 +41,17 @@ module Factories
   def occupants_of(housings, enclosure)
     housings.occupants_of(enclosure)
   end
+
+  def welfare_of(animal, enclosure, occupants, season: Zoo::Domain::Season.spring)
+    occupancy = Zoo::Domain::Occupancy.new(enclosure, occupants)
+    Zoo::Domain::Welfare.new(
+      animal: animal,
+      enclosure: enclosure,
+      occupancy: occupancy,
+      companionship: Zoo::Domain::Companionship.new(enclosure: enclosure, occupancy: occupancy, member: animal),
+      thermal_suitability: Zoo::Domain::ThermalSuitability.new(animal, enclosure.effective_temperature(season))
+    )
+  end
 end
 
 RSpec.configure do |config|

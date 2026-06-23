@@ -19,7 +19,9 @@ module Zoo
             occupants = @housings.occupants_of(enclosure)
 
             dead, events = @unit_of_work.run do
-              dead_animals = Domain::EnclosureDay.new(enclosure, occupants, season: season).run
+              dead_animals = Domain::EnclosureDay.new(
+                enclosure, Domain::Occupancy.new(enclosure, occupants), season: season
+              ).run
               @enclosures.save(enclosure)
               occupants.each { |animal| @animals.save(animal) }
               [dead_animals, dead_animals.flat_map(&:pull_events)]

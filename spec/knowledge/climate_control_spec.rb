@@ -6,7 +6,6 @@ RSpec.describe '空調と屋内施設' do
   catalog = Zoo::Domain::SpeciesCatalog
   season  = Zoo::Domain::Season
   pricing = Zoo::Domain::Pricing
-  welfare = Zoo::Domain::Welfare
   shared  = Zoo::Domain::Shared
 
   def enclosure(climate_controlled:)
@@ -48,10 +47,10 @@ RSpec.describe '空調と屋内施設' do
       uncontrolled, uncontrolled_occupants = pride(climate_controlled: false)
       controlled, controlled_occupants = pride(climate_controlled: true)
 
-      expect(welfare.daily_stress(uncontrolled_occupants.first, uncontrolled, uncontrolled_occupants,
-                                  season: season.winter)).to be > 0
-      expect(welfare.daily_stress(controlled_occupants.first, controlled, controlled_occupants,
-                                  season: season.winter)).to be < 0
+      expect(welfare_of(uncontrolled_occupants.first, uncontrolled, uncontrolled_occupants,
+                        season: season.winter).daily_stress).to be > 0
+      expect(welfare_of(controlled_occupants.first, controlled, controlled_occupants,
+                        season: season.winter).daily_stress).to be < 0
     end
   end
 

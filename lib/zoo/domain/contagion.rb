@@ -7,7 +7,8 @@ module Zoo
       FILTH_BONUS = 30
       CROWDING_BONUS = 20
 
-      def initialize(occupancy, random: nil)
+      def initialize(enclosure, occupancy, random: nil)
+        @enclosure = enclosure
         @occupancy = occupancy
         @random = random
       end
@@ -36,7 +37,7 @@ module Zoo
 
       def transmission_chance
         chance = BASE_CHANCE
-        chance += FILTH_BONUS if @occupancy.filthy?
+        chance += FILTH_BONUS if @enclosure.filthy?
         chance += CROWDING_BONUS if @occupancy.overcrowded?
         [chance, 100].min
       end
