@@ -131,11 +131,11 @@ RSpec.describe '現実の動物園の再現' do
   it '病気の動物を獣医が診て治療できること' do
     patient = penguins.first
     patient.fall_ill(medical::IllnessCatalog.pneumonia)
-    expect(medical::Examination.new(veterinarian: vet, animal: patient).diagnosis).to eq(:sick)
+    expect(medical::Examining.new(veterinarian: vet, animal: patient).diagnosis).to eq(:sick)
 
-    medical::Treatment.new(veterinarian: vet, animal: patient).perform
+    medical::Treating.new(veterinarian: vet, animal: patient).perform
     expect(patient).not_to be_sick
-    expect(medical::Examination.new(veterinarian: vet, animal: patient).diagnosis).to eq(:healthy)
+    expect(medical::Examining.new(veterinarian: vet, animal: patient).diagnosis).to eq(:healthy)
   end
 
   it 'ライオンを繁殖させ、生まれた子を群れに加えられること' do

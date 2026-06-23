@@ -4,7 +4,7 @@ require 'spec_helper'
 
 module Zoo
   module Domain
-    RSpec.describe Examination do
+    RSpec.describe Examining do
       let(:vet) { Veterinarian.new(name: '佐藤') }
       let(:animal) { build_adult(SpeciesCatalog.lion) }
 

@@ -2,7 +2,7 @@
 
 module Zoo
   module Domain
-    class Treatment
+    class Treating
       HEAL_AMOUNT = 50
 
       def initialize(veterinarian:, animal:)

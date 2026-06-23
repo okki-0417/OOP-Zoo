@@ -2,7 +2,7 @@
 
 module Zoo
   module Domain
-    class Examination
+    class Examining
       def initialize(veterinarian:, animal:)
         @veterinarian = veterinarian
         @animal = animal
