@@ -53,7 +53,7 @@ module Zoo
         end
 
         it 'DietType はラベルを返すこと' do
-          expect(catalog.lion.diet_type.to_s).to eq('肉食')
+          expect(DietType.carnivore.to_s).to eq('肉食')
         end
 
         it 'ConservationStatus は コード(ラベル) を返すこと' do

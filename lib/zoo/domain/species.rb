@@ -5,7 +5,7 @@ module Zoo
     class Species
       include Shared::ValueObject
 
-      attr_reader :name_ja, :scientific_name, :taxon_class, :diet_type,
+      attr_reader :name_ja, :scientific_name, :taxon_class,
                   :conservation_status, :habitable_temperature_range,
                   :lifespan_years, :maturity_age_years, :gestation_period_days,
                   :adult_weight, :default_voice, :litter_size, :breeding_season, :charisma
@@ -125,6 +125,14 @@ module Zoo
         mass_factor = (@adult_weight.kilograms / FOOD_COST_REFERENCE_KG)**0.75
         diet_factor = predatory? ? PREDATORY_DIET_FOOD_FACTOR : 1.0
         Shared::Money.yen([(FOOD_COST_BASE_YEN * mass_factor * diet_factor).round, FOOD_COST_MIN_YEN].max)
+      end
+
+      def taxon_label
+        @taxon_class.label
+      end
+
+      def diet_label
+        @diet_type.label
       end
 
       def to_s

@@ -126,8 +126,8 @@ module Zoo
       end
 
       it '6つの食性すべてを網羅していること' do
-        diets = described_class.all.map { |s| s.diet_type.value }.uniq
-        expect(diets).to contain_exactly(:carnivore, :piscivore, :insectivore, :herbivore, :frugivore, :omnivore)
+        diets = described_class.all.map(&:diet_label).uniq
+        expect(diets).to contain_exactly('肉食', '魚食', '昆虫食', '草食', '果実食', '雑食')
       end
 
       describe '.find' do
