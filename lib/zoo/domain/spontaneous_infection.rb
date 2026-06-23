@@ -16,7 +16,7 @@ module Zoo
       end
 
       def strike(animals, random)
-        healthy = animals.select { |animal| animal.alive? && !animal.sick? }
+        healthy = animals.select(&:susceptible?)
         return nil if healthy.empty?
         return nil unless random.rand(100) < CHANCE_PERCENT
 

@@ -159,12 +159,20 @@ module Zoo
         !sick?
       end
 
-      def illness_name
-        @illness&.name_ja
+      def susceptible?
+        alive? && healthy?
       end
 
-      def illness_contagious?
-        @illness&.contagious? || false
+      def contagious?
+        alive? && (@illness&.contagious? || false)
+      end
+
+      def contractible_illness(illnesses)
+        illnesses.find { |illness| !immune_to?(illness) }
+      end
+
+      def illness_name
+        @illness&.name_ja
       end
 
       def immune_to?(illness)

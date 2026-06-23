@@ -14,6 +14,10 @@ RSpec.describe '予防接種と免疫' do
     )
   end
 
+  def occupancy(enclosure, occupants)
+    Zoo::Domain::Occupancy.new(enclosure, occupants)
+  end
+
   describe '感染性の病気へのワクチン' do
     it '接種するとかかる前から免疫を得ること' do
       lion = build_adult(catalog.lion)
@@ -27,7 +31,7 @@ RSpec.describe '予防接種と免疫' do
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
 
-      contagion.new(pen, [vaccinated, carrier]).spread
+      contagion.new(occupancy(pen, [vaccinated, carrier])).spread
 
       expect(vaccinated).not_to be_sick
     end

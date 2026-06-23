@@ -3,9 +3,15 @@
 module Zoo
   module Domain
     class Occupancy
+      include Enumerable
+
       def initialize(enclosure, occupants)
         @enclosure = enclosure
         @occupants = occupants
+      end
+
+      def each(&)
+        @occupants.each(&)
       end
 
       def full?
@@ -22,6 +28,14 @@ module Zoo
 
       def overcrowded?
         required_area > @enclosure.area_sqm
+      end
+
+      def filthy?
+        @enclosure.filthy?
+      end
+
+      def contagious_illnesses
+        @occupants.select(&:contagious?).map(&:illness).uniq
       end
     end
   end

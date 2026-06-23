@@ -89,6 +89,57 @@ module Zoo
         end
       end
 
+      describe '#susceptible?' do
+        it '生きていて健康なら true を返すこと' do
+          expect(build.susceptible?).to be(true)
+        end
+
+        it '発病済みなら false を返すこと' do
+          expect(build.tap { |a| a.fall_ill(illnesses.cold) }.susceptible?).to be(false)
+        end
+
+        it '死亡していれば false を返すこと' do
+          expect(build.tap(&:die).susceptible?).to be(false)
+        end
+      end
+
+      describe '#contagious?' do
+        it '感染性の病気(風邪)にかかっていれば true を返すこと' do
+          expect(build.tap { |a| a.fall_ill(illnesses.cold) }.contagious?).to be(true)
+        end
+
+        it '非感染性の病気(骨折)では false を返すこと' do
+          expect(build.tap { |a| a.fall_ill(illnesses.fracture) }.contagious?).to be(false)
+        end
+
+        it '健康なら false を返すこと' do
+          expect(build.contagious?).to be(false)
+        end
+
+        it '感染性の病気を持っていても死亡していれば false を返すこと' do
+          animal = build
+          animal.fall_ill(illnesses.cold)
+          animal.die
+          expect(animal.contagious?).to be(false)
+        end
+      end
+
+      describe '#contractible_illness' do
+        it '免疫のない病気のうち最初のものを返すこと' do
+          expect(build.contractible_illness([illnesses.cold, illnesses.pneumonia])).to eq(illnesses.cold)
+        end
+
+        it '免疫を持つ病気は飛ばし、罹りうる病気を返すこと' do
+          animal = build.tap { |a| a.vaccinate(illnesses.cold) }
+          expect(animal.contractible_illness([illnesses.cold, illnesses.pneumonia])).to eq(illnesses.pneumonia)
+        end
+
+        it 'すべての病気に免疫があれば nil を返すこと' do
+          animal = build.tap { |a| a.vaccinate(illnesses.cold) }
+          expect(animal.contractible_illness([illnesses.cold])).to be_nil
+        end
+      end
+
       describe '.reconstitute' do
         def reconstitute(health:, hunger:, stress:, illness:, death:, immunities: [], parent_ids: [])
           Animal.reconstitute(

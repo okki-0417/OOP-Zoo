@@ -7,45 +7,38 @@ module Zoo
       FILTH_BONUS = 30
       CROWDING_BONUS = 20
 
-      def initialize(enclosure, occupants, random: nil)
-        @enclosure = enclosure
-        @occupants = occupants
+      def initialize(occupancy, random: nil)
+        @occupancy = occupancy
         @random = random
       end
 
       def spread
-        return [] if active_contagions.empty?
+        contagious = @occupancy.contagious_illnesses
+        return [] if contagious.empty?
 
-        @occupants.each_with_object([]) do |animal, infected|
-          next unless susceptible?(animal)
+        @occupancy.each_with_object([]) do |animal, infected|
+          next unless animal.susceptible?
 
-          illness = active_contagions.find { |ill| !animal.immune_to?(ill) }
+          illness = animal.contractible_illness(contagious)
           next unless illness
-          next if @random && @random.rand(100) >= transmission_chance
+          next if transmission_blocked?
 
           animal.fall_ill(illness)
           infected << animal
         end
       end
 
-      def transmission_chance
-        chance = BASE_CHANCE
-        chance += FILTH_BONUS if @enclosure.filthy?
-        chance += CROWDING_BONUS if Occupancy.new(@enclosure, @occupants).overcrowded?
-        [chance, 100].min
-      end
-
       private
 
-      def active_contagions
-        @active_contagions ||= @occupants
-                               .select { |a| a.alive? && a.sick? && a.illness_contagious? }
-                               .map(&:illness)
-                               .uniq
+      def transmission_blocked?
+        @random && @random.rand(100) >= transmission_chance
       end
 
-      def susceptible?(animal)
-        animal.alive? && !animal.sick?
+      def transmission_chance
+        chance = BASE_CHANCE
+        chance += FILTH_BONUS if @occupancy.filthy?
+        chance += CROWDING_BONUS if @occupancy.overcrowded?
+        [chance, 100].min
       end
     end
   end

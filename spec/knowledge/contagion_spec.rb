@@ -13,13 +13,17 @@ RSpec.describe '病気の感染と免疫' do
     )
   end
 
+  def occupancy(enclosure, occupants)
+    Zoo::Domain::Occupancy.new(enclosure, occupants)
+  end
+
   describe '接触感染' do
     it '感染性の病気を持つ個体がいると、同じエリアの健康な個体に広がること' do
       carrier = build_adult(catalog.lion, name: '感染源')
       healthy = build_adult(catalog.lion, name: '健康')
       carrier.fall_ill(illnesses.cold)
 
-      contagion.new(pen, [carrier, healthy]).spread
+      contagion.new(occupancy(pen, [carrier, healthy])).spread
 
       expect(healthy).to be_sick
     end
@@ -29,7 +33,7 @@ RSpec.describe '病気の感染と免疫' do
       healthy = build_adult(catalog.lion, name: '健康')
       injured.fall_ill(illnesses.fracture)
 
-      contagion.new(pen, [injured, healthy]).spread
+      contagion.new(occupancy(pen, [injured, healthy])).spread
 
       expect(healthy).not_to be_sick
     end
@@ -39,7 +43,7 @@ RSpec.describe '病気の感染と免疫' do
       carrier.fall_ill(illnesses.cold)
       faraway = build_adult(catalog.lion, name: '別エリア')
 
-      contagion.new(pen, [carrier]).spread
+      contagion.new(occupancy(pen, [carrier])).spread
 
       expect(faraway).not_to be_sick
     end
@@ -61,7 +65,7 @@ RSpec.describe '病気の感染と免疫' do
       carrier = build_adult(catalog.lion, name: '感染源')
       carrier.fall_ill(illnesses.cold)
 
-      contagion.new(pen, [recovered, carrier]).spread
+      contagion.new(occupancy(pen, [recovered, carrier])).spread
 
       expect(recovered).not_to be_sick
     end

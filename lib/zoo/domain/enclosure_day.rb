@@ -13,7 +13,7 @@ module Zoo
 
       def run
         spread_disease_if_filthy
-        Contagion.new(@enclosure, @occupants).spread
+        Contagion.new(Occupancy.new(@enclosure, @occupants)).spread
         @occupants.each do |animal|
           next if animal.dead?
 
@@ -37,7 +37,7 @@ module Zoo
         return unless @enclosure.filthy?
 
         @occupants.each do |animal|
-          animal.fall_ill(IllnessCatalog.parasite) if animal.alive? && !animal.sick?
+          animal.fall_ill(IllnessCatalog.parasite) if animal.susceptible?
         end
       end
     end
