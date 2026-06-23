@@ -9,6 +9,23 @@ module Zoo
 
       AREA_PER_SLOT_SQM = 100
 
+      CONSTRUCTION_BASE_YEN = 30_000
+      CONSTRUCTION_PER_SLOT_YEN = 10_000
+      CLIMATE_CONTROL_SURCHARGE_YEN = 50_000
+
+      def self.construction_cost(capacity:, climate_controlled: false)
+        yen = CONSTRUCTION_BASE_YEN + (CONSTRUCTION_PER_SLOT_YEN * capacity)
+        yen += CLIMATE_CONTROL_SURCHARGE_YEN if climate_controlled
+        Shared::Money.yen(yen)
+      end
+
+      UPKEEP_YEN = 5_000
+      CLIMATE_CONTROL_RUNNING_YEN = 4_000
+
+      def daily_upkeep
+        Shared::Money.yen(UPKEEP_YEN + (climate_controlled? ? CLIMATE_CONTROL_RUNNING_YEN : 0))
+      end
+
       def initialize(name:, temperature:, capacity:, area_sqm: nil, climate_controlled: false,
                      id: Shared::Identifier.new)
         raise ArgumentError, 'エリア名は必須です' if name.to_s.empty?

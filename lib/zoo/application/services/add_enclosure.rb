@@ -18,18 +18,13 @@ module Zoo
               capacity: command.capacity
             )
 
-            charge(Domain::Pricing.enclosure_construction_cost(capacity: command.capacity))
+            zoo = @zoo.load
+            zoo.purchase(Domain::Enclosure.construction_cost(capacity: command.capacity))
+            @zoo.save(zoo)
+
             @enclosures.save(enclosure)
             enclosure
           end
-        end
-
-        private
-
-        def charge(price)
-          zoo = @zoo.load
-          zoo.purchase(price)
-          @zoo.save(zoo)
         end
       end
     end

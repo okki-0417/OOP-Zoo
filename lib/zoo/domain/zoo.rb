@@ -128,8 +128,8 @@ module Zoo
         self
       end
 
-      def update_reputation(experience:, exposure:, events: [])
-        @reputation = @reputation.after_day(experience: experience, exposure: exposure, events: events)
+      def update_reputation(reputation)
+        @reputation = reputation
         self
       end
 

@@ -155,6 +155,17 @@ module Zoo
         @adult_weight.kilograms
       end
 
+      ACQUISITION_BASE_YEN = 20_000
+      RARITY_PER_RANK_YEN = 10_000
+      WEIGHT_PER_KG_YEN = 50
+
+      def acquisition_price
+        yen = ACQUISITION_BASE_YEN +
+              (RARITY_PER_RANK_YEN * conservation_rank) +
+              (WEIGHT_PER_KG_YEN * adult_weight_kg).round
+        Shared::Money.yen(yen)
+      end
+
       def climate_overlaps?(other)
         low = [@habitable_temperature_range.begin, other.habitable_temperature_range.begin].max
         high = [@habitable_temperature_range.end, other.habitable_temperature_range.end].min

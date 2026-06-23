@@ -2,35 +2,36 @@
 
 module Zoo
   module Domain
-    module ReputationEvaluation
-      module_function
-
-      CONDITION_NEUTRAL = 50
+    class ReputationEvaluation
       FEE_PER_EXPECTATION = 500
 
-      def evaluate(zoo:, on_exhibit:, visitors:, dead:, afflicted:)
-        experience = visitor_experience(zoo.admission_fee, exhibit_condition(on_exhibit))
-        exposure = visitors
-        events = reputation_news(dead, afflicted)
-
-        zoo.update_reputation(experience:, exposure:, events:)
+      def initialize(reputation:, admission_fee:, on_exhibit:, visitors:, dead:, afflicted:)
+        @reputation = reputation
+        @admission_fee = admission_fee
+        @on_exhibit = on_exhibit
+        @visitors = visitors
+        @dead = dead
+        @afflicted = afflicted
       end
 
-      def exhibit_condition(animals)
-        living = animals.select(&:alive?)
-        return CONDITION_NEUTRAL if living.empty?
-
-        living.sum(&:visible_condition) / living.size
+      def evaluated
+        @reputation.after_day(experience: experience, exposure: exposure, events: events)
       end
 
-      def visitor_experience(fee, condition)
-        (condition - (fee.yen / FEE_PER_EXPECTATION)).clamp(0, 100)
+      private
+
+      def experience
+        (ExhibitCondition.new(@on_exhibit).score - (@admission_fee.yen / FEE_PER_EXPECTATION)).clamp(0, 100)
       end
 
-      def reputation_news(dead, afflicted)
-        events = dead.map { |a| ReputationEvent::Death.new(cause: :unknown, charisma: a.species.charisma) }
-        events << ReputationEvent::Outbreak.new if afflicted
-        events
+      def exposure
+        @visitors
+      end
+
+      def events
+        news = @dead.map { |animal| ReputationEvent::Death.new(cause: :unknown, charisma: animal.charisma) }
+        news << ReputationEvent::Outbreak.new if @afflicted
+        news
       end
     end
   end

@@ -2,25 +2,30 @@
 
 module Zoo
   module Domain
-    module SpontaneousInfection
-      module_function
-
+    class SpontaneousInfection
       CHANCE_PERCENT = 20
 
-      def apply(animals, random)
-        target = strike(animals, random)
+      def initialize(animals, random)
+        @animals = animals
+        @random = random
+      end
+
+      def strike
+        target = pick
         return nil unless target
 
         target.fall_ill(IllnessCatalog.parasite)
         target
       end
 
-      def strike(animals, random)
-        healthy = animals.select(&:susceptible?)
-        return nil if healthy.empty?
-        return nil unless random.rand(100) < CHANCE_PERCENT
+      private
 
-        healthy[random.rand(healthy.size)]
+      def pick
+        healthy = @animals.select(&:susceptible?)
+        return nil if healthy.empty?
+        return nil unless @random.rand(100) < CHANCE_PERCENT
+
+        healthy[@random.rand(healthy.size)]
       end
     end
   end

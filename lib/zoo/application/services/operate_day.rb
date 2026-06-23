@@ -26,10 +26,25 @@ module Zoo
             animals    = @animals.all
             on_exhibit = @housings.all_occupants
 
-            visitors, income = Domain::VisitorAttraction.receive(zoo:, on_exhibit:)
-            cost             = Domain::OperatingCost.charge(zoo:, enclosures:, staff_count: staff_count, animals:)
-            afflicted        = Domain::SpontaneousInfection.apply(on_exhibit, @random)
-            Domain::ReputationEvaluation.evaluate(zoo:, on_exhibit:, visitors:, dead:, afflicted:)
+            visitors = Domain::VisitorAttraction.new(
+              on_exhibit:, reputation_factor: zoo.reputation_factor,
+              admission_fee: zoo.admission_fee, buzz: zoo.buzz
+            ).expected_visitors
+            income = zoo.admit_visitors(visitors)
+
+            cost = Domain::OperatingCost.new(
+              enclosures:, staff: @keepers.all + @veterinarians.all, species: animals.map(&:species)
+            ).amount
+            zoo.spend(cost)
+
+            afflicted = Domain::SpontaneousInfection.new(on_exhibit, @random).strike
+
+            zoo.update_reputation(
+              Domain::ReputationEvaluation.new(
+                reputation: zoo.reputation, admission_fee: zoo.admission_fee,
+                on_exhibit:, visitors:, dead:, afflicted:
+              ).evaluated
+            )
             zoo.advance_day
 
             @animals.save(afflicted) if afflicted
@@ -41,12 +56,6 @@ module Zoo
               outbreak: afflicted&.name
             )
           end
-        end
-
-        private
-
-        def staff_count
-          @keepers.all.size + @veterinarians.all.size
         end
       end
     end

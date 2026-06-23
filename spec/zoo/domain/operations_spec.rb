@@ -19,13 +19,14 @@ module Zoo
         enclosures = Array.new(2) do
           Enclosure.new(name: 'A', temperature: Shared::Temperature.celsius(20), capacity: 4)
         end
+        staff = Array.new(3) { build_keeper }
         zebras = Array.new(5) { SpeciesCatalog.grevys_zebra }
         food = zebras.sum { |s| s.daily_food_cost.yen }
 
-        cost = described_class.daily(enclosures: enclosures, staff: 3, species: zebras)
+        cost = described_class.new(enclosures: enclosures, staff: staff, species: zebras).amount
 
-        upkeep = 2 * described_class::UPKEEP_PER_ENCLOSURE
-        salaries = 3 * described_class::SALARY_PER_STAFF
+        upkeep = 2 * Enclosure::UPKEEP_YEN
+        salaries = 3 * Keeper::DAILY_SALARY_YEN
         expect(cost).to eq(Shared::Money.yen(upkeep + salaries + food))
       end
 
@@ -35,30 +36,15 @@ module Zoo
           name: '空調', temperature: Shared::Temperature.celsius(20), capacity: 4, climate_controlled: true
         )
 
-        plain_cost = described_class.daily(enclosures: [plain], staff: 0, species: [])
-        controlled_cost = described_class.daily(enclosures: [controlled], staff: 0, species: [])
+        plain_cost = described_class.new(enclosures: [plain], staff: [], species: []).amount
+        controlled_cost = described_class.new(enclosures: [controlled], staff: [], species: []).amount
 
         expect(controlled_cost).to be > plain_cost
-      end
-
-      it 'charge は算出した運営費を zoo に課して cost を返すこと' do
-        zoo = Zoo.new(name: 'テスト', admission_fee: Shared::Money.yen(0), funds: Shared::Money.yen(50_000))
-        enclosure = Enclosure.new(name: 'A', temperature: Shared::Temperature.celsius(20), capacity: 4)
-        zebra = Animal.new(species: SpeciesCatalog.grevys_zebra, name: 'Z', sex: Animal::Sex.male, max_health: 100)
-
-        cost = described_class.charge(zoo:, enclosures: [enclosure], staff_count: 0, animals: [zebra])
-
-        expect(cost).to eq(described_class.daily(enclosures: [enclosure], staff: 0, species: [SpeciesCatalog.grevys_zebra]))
-        expect(zoo.balance).to eq(Shared::Balance.new(50_000 - cost.yen))
       end
     end
 
     RSpec.describe VisitorAttraction do
       fee = Shared::Money.yen(2_000)
-
-      it '展示が空なら来園者は0であること' do
-        expect(described_class.expected_visitors([], Zoo::Reputation.default.factor, fee)).to eq(0)
-      end
 
       def zebra
         Animal.new(
@@ -66,34 +52,34 @@ module Zoo
         )
       end
 
+      def visitors(on_exhibit, reputation_factor, admission_fee)
+        described_class.new(
+          on_exhibit: on_exhibit, reputation_factor: reputation_factor, admission_fee: admission_fee
+        ).expected_visitors
+      end
+
+      it '展示が空なら来園者は0であること' do
+        expect(visitors([], Zoo::Reputation.default.factor, fee)).to eq(0)
+      end
+
       it '線形需要: 評判100・料金¥2,000・見応え≈59(シマウマ60を飽和)で28人を期待すること' do
-        expect(described_class.expected_visitors([zebra], Zoo::Reputation.new(100).factor, fee)).to eq(28)
+        expect(visitors([zebra], Zoo::Reputation.new(100).factor, fee)).to eq(28)
       end
 
       it '評判が下がると来園が減ること(100→50)' do
-        high = described_class.expected_visitors([zebra], Zoo::Reputation.new(100).factor, fee)
-        low  = described_class.expected_visitors([zebra], Zoo::Reputation.new(50).factor, fee)
+        high = visitors([zebra], Zoo::Reputation.new(100).factor, fee)
+        low  = visitors([zebra], Zoo::Reputation.new(50).factor, fee)
         expect(low).to be < high
       end
 
       it '料金を上げると来園が減ること(単位弾力ではなく、収益には最適点がある)' do
-        cheap  = described_class.expected_visitors([zebra], Zoo::Reputation.new(100).factor, Shared::Money.yen(2_000))
-        pricey = described_class.expected_visitors([zebra], Zoo::Reputation.new(100).factor, Shared::Money.yen(4_000))
+        cheap  = visitors([zebra], Zoo::Reputation.new(100).factor, Shared::Money.yen(2_000))
+        pricey = visitors([zebra], Zoo::Reputation.new(100).factor, Shared::Money.yen(4_000))
         expect(pricey).to be < cheap
       end
 
       it '支払意思(Pmax)以上の料金では来園が0になること(choke price)' do
-        expect(described_class.expected_visitors([zebra], Zoo::Reputation.new(100).factor, Shared::Money.yen(100_000))).to eq(0)
-      end
-
-      it 'receive は来園者数と収入を zoo に反映して [visitors, income] を返すこと' do
-        zoo = Zoo.new(name: 'テスト', admission_fee: Shared::Money.yen(2_000), funds: Shared::Money.yen(0))
-
-        visitors, income = described_class.receive(zoo:, on_exhibit: [zebra])
-
-        expect(visitors).to eq(described_class.expected_visitors([zebra], Zoo::Reputation.default.factor, fee))
-        expect(income).to eq(Shared::Money.yen(visitors * 2_000))
-        expect(zoo.balance).to eq(Shared::Balance.new(visitors * 2_000))
+        expect(visitors([zebra], Zoo::Reputation.new(100).factor, Shared::Money.yen(100_000))).to eq(0)
       end
     end
 
@@ -109,7 +95,7 @@ module Zoo
         allow(random).to receive(:rand).and_return(0)
         target = animal
 
-        result = described_class.apply([target], random)
+        result = described_class.new([target], random).strike
 
         expect(result).to eq(target)
         expect(target).to be_sick
@@ -118,14 +104,14 @@ module Zoo
       it '発生しない乱数(rand>=20)では nil を返すこと' do
         random = instance_double(Random, rand: 50)
 
-        expect(described_class.apply([animal], random)).to be_nil
+        expect(described_class.new([animal], random).strike).to be_nil
       end
 
       it '健康な個体がいなければ nil を返すこと' do
         sick = animal.fall_ill(IllnessCatalog.parasite)
         random = instance_double(Random, rand: 0)
 
-        expect(described_class.apply([sick], random)).to be_nil
+        expect(described_class.new([sick], random).strike).to be_nil
       end
     end
 

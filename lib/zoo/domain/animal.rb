@@ -324,6 +324,18 @@ module Zoo
         @species.name_ja
       end
 
+      def charisma
+        @species.charisma
+      end
+
+      def tradeable?
+        @species.tradeable?
+      end
+
+      def acquisition_price
+        @species.acquisition_price
+      end
+
       def taxon_class
         @species.taxon_class
       end

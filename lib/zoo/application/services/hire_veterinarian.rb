@@ -14,18 +14,13 @@ module Zoo
           @unit_of_work.run do
             veterinarian = Domain::Veterinarian.new(name: command.name)
 
-            charge(Domain::Pricing.veterinarian_signing_fee)
+            zoo = @zoo.load
+            zoo.purchase(Domain::Veterinarian.signing_fee)
+            @zoo.save(zoo)
+
             @veterinarians.save(veterinarian)
             veterinarian
           end
-        end
-
-        private
-
-        def charge(price)
-          zoo = @zoo.load
-          zoo.purchase(price)
-          @zoo.save(zoo)
         end
       end
     end

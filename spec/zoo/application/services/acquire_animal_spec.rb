@@ -7,7 +7,6 @@ RSpec.describe Zoo::Application::Services::AcquireAnimal do
   domain    = Zoo::Domain
   money     = Zoo::Domain::Shared::Money
   balance   = Zoo::Domain::Shared::Balance
-  pricing   = Zoo::Domain::Pricing
   catalog   = Zoo::Domain::SpeciesCatalog
   commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
@@ -38,7 +37,7 @@ RSpec.describe Zoo::Application::Services::AcquireAnimal do
     it '取引可能な種は取得価格ぶん残高が減ること' do
       service.call(command)
 
-      expected = 100_000 - pricing.acquisition_price(catalog.japanese_macaque).yen
+      expected = 100_000 - catalog.japanese_macaque.acquisition_price.yen
       expect(zoo_repo.load.balance).to eq(balance.new(expected))
     end
 
