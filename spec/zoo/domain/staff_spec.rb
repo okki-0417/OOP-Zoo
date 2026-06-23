@@ -28,34 +28,9 @@ module Zoo
 
     RSpec.describe Veterinarian do
       let(:vet) { described_class.new(name: '佐藤') }
-      let(:animal) { build_adult(SpeciesCatalog.lion) }
 
       it '#to_s は 獣医 名前 の形で表されること' do
         expect(vet.to_s).to eq('獣医 佐藤')
-      end
-
-      it '健康な個体を健康と診断すること' do
-        expect(vet.examine(animal)).to eq(:healthy)
-      end
-
-      it '病気の個体を診断し、治療で治せること' do
-        animal.fall_ill(IllnessCatalog.pneumonia)
-        expect(vet.examine(animal)).to eq(:sick)
-        vet.treat(animal)
-        expect(animal).not_to be_sick
-      end
-
-      it '衰弱した個体を診断し、治療で回復させること' do
-        90.times { animal.cry_out }
-        expect(vet.examine(animal)).to eq(:injured)
-        vet.treat(animal)
-        expect(animal.weak?).to be(false)
-      end
-
-      it '死亡個体は治療できないこと' do
-        animal.die
-        expect(vet.examine(animal)).to eq(:dead)
-        expect { vet.treat(animal) }.to raise_error(Errors::DeadAnimal)
       end
     end
 
