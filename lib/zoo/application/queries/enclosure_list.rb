@@ -16,7 +16,7 @@ module Zoo
               name: enclosure.name,
               population: @housings.occupants_of(enclosure).size,
               capacity: enclosure.capacity,
-              cleanliness: enclosure.cleanliness.level,
+              cleanliness: enclosure.cleanliness_level,
               filthy: enclosure.filthy?
             )
           end

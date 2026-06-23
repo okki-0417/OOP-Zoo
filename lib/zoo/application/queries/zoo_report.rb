@@ -22,12 +22,12 @@ module Zoo
           ReadModels::ZooStatistics.new(
             population: occupants.size,
             species_count: species.size,
-            threatened_count: species.count { |s| s.conservation_status.threatened? },
+            threatened_count: species.count(&:threatened?),
             births: @births.all.size,
             deaths_by_cause: deaths_by_cause(events),
             revenue: zoo.revenue,
             balance: zoo.balance,
-            reputation: zoo.reputation.score
+            reputation: zoo.reputation_score
           )
         end
 

@@ -135,6 +135,32 @@ module Zoo
         @diet_type.label
       end
 
+      def threatened?
+        @conservation_status.threatened?
+      end
+
+      def conservation_code
+        @conservation_status.code
+      end
+
+      def conservation_label
+        @conservation_status.label
+      end
+
+      def conservation_rank
+        @conservation_status.rank
+      end
+
+      def adult_weight_kg
+        @adult_weight.kilograms
+      end
+
+      def climate_overlaps?(other)
+        low = [@habitable_temperature_range.begin, other.habitable_temperature_range.begin].max
+        high = [@habitable_temperature_range.end, other.habitable_temperature_range.end].min
+        low <= high
+      end
+
       def to_s
         "#{@name_ja}(#{@scientific_name})"
       end

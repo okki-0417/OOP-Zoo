@@ -287,6 +287,10 @@ module Zoo
         @age_in_days.life_stage(@species)
       end
 
+      def life_stage_label
+        life_stage.label
+      end
+
       def age_in_years
         @age_in_days.years
       end
@@ -313,7 +317,7 @@ module Zoo
       end
 
       def threatened?
-        @species.conservation_status.threatened?
+        @species.threatened?
       end
 
       def species_name
@@ -322,6 +326,22 @@ module Zoo
 
       def taxon_class
         @species.taxon_class
+      end
+
+      def taxon_label
+        @species.taxon_label
+      end
+
+      def diet_label
+        @species.diet_label
+      end
+
+      def conservation_code
+        @species.conservation_code
+      end
+
+      def conservation_label
+        @species.conservation_label
       end
 
       def accepts?(food_category)

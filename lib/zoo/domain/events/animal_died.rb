@@ -22,7 +22,7 @@ module Zoo
         end
 
         def to_s
-          "#{@animal.species.name_ja}「#{@animal.name}」が#{cause_label}しました"
+          "#{@animal.species_name}「#{@animal.name}」が#{cause_label}しました"
         end
       end
     end

@@ -42,19 +42,13 @@ module Zoo
       def cohabitation_conflict(resident)
         newcomer = @animal.species
 
-        if !climate_overlaps?(newcomer, resident)
+        if !newcomer.climate_overlaps?(resident)
           "#{newcomer.name_ja}と#{resident.name_ja}は適温域が両立しません"
         elsif newcomer == resident
           "#{newcomer.name_ja}は単独性のため同種を同居させられません" if newcomer.solitary?
         elsif newcomer.predatory? || resident.predatory?
           "#{newcomer.name_ja}と#{resident.name_ja}は捕食関係の恐れがあり同居させられません"
         end
-      end
-
-      def climate_overlaps?(species_a, species_b)
-        low = [species_a.habitable_temperature_range.begin, species_b.habitable_temperature_range.begin].max
-        high = [species_a.habitable_temperature_range.end, species_b.habitable_temperature_range.end].min
-        low <= high
       end
     end
   end

@@ -33,7 +33,7 @@ module Zoo
         REPUTATION_GAIN = 4
 
         def self.for(species)
-          return nil unless species.conservation_status.threatened?
+          return nil unless species.threatened?
 
           new(species)
         end

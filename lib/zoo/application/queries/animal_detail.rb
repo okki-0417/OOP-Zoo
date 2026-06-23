@@ -14,20 +14,18 @@ module Zoo
           animal = @animals.find(animal_id)
           return nil if animal.nil?
 
-          species = animal.species
-          status = species.conservation_status
           enclosure_id = animal.alive? ? @housings.current_housing_of(animal)&.enclosure_id : nil
           enclosure = enclosure_id && @enclosures.find(enclosure_id)
           ReadModels::AnimalProfile.new(
             id: animal.id.to_s,
             name: animal.name,
-            species: species.name_ja,
-            taxon_class: species.taxon_label,
-            diet: species.diet_label,
-            conservation_code: status.code,
-            conservation_label: status.label,
+            species: animal.species_name,
+            taxon_class: animal.taxon_label,
+            diet: animal.diet_label,
+            conservation_code: animal.conservation_code,
+            conservation_label: animal.conservation_label,
             sex: animal.sex_label,
-            life_stage: animal.life_stage.label,
+            life_stage: animal.life_stage_label,
             age_in_days: animal.age_in_days,
             health: animal.current_health,
             max_health: animal.max_health,

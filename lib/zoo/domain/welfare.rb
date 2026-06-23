@@ -32,7 +32,7 @@ module Zoo
       end
 
       def lonely?(animal, occupants)
-        return false unless animal.species.group_living?
+        return false unless animal.group_living?
 
         companions = occupants.count do |other|
           other.alive? && other.species == animal.species

@@ -19,7 +19,7 @@ module Zoo
             name: enclosure.name,
             capacity: enclosure.capacity,
             population: occupants.size,
-            cleanliness: enclosure.cleanliness.level,
+            cleanliness: enclosure.cleanliness_level,
             filthy: enclosure.filthy?,
             occupants: occupants.map { |animal| occupant(animal) }
           )
@@ -29,7 +29,7 @@ module Zoo
 
         def occupant(animal)
           ReadModels::AnimalSummary.new(
-            id: animal.id.to_s, name: animal.name, species: animal.species.name_ja, alive: animal.alive?,
+            id: animal.id.to_s, name: animal.name, species: animal.species_name, alive: animal.alive?,
             health: animal.current_health, max_health: animal.max_health,
             ailing: animal.alive? && (animal.sick? || animal.starving? || animal.weak?)
           )

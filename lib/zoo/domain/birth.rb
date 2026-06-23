@@ -74,7 +74,7 @@ module Zoo
       end
 
       def default_name
-        "#{@dam.species.name_ja}の赤ちゃん"
+        "#{@dam.species_name}の赤ちゃん"
       end
 
       def newborn_vitality(base, inbreeding)

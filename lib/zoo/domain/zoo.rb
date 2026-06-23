@@ -28,6 +28,10 @@ module Zoo
         @reputation.factor
       end
 
+      def reputation_score
+        @reputation.score
+      end
+
       BUZZ_DECAY_PER_DAY = 10
 
       def generate_buzz(amount)

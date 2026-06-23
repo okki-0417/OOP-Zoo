@@ -37,7 +37,7 @@ module Zoo
 
             ReadModels::DayReport.new(
               visitors:, income:, cost:, deaths: dead.size,
-              balance: zoo.balance, reputation: zoo.reputation.score, bankrupt: zoo.bankrupt?,
+              balance: zoo.balance, reputation: zoo.reputation_score, bankrupt: zoo.bankrupt?,
               outbreak: afflicted&.name
             )
           end

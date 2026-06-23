@@ -13,7 +13,7 @@ module Zoo
             ReadModels::KeeperSummary.new(
               id: keeper.id.to_s,
               name: keeper.name,
-              specialties: keeper.specialties.map(&:label).join('・')
+              specialties: keeper.specialties_label
             )
           end
         end

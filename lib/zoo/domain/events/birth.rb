@@ -17,7 +17,7 @@ module Zoo
         end
 
         def to_s
-          "#{@offspring.species.name_ja}「#{@offspring.name}」が誕生しました"
+          "#{@offspring.species_name}「#{@offspring.name}」が誕生しました"
         end
       end
     end

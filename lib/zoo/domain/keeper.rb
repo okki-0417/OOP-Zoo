@@ -28,8 +28,12 @@ module Zoo
         @specialties.include?(taxon_class)
       end
 
+      def specialties_label
+        @specialties.map(&:label).join('・')
+      end
+
       def to_s
-        "飼育員 #{@name}(#{@specialties.map(&:label).join('・')}担当)"
+        "飼育員 #{@name}(#{specialties_label}担当)"
       end
     end
   end

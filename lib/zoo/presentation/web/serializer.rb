@@ -82,10 +82,10 @@ module Zoo
         end
 
         def species_ref(key, species)
-          status = species.conservation_status
           {
             key: key.to_s, name_ja: species.name_ja, taxon_class: species.taxon_label,
-            diet: species.diet_label, conservation_code: status.code, conservation_label: status.label
+            diet: species.diet_label, conservation_code: species.conservation_code,
+            conservation_label: species.conservation_label
           }
         end
 

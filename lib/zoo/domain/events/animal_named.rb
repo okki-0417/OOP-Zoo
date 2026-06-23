@@ -15,7 +15,7 @@ module Zoo
         end
 
         def to_s
-          "#{@animal.species.name_ja}が「#{@name}」と名付けられました"
+          "#{@animal.species_name}が「#{@name}」と名付けられました"
         end
       end
     end

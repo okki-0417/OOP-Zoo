@@ -18,8 +18,8 @@ module Zoo
 
       def acquisition_price(species)
         yen = ACQUISITION_BASE_YEN +
-              (RARITY_PER_RANK_YEN * species.conservation_status.rank) +
-              (WEIGHT_PER_KG_YEN * species.adult_weight.kilograms).round
+              (RARITY_PER_RANK_YEN * species.conservation_rank) +
+              (WEIGHT_PER_KG_YEN * species.adult_weight_kg).round
         Shared::Money.yen(yen)
       end
 

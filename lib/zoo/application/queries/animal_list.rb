@@ -13,7 +13,7 @@ module Zoo
             ReadModels::AnimalSummary.new(
               id: animal.id.to_s,
               name: animal.name,
-              species: animal.species.name_ja,
+              species: animal.species_name,
               alive: animal.alive?,
               health: animal.current_health,
               max_health: animal.max_health,

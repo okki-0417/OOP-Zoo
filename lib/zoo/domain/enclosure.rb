@@ -64,6 +64,10 @@ module Zoo
         @cleanliness.filthy?
       end
 
+      def cleanliness_level
+        @cleanliness.level
+      end
+
       def enrich(amount = 100)
         @enrichment = @enrichment.enriched_by(amount)
         self

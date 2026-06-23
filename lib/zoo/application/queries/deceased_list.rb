@@ -11,7 +11,7 @@ module Zoo
         def call
           @event_store.all
                       .grep(Domain::Events::AnimalDied)
-                      .map { |event| ReadModels::DeceasedRecord.new(name: event.animal.name.to_s, species: event.animal.species.name_ja, cause: event.cause) }
+                      .map { |event| ReadModels::DeceasedRecord.new(name: event.animal.name.to_s, species: event.animal.species_name, cause: event.cause) }
         end
       end
     end
