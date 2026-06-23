@@ -13,6 +13,17 @@ module Zoo
         expect(savanna.area_sqm).to eq(300)
       end
 
+      describe '.construction_cost' do
+        it '基本建設費＋定員×1枠単価で算出すること(定員5=80,000円)' do
+          expect(described_class.construction_cost(capacity: 5)).to eq(Shared::Money.yen(80_000))
+        end
+
+        it '空調設備は建設費を上乗せすること' do
+          expect(described_class.construction_cost(capacity: 5, climate_controlled: true))
+            .to be > described_class.construction_cost(capacity: 5)
+        end
+      end
+
       describe '清潔さ' do
         it 'soil で汚れ filthy? になり、clean で清掃できること' do
           savanna.soil(100)

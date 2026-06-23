@@ -14,7 +14,7 @@ module Zoo
           @unit_of_work.run do
             veterinarian = Domain::Veterinarian.new(name: command.name)
 
-            charge(Domain::Pricing.veterinarian_signing_fee)
+            charge(Domain::Veterinarian.signing_fee)
             @veterinarians.save(veterinarian)
             veterinarian
           end

@@ -33,7 +33,7 @@ module Zoo
         def acquire(species)
           zoo = @zoo.load
           if species.tradeable?
-            zoo.purchase(Domain::Pricing.acquisition_price(species))
+            zoo.purchase(species.acquisition_price)
           else
             zoo.gain_reputation(CONSERVATION_REPUTATION_GAIN)
           end

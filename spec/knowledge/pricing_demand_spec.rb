@@ -9,9 +9,10 @@ RSpec.describe '入園料と需要' do
   end
 
   def visitors_at(fee)
-    Zoo::Domain::VisitorAttraction.expected_visitors(
-      exhibit, Zoo::Domain::Zoo::Reputation.default.factor, Zoo::Domain::Shared::Money.yen(fee)
-    )
+    Zoo::Domain::VisitorAttraction.new(
+      on_exhibit: exhibit, reputation_factor: Zoo::Domain::Zoo::Reputation.default.factor,
+      admission_fee: Zoo::Domain::Shared::Money.yen(fee)
+    ).expected_visitors
   end
 
   def revenue_at(fee)
@@ -64,9 +65,9 @@ RSpec.describe '入園料と需要' do
       )
       zoo.house(build_adult(catalog.lion, name: 'レオ'), enc)
 
-      demand = Zoo::Domain::VisitorAttraction.expected_visitors(
-        zoo.animals, zoo.reputation_factor, zoo.admission_fee
-      )
+      demand = Zoo::Domain::VisitorAttraction.new(
+        on_exhibit: zoo.animals, reputation_factor: zoo.reputation_factor, admission_fee: zoo.admission_fee
+      ).expected_visitors
       zoo.admit_visitors(1_000_000)
 
       expect(zoo.visitor_count).to be <= demand

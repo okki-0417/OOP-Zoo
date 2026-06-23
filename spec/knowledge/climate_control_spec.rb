@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe '空調と屋内施設' do
   catalog = Zoo::Domain::SpeciesCatalog
   season  = Zoo::Domain::Season
-  pricing = Zoo::Domain::Pricing
   shared  = Zoo::Domain::Shared
 
   def enclosure(climate_controlled:)
@@ -56,8 +55,8 @@ RSpec.describe '空調と屋内施設' do
 
   describe '費用' do
     it '空調設備の設置には建設費の上乗せがかかること' do
-      expect(pricing.enclosure_construction_cost(capacity: 4, climate_controlled: true))
-        .to be > pricing.enclosure_construction_cost(capacity: 4, climate_controlled: false)
+      expect(Zoo::Domain::Enclosure.construction_cost(capacity: 4, climate_controlled: true))
+        .to be > Zoo::Domain::Enclosure.construction_cost(capacity: 4, climate_controlled: false)
     end
   end
 end

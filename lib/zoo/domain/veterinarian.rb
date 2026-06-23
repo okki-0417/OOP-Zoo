@@ -7,6 +7,12 @@ module Zoo
 
       attr_reader :id, :name
 
+      SIGNING_FEE_YEN = 30_000
+
+      def self.signing_fee
+        Shared::Money.yen(SIGNING_FEE_YEN)
+      end
+
       def initialize(name:, id: Shared::Identifier.new)
         raise ArgumentError, '獣医名は必須です' if name.to_s.empty?
 

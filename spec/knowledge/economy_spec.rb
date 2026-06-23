@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe '運営の経済' do
   money   = Zoo::Domain::Shared::Money
   balance = Zoo::Domain::Shared::Balance
-  pricing = Zoo::Domain::Pricing
   errors  = Zoo::Domain::Errors
   catalog = Zoo::Domain::SpeciesCatalog
 
@@ -19,26 +18,26 @@ RSpec.describe '運営の経済' do
   describe '成長アクションの費用' do
     context '動物を取得するとき' do
       it '希少な種ほど高くつくこと(絶滅危惧のキリン > 低危険のニホンザル)' do
-        expect(pricing.acquisition_price(catalog.reticulated_giraffe))
-          .to be > pricing.acquisition_price(catalog.japanese_macaque)
+        expect(catalog.reticulated_giraffe.acquisition_price)
+          .to be > catalog.japanese_macaque.acquisition_price
       end
 
       it '体格が大きい種ほど高くつくこと(ゾウ > サル)' do
-        expect(pricing.acquisition_price(catalog.african_elephant))
-          .to be > pricing.acquisition_price(catalog.japanese_macaque)
+        expect(catalog.african_elephant.acquisition_price)
+          .to be > catalog.japanese_macaque.acquisition_price
       end
     end
 
     context 'エリアを建設するとき' do
       it '定員が大きいほど建設費が高くなること' do
-        expect(pricing.enclosure_construction_cost(capacity: 10))
-          .to be > pricing.enclosure_construction_cost(capacity: 3)
+        expect(Zoo::Domain::Enclosure.construction_cost(capacity: 10))
+          .to be > Zoo::Domain::Enclosure.construction_cost(capacity: 3)
       end
     end
 
     context '職員を雇うとき' do
       it '採用に一時金がかかり、獣医は飼育員より高くつくこと' do
-        expect(pricing.veterinarian_signing_fee).to be > pricing.keeper_signing_fee
+        expect(Zoo::Domain::Veterinarian.signing_fee).to be > Zoo::Domain::Keeper.signing_fee
       end
     end
   end

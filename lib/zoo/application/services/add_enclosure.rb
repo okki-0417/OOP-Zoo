@@ -18,7 +18,7 @@ module Zoo
               capacity: command.capacity
             )
 
-            charge(Domain::Pricing.enclosure_construction_cost(capacity: command.capacity))
+            charge(Domain::Enclosure.construction_cost(capacity: command.capacity))
             @enclosures.save(enclosure)
             enclosure
           end

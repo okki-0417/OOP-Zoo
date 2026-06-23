@@ -14,7 +14,7 @@ module Zoo
           @unit_of_work.run do
             keeper = Domain::Keeper.new(name: command.name, specialties: command.specialties)
 
-            charge(Domain::Pricing.keeper_signing_fee)
+            charge(Domain::Keeper.signing_fee)
             @keepers.save(keeper)
             keeper
           end
