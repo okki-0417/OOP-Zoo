@@ -14,18 +14,13 @@ module Zoo
           @unit_of_work.run do
             keeper = Domain::Keeper.new(name: command.name, specialties: command.specialties)
 
-            charge(Domain::Keeper.signing_fee)
+            zoo = @zoo.load
+            zoo.purchase(Domain::Keeper.signing_fee)
+            @zoo.save(zoo)
+
             @keepers.save(keeper)
             keeper
           end
-        end
-
-        private
-
-        def charge(price)
-          zoo = @zoo.load
-          zoo.purchase(price)
-          @zoo.save(zoo)
         end
       end
     end

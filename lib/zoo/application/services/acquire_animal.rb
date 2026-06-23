@@ -4,8 +4,6 @@ module Zoo
   module Application
     module Services
       class AcquireAnimal
-        CONSERVATION_REPUTATION_GAIN = 5
-
         def initialize(animals:, zoo:, unit_of_work:)
           @animals = animals
           @zoo = zoo
@@ -22,22 +20,12 @@ module Zoo
               age_in_days: command.age_in_days
             )
 
-            acquire(command.species)
+            zoo = @zoo.load
+            Domain::Acquiring.new(zoo: zoo, animal: animal).settle
+            @zoo.save(zoo)
             @animals.save(animal)
             animal
           end
-        end
-
-        private
-
-        def acquire(species)
-          zoo = @zoo.load
-          if species.tradeable?
-            zoo.purchase(species.acquisition_price)
-          else
-            zoo.gain_reputation(CONSERVATION_REPUTATION_GAIN)
-          end
-          @zoo.save(zoo)
         end
       end
     end
