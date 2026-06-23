@@ -4,8 +4,8 @@ module Zoo
   module Application
     module Services
       class OperateDay
-        def initialize(open_for_a_day:, enclosures:, animals:, housings:, keepers:, veterinarians:, zoo:, unit_of_work:,
-                       random: Random.new)
+        def initialize(open_for_a_day:, enclosures:, animals:, housings:, keepers:, veterinarians:, zoo:,
+                       operatings:, unit_of_work:, random: Random.new)
           @open_for_a_day = open_for_a_day
           @enclosures = enclosures
           @animals = animals
@@ -13,6 +13,7 @@ module Zoo
           @keepers = keepers
           @veterinarians = veterinarians
           @zoo = zoo
+          @operatings = operatings
           @unit_of_work = unit_of_work
           @random = random
         end
@@ -45,15 +46,20 @@ module Zoo
                 on_exhibit:, visitors:, dead:, afflicted:
               ).evaluated
             )
+            operating = Domain::Operating.new(
+              day: zoo.day, visitors:, income:, cost:, deaths: dead.size,
+              balance: zoo.balance, reputation: zoo.reputation_score, outbreak: afflicted&.name
+            )
             zoo.advance_day
 
+            @operatings.save(operating)
             @animals.save(afflicted) if afflicted
             @zoo.save(zoo)
 
             ReadModels::DayReport.new(
-              visitors:, income:, cost:, deaths: dead.size,
-              balance: zoo.balance, reputation: zoo.reputation_score, bankrupt: zoo.bankrupt?,
-              outbreak: afflicted&.name
+              visitors: operating.visitors, income: operating.income, cost: operating.cost,
+              deaths: operating.deaths, balance: operating.balance, reputation: operating.reputation,
+              bankrupt: zoo.bankrupt?, outbreak: operating.outbreak
             )
           end
         end

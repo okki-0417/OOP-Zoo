@@ -17,6 +17,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
   let(:housings) { in_memory::InMemoryHousingRepository.new([housed(zebra, enclosure)]) }
   let(:keepers) { in_memory::InMemoryKeeperRepository.new }
   let(:veterinarians) { in_memory::InMemoryVeterinarianRepository.new }
+  let(:operatings) { in_memory::InMemoryOperatingRepository.new }
   let(:zoo) do
     in_memory::InMemoryZooRepository.new(
       Zoo::Domain::Zoo.new(name: 'テスト動物園', admission_fee: shared::Money.yen(2000), funds: shared::Money.yen(100_000))
@@ -36,8 +37,8 @@ RSpec.describe Zoo::Application::Services::OperateDay do
   let(:service) do
     described_class.new(
       open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals, housings: housings,
-      keepers: keepers, veterinarians: veterinarians, zoo: zoo, unit_of_work: unit_of_work,
-      random: no_outbreak
+      keepers: keepers, veterinarians: veterinarians, zoo: zoo, operatings: operatings,
+      unit_of_work: unit_of_work, random: no_outbreak
     )
   end
 
@@ -57,6 +58,16 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect { service.call }.to change { zoo.load.day }.by(1)
     end
 
+    it '1日運営すると運営記録(Operating)が履歴に残ること' do
+      service.call
+
+      record = operatings.all.last
+      expect(operatings.all.size).to eq(1)
+      expect(record.day).to eq(0)
+      expect(record.visitors).to eq(12)
+      expect(record.income).to eq(shared::Money.yen(24_000))
+    end
+
     it '死亡が無い日は評判が体験へドリフトするが、来場12人と露出が小さく単日では表示は据え置き(50のまま)、残高に純益が反映されること' do
       cost = Zoo::Domain::Enclosure::UPKEEP_YEN +
              catalog.grevys_zebra.daily_food_cost.yen
@@ -73,8 +84,8 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       allow(outbreak_random).to receive(:rand).and_return(0)
       service = described_class.new(
         open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals, housings: housings,
-        keepers: keepers, veterinarians: veterinarians, zoo: zoo, unit_of_work: unit_of_work,
-        random: outbreak_random
+        keepers: keepers, veterinarians: veterinarians, zoo: zoo, operatings: operatings,
+        unit_of_work: unit_of_work, random: outbreak_random
       )
 
       report = service.call

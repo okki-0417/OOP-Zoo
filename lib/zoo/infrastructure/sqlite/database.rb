@@ -129,6 +129,17 @@ module Zoo
               occurred_on INTEGER NOT NULL
             );
             CREATE INDEX IF NOT EXISTS index_relievings_on_tending_id ON relievings (tending_id);
+            CREATE TABLE IF NOT EXISTS operatings (
+              id         TEXT    PRIMARY KEY,
+              day        INTEGER NOT NULL,
+              visitors   INTEGER NOT NULL,
+              income     INTEGER NOT NULL,
+              cost       INTEGER NOT NULL,
+              deaths     INTEGER NOT NULL,
+              balance    INTEGER NOT NULL,
+              reputation INTEGER NOT NULL,
+              outbreak   TEXT
+            );
           SQL
         end
       end
