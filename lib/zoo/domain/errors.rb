@@ -12,6 +12,7 @@ module Zoo
       class HousingNotAllowed < DomainError; end
       class FeedingNotAllowed < DomainError; end
       class AssignmentNotAllowed < DomainError; end
+      class ReliefNotAllowed < DomainError; end
       class VaccineUnavailable < DomainError; end
       class InsufficientFunds < DomainError; end
     end

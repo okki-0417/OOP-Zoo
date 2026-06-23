@@ -7,35 +7,27 @@ module Zoo
 
       attr_reader :id, :tending, :occurred_on
 
-      def self.of(tending, occurred_on: 0, id: Shared::Identifier.new)
-        new(tending: tending, occurred_on: occurred_on, id: id)
+      def self.of(tending, assignment: nil, occurred_on: 0, id: Shared::Identifier.new)
+        new(tending: tending, assignment: assignment, occurred_on: occurred_on, id: id)
       end
 
-      def initialize(tending:, occurred_on: 0, id: Shared::Identifier.new)
+      def initialize(tending:, assignment: nil, occurred_on: 0, id: Shared::Identifier.new)
         @id = id
         @tending = tending
+        @assignment = assignment
         @occurred_on = occurred_on
         freeze
       end
 
-      def keeper
-        @tending.keeper
-      end
+      def violation!
+        return if @assignment&.assigned?(@tending.keeper_id)
 
-      def enclosure
-        @tending.enclosure
-      end
-
-      def keeper_id
-        @tending.keeper_id
-      end
-
-      def enclosure_id
-        @tending.enclosure_id
+        raise Errors::ReliefNotAllowed,
+              "飼育員#{@tending.keeper_name}は#{@tending.enclosure_name}を担当していないため退任できません"
       end
 
       def to_s
-        "#{keeper.name}を#{enclosure.name}の担当から外す"
+        "#{@tending.keeper_name}を#{@tending.enclosure_name}の担当から外す"
       end
     end
   end

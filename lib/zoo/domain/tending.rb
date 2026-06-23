@@ -25,30 +25,33 @@ module Zoo
         @enclosure.id
       end
 
+      def keeper_name
+        @keeper.name
+      end
+
+      def enclosure_name
+        @enclosure.name
+      end
+
       def violation!
-        if already_assigned?
-          raise Errors::AssignmentNotAllowed,
-                "飼育員#{@keeper.name}はすでに#{@enclosure.name}を担当しています"
+        errors = []
+        if @assignment&.assigned?(@keeper.id)
+          errors << "飼育員#{keeper_name}はすでに#{enclosure_name}を担当しています"
         end
 
         unqualified = occupant_taxa.reject { |taxon| @keeper.specialized_in?(taxon) }
-        return if unqualified.empty?
+        unless unqualified.empty?
+          errors << "飼育員#{keeper_name}は#{enclosure_name}にいる#{unqualified.map(&:label).join('・')}を担当できません"
+        end
 
-        raise Errors::AssignmentNotAllowed,
-              "飼育員#{@keeper.name}は#{@enclosure.name}にいる#{unqualified.map(&:label).join('・')}を担当できません"
+        raise Errors::AssignmentNotAllowed, errors.join(', ') unless errors.empty?
       end
 
       def to_s
-        "#{@keeper.name}を#{@enclosure.name}に配属"
+        "#{keeper_name}を#{enclosure_name}に配属"
       end
 
       private
-
-      def already_assigned?
-        return false if @assignment.nil?
-
-        @assignment.assignees.any? { |assignee| assignee.id.to_s == @keeper.id.to_s }
-      end
 
       def occupant_taxa
         return [] if @occupancy.nil?

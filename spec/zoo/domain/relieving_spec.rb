@@ -11,12 +11,22 @@ module Zoo
       end
       let(:tending) { Tending.new(keeper: keeper, enclosure: enclosure) }
 
-      describe '.of / 委譲' do
-        it '閉じる Tending から keeper / enclosure を引き継ぐこと' do
-          relieving = described_class.of(tending)
-          expect(relieving.tending).to eq(tending)
-          expect(relieving.keeper_id).to eq(keeper.id)
-          expect(relieving.enclosure_id).to eq(enclosure.id)
+      describe '.of' do
+        it '閉じる Tending を保持すること' do
+          expect(described_class.of(tending).tending).to eq(tending)
+        end
+      end
+
+      describe '#violation!' do
+        it '現に担当している(担当陣に居る)なら例外を出さないこと' do
+          relieving = described_class.of(tending, assignment: Assignment.new(enclosure, [keeper]))
+          expect { relieving.violation! }.not_to raise_error
+        end
+
+        it '担当陣に居なければ ReliefNotAllowed を出すこと' do
+          relieving = described_class.of(tending, assignment: Assignment.new(enclosure, []))
+          expect { relieving.violation! }
+            .to raise_error(Errors::ReliefNotAllowed, /田中.*サバンナ.*退任/)
         end
       end
 

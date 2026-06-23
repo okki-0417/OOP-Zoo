@@ -19,7 +19,10 @@ module Zoo
             enclosure = @enclosures.find(command.enclosure_id)
             raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if enclosure.nil?
 
-            @assignments.save(Domain::Relieving.of(current_tending!(keeper, enclosure)))
+            assignment = Domain::Assignment.new(enclosure, @assignments.keepers_of(enclosure))
+            relieving = Domain::Relieving.of(current_tending!(keeper, enclosure), assignment: assignment)
+            relieving.violation!
+            @assignments.save(relieving)
           end
         end
 
