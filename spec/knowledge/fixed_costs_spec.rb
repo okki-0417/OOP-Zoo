@@ -14,25 +14,24 @@ RSpec.describe '固定費と休園' do
   describe '固定費は収入に依存しない' do
     it '在園個体がいれば、来園者のいない休園日でも運営費が発生すること' do
       daily = Zoo::Domain::OperatingCost.new(
-        enclosures: [savanna], staff: 1, species: [catalog.lion]
+        enclosures: [savanna], staff: [build_keeper], species: [catalog.lion]
       ).amount
       expect(daily.yen).to be > 0
     end
 
     it '運営費は来園者数ではなく在園頭数で増えること(飼料費)' do
       one = Zoo::Domain::OperatingCost.new(
-        enclosures: [savanna], staff: 1, species: [catalog.lion]
+        enclosures: [savanna], staff: [build_keeper], species: [catalog.lion]
       ).amount
       two = Zoo::Domain::OperatingCost.new(
-        enclosures: [savanna], staff: 1, species: [catalog.lion, catalog.african_elephant]
+        enclosures: [savanna], staff: [build_keeper], species: [catalog.lion, catalog.african_elephant]
       ).amount
       expect(two.yen).to be > one.yen
     end
 
-    it '在園個体がいなくても、エリアと職員の維持費は発生すること' do
-      daily = Zoo::Domain::OperatingCost.new(
-        enclosures: [savanna], staff: 1, species: []
-      ).amount
+    it '在園個体がいなくても、エリアと職員(飼育員・獣医)の維持費は発生すること' do
+      staff = [build_keeper, Zoo::Domain::Veterinarian.new(name: '獣医')]
+      daily = Zoo::Domain::OperatingCost.new(enclosures: [savanna], staff: staff, species: []).amount
       expect(daily.yen).to be > 0
     end
   end

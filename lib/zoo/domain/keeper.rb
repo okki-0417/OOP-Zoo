@@ -8,9 +8,14 @@ module Zoo
       attr_reader :id, :name, :specialties
 
       SIGNING_FEE_YEN = 20_000
+      DAILY_SALARY_YEN = 12_000
 
       def self.signing_fee
         Shared::Money.yen(SIGNING_FEE_YEN)
+      end
+
+      def salary
+        Shared::Money.yen(DAILY_SALARY_YEN)
       end
 
       def initialize(name:, specialties:, id: Shared::Identifier.new)

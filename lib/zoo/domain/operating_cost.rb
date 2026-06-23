@@ -3,10 +3,6 @@
 module Zoo
   module Domain
     class OperatingCost
-      UPKEEP_PER_ENCLOSURE = 5_000
-      CLIMATE_CONTROL_RUNNING_YEN = 4_000
-      SALARY_PER_STAFF = 12_000
-
       def initialize(enclosures:, staff:, species:)
         @enclosures = enclosures
         @staff = staff
@@ -14,12 +10,9 @@ module Zoo
       end
 
       def amount
-        upkeep = @enclosures.sum do |e|
-          UPKEEP_PER_ENCLOSURE + (e.climate_controlled? ? CLIMATE_CONTROL_RUNNING_YEN : 0)
-        end
-        salaries = SALARY_PER_STAFF * @staff
-        food = @species.sum { |s| s.daily_food_cost.yen }
-        Shared::Money.yen(upkeep + salaries + food)
+        @enclosures.sum(Shared::Money.zero, &:daily_upkeep) +
+          @staff.sum(Shared::Money.zero, &:salary) +
+          @species.sum(Shared::Money.zero, &:daily_food_cost)
       end
     end
   end

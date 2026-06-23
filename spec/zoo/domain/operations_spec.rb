@@ -19,13 +19,14 @@ module Zoo
         enclosures = Array.new(2) do
           Enclosure.new(name: 'A', temperature: Shared::Temperature.celsius(20), capacity: 4)
         end
+        staff = Array.new(3) { build_keeper }
         zebras = Array.new(5) { SpeciesCatalog.grevys_zebra }
         food = zebras.sum { |s| s.daily_food_cost.yen }
 
-        cost = described_class.new(enclosures: enclosures, staff: 3, species: zebras).amount
+        cost = described_class.new(enclosures: enclosures, staff: staff, species: zebras).amount
 
-        upkeep = 2 * described_class::UPKEEP_PER_ENCLOSURE
-        salaries = 3 * described_class::SALARY_PER_STAFF
+        upkeep = 2 * Enclosure::UPKEEP_YEN
+        salaries = 3 * Keeper::DAILY_SALARY_YEN
         expect(cost).to eq(Shared::Money.yen(upkeep + salaries + food))
       end
 
@@ -35,8 +36,8 @@ module Zoo
           name: '空調', temperature: Shared::Temperature.celsius(20), capacity: 4, climate_controlled: true
         )
 
-        plain_cost = described_class.new(enclosures: [plain], staff: 0, species: []).amount
-        controlled_cost = described_class.new(enclosures: [controlled], staff: 0, species: []).amount
+        plain_cost = described_class.new(enclosures: [plain], staff: [], species: []).amount
+        controlled_cost = described_class.new(enclosures: [controlled], staff: [], species: []).amount
 
         expect(controlled_cost).to be > plain_cost
       end
