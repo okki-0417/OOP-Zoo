@@ -35,7 +35,7 @@ module Factories
   end
 
   def released(housing, day: 0)
-    Zoo::Domain::Release.of(housing, occurred_on: day)
+    Zoo::Domain::Releasing.of(housing, occurred_on: day)
   end
 
   def occupants_of(housings, enclosure)

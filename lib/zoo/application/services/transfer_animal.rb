@@ -24,7 +24,7 @@ module Zoo
             housing.admission_violation!
 
             current = @housings.current_housing_of(animal)
-            @housings.save(Domain::Release.of(current)) if current
+            @housings.save(Domain::Releasing.of(current)) if current
             @housings.save(housing)
             target
           end

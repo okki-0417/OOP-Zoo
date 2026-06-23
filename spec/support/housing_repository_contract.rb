@@ -49,10 +49,10 @@ RSpec.shared_examples 'a housing repository' do
 
     housing = Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure)
     repository.save(housing)
-    repository.save(Zoo::Domain::Release.of(housing))
+    repository.save(Zoo::Domain::Releasing.of(housing))
 
     last = repository.all.last
-    expect(last).to be_a(Zoo::Domain::Release)
+    expect(last).to be_a(Zoo::Domain::Releasing)
     expect(last.housing.id).to eq(housing.id)
     expect(repository.current_housing_of(animal)).to be_nil
   end
@@ -72,7 +72,7 @@ RSpec.shared_examples 'a housing repository' do
       persist_animals(animal)
       housing = Zoo::Domain::Housing.new(animal: animal, enclosure: pen)
       repository.save(housing)
-      repository.save(Zoo::Domain::Release.of(housing))
+      repository.save(Zoo::Domain::Releasing.of(housing))
 
       expect(repository.current_housing_of(animal)).to be_nil
     end
@@ -84,7 +84,7 @@ RSpec.shared_examples 'a housing repository' do
       persist_animals(animal)
       first = Zoo::Domain::Housing.new(animal: animal, enclosure: a)
       repository.save(first)
-      repository.save(Zoo::Domain::Release.of(first))
+      repository.save(Zoo::Domain::Releasing.of(first))
       second = Zoo::Domain::Housing.new(animal: animal, enclosure: b)
       repository.save(second)
 
@@ -111,7 +111,7 @@ RSpec.shared_examples 'a housing repository' do
       persist_animals(mover)
       first = Zoo::Domain::Housing.new(animal: mover, enclosure: a)
       repository.save(first)
-      repository.save(Zoo::Domain::Release.of(first))
+      repository.save(Zoo::Domain::Releasing.of(first))
       repository.save(Zoo::Domain::Housing.new(animal: mover, enclosure: b))
 
       expect(repository.occupants_of(a)).to be_empty

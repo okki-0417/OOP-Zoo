@@ -18,7 +18,7 @@ module Zoo
             current = @housings.current_housing_of(animal)
             raise ArgumentError, "#{animal.name}はどのエリアにも収容されていません" if current.nil?
 
-            @housings.save(Domain::Release.of(current))
+            @housings.save(Domain::Releasing.of(current))
             animal
           end
         end

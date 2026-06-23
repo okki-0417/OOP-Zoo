@@ -2,7 +2,7 @@
 
 module Zoo
   module Domain
-    class Release
+    class Releasing
       include Shared::Entity
 
       attr_reader :id, :housing, :occurred_on, :keeper_id

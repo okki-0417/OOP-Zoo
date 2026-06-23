@@ -10,7 +10,7 @@ module Zoo
         RELEASED = 'released'
 
         def to_row(event)
-          event.is_a?(Domain::Release) ? release_row(event) : housing_row(event)
+          event.is_a?(Domain::Releasing) ? release_row(event) : housing_row(event)
         end
 
         def to_aggregate(row, animal_lookup, enclosure_lookup, housings)
@@ -61,7 +61,7 @@ module Zoo
           housing = housings[row['closes_housing_id']]
           return nil unless housing
 
-          Domain::Release.new(
+          Domain::Releasing.new(
             id: Domain::Shared::Identifier.new(row['id']),
             housing: housing,
             occurred_on: row['occurred_on'],

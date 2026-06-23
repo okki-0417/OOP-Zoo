@@ -38,7 +38,7 @@ module Zoo
         private
 
         def current_housings
-          closed = @store.grep(Domain::Release).map { |release| release.housing.id.to_s }
+          closed = @store.grep(Domain::Releasing).map { |release| release.housing.id.to_s }
           @store.each_with_object({}) do |event, current|
             next unless event.is_a?(Domain::Housing) && !closed.include?(event.id.to_s)
 

@@ -86,7 +86,7 @@ module Zoo
       end
     end
 
-    RSpec.describe Release do
+    RSpec.describe Releasing do
       let(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ') }
       let(:savanna) do
         Enclosure.new(name: 'サバンナ', temperature: Shared::Temperature.celsius(28), capacity: 4)
