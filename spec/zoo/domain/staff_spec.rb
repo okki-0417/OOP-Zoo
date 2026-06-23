@@ -16,15 +16,6 @@ module Zoo
         expect(mammal_keeper.specialized_in?(penguin.taxon_class)).to be(false)
       end
 
-      it 'エリアを清掃できること' do
-        enclosure = Enclosure.new(
-          name: 'サバンナ', temperature: Shared::Temperature.celsius(30), capacity: 5
-        )
-        enclosure.soil(40)
-        expect { mammal_keeper.clean(enclosure) }
-          .to change { enclosure.cleanliness.level }.to(100)
-      end
-
       it '専門を持たない飼育員は作れないこと' do
         expect { described_class.new(name: '空', specialties: []) }.to raise_error(ArgumentError)
       end

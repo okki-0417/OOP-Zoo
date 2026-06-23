@@ -18,7 +18,10 @@ module Zoo
             enclosure = @enclosures.find(command.enclosure_id)
             raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if enclosure.nil?
 
-            keeper.clean(enclosure, command.amount)
+            cleaning = Domain::Cleaning.new(
+              keeper: keeper, enclosure: enclosure, amount: command.amount
+            )
+            cleaning.perform
             @enclosures.save(enclosure)
             enclosure
           end

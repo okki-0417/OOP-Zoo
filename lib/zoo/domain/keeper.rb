@@ -28,11 +28,6 @@ module Zoo
         @specialties.include?(taxon_class)
       end
 
-      def clean(enclosure, amount = 100)
-        enclosure.clean(amount)
-        self
-      end
-
       def to_s
         "飼育員 #{@name}(#{@specialties.map(&:label).join('・')}担当)"
       end
