@@ -29,7 +29,7 @@ RSpec.describe Zoo::Application::Services::AssignKeeper do
   end
 
   def house(animal, enclosure)
-    occupancy = Zoo::Domain::Occupancy.new(enclosure, housings.occupants_of(enclosure))
+    occupancy = build_occupancy(enclosure, housings.occupants_of(enclosure))
     housings.save(Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occupancy: occupancy))
   end
 

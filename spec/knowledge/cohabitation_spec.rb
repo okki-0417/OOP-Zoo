@@ -13,7 +13,7 @@ RSpec.describe '同居適性' do
     enclosure = Zoo::Domain::Enclosure.new(
       name: '展示エリア', temperature: newcomer_species.habitable_temperature_range.begin, capacity: 9
     )
-    occupancy = Zoo::Domain::Occupancy.new(enclosure, [build_adult(resident_species, name: '先住')])
+    occupancy = build_occupancy(enclosure, [build_adult(resident_species, name: '先住')])
     Zoo::Domain::Housing.new(
       animal: build_adult(newcomer_species, name: '新入り'),
       enclosure: enclosure,

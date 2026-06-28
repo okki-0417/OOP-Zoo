@@ -23,9 +23,8 @@ RSpec.describe '集客の見応え' do
   end
 
   def visitors(on_exhibit, buzz: 0)
-    Zoo::Domain::VisitorAttraction.new(
-      on_exhibit: on_exhibit, reputation_factor: rep, admission_fee: fee, buzz: buzz
-    ).expected_visitors
+    zoo = double('zoo', reputation_factor: rep, admission_fee: fee, buzz: buzz)
+    Zoo::Domain::VisitorAttraction.new(on_exhibit: on_exhibit, zoo: zoo).expected_visitors
   end
 
   def spectacle(on_exhibit)

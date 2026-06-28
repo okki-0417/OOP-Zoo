@@ -15,15 +15,21 @@ module Zoo
         def call(season: Domain::Season.spring)
           deceased = []
 
-          @enclosures.all.each do |enclosure|
-            occupants = @housings.occupants_of(enclosure)
+          @housings.all_occupancies.each do |occupancy|
+            enclosure = occupancy.enclosure
 
             dead, events = @unit_of_work.run do
-              dead_animals = Domain::EnclosureDay.new(
-                enclosure, Domain::Occupancy.new(enclosure, occupants), season: season
-              ).run
+              Domain::Infestation.new(enclosure, occupancy).spread
+              Domain::Contagion.new(enclosure, occupancy).spread
+              occupancy.each do |animal|
+                Domain::AnimalDay.new(animal:, enclosure:, occupancy:, season:).run
+              end
+              enclosure.soil(occupancy.count)
+              enclosure.deplete_enrichment
+
+              dead_animals = occupancy.select(&:dead?)
               @enclosures.save(enclosure)
-              occupants.each { |animal| @animals.save(animal) }
+              occupancy.each { |animal| @animals.save(animal) }
               [dead_animals, dead_animals.flat_map(&:pull_events)]
             end
 

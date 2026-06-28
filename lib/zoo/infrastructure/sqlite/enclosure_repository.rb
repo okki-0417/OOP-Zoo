@@ -31,6 +31,13 @@ module Zoo
           enclosure
         end
 
+        def save_all(records)
+          return records if records.empty?
+
+          enclosures.insert_conflict(:replace).multi_insert(records.map { |enclosure| @mapper.to_row(enclosure) })
+          records
+        end
+
         def all
           enclosures.all.map { |row| @mapper.to_aggregate(row.transform_keys(&:to_s)) }
         end

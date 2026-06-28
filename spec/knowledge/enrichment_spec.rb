@@ -54,9 +54,9 @@ RSpec.describe '環境エンリッチメントと常同行動' do
 
   describe '放置による刺激の減衰' do
     it '日々の暮らしで刺激は少しずつ薄れること' do
-      enclosure, occupants = with_company(savanna)
-      expect { Zoo::Domain::EnclosureDay.new(enclosure, Zoo::Domain::Occupancy.new(enclosure, occupants)).run }
-        .to change { enclosure.enrichment.level }.by(-Zoo::Domain::EnclosureDay::ENRICHMENT_DECAY_PER_DAY)
+      enclosure, _occupants = with_company(savanna)
+      expect { enclosure.deplete_enrichment }
+        .to change { enclosure.enrichment.level }.by(-Zoo::Domain::Enclosure::ENRICHMENT_DECAY_PER_DAY)
     end
   end
 end

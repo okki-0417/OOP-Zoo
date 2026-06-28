@@ -35,6 +35,13 @@ module Zoo
           current_housings.values.filter_map { |housing| housing.animal if housing.animal.alive? }
         end
 
+        def all_occupancies
+          current_housings.values
+                          .select { |housing| housing.animal.alive? }
+                          .group_by { |housing| housing.enclosure_id.to_s }
+                          .map { |_id, housings| Domain::Occupancy.new(housings:) }
+        end
+
         private
 
         def current_housings

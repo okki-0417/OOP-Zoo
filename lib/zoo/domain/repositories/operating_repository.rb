@@ -11,6 +11,10 @@ module Zoo
         def all
           raise NotImplementedError, "#{self.class}#all を実装してください"
         end
+
+        def latest
+          raise NotImplementedError, "#{self.class}#latest を実装してください"
+        end
       end
     end
   end

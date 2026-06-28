@@ -5,9 +5,20 @@ module Zoo
     class Occupancy
       include Enumerable
 
-      def initialize(enclosure, occupants)
-        @enclosure = enclosure
-        @occupants = occupants
+      attr_reader :enclosure
+
+      def initialize(housings:, enclosure: nil)
+        if housings.empty?
+          raise ArgumentError, 'enclosure: required when no housings are given' unless enclosure
+
+          @enclosure = enclosure
+        else
+          enclosures = housings.map(&:enclosure).uniq
+          raise ArgumentError, '全 housing が同一エンクロージャに属する必要があります' if enclosures.size != 1
+
+          @enclosure = enclosures.first
+        end
+        @occupants = housings.map(&:animal)
       end
 
       def each(&)

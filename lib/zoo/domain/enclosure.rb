@@ -8,6 +8,7 @@ module Zoo
       attr_reader :id, :name, :temperature, :capacity, :cleanliness, :enrichment
 
       AREA_PER_SLOT_SQM = 100
+      ENRICHMENT_DECAY_PER_DAY = 2
 
       CONSTRUCTION_BASE_YEN = 30_000
       CONSTRUCTION_PER_SLOT_YEN = 10_000
@@ -90,7 +91,7 @@ module Zoo
         self
       end
 
-      def deplete_enrichment(amount)
+      def deplete_enrichment(amount = ENRICHMENT_DECAY_PER_DAY)
         @enrichment = @enrichment.depleted_by(amount)
         self
       end

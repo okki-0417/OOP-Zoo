@@ -20,7 +20,8 @@ module Zoo
             enclosure = @enclosures.find(command.enclosure_id)
             raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if enclosure.nil?
 
-            occupancy = Domain::Occupancy.new(enclosure, @housings.occupants_of(enclosure))
+            occupancy = @housings.all_occupancies.find { |o| o.enclosure == enclosure } ||
+                        Domain::Occupancy.new(housings: [], enclosure: enclosure)
             assignment = Domain::Assignment.new(enclosure, @assignments.keepers_of(enclosure))
             tending = Domain::Tending.new(
               keeper: keeper, enclosure: enclosure, occupancy: occupancy, assignment: assignment

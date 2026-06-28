@@ -13,7 +13,7 @@ module Zoo
       let(:penguin) { build_adult(SpeciesCatalog.emperor_penguin) }
 
       def occupancy(*occupants)
-        Occupancy.new(enclosure, occupants)
+        build_occupancy(enclosure, occupants)
       end
 
       def roster(*assignees)

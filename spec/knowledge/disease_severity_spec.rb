@@ -24,7 +24,7 @@ RSpec.describe '疾病の重症度と伝播' do
   end
 
   def occupancy(enclosure, occupants)
-    Zoo::Domain::Occupancy.new(enclosure, occupants)
+    build_occupancy(enclosure, occupants)
   end
 
   describe '重症度(進行の速さ)' do

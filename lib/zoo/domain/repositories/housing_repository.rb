@@ -23,6 +23,10 @@ module Zoo
         def all_occupants
           raise NotImplementedError, "#{self.class}#all_occupants を実装してください"
         end
+
+        def all_occupancies
+          raise NotImplementedError, "#{self.class}#all_occupancies を実装してください"
+        end
       end
     end
   end

@@ -37,6 +37,13 @@ module Zoo
           occupants(current_housings)
         end
 
+        def all_occupancies
+          build_events(current_housings.order(:seq).all)
+            .select { |housing| housing.is_a?(Domain::Housing) && housing.animal.alive? }
+            .group_by { |housing| housing.enclosure_id.to_s }
+            .map { |_id, housings| Domain::Occupancy.new(housings:) }
+        end
+
         private
 
         def events

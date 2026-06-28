@@ -153,10 +153,10 @@ module Zoo
 
       def operate_day
         Application::Services::OperateDay.new(
-          open_for_a_day: open_for_a_day,
-          enclosures: @enclosures, animals: @animals, housings: @housings,
+          animals: @animals, enclosures: @enclosures, housings: @housings,
           keepers: @keepers, veterinarians: @veterinarians,
-          zoo: @zoo, operatings: @operatings, unit_of_work: @unit_of_work
+          zoo: @zoo, operatings: @operatings,
+          event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
         )
       end
 

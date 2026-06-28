@@ -22,7 +22,7 @@ RSpec.describe '飼育密度と過密' do
     it '体格に見合う広さなら過密にならないこと' do
       enclosure = pen(4, 28)
       occupants = [build_adult(catalog.lion, name: 'A'), build_adult(catalog.lion, name: 'B')]
-      occupancy = Zoo::Domain::Occupancy.new(enclosure, occupants)
+      occupancy = build_occupancy(enclosure, occupants)
 
       expect(occupancy.overcrowded?).to be(false)
     end
@@ -30,7 +30,7 @@ RSpec.describe '飼育密度と過密' do
     it '必要面積の合計が区画の広さを超えると過密になること' do
       enclosure = pen(4, 25)
       occupants = [build_adult(catalog.african_elephant)]
-      occupancy = Zoo::Domain::Occupancy.new(enclosure, occupants)
+      occupancy = build_occupancy(enclosure, occupants)
 
       expect(occupancy.overcrowded?).to be(true)
     end

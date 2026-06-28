@@ -4,63 +4,42 @@ module Zoo
   module Application
     module Services
       class OperateDay
-        def initialize(open_for_a_day:, enclosures:, animals:, housings:, keepers:, veterinarians:, zoo:,
-                       operatings:, unit_of_work:, random: Random.new)
-          @open_for_a_day = open_for_a_day
-          @enclosures = enclosures
-          @animals = animals
-          @housings = housings
-          @keepers = keepers
-          @veterinarians = veterinarians
-          @zoo = zoo
-          @operatings = operatings
-          @unit_of_work = unit_of_work
-          @random = random
+        def initialize(animals:, enclosures:, housings:, keepers:, veterinarians:, zoo:,
+                       operatings:, event_dispatcher:, unit_of_work:, random: Random.new)
+          @animals          = animals
+          @enclosures       = enclosures
+          @housings         = housings
+          @keepers          = keepers
+          @veterinarians    = veterinarians
+          @zoo              = zoo
+          @operatings       = operatings
+          @event_dispatcher = event_dispatcher
+          @unit_of_work     = unit_of_work
+          @random           = random
         end
 
         def call
           @unit_of_work.run do
-            zoo  = @zoo.load
-            dead = @open_for_a_day.call(season: zoo.season)
+            zoo = @zoo.load
 
-            enclosures = @enclosures.all
-            animals    = @animals.all
-            on_exhibit = @housings.all_occupants
-
-            visitors = Domain::VisitorAttraction.new(
-              on_exhibit:, reputation_factor: zoo.reputation_factor,
-              admission_fee: zoo.admission_fee, buzz: zoo.buzz
-            ).expected_visitors
-            income = zoo.admit_visitors(visitors)
-
-            cost = Domain::OperatingCost.new(
-              enclosures:, staff: @keepers.all + @veterinarians.all, species: animals.map(&:species)
-            ).amount
-            zoo.spend(cost)
-
-            afflicted = Domain::SpontaneousInfection.new(on_exhibit, @random).strike
-
-            zoo.update_reputation(
-              Domain::ReputationEvaluation.new(
-                reputation: zoo.reputation, admission_fee: zoo.admission_fee,
-                on_exhibit:, visitors:, dead:, afflicted:
-              ).evaluated
-            )
             operating = Domain::Operating.new(
-              day: zoo.day, visitors:, income:, cost:, deaths: dead.size,
-              balance: zoo.balance, reputation: zoo.reputation_score, outbreak: afflicted&.name
+              zoo:,
+              occupancies:         @housings.all_occupancies,
+              keepers:             @keepers.all,
+              veterinarians:       @veterinarians.all,
+              yesterday_operating: @operatings.latest,
+              random:              @random
             )
-            zoo.advance_day
+
+            operating.operate_day
 
             @operatings.save(operating)
-            @animals.save(afflicted) if afflicted
-            @zoo.save(zoo)
+            @enclosures.save_all(operating.enclosures)
+            @animals.save_all(operating.on_exhibit)
+            @zoo.save(operating.zoo)
+            @event_dispatcher.publish(operating.pull_events)
 
-            ReadModels::DayReport.new(
-              visitors: operating.visitors, income: operating.income, cost: operating.cost,
-              deaths: operating.deaths, balance: operating.balance, reputation: operating.reputation,
-              bankrupt: zoo.bankrupt?, outbreak: operating.outbreak
-            )
+            operating
           end
         end
       end

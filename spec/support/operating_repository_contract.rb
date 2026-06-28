@@ -8,7 +8,8 @@ RSpec.shared_examples 'an operating repository' do
     Zoo::Domain::Operating.reconstitute(
       id: Zoo::Domain::Shared::Identifier.new, day: day, visitors: visitors,
       income: Zoo::Domain::Shared::Money.yen(20_000), cost: Zoo::Domain::Shared::Money.yen(8_000),
-      deaths: 0, balance: Zoo::Domain::Shared::Balance.new(100_000), reputation: 50, outbreak: outbreak
+      deaths: 0, balance: Zoo::Domain::Shared::Balance.new(100_000), reputation: 50, outbreak: outbreak,
+      total_visitors: visitors, total_revenue: Zoo::Domain::Shared::Money.yen(20_000)
     )
   end
 

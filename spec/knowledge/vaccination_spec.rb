@@ -15,7 +15,7 @@ RSpec.describe '予防接種と免疫' do
   end
 
   def occupancy(enclosure, occupants)
-    Zoo::Domain::Occupancy.new(enclosure, occupants)
+    build_occupancy(enclosure, occupants)
   end
 
   describe '感染性の病気へのワクチン' do

@@ -14,7 +14,7 @@ RSpec.describe '病気の感染と免疫' do
   end
 
   def occupancy(enclosure, occupants)
-    Zoo::Domain::Occupancy.new(enclosure, occupants)
+    build_occupancy(enclosure, occupants)
   end
 
   describe '接触感染' do

@@ -18,7 +18,7 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   def house(animal, enclosure)
-    occupancy = Zoo::Domain::Occupancy.new(enclosure, @housings.occupants_of(enclosure))
+    occupancy = build_occupancy(enclosure, @housings.occupants_of(enclosure))
     housing = Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occupancy: occupancy)
     housing.admission_violation!
 
@@ -29,7 +29,7 @@ RSpec.describe '現実の動物園の再現' do
   def assign(keeper, enclosure)
     tending = Zoo::Domain::Tending.new(
       keeper: keeper, enclosure: enclosure,
-      occupancy: Zoo::Domain::Occupancy.new(enclosure, @housings.occupants_of(enclosure)),
+      occupancy: build_occupancy(enclosure, @housings.occupants_of(enclosure)),
       assignment: Zoo::Domain::Assignment.new(enclosure, @assignments.keepers_of(enclosure))
     )
     tending.violation!
@@ -39,8 +39,13 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   def pass_a_day
-    zoo.enclosures.flat_map do |e|
-      Zoo::Domain::EnclosureDay.new(e, Zoo::Domain::Occupancy.new(e, @housings.occupants_of(e))).run
+    zoo.enclosures.each do |e|
+      occupancy = build_occupancy(e, @housings.occupants_of(e))
+      Zoo::Domain::Infestation.new(e, occupancy).spread
+      Zoo::Domain::Contagion.new(e, occupancy).spread
+      occupancy.each { |animal| Zoo::Domain::AnimalDay.new(animal:, enclosure: e, occupancy:, season: Zoo::Domain::Season.spring).run }
+      e.soil(occupancy.count)
+      e.deplete_enrichment
     end
   end
 

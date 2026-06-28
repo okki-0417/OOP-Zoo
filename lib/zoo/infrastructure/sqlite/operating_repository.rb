@@ -20,6 +20,11 @@ module Zoo
           operatings.order(:day).all.map { |row| @mapper.to_aggregate(row.transform_keys(&:to_s)) }
         end
 
+        def latest
+          row = operatings.order(Sequel.desc(:day)).first
+          row && @mapper.to_aggregate(row.transform_keys(&:to_s))
+        end
+
         private
 
         def operatings

@@ -7,10 +7,12 @@ RSpec.describe Zoo::Application::Queries::OperatingHistory do
   in_memory = Zoo::Infrastructure::InMemory
 
   def operating(day:, income:, cost:)
-    Zoo::Domain::Operating.new(
+    Zoo::Domain::Operating.reconstitute(
+      id: Zoo::Domain::Shared::Identifier.new,
       day: day, visitors: 30, income: Zoo::Domain::Shared::Money.yen(income),
       cost: Zoo::Domain::Shared::Money.yen(cost), deaths: 1,
-      balance: Zoo::Domain::Shared::Balance.new(150_000), reputation: 55, outbreak: nil
+      balance: Zoo::Domain::Shared::Balance.new(150_000), reputation: 55, outbreak: nil,
+      total_visitors: 30, total_revenue: Zoo::Domain::Shared::Money.yen(income)
     )
   end
 

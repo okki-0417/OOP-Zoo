@@ -19,7 +19,8 @@ module Zoo
             animal = @animals.find(command.animal_id)
             raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
 
-            occupancy = Domain::Occupancy.new(target, @housings.occupants_of(target))
+            occupancy = @housings.all_occupancies.find { |o| o.enclosure == target } ||
+                        Domain::Occupancy.new(housings: [], enclosure: target)
             housing = Domain::Housing.new(animal: animal, enclosure: target, occupancy: occupancy)
             housing.admission_violation!
 

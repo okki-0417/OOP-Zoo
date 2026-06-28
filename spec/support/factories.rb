@@ -42,8 +42,16 @@ module Factories
     housings.occupants_of(enclosure)
   end
 
+  def build_housings(enclosure, animals)
+    animals.map { |animal| housed(animal, enclosure) }
+  end
+
+  def build_occupancy(enclosure, animals)
+    Zoo::Domain::Occupancy.new(housings: build_housings(enclosure, animals), enclosure: enclosure)
+  end
+
   def welfare_of(animal, enclosure, occupants, season: Zoo::Domain::Season.spring)
-    occupancy = Zoo::Domain::Occupancy.new(enclosure, occupants)
+    occupancy = build_occupancy(enclosure, occupants)
     Zoo::Domain::Welfare.new(
       animal: animal,
       enclosure: enclosure,

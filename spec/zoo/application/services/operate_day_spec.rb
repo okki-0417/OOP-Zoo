@@ -26,19 +26,13 @@ RSpec.describe Zoo::Application::Services::OperateDay do
   let(:event_store) { in_memory::InMemoryEventStore.new }
   let(:dispatcher) { Zoo::Application::EventDispatcher.new(event_store: event_store) }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
-  let(:open_for_a_day) do
-    Zoo::Application::Services::OpenForADay.new(
-      enclosures: enclosures, animals: animals, housings: housings,
-      event_dispatcher: dispatcher, unit_of_work: unit_of_work
-    )
-  end
 
   let(:no_outbreak) { instance_double(Random, rand: 99) }
   let(:service) do
     described_class.new(
-      open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals, housings: housings,
+      animals: animals, enclosures: enclosures, housings: housings,
       keepers: keepers, veterinarians: veterinarians, zoo: zoo, operatings: operatings,
-      unit_of_work: unit_of_work, random: no_outbreak
+      event_dispatcher: dispatcher, unit_of_work: unit_of_work, random: no_outbreak
     )
   end
 
@@ -63,7 +57,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
 
       record = operatings.all.last
       expect(operatings.all.size).to eq(1)
-      expect(record.day).to eq(0)
+      expect(record.day).to eq(1)
       expect(record.visitors).to eq(12)
       expect(record.income).to eq(shared::Money.yen(24_000))
     end
@@ -76,16 +70,16 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect(report.deaths).to eq(0)
       expect(report.reputation).to eq(50)
       expect(report.balance).to eq(shared::Balance.new(100_000 + 24_000 - cost))
-      expect(report.bankrupt).to be(false)
+      expect(report.balance).not_to be_negative
     end
 
     it '疫病が発生する乱数だと在園個体が発病し、report.outbreak に名前が入ること' do
       outbreak_random = instance_double(Random)
       allow(outbreak_random).to receive(:rand).and_return(0)
       service = described_class.new(
-        open_for_a_day: open_for_a_day, enclosures: enclosures, animals: animals, housings: housings,
+        animals: animals, enclosures: enclosures, housings: housings,
         keepers: keepers, veterinarians: veterinarians, zoo: zoo, operatings: operatings,
-        unit_of_work: unit_of_work, random: outbreak_random
+        event_dispatcher: dispatcher, unit_of_work: unit_of_work, random: outbreak_random
       )
 
       report = service.call

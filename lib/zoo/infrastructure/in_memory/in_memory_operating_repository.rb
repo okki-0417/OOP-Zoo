@@ -20,6 +20,10 @@ module Zoo
           @store.values.sort_by(&:day)
         end
 
+        def latest
+          all.last
+        end
+
         def snapshot
           @store.dup
         end

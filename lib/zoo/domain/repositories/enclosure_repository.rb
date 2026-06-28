@@ -16,6 +16,11 @@ module Zoo
           raise NotImplementedError, "#{self.class}#save を実装してください"
         end
 
+        def save_all(enclosures)
+          enclosures.each { |enclosure| save(enclosure) }
+          enclosures
+        end
+
         def all
           raise NotImplementedError, "#{self.class}#all を実装してください"
         end

@@ -64,7 +64,7 @@ module Zoo
           {
             visitors: report.visitors, income: report.income.yen, cost: report.cost.yen,
             deaths: report.deaths, balance: report.balance.yen, reputation: report.reputation,
-            bankrupt: report.bankrupt, outbreak: report.outbreak
+            bankrupt: report.balance.negative?, outbreak: report.outbreak
           }
         end
 

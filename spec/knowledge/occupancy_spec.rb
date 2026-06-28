@@ -16,19 +16,19 @@ RSpec.describe '区画の占有に対するルール(過密・収容可否)' do
       savanna = pen('サバンナ', capacity: 4, temp: 28)
       occupants = [build_adult(catalog.lion, name: 'A'), build_adult(catalog.lion, name: 'B')]
 
-      expect(Zoo::Domain::Occupancy.new(savanna, occupants).overcrowded?).to be(false)
+      expect(build_occupancy(savanna, occupants).overcrowded?).to be(false)
     end
 
     it '必要面積の合計が区画の広さを超えると過密になること' do
       savanna = pen('サバンナ', capacity: 4, temp: 25)
 
-      expect(Zoo::Domain::Occupancy.new(savanna, [build_adult(catalog.african_elephant)]).overcrowded?).to be(true)
+      expect(build_occupancy(savanna, [build_adult(catalog.african_elephant)]).overcrowded?).to be(true)
     end
   end
 
   describe '収容可否のルール' do
     def admit!(animal, enclosure, residents = [])
-      occupancy = Zoo::Domain::Occupancy.new(enclosure, residents)
+      occupancy = build_occupancy(enclosure, residents)
       Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occupancy: occupancy).admission_violation!
     end
 

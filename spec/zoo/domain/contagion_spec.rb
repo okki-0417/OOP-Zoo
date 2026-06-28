@@ -13,7 +13,7 @@ RSpec.describe Zoo::Domain::Contagion do
   end
 
   def occupancy(occupants)
-    Zoo::Domain::Occupancy.new(pride, occupants)
+    build_occupancy(pride, occupants)
   end
 
   describe '#spread' do

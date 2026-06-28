@@ -33,6 +33,16 @@ module Zoo
           animal
         end
 
+        def save_all(records)
+          return records if records.empty?
+
+          animals.insert_conflict(:replace).multi_insert(records.map { |animal| @mapper.to_row(animal) })
+          records.each do |animal|
+            animal.recorded_events.grep(Domain::Events::AnimalNamed).each { |event| append_naming(event) }
+          end
+          records
+        end
+
         def all
           animals.all.map { |row| @mapper.to_aggregate(row.transform_keys(&:to_s)) }
         end

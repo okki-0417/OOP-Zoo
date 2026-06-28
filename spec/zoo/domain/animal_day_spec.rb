@@ -15,7 +15,7 @@ RSpec.describe Zoo::Domain::AnimalDay do
   def animal_day(animal, enclosure, occupants)
     described_class.new(
       animal: animal, enclosure: enclosure,
-      occupancy: Zoo::Domain::Occupancy.new(enclosure, occupants), season: Zoo::Domain::Season.spring
+      occupancy: build_occupancy(enclosure, occupants), season: Zoo::Domain::Season.spring
     )
   end
 

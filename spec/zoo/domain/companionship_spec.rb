@@ -13,7 +13,7 @@ module Zoo
       end
 
       def companionship(enclosure, occupants, member)
-        described_class.new(enclosure: enclosure, occupancy: Occupancy.new(enclosure, occupants), member: member)
+        described_class.new(enclosure: enclosure, occupancy: build_occupancy(enclosure, occupants), member: member)
       end
 
       describe '#subordinate_male?' do

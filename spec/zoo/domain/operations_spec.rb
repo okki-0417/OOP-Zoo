@@ -52,9 +52,13 @@ module Zoo
         )
       end
 
+      def mock_zoo(reputation_factor:, admission_fee:)
+        double('zoo', reputation_factor: reputation_factor, admission_fee: admission_fee, buzz: 0)
+      end
+
       def visitors(on_exhibit, reputation_factor, admission_fee)
         described_class.new(
-          on_exhibit: on_exhibit, reputation_factor: reputation_factor, admission_fee: admission_fee
+          on_exhibit: on_exhibit, zoo: mock_zoo(reputation_factor: reputation_factor, admission_fee: admission_fee)
         ).expected_visitors
       end
 

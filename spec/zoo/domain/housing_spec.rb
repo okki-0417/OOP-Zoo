@@ -32,7 +32,7 @@ module Zoo
         let(:zebra) { build_adult(SpeciesCatalog.grevys_zebra) }
 
         def candidate(animal, enclosure, occupants = [])
-          occupancy = Occupancy.new(enclosure, occupants)
+          occupancy = build_occupancy(enclosure, occupants)
           described_class.new(animal: animal, enclosure: enclosure, occupancy: occupancy)
         end
 

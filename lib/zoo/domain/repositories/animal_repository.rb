@@ -15,6 +15,11 @@ module Zoo
         def save(_animal)
           raise NotImplementedError, "#{self.class}#save を実装してください"
         end
+
+        def save_all(animals)
+          animals.each { |animal| save(animal) }
+          animals
+        end
       end
     end
   end
