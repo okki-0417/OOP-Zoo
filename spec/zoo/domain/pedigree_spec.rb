@@ -14,7 +14,7 @@ module Zoo
       def offspring(births, name, sex, sire:, dam:, age: 100)
         child = Animal.new(species: SpeciesCatalog.lion, name: name, sex: sex, max_health: 100, age_in_days: age)
         births << Birth.reconstitute(
-          id: Shared::Identifier.new, sire: sire, dam: dam, offspring: child, day: 0, season: Season.spring
+          id: Shared::Identifier.new, sire: sire, dam: dam, offspring: child, occurred_on: 0, season: Season.spring
         )
         child
       end
@@ -53,7 +53,7 @@ module Zoo
           mother = founder('母', Animal::Sex.female)
           child = Animal.new(species: lion, name: '子', sex: Animal::Sex.male, max_health: 100, age_in_days: 100)
           births << Birth.reconstitute(
-            id: Shared::Identifier.new, sire: nil, dam: mother, offspring: child, day: 0, season: Season.spring
+            id: Shared::Identifier.new, sire: nil, dam: mother, offspring: child, occurred_on: 0, season: Season.spring
           )
           expect(described_class.new(births).inbreeding_of(child)).to eq(0.0)
         end

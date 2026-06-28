@@ -28,7 +28,7 @@ RSpec.describe '血統と近親交配' do
     )
     births << Zoo::Domain::Birth.reconstitute(
       id: Zoo::Domain::Shared::Identifier.new, sire: sire, dam: dam,
-      offspring: child, day: 0, season: Zoo::Domain::Season.spring
+      offspring: child, occurred_on: 0, season: Zoo::Domain::Season.spring
     )
     child
   end

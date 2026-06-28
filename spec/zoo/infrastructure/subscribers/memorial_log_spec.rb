@@ -20,8 +20,12 @@ RSpec.describe Zoo::Infrastructure::Subscribers::MemorialLog do
     it 'Birth を渡しても entries は増えないこと(関心外のイベントは無視する)' do
       log = described_class.new
 
-      log.handle(events::Birth.new(offspring: animal, sire_id: 's', dam_id: 'd',
-                                   occurred_on: 0, season: Zoo::Domain::Season.spring))
+      birth = Zoo::Domain::Birth.reconstitute(
+        id: Zoo::Domain::Shared::Identifier.new,
+        sire: animal, dam: animal, offspring: animal,
+        occurred_on: 0, season: Zoo::Domain::Season.spring
+      )
+      log.handle(birth)
 
       expect(log.entries).to be_empty
     end

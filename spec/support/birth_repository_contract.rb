@@ -3,10 +3,10 @@
 RSpec.shared_examples 'a birth repository' do
   catalog = Zoo::Domain::SpeciesCatalog
 
-  def build_birth(sire, dam, offspring, day: 0, season: Zoo::Domain::Season.spring)
+  def build_birth(sire, dam, offspring, occurred_on: 0, season: Zoo::Domain::Season.spring)
     Zoo::Domain::Birth.reconstitute(
       id: Zoo::Domain::Shared::Identifier.new, sire: sire, dam: dam,
-      offspring: offspring, day: day, season: season
+      offspring: offspring, occurred_on: occurred_on, season: season
     )
   end
 
@@ -15,13 +15,13 @@ RSpec.shared_examples 'a birth repository' do
     offspring = build_adult(catalog.lion, name: '仔')
     persist_animals(sire, dam, offspring)
 
-    repository.save(build_birth(sire, dam, offspring, day: 120, season: Zoo::Domain::Season.autumn))
+    repository.save(build_birth(sire, dam, offspring, occurred_on: 120, season: Zoo::Domain::Season.autumn))
 
     record = repository.all.first
     expect(record.sire).to eq(sire)
     expect(record.dam).to eq(dam)
     expect(record.offspring).to eq(offspring)
-    expect(record.day).to eq(120)
+    expect(record.occurred_on).to eq(120)
     expect(record.season).to eq(Zoo::Domain::Season.autumn)
   end
 

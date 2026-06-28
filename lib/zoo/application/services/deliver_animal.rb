@@ -35,7 +35,7 @@ module Zoo
             zoo = @zoo.load
 
             birth = Domain::Birth.new(
-              sire: breeding.sire, dam: dam, day: zoo.day, season: zoo.season, keeper_id: keeper&.id
+              sire: breeding.sire, dam: dam, occurred_on: zoo.day, season: zoo.season, keeper_id: keeper&.id
             ).deliver
             child = birth.offspring
 

@@ -37,11 +37,17 @@ module Zoo
 
         it 'dam に Birth イベントを1件記録すること' do
           ready_dam
-          described_class.new(sire:, dam:, day: 120, season: Season.autumn).deliver
+          described_class.new(sire:, dam:, occurred_on: 120, season: Season.autumn).deliver
           event = dam.pull_events.last
-          expect(event).to be_a(Events::Birth)
+          expect(event).to be_a(Birth)
           expect(event.occurred_on).to eq(120)
           expect(event.season).to eq(Season.autumn)
+        end
+
+        it '#to_s は "種「名前」が誕生しました" の形で表されること' do
+          ready_dam
+          birth = described_class.new(sire:, dam:, name: 'シンバ').deliver
+          expect(birth.to_s).to eq('ライオン「シンバ」が誕生しました')
         end
 
         it '近交係数が高いほど虚弱に(最大体力が低く)生まれること' do

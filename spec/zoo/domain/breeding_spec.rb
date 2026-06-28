@@ -88,7 +88,7 @@ module Zoo
           Birth.new(sire: sire, dam: dam, name: 'シンバ').deliver
           events = dam.pull_events
           expect(events.size).to eq(1)
-          expect(events.last).to be_a(Events::Birth)
+          expect(events.last).to be_a(Birth)
         end
 
         it 'name を省略すると種名ベースの仮名が付くこと' do

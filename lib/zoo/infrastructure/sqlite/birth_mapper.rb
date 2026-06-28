@@ -12,7 +12,7 @@ module Zoo
             sire_id: birth.sire.id.to_s,
             dam_id: birth.dam.id.to_s,
             offspring_id: birth.offspring.id.to_s,
-            day: birth.day,
+            day: birth.occurred_on,
             season: birth.season.value.to_s
           }
         end
@@ -26,7 +26,7 @@ module Zoo
           Domain::Birth.reconstitute(
             id: Domain::Shared::Identifier.new(row['id']),
             sire: sire, dam: dam, offspring: offspring,
-            day: row['day'], season: Domain::Season.new(row['season'])
+            occurred_on: row['day'], season: Domain::Season.new(row['season'])
           )
         end
       end

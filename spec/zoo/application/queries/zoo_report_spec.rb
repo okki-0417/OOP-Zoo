@@ -42,7 +42,7 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
       newborn = build_adult(catalog.grevys_zebra, name: '仔')
       births.save(Zoo::Domain::Birth.reconstitute(
                     id: Zoo::Domain::Shared::Identifier.new, sire: sire, dam: dam,
-                    offspring: newborn, day: 0, season: Zoo::Domain::Season.spring
+                    offspring: newborn, occurred_on: 0, season: Zoo::Domain::Season.spring
                   ))
       event_store.append(events::AnimalDied.new(animal: zebra, cause: :old_age))
       event_store.append(events::AnimalDied.new(animal: zebra, cause: :starvation))
