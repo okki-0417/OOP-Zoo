@@ -4,14 +4,13 @@ module Zoo
   module Application
     module Queries
       class DeceasedList
-        def initialize(event_store:)
-          @event_store = event_store
+        def initialize(animals:)
+          @animals = animals
         end
 
         def call
-          @event_store.all
-                      .grep(Domain::Events::AnimalDied)
-                      .map { |event| ReadModels::DeceasedRecord.new(name: event.animal.name.to_s, species: event.animal.species_name, cause: event.cause) }
+          @animals.all_deceased
+                  .map { |animal| ReadModels::DeceasedRecord.new(name: animal.name, species: animal.species_name, cause: animal.cause_of_death) }
         end
       end
     end

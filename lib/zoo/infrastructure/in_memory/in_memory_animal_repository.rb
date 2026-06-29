@@ -33,6 +33,10 @@ module Zoo
           @store.values
         end
 
+        def all_deceased
+          @store.values.select(&:dead?)
+        end
+
         def namings
           @namings.dup
         end

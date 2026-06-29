@@ -6,8 +6,7 @@ module Zoo
       class DeliverAnimal
         BIRTH_BUZZ = 40
 
-        def initialize(animals:, enclosures:, housings:, keepers:, breedings:, births:, zoo:, event_dispatcher:,
-                       unit_of_work:)
+        def initialize(animals:, enclosures:, housings:, keepers:, breedings:, births:, zoo:, unit_of_work:)
           @animals = animals
           @enclosures = enclosures
           @housings = housings
@@ -15,12 +14,11 @@ module Zoo
           @breedings = breedings
           @births = births
           @zoo = zoo
-          @event_dispatcher = event_dispatcher
           @unit_of_work = unit_of_work
         end
 
         def call(command)
-          offspring, events = @unit_of_work.run do
+          offspring = @unit_of_work.run do
             dam = @animals.find(command.dam_id)
             raise Errors::AnimalNotFound, "動物 #{command.dam_id} は存在しません" if dam.nil?
 
@@ -54,10 +52,9 @@ module Zoo
             zoo.generate_buzz(BIRTH_BUZZ)
             @zoo.save(zoo)
 
-            [child, dam.pull_events]
+            child
           end
 
-          @event_dispatcher.notify(events)
           offspring
         end
 

@@ -14,8 +14,8 @@ RSpec.describe Zoo::Domain::Animal::Death do
   end
 
   describe '#to_s' do
-    it 'cause をそのまま文字列にして返すこと(例: :old_age → "old_age")' do
-      expect(described_class.new(cause: :old_age).to_s).to eq('old_age')
+    it '死因のラベル(日本語)を返すこと(例: :old_age → "老衰")' do
+      expect(described_class.new(cause: :old_age).to_s).to eq('老衰')
     end
   end
 

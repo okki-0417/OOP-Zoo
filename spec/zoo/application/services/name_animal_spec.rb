@@ -11,8 +11,6 @@ RSpec.describe Zoo::Application::Services::NameAnimal do
 
   let(:animals) { in_memory::InMemoryAnimalRepository.new([animal]) }
   let(:keepers) { in_memory::InMemoryKeeperRepository.new }
-  let(:event_store) { in_memory::InMemoryEventStore.new }
-  let(:event_dispatcher) { Zoo::Application::EventDispatcher.new(event_store: event_store, subscribers: []) }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals]) }
   let(:zoo) do
     in_memory::InMemoryZooRepository.new(
@@ -21,7 +19,7 @@ RSpec.describe Zoo::Application::Services::NameAnimal do
   end
   let(:service) do
     described_class.new(animals: animals, keepers: keepers, zoo: zoo,
-                        event_dispatcher: event_dispatcher, unit_of_work: unit_of_work)
+                        unit_of_work: unit_of_work)
   end
 
   def command(animal_id: animal.id, name: 'ナラ', keeper_id: nil)

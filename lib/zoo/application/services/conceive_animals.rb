@@ -4,17 +4,16 @@ module Zoo
   module Application
     module Services
       class ConceiveAnimals
-        def initialize(animals:, breedings:, births:, zoo:, event_dispatcher:, unit_of_work:)
+        def initialize(animals:, breedings:, births:, zoo:, unit_of_work:)
           @animals = animals
           @breedings = breedings
           @births = births
           @zoo = zoo
-          @event_dispatcher = event_dispatcher
           @unit_of_work = unit_of_work
         end
 
         def call(command)
-          events = @unit_of_work.run do
+          @unit_of_work.run do
             sire = @animals.find(command.sire_id)
             raise Errors::AnimalNotFound, "動物 #{command.sire_id} は存在しません" if sire.nil?
 
@@ -29,10 +28,7 @@ module Zoo
 
             @animals.save(dam)
             @breedings.save(breeding)
-            dam.pull_events
           end
-
-          @event_dispatcher.notify(events)
           nil
         end
       end

@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe Zoo::Application::Queries::ZooReport do
   shared    = Zoo::Domain::Shared
   husbandry = Zoo::Domain
-  events    = Zoo::Domain::Events
   catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
 
@@ -15,7 +14,6 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
   end
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:housings) { in_memory::InMemoryHousingRepository.new([housed(zebra, enclosure)]) }
-  let(:event_store) { in_memory::InMemoryEventStore.new }
   let(:animals) { in_memory::InMemoryAnimalRepository.new }
   let(:births) { in_memory::InMemoryBirthRepository.new }
   let(:zoo) do
@@ -23,7 +21,7 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
   end
 
   let(:query) do
-    described_class.new(enclosures: enclosures, housings: housings, event_store: event_store, zoo: zoo,
+    described_class.new(enclosures: enclosures, housings: housings, zoo: zoo,
                         animals: animals, births: births)
   end
 
@@ -36,7 +34,7 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
       expect(stats.threatened_count).to eq(1)
     end
 
-    it '出生数は BirthRepository から、死因別死亡数は EventStore から集計すること' do
+    it '出生数は BirthRepository から、死因別死亡数は AnimalRepository から集計すること' do
       sire = build_adult(catalog.grevys_zebra, name: '父')
       dam = build_adult(catalog.grevys_zebra, name: '母', sex: Zoo::Domain::Animal::Sex.female)
       newborn = build_adult(catalog.grevys_zebra, name: '仔')
@@ -44,8 +42,12 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
                     id: Zoo::Domain::Shared::Identifier.new, sire: sire, dam: dam,
                     offspring: newborn, occurred_on: 0, season: Zoo::Domain::Season.spring
                   ))
-      event_store.append(events::AnimalDied.new(animal: zebra, cause: :old_age))
-      event_store.append(events::AnimalDied.new(animal: zebra, cause: :starvation))
+      dead1 = build_adult(catalog.grevys_zebra, name: '死1')
+      dead1.die(cause: :old_age)
+      animals.save(dead1)
+      dead2 = build_adult(catalog.grevys_zebra, name: '死2')
+      dead2.die(cause: :starvation)
+      animals.save(dead2)
 
       stats = query.call
 

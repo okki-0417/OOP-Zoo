@@ -15,8 +15,6 @@ RSpec.describe Zoo::Application::Services::ConceiveAnimals do
   let(:animals) { in_memory::InMemoryAnimalRepository.new([sire, dam]) }
   let(:breedings) { in_memory::InMemoryBreedingRepository.new }
   let(:births) { in_memory::InMemoryBirthRepository.new }
-  let(:event_store) { in_memory::InMemoryEventStore.new }
-  let(:event_dispatcher) { Zoo::Application::EventDispatcher.new(event_store: event_store, subscribers: []) }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, breedings]) }
   let(:zoo) do
     in_memory::InMemoryZooRepository.new(
@@ -25,7 +23,7 @@ RSpec.describe Zoo::Application::Services::ConceiveAnimals do
   end
   let(:service) do
     described_class.new(animals: animals, breedings: breedings, births: births, zoo: zoo,
-                        event_dispatcher: event_dispatcher, unit_of_work: unit_of_work)
+                        unit_of_work: unit_of_work)
   end
 
   def command(sire_id: sire.id, dam_id: dam.id)
@@ -64,7 +62,6 @@ RSpec.describe Zoo::Application::Services::ConceiveAnimals do
         animals: m_animals, breedings: in_memory::InMemoryBreedingRepository.new,
         births: in_memory::InMemoryBirthRepository.new,
         zoo: in_memory::InMemoryZooRepository.new(summer),
-        event_dispatcher: event_dispatcher,
         unit_of_work: in_memory::InMemoryUnitOfWork.new(repositories: [m_animals])
       )
 

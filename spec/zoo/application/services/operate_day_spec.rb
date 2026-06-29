@@ -23,8 +23,6 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       Zoo::Domain::Zoo.new(name: 'テスト動物園', admission_fee: shared::Money.yen(2000), funds: shared::Money.yen(100_000))
     )
   end
-  let(:event_store) { in_memory::InMemoryEventStore.new }
-  let(:dispatcher) { Zoo::Application::EventDispatcher.new(event_store: event_store) }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
 
   let(:no_outbreak) { instance_double(Random, rand: 99) }
@@ -32,7 +30,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
     described_class.new(
       animals: animals, enclosures: enclosures, housings: housings,
       keepers: keepers, veterinarians: veterinarians, zoo: zoo, operatings: operatings,
-      event_dispatcher: dispatcher, unit_of_work: unit_of_work, random: no_outbreak
+      unit_of_work: unit_of_work, random: no_outbreak
     )
   end
 
@@ -79,7 +77,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       service = described_class.new(
         animals: animals, enclosures: enclosures, housings: housings,
         keepers: keepers, veterinarians: veterinarians, zoo: zoo, operatings: operatings,
-        event_dispatcher: dispatcher, unit_of_work: unit_of_work, random: outbreak_random
+        unit_of_work: unit_of_work, random: outbreak_random
       )
 
       report = service.call

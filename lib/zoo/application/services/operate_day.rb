@@ -5,17 +5,16 @@ module Zoo
     module Services
       class OperateDay
         def initialize(animals:, enclosures:, housings:, keepers:, veterinarians:, zoo:,
-                       operatings:, event_dispatcher:, unit_of_work:, random: Random.new)
-          @animals          = animals
-          @enclosures       = enclosures
-          @housings         = housings
-          @keepers          = keepers
-          @veterinarians    = veterinarians
-          @zoo              = zoo
-          @operatings       = operatings
-          @event_dispatcher = event_dispatcher
-          @unit_of_work     = unit_of_work
-          @random           = random
+                       operatings:, unit_of_work:, random: Random.new)
+          @animals       = animals
+          @enclosures    = enclosures
+          @housings      = housings
+          @keepers       = keepers
+          @veterinarians = veterinarians
+          @zoo           = zoo
+          @operatings    = operatings
+          @unit_of_work  = unit_of_work
+          @random        = random
         end
 
         def call
@@ -37,7 +36,6 @@ module Zoo
             @enclosures.save_all(operating.enclosures)
             @animals.save_all(operating.on_exhibit)
             @zoo.save(operating.zoo)
-            @event_dispatcher.publish(operating.pull_events)
 
             operating
           end

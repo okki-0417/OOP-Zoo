@@ -36,7 +36,7 @@ RSpec.describe Zoo::Composition::Container do
     expect(container.animals.find(dam.id)).to be_expecting
   end
 
-  it 'deliver を実行すると、配線された購読者(birth_announcements)に通知が届くこと' do
+  it 'deliver を実行すると births に1件記録され、子が animals に保存されること' do
     sire, dam = build_pair(catalog.lion)
     container.animals.save(sire)
     container.animals.save(dam)
@@ -49,10 +49,11 @@ RSpec.describe Zoo::Composition::Container do
       husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
     )
 
-    container.deliver_animal.call(
+    child = container.deliver_animal.call(
       commands::DeliverAnimalCommand.new(dam_id: dam.id, enclosure_id: enclosure.id)
     )
 
-    expect(container.birth_announcements.announcements.size).to eq(1)
+    expect(container.births.all.size).to eq(1)
+    expect(container.animals.find(child.id)).to eq(child)
   end
 end

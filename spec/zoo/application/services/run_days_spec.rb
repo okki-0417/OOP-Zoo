@@ -17,13 +17,11 @@ RSpec.describe Zoo::Application::Services::RunDays do
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([survivor, elder]) }
   let(:housings) { in_memory::InMemoryHousingRepository.new([housed(survivor, enclosure), housed(elder, enclosure)]) }
-  let(:event_store) { in_memory::InMemoryEventStore.new }
-  let(:dispatcher) { Zoo::Application::EventDispatcher.new(event_store: event_store) }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
   let(:open_for_a_day) do
     Zoo::Application::Services::OpenForADay.new(
       enclosures: enclosures, animals: animals, housings: housings,
-      event_dispatcher: dispatcher, unit_of_work: unit_of_work
+      unit_of_work: unit_of_work
     )
   end
   let(:service) { described_class.new(open_for_a_day: open_for_a_day) }

@@ -21,11 +21,6 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
   let(:housings) { in_memory::InMemoryHousingRepository.new }
   let(:breedings) { in_memory::InMemoryBreedingRepository.new }
   let(:births) { in_memory::InMemoryBirthRepository.new }
-  let(:event_store) { in_memory::InMemoryEventStore.new }
-  let(:birth_announcements) { Zoo::Infrastructure::Subscribers::BirthAnnouncementLog.new }
-  let(:event_dispatcher) do
-    Zoo::Application::EventDispatcher.new(event_store: event_store, subscribers: [birth_announcements])
-  end
   let(:unit_of_work) do
     in_memory::InMemoryUnitOfWork.new(repositories: [animals, enclosures, housings, breedings, births])
   end
@@ -36,8 +31,7 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
   end
   let(:service) do
     described_class.new(animals: animals, enclosures: enclosures, housings: housings, keepers: keepers,
-                        breedings: breedings, births: births, zoo: zoo,
-                        event_dispatcher: event_dispatcher, unit_of_work: unit_of_work)
+                        breedings: breedings, births: births, zoo: zoo, unit_of_work: unit_of_work)
   end
 
   def command(dam_id: dam.id, enclosure_id: enclosure.id, keeper_id: nil)
@@ -74,18 +68,6 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
 
       expect(births.all.size).to eq(1)
       expect(births.all.first).to be_a(Zoo::Domain::Birth)
-    end
-
-    it '出産イベントは EventStore には永続化されないこと(births テーブルが台帳)' do
-      service.call(command)
-
-      expect(event_store.all).to be_empty
-    end
-
-    it '出産に成功すると購読者(BirthAnnouncementLog)に誕生が1件通知されること' do
-      service.call(command)
-
-      expect(birth_announcements.announcements.size).to eq(1)
     end
 
     it '定員1の満員エリアに収容できず HousingNotAllowed になると、子が保存されずロールバックされること' do

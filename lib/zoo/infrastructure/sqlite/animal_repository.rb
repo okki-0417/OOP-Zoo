@@ -47,6 +47,10 @@ module Zoo
           animals.all.map { |row| @mapper.to_aggregate(row.transform_keys(&:to_s)) }
         end
 
+        def all_deceased
+          animals.exclude(death_cause: nil).all.map { |row| @mapper.to_aggregate(row.transform_keys(&:to_s)) }
+        end
+
         def namings
           naming_events.order(:id).all.map { |row| row.transform_keys(&:to_s) }
         end

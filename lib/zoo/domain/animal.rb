@@ -125,7 +125,6 @@ module Zoo
         return self if dead?
 
         @death = Death.new(cause: cause)
-        record_event(Events::AnimalDied.new(animal: self, cause: cause))
         self
       end
 

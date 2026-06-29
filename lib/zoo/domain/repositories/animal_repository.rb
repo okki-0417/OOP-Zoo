@@ -20,6 +20,10 @@ module Zoo
           animals.each { |animal| save(animal) }
           animals
         end
+
+        def all_deceased
+          raise NotImplementedError, "#{self.class}#all_deceased を実装してください"
+        end
       end
     end
   end

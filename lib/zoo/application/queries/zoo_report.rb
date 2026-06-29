@@ -4,10 +4,9 @@ module Zoo
   module Application
     module Queries
       class ZooReport
-        def initialize(enclosures:, housings:, event_store:, zoo:, animals:, births:)
+        def initialize(enclosures:, housings:, zoo:, animals:, births:)
           @enclosures = enclosures
           @housings = housings
-          @event_store = event_store
           @zoo = zoo
           @animals = animals
           @births = births
@@ -16,7 +15,6 @@ module Zoo
         def call
           occupants = @housings.all_occupants
           species = occupants.map(&:species).uniq
-          events = @event_store.all
           zoo = @zoo.load
 
           ReadModels::ZooStatistics.new(
@@ -24,7 +22,7 @@ module Zoo
             species_count: species.size,
             threatened_count: species.count(&:threatened?),
             births: @births.all.size,
-            deaths_by_cause: deaths_by_cause(events),
+            deaths_by_cause: deaths_by_cause,
             revenue: zoo.revenue,
             balance: zoo.balance,
             reputation: zoo.reputation_score
@@ -33,10 +31,10 @@ module Zoo
 
         private
 
-        def deaths_by_cause(events)
-          events.grep(Domain::Events::AnimalDied)
-                .group_by(&:cause)
-                .transform_values(&:size)
+        def deaths_by_cause
+          @animals.all_deceased
+                  .group_by(&:cause_of_death)
+                  .transform_values(&:size)
         end
       end
     end

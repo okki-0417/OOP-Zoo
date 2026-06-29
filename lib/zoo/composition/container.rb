@@ -4,16 +4,10 @@ module Zoo
   module Composition
     class Container
       attr_reader :animals, :enclosures, :housings, :keepers, :veterinarians, :breedings, :births, :assignments,
-                  :operatings, :zoo, :event_store, :memorial_log, :birth_announcements
+                  :operatings, :zoo
 
       def initialize(state: nil, database: nil)
         database ? setup_sqlite(database) : setup_in_memory(state)
-
-        @memorial_log = Infrastructure::Subscribers::MemorialLog.new
-        @birth_announcements = Infrastructure::Subscribers::BirthAnnouncementLog.new
-        @event_dispatcher = Application::EventDispatcher.new(
-          event_store: @event_store, subscribers: [@memorial_log, @birth_announcements]
-        )
       end
 
       def self.load(path)
@@ -26,7 +20,7 @@ module Zoo
             animals: @animals.all, enclosures: @enclosures.all, housings: @housings.all,
             keepers: @keepers.all, veterinarians: @veterinarians.all,
             breedings: @breedings.all, births: @births.all, assignments: @assignments.all,
-            operatings: @operatings.all, zoo: @zoo.load, events: @event_store.all
+            operatings: @operatings.all, zoo: @zoo.load
           },
           path
         )
@@ -37,9 +31,7 @@ module Zoo
       end
 
       def rename_animal
-        Application::Services::RenameAnimal.new(
-          animals: @animals, event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
-        )
+        Application::Services::RenameAnimal.new(animals: @animals, unit_of_work: @unit_of_work)
       end
 
       def add_enclosure
@@ -121,29 +113,27 @@ module Zoo
       def conceive_animals
         Application::Services::ConceiveAnimals.new(
           animals: @animals, breedings: @breedings, births: @births, zoo: @zoo,
-          event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
+          unit_of_work: @unit_of_work
         )
       end
 
       def deliver_animal
         Application::Services::DeliverAnimal.new(
           animals: @animals, enclosures: @enclosures, housings: @housings, keepers: @keepers,
-          breedings: @breedings, births: @births, zoo: @zoo,
-          event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
+          breedings: @breedings, births: @births, zoo: @zoo, unit_of_work: @unit_of_work
         )
       end
 
       def name_animal
         Application::Services::NameAnimal.new(
-          animals: @animals, keepers: @keepers, zoo: @zoo,
-          event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
+          animals: @animals, keepers: @keepers, zoo: @zoo, unit_of_work: @unit_of_work
         )
       end
 
       def open_for_a_day
         Application::Services::OpenForADay.new(
           enclosures: @enclosures, animals: @animals, housings: @housings,
-          event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
+          unit_of_work: @unit_of_work
         )
       end
 
@@ -155,8 +145,7 @@ module Zoo
         Application::Services::OperateDay.new(
           animals: @animals, enclosures: @enclosures, housings: @housings,
           keepers: @keepers, veterinarians: @veterinarians,
-          zoo: @zoo, operatings: @operatings,
-          event_dispatcher: @event_dispatcher, unit_of_work: @unit_of_work
+          zoo: @zoo, operatings: @operatings, unit_of_work: @unit_of_work
         )
       end
 
@@ -177,7 +166,7 @@ module Zoo
       end
 
       def zoo_report
-        Application::Queries::ZooReport.new(enclosures: @enclosures, housings: @housings, event_store: @event_store,
+        Application::Queries::ZooReport.new(enclosures: @enclosures, housings: @housings,
                                             zoo: @zoo, animals: @animals, births: @births)
       end
 
@@ -206,7 +195,7 @@ module Zoo
       end
 
       def deceased_list
-        Application::Queries::DeceasedList.new(event_store: @event_store)
+        Application::Queries::DeceasedList.new(animals: @animals)
       end
 
       private
@@ -224,8 +213,6 @@ module Zoo
         @assignments = store::InMemoryAssignmentRepository.new(state.fetch(:assignments, []))
         @operatings = store::InMemoryOperatingRepository.new(state.fetch(:operatings, []))
         @zoo = store::InMemoryZooRepository.new(state.fetch(:zoo, default_zoo))
-        @event_store = store::InMemoryEventStore.new
-        state.fetch(:events, []).each { |event| @event_store.append(event) }
 
         @unit_of_work = store::InMemoryUnitOfWork.new(
           repositories: [@animals, @enclosures, @housings, @keepers, @veterinarians, @breedings, @births,
@@ -246,7 +233,6 @@ module Zoo
         @assignments = sqlite::AssignmentRepository.new(database, @keepers, @enclosures)
         @operatings = sqlite::OperatingRepository.new(database)
         @zoo = sqlite::ZooRepository.new(database, default_zoo)
-        @event_store = sqlite::EventStore.new(database, @animals)
         @unit_of_work = sqlite::UnitOfWork.new(database)
       end
 

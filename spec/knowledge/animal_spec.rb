@@ -72,19 +72,9 @@ RSpec.describe '動物' do
         expect(animal.cause_of_death).to eq(:unknown)
       end
 
-      it '死亡が一度だけできごととして通知されること' do
+      it '二度は死なず、最初の死因が保たれること' do
         animal.die(cause: :predation)
-        recorded = animal.pull_events
-        expect(recorded.size).to eq(1)
-        expect(recorded.first).to be_a(events::AnimalDied)
-        expect(recorded.first.cause).to eq(:predation)
-      end
-
-      it '二度は死なず、最初の死因と通知が保たれること' do
-        animal.die(cause: :predation)
-        animal.pull_events
         animal.die(cause: :illness)
-        expect(animal.pull_events).to be_empty
         expect(animal.cause_of_death).to eq(:predation)
       end
     end
