@@ -3,7 +3,6 @@
 module Zoo
   module Domain
     class Animal
-      include Events::Recorder
       include Shared::Entity
 
       CRY_OUT_DAMAGE = 1
@@ -440,14 +439,11 @@ module Zoo
 
       def name_animal(name:, keeper_id: nil, occurred_on: 0)
         @name = Name.new(name)
-        record_event(Events::AnimalNamed.new(animal: self, name: name, keeper_id: keeper_id, occurred_on: occurred_on))
         self
       end
 
       def change_name(new_name)
-        old_name = @name.to_s
         @name = Name.new(new_name)
-        record_event(Events::AnimalRenamed.new(animal: self, old_name: old_name, new_name: @name.to_s))
         self
       end
 

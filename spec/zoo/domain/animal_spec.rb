@@ -80,15 +80,6 @@ module Zoo
         end
       end
 
-      describe '#pull_events' do
-        it '取得するとイベントバッファが空になること' do
-          animal = build
-          animal.change_name('New')
-          expect(animal.pull_events.size).to eq(1)
-          expect(animal.pull_events).to be_empty
-        end
-      end
-
       describe '#susceptible?' do
         it '生きていて健康なら true を返すこと' do
           expect(build.susceptible?).to be(true)
@@ -190,12 +181,12 @@ module Zoo
           expect(animal.cry_out).to eq('ガオー')
         end
 
-        it '復元直後は未通知のイベントを持たないこと' do
+        it '復元直後の状態が正しいこと' do
           animal = reconstitute(
             health: Animal::Health.full(100), hunger: Animal::Hunger.satisfied,
             stress: Animal::Stress.calm, illness: nil, death: nil
           )
-          expect(animal.pull_events).to be_empty
+          expect(animal).to be_alive
         end
       end
     end

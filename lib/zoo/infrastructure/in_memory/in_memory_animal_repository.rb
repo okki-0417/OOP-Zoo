@@ -8,7 +8,6 @@ module Zoo
 
         def initialize(animals = [])
           @store = {}
-          @namings = []
           animals.each { |animal| save(animal) }
         end
 
@@ -25,7 +24,6 @@ module Zoo
 
         def save(animal)
           @store[animal.id.to_s] = animal
-          @namings.concat(animal.recorded_events.grep(Domain::Events::AnimalNamed))
           animal
         end
 
@@ -37,16 +35,12 @@ module Zoo
           @store.values.select(&:dead?)
         end
 
-        def namings
-          @namings.dup
-        end
-
         def snapshot
-          [@store.dup, @namings.dup]
+          @store.dup
         end
 
         def restore(snapshot)
-          @store, @namings = snapshot
+          @store = snapshot
         end
       end
     end

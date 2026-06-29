@@ -7,7 +7,6 @@ RSpec.describe '動物' do
   catalog   = Zoo::Domain::SpeciesCatalog
   foods     = Zoo::Domain::FoodCatalog
   illnesses = Zoo::Domain::IllnessCatalog
-  events    = Zoo::Domain::Events
   errors    = Zoo::Domain::Errors
 
   def build_animal(name: 'Jack', voice: 'Woof', max_health: 10, age_in_days: 0,
@@ -396,14 +395,6 @@ RSpec.describe '動物' do
         expect(animal.name).to eq('Cat')
       end
 
-      it '改名されたことができごととして残ること' do
-        animal.change_name('Cat')
-        recorded = animal.pull_events
-        expect(recorded.size).to eq(1)
-        expect(recorded.first).to be_a(events::AnimalRenamed)
-        expect(recorded.first.old_name).to eq('Jack')
-        expect(recorded.first.new_name).to eq('Cat')
-      end
     end
   end
 

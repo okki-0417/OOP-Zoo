@@ -3,8 +3,6 @@
 module Zoo
   module Domain
     class Zoo
-      include Events::Recorder
-
       def initialize(name:, admission_fee:, funds: Shared::Money.zero, reputation: Reputation.default)
         raise ArgumentError, '動物園名は必須です' if name.to_s.empty?
 

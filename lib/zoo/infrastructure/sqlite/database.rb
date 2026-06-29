@@ -107,13 +107,6 @@ module Zoo
               day     INTEGER NOT NULL,
               season  TEXT    NOT NULL
             );
-            CREATE TABLE IF NOT EXISTS namings (
-              id          INTEGER PRIMARY KEY AUTOINCREMENT,
-              animal_id   TEXT    NOT NULL,
-              name        TEXT    NOT NULL,
-              keeper_id   TEXT,
-              occurred_on INTEGER NOT NULL
-            );
             CREATE TABLE IF NOT EXISTS tendings (
               seq          INTEGER PRIMARY KEY AUTOINCREMENT,
               id           TEXT    NOT NULL UNIQUE,

@@ -42,7 +42,6 @@ module Zoo
         inbreeding = @dam.expected_offspring_inbreeding
         @dam.deliver
         @offspring = build_offspring(@name || default_name, sex, inbreeding)
-        @dam.record_event(self)
         self
       end
 
@@ -52,7 +51,6 @@ module Zoo
         @offspring = Array.new(@dam.litter_size) do |i|
           build_offspring("#{@name}#{i + 1}", Animal::Sex.random, inbreeding)
         end
-        @dam.record_event(self)
         self
       end
 

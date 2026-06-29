@@ -93,10 +93,6 @@ module Zoo
         @occupancies.flat_map(&:to_a)
       end
 
-      def pull_events
-        @dead.flat_map(&:pull_events)
-      end
-
       def net_income
         Shared::Balance.new(@income.yen - @cost.yen)
       end

@@ -154,7 +154,6 @@ RSpec.describe '現実の動物園の再現' do
     house(cub, lion_hill)
     expect(@housings.occupants_of(lion_hill).size).to eq(3)
     expect(@housings.all_occupants.size).to eq(13)
-    expect(dam.pull_events.last).to be_a(Zoo::Domain::Birth)
     expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
   end
 

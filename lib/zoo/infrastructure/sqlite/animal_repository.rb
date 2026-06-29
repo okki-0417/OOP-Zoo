@@ -6,10 +6,9 @@ module Zoo
       class AnimalRepository
         include Domain::Repositories::AnimalRepository
 
-        def initialize(database, mapper: AnimalMapper.new, naming_mapper: NamingMapper.new)
+        def initialize(database, mapper: AnimalMapper.new)
           @database = database
           @mapper = mapper
-          @naming_mapper = naming_mapper
         end
 
         def find(id)
@@ -29,7 +28,6 @@ module Zoo
 
         def save(animal)
           animals.insert_conflict(:replace).insert(@mapper.to_row(animal))
-          animal.recorded_events.grep(Domain::Events::AnimalNamed).each { |event| append_naming(event) }
           animal
         end
 
@@ -37,9 +35,6 @@ module Zoo
           return records if records.empty?
 
           animals.insert_conflict(:replace).multi_insert(records.map { |animal| @mapper.to_row(animal) })
-          records.each do |animal|
-            animal.recorded_events.grep(Domain::Events::AnimalNamed).each { |event| append_naming(event) }
-          end
           records
         end
 
@@ -51,22 +46,10 @@ module Zoo
           animals.exclude(death_cause: nil).all.map { |row| @mapper.to_aggregate(row.transform_keys(&:to_s)) }
         end
 
-        def namings
-          naming_events.order(:id).all.map { |row| row.transform_keys(&:to_s) }
-        end
-
         private
 
         def animals
           @database.dataset(:animals)
-        end
-
-        def naming_events
-          @database.dataset(:namings)
-        end
-
-        def append_naming(event)
-          naming_events.insert(@naming_mapper.to_row(event))
         end
       end
     end

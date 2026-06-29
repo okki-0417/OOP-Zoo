@@ -35,15 +35,6 @@ module Zoo
           expect(offspring.name).to eq("#{lion.name_ja}の赤ちゃん")
         end
 
-        it 'dam に Birth イベントを1件記録すること' do
-          ready_dam
-          described_class.new(sire:, dam:, occurred_on: 120, season: Season.autumn).deliver
-          event = dam.pull_events.last
-          expect(event).to be_a(Birth)
-          expect(event.occurred_on).to eq(120)
-          expect(event.season).to eq(Season.autumn)
-        end
-
         it '#to_s は "種「名前」が誕生しました" の形で表されること' do
           ready_dam
           birth = described_class.new(sire:, dam:, name: 'シンバ').deliver

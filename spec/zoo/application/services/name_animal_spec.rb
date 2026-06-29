@@ -34,13 +34,6 @@ RSpec.describe Zoo::Application::Services::NameAnimal do
       expect(animals.find(animal.id).name.to_s).to eq('ナラ')
     end
 
-    it '命名が namings に1件永続化されること' do
-      service.call(command(name: 'ナラ'))
-      expect(animals.namings.size).to eq(1)
-      expect(animals.namings.first).to be_a(Zoo::Domain::Events::AnimalNamed)
-      expect(animals.namings.first.name).to eq('ナラ')
-    end
-
     it '存在しない animal_id を渡すと AnimalNotFound が発生すること' do
       expect { service.call(command(animal_id: 'missing')) }
         .to raise_error(Zoo::Application::Errors::AnimalNotFound)

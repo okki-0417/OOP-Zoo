@@ -83,14 +83,6 @@ module Zoo
             .to raise_error(Errors::BreedingNotAllowed)
         end
 
-        it '出産で Birth イベントが記録されること' do
-          dam.gestate(lion.gestation_period_days)
-          Birth.new(sire: sire, dam: dam, name: 'シンバ').deliver
-          events = dam.pull_events
-          expect(events.size).to eq(1)
-          expect(events.last).to be_a(Birth)
-        end
-
         it 'name を省略すると種名ベースの仮名が付くこと' do
           dam.gestate(lion.gestation_period_days)
           cub = Birth.new(sire: sire, dam: dam).deliver.offspring
@@ -156,13 +148,10 @@ module Zoo
       end
 
       describe '#name_animal' do
-        it '名前が更新され AnimalNamed イベントが記録されること' do
+        it '名前が更新されること' do
           animal = build_adult(lion, name: 'ライオンの赤ちゃん', sex: Animal::Sex.female)
           animal.name_animal(name: 'ナラ')
           expect(animal.name).to eq('ナラ')
-          events = animal.pull_events
-          expect(events.last).to be_a(Events::AnimalNamed)
-          expect(events.last.name).to eq('ナラ')
         end
       end
     end
