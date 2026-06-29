@@ -437,7 +437,7 @@ module Zoo
         self
       end
 
-      def name_animal(name:, keeper_id: nil, occurred_on: 0)
+      def name_animal(name:)
         @name = Name.new(name)
         self
       end

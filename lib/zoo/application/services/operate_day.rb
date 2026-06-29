@@ -23,11 +23,11 @@ module Zoo
 
             operating = Domain::Operating.new(
               zoo:,
-              occupancies:         @housings.all_occupancies,
-              keepers:             @keepers.all,
-              veterinarians:       @veterinarians.all,
+              occupancies: @housings.all_occupancies,
+              keepers: @keepers.all,
+              veterinarians: @veterinarians.all,
               yesterday_operating: @operatings.latest,
-              random:              @random
+              random: @random
             )
 
             operating.operate_day

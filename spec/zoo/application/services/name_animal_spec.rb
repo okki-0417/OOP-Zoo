@@ -3,29 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::NameAnimal do
-  shared    = Zoo::Domain::Shared
   catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:animal) { build_adult(catalog.lion, name: 'ライオンの赤ちゃん', sex: Zoo::Domain::Animal::Sex.female) }
-
   let(:animals) { in_memory::InMemoryAnimalRepository.new([animal]) }
-  let(:keepers) { in_memory::InMemoryKeeperRepository.new }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals]) }
-  let(:zoo) do
-    in_memory::InMemoryZooRepository.new(
-      Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
-    )
-  end
-  let(:service) do
-    described_class.new(animals: animals, keepers: keepers, zoo: zoo,
-                        unit_of_work: unit_of_work)
-  end
+  let(:service) { described_class.new(animals: animals, unit_of_work: unit_of_work) }
 
-  def command(animal_id: animal.id, name: 'ナラ', keeper_id: nil)
-    Zoo::Application::Commands::NameAnimalCommand.new(
-      animal_id: animal_id, name: name, keeper_id: keeper_id
-    )
+  def command(animal_id: animal.id, name: 'ナラ')
+    Zoo::Application::Commands::NameAnimalCommand.new(animal_id: animal_id, name: name)
   end
 
   describe '#call' do
@@ -37,11 +24,6 @@ RSpec.describe Zoo::Application::Services::NameAnimal do
     it '存在しない animal_id を渡すと AnimalNotFound が発生すること' do
       expect { service.call(command(animal_id: 'missing')) }
         .to raise_error(Zoo::Application::Errors::AnimalNotFound)
-    end
-
-    it '存在しない keeper_id を渡すと KeeperNotFound が発生すること' do
-      expect { service.call(command(keeper_id: 'missing')) }
-        .to raise_error(Zoo::Application::Errors::KeeperNotFound)
     end
   end
 end

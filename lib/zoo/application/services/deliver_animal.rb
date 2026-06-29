@@ -18,7 +18,7 @@ module Zoo
         end
 
         def call(command)
-          offspring = @unit_of_work.run do
+          @unit_of_work.run do
             dam = @animals.find(command.dam_id)
             raise Errors::AnimalNotFound, "動物 #{command.dam_id} は存在しません" if dam.nil?
 
@@ -54,8 +54,6 @@ module Zoo
 
             child
           end
-
-          offspring
         end
 
         private

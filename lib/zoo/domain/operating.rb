@@ -51,8 +51,8 @@ module Zoo
 
         @cost = OperatingCost.new(
           enclosures: @occupancies.map(&:enclosure),
-          staff:      @keepers + @veterinarians,
-          species:    on_exhibit.map(&:species).uniq
+          staff: @keepers + @veterinarians,
+          species: on_exhibit.map(&:species).uniq
         ).amount
         @zoo.spend(@cost)
 
@@ -72,8 +72,8 @@ module Zoo
         @zoo.update_reputation(
           @zoo.reputation.after_day(
             experience: Experience.new(on_exhibit:, fee: @zoo.admission_fee).score,
-            exposure:   Exposure.new(visitors: today_visitors).score,
-            events:     [
+            exposure: Exposure.new(visitors: today_visitors).score,
+            events: [
               *@dead.map { |animal| Zoo::NewsEvent.new(animal:) },
               (@afflicted ? Zoo::NewsEvent.new(afflicted: @afflicted) : nil)
             ].compact

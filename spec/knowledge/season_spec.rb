@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe '季節と気候' do
   shared = Zoo::Domain::Shared
-  season    = Zoo::Domain::Season
+  season = Zoo::Domain::Season
 
   def pride(temp)
     enclosure = Zoo::Domain::Enclosure.new(

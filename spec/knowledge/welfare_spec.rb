@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe '動物福祉' do
-  shared    = Zoo::Domain::Shared
+  shared = Zoo::Domain::Shared
   catalog = Zoo::Domain::SpeciesCatalog
 
   def savanna(temp = 28, capacity: 4)

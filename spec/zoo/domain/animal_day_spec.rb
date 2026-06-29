@@ -49,7 +49,7 @@ RSpec.describe Zoo::Domain::AnimalDay do
       dead = build_adult(catalog.lion)
       dead.die
 
-      expect { animal_day(dead, enclosure, [dead]).run }.not_to change { dead.age_in_days }
+      expect { animal_day(dead, enclosure, [dead]).run }.not_to(change { dead.age_in_days })
     end
   end
 end

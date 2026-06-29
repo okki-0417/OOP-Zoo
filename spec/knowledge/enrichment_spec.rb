@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe '環境エンリッチメントと常同行動' do
-
   def savanna(temp = 28)
     Zoo::Domain::Enclosure.new(
       name: 'サバンナ', temperature: Zoo::Domain::Shared::Temperature.celsius(temp), capacity: 4

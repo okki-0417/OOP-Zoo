@@ -125,9 +125,7 @@ module Zoo
       end
 
       def name_animal
-        Application::Services::NameAnimal.new(
-          animals: @animals, keepers: @keepers, zoo: @zoo, unit_of_work: @unit_of_work
-        )
+        Application::Services::NameAnimal.new(animals: @animals, unit_of_work: @unit_of_work)
       end
 
       def open_for_a_day

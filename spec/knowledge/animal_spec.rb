@@ -394,7 +394,6 @@ RSpec.describe '動物' do
         animal.change_name('Cat')
         expect(animal.name).to eq('Cat')
       end
-
     end
   end
 

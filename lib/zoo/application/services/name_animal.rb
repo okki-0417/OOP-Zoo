@@ -4,10 +4,8 @@ module Zoo
   module Application
     module Services
       class NameAnimal
-        def initialize(animals:, keepers:, zoo:, unit_of_work:)
+        def initialize(animals:, unit_of_work:)
           @animals = animals
-          @keepers = keepers
-          @zoo = zoo
           @unit_of_work = unit_of_work
         end
 
@@ -16,26 +14,11 @@ module Zoo
             animal = @animals.find(command.animal_id)
             raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
 
-            keeper = find_keeper(command.keeper_id)
-
-            zoo = @zoo.load
-
-            animal.name_animal(name: command.name, keeper_id: keeper&.id, occurred_on: zoo.day)
+            animal.name_animal(name: command.name)
 
             @animals.save(animal)
           end
           nil
-        end
-
-        private
-
-        def find_keeper(keeper_id)
-          return nil if keeper_id.nil?
-
-          keeper = @keepers.find(keeper_id)
-          raise Errors::KeeperNotFound, "飼育員 #{keeper_id} は存在しません" if keeper.nil?
-
-          keeper
         end
       end
     end
