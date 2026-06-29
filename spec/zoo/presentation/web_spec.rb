@@ -139,6 +139,26 @@ RSpec.describe Zoo::Presentation::Web do
     end
   end
 
+  describe 'GET /enclosures' do
+    it '登録済みエリアのサマリ配列を返すこと' do
+      build_enclosure(name: 'サバンナ', capacity: 6)
+      build_enclosure(name: '熱帯雨林', capacity: 4)
+
+      get '/enclosures'
+
+      expect(last_response.status).to eq(200)
+      expect(body.map { |e| e['name'] }).to contain_exactly('サバンナ', '熱帯雨林')
+      expect(body.first).to include('capacity', 'population', 'cleanliness', 'filthy')
+    end
+
+    it 'エリアが0件のとき空配列を返すこと' do
+      get '/enclosures'
+
+      expect(last_response.status).to eq(200)
+      expect(body).to eq([])
+    end
+  end
+
   describe 'GET /enclosures/:id' do
     it '存在しない id は EnclosureNotFound で404に翻訳されること' do
       get '/enclosures/missing'
