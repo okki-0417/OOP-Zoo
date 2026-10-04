@@ -11,9 +11,6 @@ module Zoo
       set :show_exceptions, false
       set :host_authorization, { permitted_hosts: [] }
 
-      set :public_folder, File.expand_path('../../../frontend/dist', __dir__)
-      set :static, true
-
       before do
         headers 'Access-Control-Allow-Origin' => '*',
                 'Access-Control-Allow-Methods' => 'GET, POST, PATCH, DELETE, OPTIONS',
@@ -21,46 +18,6 @@ module Zoo
       end
 
       options('*') { 200 }
-
-      helpers do
-        def container
-          settings.container ||= Zoo::Composition::Container.new
-        end
-
-        def request_params
-          @request_params ||= parse_request_params
-        end
-
-        def parse_request_params
-          return params unless request.media_type == 'application/json' && request.content_length.to_i.positive?
-
-          body = JSON.parse(request.body.read)
-          request.body.rewind
-          (body.is_a?(Hash) ? body : {}).merge(params)
-        end
-
-        def integer(key)
-          Integer(request_params[key].to_s)
-        end
-
-        def commands
-          Application::Commands
-        end
-
-        def respond(use_case, command)
-          code, data = container.public_send(use_case, command, renderer: Renderers::Json)
-          content_type :json
-          status code
-          data.to_json
-        end
-
-        def error_json(code)
-          error = env['sinatra.error']
-          content_type :json
-          status code
-          { error: { code: error.class.name.split('::').last, message: error.message } }.to_json
-        end
-      end
 
       error(ArgumentError) { error_json(400) }
 
@@ -145,12 +102,44 @@ module Zoo
       post('/operate') { respond(:operate_day, commands::OperateDayCommand.new) }
       post('/run-days') { respond(:run_days, commands::RunDaysCommand.new(days: integer('days'))) }
 
-      get '/' do
-        index = File.join(settings.public_folder, 'index.html')
-        return send_file(index) if File.exist?(index)
+      private
 
+      def container
+        settings.container ||= Zoo::Composition::Container.new
+      end
+
+      def request_params
+        @request_params ||= parse_request_params
+      end
+
+      def parse_request_params
+        return params unless request.media_type == 'application/json' && request.content_length.to_i.positive?
+
+        body = JSON.parse(request.body.read)
+        request.body.rewind
+        (body.is_a?(Hash) ? body : {}).merge(params)
+      end
+
+      def integer(key)
+        Integer(request_params[key].to_s)
+      end
+
+      def commands
+        Application::Commands
+      end
+
+      def respond(use_case, command)
+        code, data = container.public_send(use_case, command, renderer: Renderers::Json)
         content_type :json
-        { message: 'OOP-Zoo API。フロントは frontend/ を npm run build するとここで配信されます。' }.to_json
+        status code
+        data.to_json
+      end
+
+      def error_json(code)
+        error = env['sinatra.error']
+        content_type :json
+        status code
+        { error: { code: error.class.name.split('::').last, message: error.message } }.to_json
       end
     end
   end
