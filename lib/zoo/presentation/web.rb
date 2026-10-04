@@ -87,6 +87,17 @@ module Zoo
       post('/operate') { dispatch(OperateDay) }
       post('/run-days') { dispatch(RunDays) }
 
+      get('/api/v1/species')                          { dispatch(ListSpecies) }
+      get('/api/v1/taxon-classes')                    { dispatch(ListTaxonClasses) }
+      get('/api/v1/report')                           { dispatch(Report) }
+      post('/api/v1/enclosures')                      { dispatch(AddEnclosure) }
+      get('/api/v1/enclosures')                       { dispatch(ListEnclosures) }
+      post('/api/v1/animals')                         { dispatch(AcquireAnimal) }
+      get('/api/v1/animals')                          { dispatch(ListAnimals) }
+      post('/api/v1/enclosures/:id/occupants')        { dispatch(HouseAnimal) }
+      post('/api/v1/keepers')                         { dispatch(HireKeeper) }
+      post('/api/v1/operate')                         { dispatch(OperateDay) }
+
       get '/' do
         index = File.join(settings.public_folder, 'index.html')
         return send_file(index) if File.exist?(index)

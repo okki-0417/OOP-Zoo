@@ -1,0 +1,13 @@
+/vendor/bundle
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+/db/*.sqlite3
+/db/*.sqlite3-*
+/storage/*
+!/storage/.keep
+.byebug_history
+/public/assets
+.env*
+/config/master.key
