@@ -28,7 +28,7 @@ RSpec.describe Zoo::Presentation::Web do
   end
 
   def acquire(species: 'lion', name: 'レオ', sex: 'male')
-    post_json '/animals', species: species, name: name, sex: sex
+    post_json '/animals', species_code: species, name: name, sex: sex
     body['id']
   end
 
@@ -73,15 +73,21 @@ RSpec.describe Zoo::Presentation::Web do
 
   describe 'POST /animals' do
     it '種・名前・性別を JSON で渡すと201で動物プロフィールを返し Container に保存されること' do
-      post_json '/animals', species: 'lion', name: 'レオ', sex: 'male'
+      post_json '/animals', species_code: 'lion', name: 'レオ', sex: 'male'
 
       expect(last_response.status).to eq(201)
       expect(body).to include('name' => 'レオ', 'species' => 'ライオン', 'health' => 100, 'alive' => true)
       expect(container.animals.all.size).to eq(1)
     end
 
+    it '許可していない max_health=9999 を送っても無視され max_health=100 になること' do
+      post_json '/animals', species_code: 'lion', name: 'レオ', sex: 'male', max_health: 9999
+
+      expect(body).to include('max_health' => 100)
+    end
+
     it 'species=dragon(未知の種)は {error:{code:"SpeciesNotFound"}} で404に翻訳されること' do
-      post_json '/animals', species: 'dragon', name: 'X', sex: 'male'
+      post_json '/animals', species_code: 'dragon', name: 'X', sex: 'male'
 
       expect(last_response.status).to eq(404)
       expect(body['error']).to include('code' => 'SpeciesNotFound')
@@ -89,14 +95,14 @@ RSpec.describe Zoo::Presentation::Web do
     end
 
     it 'sex=other(未知の性別)は {error:{code:"InvalidValue"}} で422に翻訳され保存されないこと' do
-      post_json '/animals', species: 'lion', name: 'X', sex: 'other'
+      post_json '/animals', species_code: 'lion', name: 'X', sex: 'other'
 
       expect(last_response.status).to eq(422)
       expect(body['error']).to include('code' => 'InvalidValue')
       expect(container.animals.all).to be_empty
     end
 
-    it 'species を省略すると {error:{code:"ArgumentError"}} で400に翻訳されること' do
+    it 'species_code を省略すると {error:{code:"ArgumentError"}} で400に翻訳されること' do
       post_json '/animals', name: 'X', sex: 'male'
 
       expect(last_response.status).to eq(400)
@@ -138,7 +144,7 @@ RSpec.describe Zoo::Presentation::Web do
     it '新しい名前を渡すと改名され、更新後プロフィールを返すこと' do
       id = acquire(name: 'レオ')
 
-      patch_json "/animals/#{id}/name", name: 'シンバ'
+      patch_json "/animals/#{id}/name", new_name: 'シンバ'
 
       expect(last_response.status).to eq(200)
       expect(body['name']).to eq('シンバ')
@@ -254,7 +260,7 @@ RSpec.describe Zoo::Presentation::Web do
       keeper_id = hire_keeper(specialties: ['mammal'])
       animal_id = acquire(species: 'lion')
 
-      post_json "/animals/#{animal_id}/feedings", keeper_id: keeper_id, food: 'horse_meat'
+      post_json "/animals/#{animal_id}/feedings", keeper_id: keeper_id, food_code: 'horse_meat'
 
       expect(last_response.status).to eq(200)
       expect(body).to include('id' => animal_id)
@@ -265,7 +271,7 @@ RSpec.describe Zoo::Presentation::Web do
       keeper_id = hire_keeper(specialties: ['bird'])
       animal_id = acquire(species: 'lion')
 
-      post_json "/animals/#{animal_id}/feedings", keeper_id: keeper_id, food: 'horse_meat'
+      post_json "/animals/#{animal_id}/feedings", keeper_id: keeper_id, food_code: 'horse_meat'
 
       expect(last_response.status).to eq(422)
       expect(body['error']).to include('code' => 'FeedingNotAllowed')

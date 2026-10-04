@@ -69,9 +69,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [species, name, sex]
+              required: [species_code, name, sex]
               properties:
-                species: { type: string, description: 種キー(/species の key) }
+                species_code: { type: string, description: 種キー(/species の key) }
                 name: { type: string }
                 sex: { type: string, enum: [male, female] }
       responses:
@@ -81,9 +81,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Animal' }
         '400': { $ref: '#/components/responses/Error' }
-  /animals/{id}:
+  /animals/{animal_id}:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: animal_id, in: path, required: true, schema: { type: string } }
     get:
       summary: 個体詳細
       operationId: showAnimal
@@ -94,9 +94,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Animal' }
         '404': { $ref: '#/components/responses/Error' }
-  /animals/{id}/name:
+  /animals/{animal_id}/name:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: animal_id, in: path, required: true, schema: { type: string } }
     patch:
       summary: 改名する
       operationId: renameAnimal
@@ -106,9 +106,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [name]
+              required: [new_name]
               properties:
-                name: { type: string }
+                new_name: { type: string }
       responses:
         '200':
           description: 更新後の個体
@@ -116,9 +116,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Animal' }
         '404': { $ref: '#/components/responses/Error' }
-  /animals/{id}/feedings:
+  /animals/{animal_id}/feedings:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: animal_id, in: path, required: true, schema: { type: string } }
     post:
       summary: 給餌する
       operationId: feedAnimal
@@ -128,10 +128,10 @@ paths:
           application/json:
             schema:
               type: object
-              required: [keeper_id, food]
+              required: [keeper_id, food_code]
               properties:
                 keeper_id: { type: string }
-                food: { type: string, description: 餌キー(/foods の key) }
+                food_code: { type: string, description: 餌キー(/foods の key) }
       responses:
         '200':
           description: 更新後の個体
@@ -140,9 +140,9 @@ paths:
               schema: { $ref: '#/components/schemas/Animal' }
         '404': { $ref: '#/components/responses/Error' }
         '422': { $ref: '#/components/responses/Error' }
-  /animals/{id}/treatments:
+  /animals/{animal_id}/treatments:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: animal_id, in: path, required: true, schema: { type: string } }
     post:
       summary: 治療する
       operationId: treatAnimal
@@ -163,9 +163,9 @@ paths:
               schema: { $ref: '#/components/schemas/Animal' }
         '404': { $ref: '#/components/responses/Error' }
         '422': { $ref: '#/components/responses/Error' }
-  /animals/{id}/examinations:
+  /animals/{animal_id}/examinations:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: animal_id, in: path, required: true, schema: { type: string } }
     post:
       summary: 診察する
       operationId: examineAnimal
@@ -185,9 +185,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ExamineResult' }
         '404': { $ref: '#/components/responses/Error' }
-  /animals/{id}/transfer:
+  /animals/{animal_id}/transfer:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: animal_id, in: path, required: true, schema: { type: string } }
     post:
       summary: 別エリアへ移送する
       operationId: transferAnimal
@@ -242,9 +242,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Enclosure' }
         '400': { $ref: '#/components/responses/Error' }
-  /enclosures/{id}:
+  /enclosures/{enclosure_id}:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: enclosure_id, in: path, required: true, schema: { type: string } }
     get:
       summary: エリア詳細
       operationId: showEnclosure
@@ -255,9 +255,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Enclosure' }
         '404': { $ref: '#/components/responses/Error' }
-  /enclosures/{id}/occupants:
+  /enclosures/{enclosure_id}/occupants:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: enclosure_id, in: path, required: true, schema: { type: string } }
     post:
       summary: 個体を収容する
       operationId: houseAnimal
@@ -278,9 +278,9 @@ paths:
               schema: { $ref: '#/components/schemas/Enclosure' }
         '404': { $ref: '#/components/responses/Error' }
         '422': { $ref: '#/components/responses/Error' }
-  /enclosures/{id}/occupants/{animal_id}:
+  /enclosures/{enclosure_id}/occupants/{animal_id}:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: enclosure_id, in: path, required: true, schema: { type: string } }
       - { name: animal_id, in: path, required: true, schema: { type: string } }
     delete:
       summary: 個体をエリアから退去させる
@@ -292,9 +292,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Animal' }
         '404': { $ref: '#/components/responses/Error' }
-  /enclosures/{id}/cleanings:
+  /enclosures/{enclosure_id}/cleanings:
     parameters:
-      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: enclosure_id, in: path, required: true, schema: { type: string } }
     post:
       summary: エリアを清掃する
       operationId: cleanEnclosure
