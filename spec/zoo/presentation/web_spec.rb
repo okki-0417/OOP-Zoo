@@ -379,4 +379,24 @@ RSpec.describe Zoo::Presentation::Web do
       expect(body).to include('days' => 3, 'total_deaths' => 0)
     end
   end
+
+  describe '最小ゲームループ e2e' do
+    it '檻→動物→収容→飼育員→運営→レポートの一周で population=1・bankrupt=false になること' do
+      enclosure_id = build_enclosure
+      animal_id = acquire
+      post_json "/enclosures/#{enclosure_id}/occupants", animal_id: animal_id
+      expect(last_response.status).to eq(200)
+
+      hire_keeper
+      expect(last_response.status).to eq(201)
+
+      post '/operate'
+      expect(last_response.status).to eq(200)
+      expect(body['bankrupt']).to eq(false)
+
+      get '/report'
+      expect(last_response.status).to eq(200)
+      expect(body['population']).to eq(1)
+    end
+  end
 end

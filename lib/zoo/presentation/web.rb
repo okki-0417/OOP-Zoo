@@ -22,10 +22,6 @@ module Zoo
 
       options('*') { 200 }
 
-      def self.with_v1(verb, path, &)
-        [path, "/api/v1#{path}"].each { |versioned| public_send(verb, versioned, &) }
-      end
-
       helpers do
         def container
           settings.container ||= Zoo::Composition::Container.new
@@ -68,11 +64,11 @@ module Zoo
 
       error(ArgumentError) { error_json(400) }
 
-      with_v1(:get, '/species') { respond(:species_list, commands::SpeciesListCommand.new) }
+      get('/species') { respond(:species_list, commands::SpeciesListCommand.new) }
       get('/foods') { respond(:food_list, commands::FoodListCommand.new) }
-      with_v1(:get, '/taxon-classes') { respond(:taxon_class_list, commands::TaxonClassListCommand.new) }
+      get('/taxon-classes') { respond(:taxon_class_list, commands::TaxonClassListCommand.new) }
 
-      with_v1(:get, '/animals') { respond(:animal_list, commands::AnimalListCommand.new) }
+      get('/animals') { respond(:animal_list, commands::AnimalListCommand.new) }
       post('/animals') do
         respond(:acquire_animal, commands::AcquireAnimalCommand.new(
                                    species_code: request_params['species'], name: request_params['name'], sex: request_params['sex']
@@ -105,8 +101,8 @@ module Zoo
                                   ))
       end
 
-      with_v1(:get, '/enclosures') { respond(:enclosure_list, commands::EnclosureListCommand.new) }
-      with_v1(:post, '/enclosures') do
+      get('/enclosures') { respond(:enclosure_list, commands::EnclosureListCommand.new) }
+      post('/enclosures') do
         respond(:add_enclosure, commands::AddEnclosureCommand.new(
                                   name: request_params['name'], celsius: integer('celsius'), capacity: integer('capacity')
                                 ))
@@ -114,7 +110,7 @@ module Zoo
       get('/enclosures/:id') do
         respond(:enclosure_detail, commands::EnclosureDetailCommand.new(enclosure_id: params['id']))
       end
-      with_v1(:post, '/enclosures/:id/occupants') do
+      post('/enclosures/:id/occupants') do
         respond(:house_animal, commands::HouseAnimalCommand.new(
                                  enclosure_id: params['id'], animal_id: request_params['animal_id']
                                ))
@@ -129,7 +125,7 @@ module Zoo
       end
 
       get('/keepers') { respond(:keeper_list, commands::KeeperListCommand.new) }
-      with_v1(:post, '/keepers') do
+      post('/keepers') do
         respond(:hire_keeper, commands::HireKeeperCommand.new(
                                 name: request_params['name'], specialties: request_params['specialties']
                               ))
@@ -139,14 +135,14 @@ module Zoo
         respond(:hire_veterinarian, commands::HireVeterinarianCommand.new(name: request_params['name']))
       end
 
-      with_v1(:get, '/report') { respond(:zoo_report, commands::ZooReportCommand.new) }
+      get('/report') { respond(:zoo_report, commands::ZooReportCommand.new) }
       get('/deceased') { respond(:deceased_list, commands::DeceasedListCommand.new) }
       get('/threatened') { respond(:threatened_species, commands::ThreatenedSpeciesCommand.new) }
       post('/visitors') { respond(:admit_visitors, commands::AdmitVisitorsCommand.new(count: integer('count'))) }
       patch('/admission-fee') do
         respond(:set_admission_fee, commands::SetAdmissionFeeCommand.new(fee: integer('fee')))
       end
-      with_v1(:post, '/operate') { respond(:operate_day, commands::OperateDayCommand.new) }
+      post('/operate') { respond(:operate_day, commands::OperateDayCommand.new) }
       post('/run-days') { respond(:run_days, commands::RunDaysCommand.new(days: integer('days'))) }
 
       get '/' do
