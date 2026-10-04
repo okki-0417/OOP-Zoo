@@ -2,6 +2,8 @@
 
 ## 開発ワークフロー上の注意
 
+- 基本的にコミットのタイミングと粒度は Claude に任せます。
+
 ### 集約に属するVOは、集約ごとのディレクトリに置く
 
 - 例: `app/domain/animal.rb` の VO は `app/domain/animal/` に置く
