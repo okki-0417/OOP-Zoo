@@ -23,9 +23,12 @@ module Zoo
               )
 
               zoo = @command.zoo.load
-              Domain::Acquiring.new(zoo: zoo, animal: animal).settle
+
+              Domain::Acquiring.new(zoo:, animal:).settle
+
               @command.zoo.save(zoo)
               @command.animals.save(animal)
+
               animal
             end
             ReadModels::AnimalProfile.of(animal, enclosure: nil)
