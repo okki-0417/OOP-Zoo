@@ -55,7 +55,7 @@ Metrics/AbcSize:
     - 'lib/zoo/infrastructure/sqlite/animal_mapper.rb'
     - 'lib/zoo/infrastructure/sqlite/animal_repository.rb'
     - 'lib/zoo/infrastructure/sqlite/assignment_repository.rb'
-    - 'lib/zoo/presentation/web.rb'
+    - 'lib/zoo/presentation/rest.rb'
 
 # Offense count: 4
 # Configuration parameters: CountComments, Max, CountAsOne.
@@ -68,7 +68,7 @@ Metrics/ClassLength:
     - 'lib/zoo/domain/species.rb'
     - 'lib/zoo/domain/zoo.rb'
     - 'lib/zoo/infrastructure/sqlite/database.rb'
-    - 'lib/zoo/presentation/web.rb'
+    - 'lib/zoo/presentation/rest.rb'
 
 # Offense count: 4
 # Configuration parameters: AllowedMethods, AllowedPatterns, Max.
@@ -111,7 +111,7 @@ Metrics/MethodLength:
     - 'lib/zoo/domain/zoo.rb'
     - 'lib/zoo/infrastructure/sqlite/animal_mapper.rb'
     - 'lib/zoo/infrastructure/sqlite/database.rb'
-    - 'lib/zoo/presentation/web.rb'
+    - 'lib/zoo/presentation/rest.rb'
 
 # Offense count: 4
 # Configuration parameters: CountComments, Max, CountAsOne.

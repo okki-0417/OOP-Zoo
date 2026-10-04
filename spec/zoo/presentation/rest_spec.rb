@@ -4,7 +4,7 @@ require 'spec_helper'
 require 'rack/test'
 require 'json'
 
-RSpec.describe Zoo::Presentation::Web do
+RSpec.describe Zoo::Presentation::Rest do
   include Rack::Test::Methods
 
   let(:container) { Zoo::Composition::Container.new }

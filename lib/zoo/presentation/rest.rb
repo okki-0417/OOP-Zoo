@@ -5,7 +5,7 @@ require 'json'
 
 module Zoo
   module Presentation
-    class Web < Sinatra::Base
+    class Rest < Sinatra::Base
       set :container, nil
       set :raise_errors, false
       set :show_exceptions, false
