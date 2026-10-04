@@ -1,11 +1,4 @@
-const yenFormat = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY" });
-
-export const yen = (amount: number) => yenFormat.format(amount);
-
-export const percent = (value: number, max: number) =>
-  max <= 0 ? 0 : Math.max(0, Math.min(100, Math.round((value / max) * 100)));
-
-const classEmoji: Record<string, string> = {
+const byTaxonClass: Record<string, string> = {
   哺乳類: "🦁",
   鳥類: "🐧",
   爬虫類: "🐢",
@@ -14,7 +7,7 @@ const classEmoji: Record<string, string> = {
   無脊椎動物: "🪲",
 };
 
-const speciesEmoji: Record<string, string> = {
+const bySpecies: Record<string, string> = {
   ライオン: "🦁",
   アフリカゾウ: "🐘",
   アミメキリン: "🦒",
@@ -33,4 +26,4 @@ const speciesEmoji: Record<string, string> = {
 };
 
 export const emojiOf = (species: string, taxonClass?: string) =>
-  speciesEmoji[species] ?? (taxonClass && classEmoji[taxonClass]) ?? "🐾";
+  bySpecies[species] ?? (taxonClass && byTaxonClass[taxonClass]) ?? "🐾";

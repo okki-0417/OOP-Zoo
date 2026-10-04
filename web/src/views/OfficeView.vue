@@ -6,7 +6,7 @@ import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
 import { useCommand } from "../composables/useCommand";
 import { useQuery } from "../composables/useQuery";
-import { yen } from "../format";
+import { yen } from "../lib/currency";
 
 const report = useQuery(() => unwrap(api.GET("/report")));
 const threatened = useQuery(() => unwrap(api.GET("/threatened")));

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { percent } from "../format";
 
 const props = defineProps<{
   label: string;
@@ -9,7 +8,9 @@ const props = defineProps<{
   invert?: boolean;
 }>();
 
-const ratio = computed(() => percent(props.value, props.max));
+const ratio = computed(() =>
+  props.max <= 0 ? 0 : Math.max(0, Math.min(100, Math.round((props.value / props.max) * 100))),
+);
 const tone = computed(() => {
   const goodness = props.invert ? 100 - ratio.value : ratio.value;
   if (goodness >= 60) return "good";

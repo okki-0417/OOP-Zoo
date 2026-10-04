@@ -6,7 +6,7 @@ import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
 import { useCommand } from "../composables/useCommand";
 import { useQuery } from "../composables/useQuery";
-import { emojiOf } from "../format";
+import { emojiOf } from "../lib/emoji";
 
 const props = defineProps<{ id: string }>();
 
