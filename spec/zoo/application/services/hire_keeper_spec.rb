@@ -3,11 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::HireKeeper do
-  taxonomy  = Zoo::Domain
   domain    = Zoo::Domain
   money     = Zoo::Domain::Shared::Money
   balance   = Zoo::Domain::Shared::Balance
-  commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:keepers) { in_memory::InMemoryKeeperRepository.new }
@@ -18,34 +16,42 @@ RSpec.describe Zoo::Application::Services::HireKeeper do
     )
   end
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [keepers]) }
-  let(:service) { described_class.new(keepers: keepers, zoo: zoo_repo, unit_of_work: unit_of_work) }
-  let(:command) { commands::HireKeeperCommand.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal]) }
+
+  def call_with(specialties: %w[mammal])
+    command = Zoo::Application::Commands::HireKeeperCommand.new(name: '田中', specialties:)
+                                                           .bind(keepers:, zoo: zoo_repo, unit_of_work:)
+    described_class.new(command: command).call
+  end
 
   describe '#call' do
-    it '採番された id で find できる飼育員が保存されること' do
-      keeper = service.call(command)
+    it 'name=\'田中\' specialties=[\'mammal\'] で雇うと、result.value の id で find できる飼育員が保存されること' do
+      summary = call_with.value
 
-      expect(keepers.find(keeper.id)).to eq(keeper)
-      expect(keeper.name).to eq('田中')
+      expect(keepers.find(summary.id).name).to eq('田中')
+      expect(summary).to have_attributes(name: '田中', specialties: '哺乳類')
     end
 
     it '採用の一時金(20,000円)ぶん残高が減ること' do
-      service.call(command)
+      call_with
 
       expect(zoo_repo.load.balance).to eq(balance.new(80_000))
     end
 
     it '空の specialties を渡すと Keeper の不変条件で ArgumentError が発生すること' do
-      bad = commands::HireKeeperCommand.new(name: '田中', specialties: [])
+      expect { call_with(specialties: []) }.to raise_error(ArgumentError)
+    end
 
-      expect { service.call(bad) }.to raise_error(ArgumentError)
+    it '未知の綱 specialties=[\'dragon\'] を渡すと TaxonClass の検証で ArgumentError が発生すること' do
+      expect { call_with(specialties: %w[dragon]) }.to raise_error(ArgumentError)
     end
 
     context '残高が一時金に満たないとき' do
       let(:funds) { 10_000 }
 
-      it 'InsufficientFunds になり、飼育員は保存されないこと' do
-        expect { service.call(command) }.to raise_error(Zoo::Domain::Errors::InsufficientFunds)
+      it 'result.error が InsufficientFunds になり、飼育員は保存されないこと' do
+        result = call_with
+
+        expect(result.error).to be_a(Zoo::Domain::Errors::InsufficientFunds)
         expect(keepers.all).to be_empty
         expect(zoo_repo.load.balance).to eq(balance.new(10_000))
       end

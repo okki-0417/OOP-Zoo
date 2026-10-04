@@ -4,12 +4,14 @@ module Zoo
   module Application
     module Queries
       class Revenue
-        def initialize(zoo:)
-          @zoo = zoo
+        def initialize(command:)
+          @command = command
         end
 
         def call
-          @zoo.load.revenue
+          Result.capture(:revenue) do
+            @command.zoo.load.revenue
+          end
         end
       end
     end

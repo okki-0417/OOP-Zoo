@@ -4,23 +4,27 @@ module Zoo
   module Application
     module Services
       class FeedAnimal
-        def initialize(keepers:, animals:, unit_of_work:)
-          @keepers = keepers
-          @animals = animals
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            keeper = @keepers.find(command.keeper_id)
-            raise Errors::KeeperNotFound, "飼育員 #{command.keeper_id} は存在しません" if keeper.nil?
+        def call
+          Result.capture(:feed_animal) do
+            food = @command.foods.find(@command.food_code) or
+              raise Errors::FoodNotFound, "未知の餌です: #{@command.food_code}"
 
-            animal = @animals.find(command.animal_id)
-            raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
+            animal = @command.unit_of_work.run do
+              keeper = @command.keepers.find(@command.keeper_id)
+              raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません" if keeper.nil?
 
-            Domain::Feeding.new(keeper: keeper, animal: animal, foods: [command.food]).serve
-            @animals.save(animal)
-            animal
+              animal = @command.animals.find(@command.animal_id)
+              raise Errors::AnimalNotFound, "動物 #{@command.animal_id} は存在しません" if animal.nil?
+
+              Domain::Feeding.new(keeper: keeper, animal: animal, foods: [food]).serve
+              @command.animals.save(animal)
+              animal
+            end
+            ReadModels::AnimalProfile.housed(animal, housings: @command.housings)
           end
         end
       end

@@ -3,8 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'AcquireAnimal on SQLite' do
-  catalog = Zoo::Domain::SpeciesCatalog
-  sqlite  = Zoo::Infrastructure::Sqlite
+  sqlite = Zoo::Infrastructure::Sqlite
 
   it '実トランザクションで個体を受け入れ、永続化されること' do
     database = sqlite::Database.new
@@ -16,17 +15,14 @@ RSpec.describe 'AcquireAnimal on SQLite' do
         funds: Zoo::Domain::Shared::Money.yen(100_000)
       )
     )
-    service = Zoo::Application::Services::AcquireAnimal.new(
-      animals: animals, zoo: zoo, unit_of_work: sqlite::UnitOfWork.new(database)
+    command = Zoo::Application::Commands::AcquireAnimalCommand.new(species_code: 'lion', name: 'レオ', sex: 'male').bind(
+      animals: animals, species: Zoo::Infrastructure::InMemory::InMemorySpeciesRepository.new, zoo: zoo,
+      unit_of_work: sqlite::UnitOfWork.new(database)
     )
 
-    animal = service.call(
-      Zoo::Application::Commands::AcquireAnimalCommand.new(
-        species: catalog.lion, name: 'レオ', sex: Zoo::Domain::Animal::Sex.male, max_health: 100
-      )
-    )
+    profile = Zoo::Application::Services::AcquireAnimal.new(command: command).call.value
 
-    expect(animals.find(animal.id).name.to_s).to eq('レオ')
+    expect(animals.find(profile.id).name.to_s).to eq('レオ')
     expect(animals.all.size).to eq(1)
   end
 end

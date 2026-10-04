@@ -26,177 +26,65 @@ module Zoo
         )
       end
 
-      def acquire_animal
-        Application::Services::AcquireAnimal.new(animals: @animals, zoo: @zoo, unit_of_work: @unit_of_work)
-      end
+      SERVICES = {
+        acquire_animal: Application::Services::AcquireAnimal,
+        add_enclosure: Application::Services::AddEnclosure,
+        admit_visitors: Application::Services::AdmitVisitors,
+        assign_keeper: Application::Services::AssignKeeper,
+        clean_enclosure: Application::Services::CleanEnclosure,
+        conceive_animals: Application::Services::ConceiveAnimals,
+        deliver_animal: Application::Services::DeliverAnimal,
+        discharge_keeper: Application::Services::DischargeKeeper,
+        examine_animal: Application::Services::ExamineAnimal,
+        feed_animal: Application::Services::FeedAnimal,
+        hire_keeper: Application::Services::HireKeeper,
+        hire_veterinarian: Application::Services::HireVeterinarian,
+        house_animal: Application::Services::HouseAnimal,
+        name_animal: Application::Services::NameAnimal,
+        open_for_a_day: Application::Services::OpenForADay,
+        operate_day: Application::Services::OperateDay,
+        release_animal: Application::Services::ReleaseAnimal,
+        rename_animal: Application::Services::RenameAnimal,
+        run_days: Application::Services::RunDays,
+        set_admission_fee: Application::Services::SetAdmissionFee,
+        transfer_animal: Application::Services::TransferAnimal,
+        treat_animal: Application::Services::TreatAnimal,
+        animal_detail: Application::Queries::AnimalDetail,
+        animal_list: Application::Queries::AnimalList,
+        deceased_list: Application::Queries::DeceasedList,
+        enclosure_detail: Application::Queries::EnclosureDetail,
+        enclosure_list: Application::Queries::EnclosureList,
+        keeper_list: Application::Queries::KeeperList,
+        operating_history: Application::Queries::OperatingHistory,
+        population: Application::Queries::Population,
+        revenue: Application::Queries::Revenue,
+        threatened_species: Application::Queries::ThreatenedSpecies,
+        veterinarian_list: Application::Queries::VeterinarianList,
+        zoo_report: Application::Queries::ZooReport,
+        species_list: Application::Queries::SpeciesList,
+        food_list: Application::Queries::FoodList,
+        taxon_class_list: Application::Queries::TaxonClassList
+      }.freeze
 
-      def rename_animal
-        Application::Services::RenameAnimal.new(animals: @animals, unit_of_work: @unit_of_work)
-      end
-
-      def add_enclosure
-        Application::Services::AddEnclosure.new(enclosures: @enclosures, zoo: @zoo, unit_of_work: @unit_of_work)
-      end
-
-      def hire_keeper
-        Application::Services::HireKeeper.new(keepers: @keepers, zoo: @zoo, unit_of_work: @unit_of_work)
-      end
-
-      def hire_veterinarian
-        Application::Services::HireVeterinarian.new(
-          veterinarians: @veterinarians, zoo: @zoo, unit_of_work: @unit_of_work
-        )
-      end
-
-      def admit_visitors
-        Application::Services::AdmitVisitors.new(zoo: @zoo, unit_of_work: @unit_of_work)
-      end
-
-      def set_admission_fee
-        Application::Services::SetAdmissionFee.new(zoo: @zoo, unit_of_work: @unit_of_work)
-      end
-
-      def examine_animal
-        Application::Services::ExamineAnimal.new(
-          veterinarians: @veterinarians, animals: @animals, unit_of_work: @unit_of_work
-        )
-      end
-
-      def transfer_animal
-        Application::Services::TransferAnimal.new(
-          enclosures: @enclosures, animals: @animals, housings: @housings, unit_of_work: @unit_of_work
-        )
-      end
-
-      def release_animal
-        Application::Services::ReleaseAnimal.new(
-          animals: @animals, housings: @housings, unit_of_work: @unit_of_work
-        )
-      end
-
-      def house_animal
-        Application::Services::HouseAnimal.new(
-          enclosures: @enclosures, animals: @animals, housings: @housings, unit_of_work: @unit_of_work
-        )
-      end
-
-      def feed_animal
-        Application::Services::FeedAnimal.new(keepers: @keepers, animals: @animals, unit_of_work: @unit_of_work)
-      end
-
-      def treat_animal
-        Application::Services::TreatAnimal.new(
-          veterinarians: @veterinarians, animals: @animals, unit_of_work: @unit_of_work
-        )
-      end
-
-      def clean_enclosure
-        Application::Services::CleanEnclosure.new(
-          keepers: @keepers, enclosures: @enclosures, unit_of_work: @unit_of_work
-        )
-      end
-
-      def assign_keeper
-        Application::Services::AssignKeeper.new(
-          keepers: @keepers, enclosures: @enclosures, housings: @housings,
-          assignments: @assignments, unit_of_work: @unit_of_work
-        )
-      end
-
-      def discharge_keeper
-        Application::Services::DischargeKeeper.new(
-          keepers: @keepers, enclosures: @enclosures,
-          assignments: @assignments, unit_of_work: @unit_of_work
-        )
-      end
-
-      def conceive_animals
-        Application::Services::ConceiveAnimals.new(
-          animals: @animals, breedings: @breedings, births: @births, zoo: @zoo,
-          unit_of_work: @unit_of_work
-        )
-      end
-
-      def deliver_animal
-        Application::Services::DeliverAnimal.new(
-          animals: @animals, enclosures: @enclosures, housings: @housings, keepers: @keepers,
-          breedings: @breedings, births: @births, zoo: @zoo, unit_of_work: @unit_of_work
-        )
-      end
-
-      def name_animal
-        Application::Services::NameAnimal.new(animals: @animals, unit_of_work: @unit_of_work)
-      end
-
-      def open_for_a_day
-        Application::Services::OpenForADay.new(
-          enclosures: @enclosures, animals: @animals, housings: @housings,
-          unit_of_work: @unit_of_work
-        )
-      end
-
-      def run_days
-        Application::Services::RunDays.new(open_for_a_day: open_for_a_day)
-      end
-
-      def operate_day
-        Application::Services::OperateDay.new(
-          animals: @animals, enclosures: @enclosures, housings: @housings,
-          keepers: @keepers, veterinarians: @veterinarians,
-          zoo: @zoo, operatings: @operatings, unit_of_work: @unit_of_work
-        )
-      end
-
-      def operating_history
-        Application::Queries::OperatingHistory.new(operatings: @operatings)
-      end
-
-      def threatened_species
-        Application::Queries::ThreatenedSpecies.new(housings: @housings)
-      end
-
-      def population
-        Application::Queries::Population.new(housings: @housings)
-      end
-
-      def revenue
-        Application::Queries::Revenue.new(zoo: @zoo)
-      end
-
-      def zoo_report
-        Application::Queries::ZooReport.new(enclosures: @enclosures, housings: @housings,
-                                            zoo: @zoo, animals: @animals, births: @births)
-      end
-
-      def enclosure_list
-        Application::Queries::EnclosureList.new(enclosures: @enclosures, housings: @housings)
-      end
-
-      def animal_list
-        Application::Queries::AnimalList.new(animals: @animals)
-      end
-
-      def keeper_list
-        Application::Queries::KeeperList.new(keepers: @keepers)
-      end
-
-      def veterinarian_list
-        Application::Queries::VeterinarianList.new(veterinarians: @veterinarians)
-      end
-
-      def animal_detail
-        Application::Queries::AnimalDetail.new(animals: @animals, enclosures: @enclosures, housings: @housings)
-      end
-
-      def enclosure_detail
-        Application::Queries::EnclosureDetail.new(enclosures: @enclosures, housings: @housings)
-      end
-
-      def deceased_list
-        Application::Queries::DeceasedList.new(animals: @animals)
+      SERVICES.each do |name, service_class|
+        define_method(name) do |command, renderer:|
+          renderer.render(call_application_service(service_class, command))
+        end
       end
 
       private
+
+      def call_application_service(service_class, command)
+        service_class.new(command: command.bind(unit_of_work: @unit_of_work, **repositories)).call
+      end
+
+      def repositories
+        {
+          animals: @animals, enclosures: @enclosures, housings: @housings, keepers: @keepers,
+          veterinarians: @veterinarians, breedings: @breedings, births: @births,
+          assignments: @assignments, operatings: @operatings, species: @species, foods: @foods, zoo: @zoo
+        }
+      end
 
       def setup_in_memory(state)
         store = Infrastructure::InMemory
@@ -211,6 +99,8 @@ module Zoo
         @assignments = store::InMemoryAssignmentRepository.new(state.fetch(:assignments, []))
         @operatings = store::InMemoryOperatingRepository.new(state.fetch(:operatings, []))
         @zoo = store::InMemoryZooRepository.new(state.fetch(:zoo, default_zoo))
+        @species = store::InMemorySpeciesRepository.new
+        @foods = store::InMemoryFoodRepository.new
 
         @unit_of_work = store::InMemoryUnitOfWork.new(
           repositories: [@animals, @enclosures, @housings, @keepers, @veterinarians, @breedings, @births,
@@ -231,6 +121,8 @@ module Zoo
         @assignments = sqlite::AssignmentRepository.new(database, @keepers, @enclosures)
         @operatings = sqlite::OperatingRepository.new(database)
         @zoo = sqlite::ZooRepository.new(database, default_zoo)
+        @species = Infrastructure::InMemory::InMemorySpeciesRepository.new
+        @foods = Infrastructure::InMemory::InMemoryFoodRepository.new
         @unit_of_work = sqlite::UnitOfWork.new(database)
       end
 

@@ -3,7 +3,19 @@
 module Zoo
   module Application
     module ReadModels
-      AnimalSummary = Data.define(:id, :name, :species, :alive, :health, :max_health, :ailing)
+      AnimalSummary = Data.define(:id, :name, :species, :alive, :health, :max_health, :ailing) do
+        def self.of(animal)
+          new(
+            id: animal.id.to_s,
+            name: animal.name,
+            species: animal.species_name,
+            alive: animal.alive?,
+            health: animal.current_health,
+            max_health: animal.max_health,
+            ailing: animal.alive? && (animal.sick? || animal.starving? || animal.weak?)
+          )
+        end
+      end
     end
   end
 end

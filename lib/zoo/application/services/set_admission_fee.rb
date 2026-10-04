@@ -4,17 +4,18 @@ module Zoo
   module Application
     module Services
       class SetAdmissionFee
-        def initialize(zoo:, unit_of_work:)
-          @zoo = zoo
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            zoo = @zoo.load
-            zoo.change_admission_fee(command.fee)
-            @zoo.save(zoo)
-            zoo.admission_fee
+        def call
+          Result.capture(:set_admission_fee) do
+            @command.unit_of_work.run do
+              zoo = @command.zoo.load
+              zoo.change_admission_fee(Domain::Shared::Money.yen(@command.fee))
+              @command.zoo.save(zoo)
+              zoo.admission_fee
+            end
           end
         end
       end

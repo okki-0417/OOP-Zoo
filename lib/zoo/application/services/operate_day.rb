@@ -4,40 +4,33 @@ module Zoo
   module Application
     module Services
       class OperateDay
-        def initialize(animals:, enclosures:, housings:, keepers:, veterinarians:, zoo:,
-                       operatings:, unit_of_work:, random: Random.new)
-          @animals       = animals
-          @enclosures    = enclosures
-          @housings      = housings
-          @keepers       = keepers
-          @veterinarians = veterinarians
-          @zoo           = zoo
-          @operatings    = operatings
-          @unit_of_work  = unit_of_work
-          @random        = random
+        def initialize(command:)
+          @command = command
         end
 
         def call
-          @unit_of_work.run do
-            zoo = @zoo.load
+          Result.capture(:operate_day) do
+            @command.unit_of_work.run do
+              zoo = @command.zoo.load
 
-            operating = Domain::Operating.new(
-              zoo:,
-              occupancies: @housings.all_occupancies,
-              keepers: @keepers.all,
-              veterinarians: @veterinarians.all,
-              yesterday_operating: @operatings.latest,
-              random: @random
-            )
+              operating = Domain::Operating.new(
+                zoo:,
+                occupancies: @command.housings.all_occupancies,
+                keepers: @command.keepers.all,
+                veterinarians: @command.veterinarians.all,
+                yesterday_operating: @command.operatings.latest,
+                random: @command.random
+              )
 
-            operating.operate_day
+              operating.operate_day
 
-            @operatings.save(operating)
-            @enclosures.save_all(operating.enclosures)
-            @animals.save_all(operating.on_exhibit)
-            @zoo.save(operating.zoo)
+              @command.operatings.save(operating)
+              @command.enclosures.save_all(operating.enclosures)
+              @command.animals.save_all(operating.on_exhibit)
+              @command.zoo.save(operating.zoo)
 
-            operating
+              operating
+            end
           end
         end
       end

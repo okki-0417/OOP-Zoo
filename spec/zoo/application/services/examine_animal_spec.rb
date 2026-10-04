@@ -6,7 +6,6 @@ RSpec.describe Zoo::Application::Services::ExamineAnimal do
   taxonomy  = Zoo::Domain
   staff     = Zoo::Domain
   medical   = Zoo::Domain
-  commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:penguin) { build_adult(taxonomy::SpeciesCatalog.emperor_penguin, name: 'ペン') }
@@ -15,26 +14,28 @@ RSpec.describe Zoo::Application::Services::ExamineAnimal do
   let(:veterinarians) { in_memory::InMemoryVeterinarianRepository.new([vet]) }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([penguin]) }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
-  let(:service) { described_class.new(veterinarians: veterinarians, animals: animals, unit_of_work: unit_of_work) }
+
+  def examine(veterinarian_id: vet.id, animal_id: penguin.id)
+    command = Zoo::Application::Commands::ExamineAnimalCommand.new(veterinarian_id:, animal_id:)
+    described_class.new(command: command.bind(veterinarians:, animals:, unit_of_work:)).call
+  end
 
   describe '#call' do
-    it '健康な個体を診ると :healthy を返すこと' do
-      command = commands::ExamineAnimalCommand.new(veterinarian_id: vet.id, animal_id: penguin.id)
+    it '健康な個体を診ると value が animal_id と diagnosis :healthy を持つ ExaminationReport になること' do
+      report = examine.value
 
-      expect(service.call(command)).to eq(:healthy)
+      expect(report).to be_a(Zoo::Application::ReadModels::ExaminationReport)
+      expect(report).to have_attributes(animal_id: penguin.id.to_s, diagnosis: :healthy)
     end
 
-    it '肺炎の個体を診ると :sick を返すこと' do
+    it '肺炎の個体を診ると value.diagnosis が :sick になること' do
       penguin.fall_ill(medical::IllnessCatalog.pneumonia)
-      command = commands::ExamineAnimalCommand.new(veterinarian_id: vet.id, animal_id: penguin.id)
 
-      expect(service.call(command)).to eq(:sick)
+      expect(examine.value.diagnosis).to eq(:sick)
     end
 
-    it '存在しない veterinarian_id=\'missing\' で Application::Errors::VeterinarianNotFound が発生すること' do
-      command = commands::ExamineAnimalCommand.new(veterinarian_id: 'missing', animal_id: penguin.id)
-
-      expect { service.call(command) }.to raise_error(Zoo::Application::Errors::VeterinarianNotFound)
+    it "存在しない veterinarian_id='missing' で failure になり error が Application::Errors::VeterinarianNotFound となること" do
+      expect(examine(veterinarian_id: 'missing').error).to be_a(Zoo::Application::Errors::VeterinarianNotFound)
     end
   end
 end

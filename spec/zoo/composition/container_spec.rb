@@ -10,50 +10,52 @@ RSpec.describe Zoo::Composition::Container do
 
   let(:container) { described_class.new }
 
-  it 'acquire→house を同一コンテナで実行すると、共有リポジトリ越しに population に反映されること' do
-    lion = container.acquire_animal.call(
-      commands::AcquireAnimalCommand.new(species: catalog.lion, name: 'レオ',
-                                         sex: Zoo::Domain::Animal::Sex.male, max_health: 100)
-    )
+  def run(use_case, command)
+    container.public_send(use_case, command, renderer: Zoo::Presentation::Renderers::Passthrough)
+  end
+
+  it 'acquire_animal→house_animal を同一コンテナで実行すると、共有リポジトリ越しに population.value が1になること' do
+    lion = run(:acquire_animal, commands::AcquireAnimalCommand.new(species_code: 'lion', name: 'レオ', sex: 'male')).value
     enclosure = container.enclosures.save(
       husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
     )
 
-    container.house_animal.call(commands::HouseAnimalCommand.new(enclosure_id: enclosure.id, animal_id: lion.id))
+    run(:house_animal, commands::HouseAnimalCommand.new(enclosure_id: enclosure.id, animal_id: lion.id))
 
-    expect(container.population.call).to eq(1)
+    expect(run(:population, commands::PopulationCommand.new).value).to eq(1)
   end
 
-  it 'conceive を実行すると、配線された dam が妊娠状態になること' do
+  it 'conceive_animals(sire_id:, dam_id:) を実行すると、配線された dam が expecting? になること' do
     sire, dam = build_pair(catalog.lion)
     container.animals.save(sire)
     container.animals.save(dam)
 
-    container.conceive_animals.call(
-      commands::ConceiveAnimalsCommand.new(sire_id: sire.id, dam_id: dam.id)
-    )
+    run(:conceive_animals, commands::ConceiveAnimalsCommand.new(sire_id: sire.id, dam_id: dam.id))
 
     expect(container.animals.find(dam.id)).to be_expecting
   end
 
-  it 'deliver を実行すると births に1件記録され、子が animals に保存されること' do
+  it 'deliver_animal(dam_id:, enclosure_id:) を実行すると births に1件記録され、子が animals に保存されること' do
     sire, dam = build_pair(catalog.lion)
     container.animals.save(sire)
     container.animals.save(dam)
-    container.conceive_animals.call(
-      commands::ConceiveAnimalsCommand.new(sire_id: sire.id, dam_id: dam.id)
-    )
+    run(:conceive_animals, commands::ConceiveAnimalsCommand.new(sire_id: sire.id, dam_id: dam.id))
     catalog.lion.gestation_period_days.times { dam.gestate }
     container.animals.save(dam)
     enclosure = container.enclosures.save(
       husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
     )
 
-    child = container.deliver_animal.call(
-      commands::DeliverAnimalCommand.new(dam_id: dam.id, enclosure_id: enclosure.id)
-    )
+    child = run(:deliver_animal, commands::DeliverAnimalCommand.new(dam_id: dam.id, enclosure_id: enclosure.id)).value
 
     expect(container.births.all.size).to eq(1)
     expect(container.animals.find(child.id)).to eq(child)
+  end
+
+  it "失敗した use case(species_code: 'dragon')は renderer に failure の Result を渡すこと" do
+    result = run(:acquire_animal, commands::AcquireAnimalCommand.new(species_code: 'dragon', name: 'X', sex: 'male'))
+
+    expect(result).to be_failure
+    expect(result.error).to be_a(Zoo::Application::Errors::SpeciesNotFound)
   end
 end

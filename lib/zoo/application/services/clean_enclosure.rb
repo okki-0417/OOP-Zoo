@@ -4,26 +4,24 @@ module Zoo
   module Application
     module Services
       class CleanEnclosure
-        def initialize(keepers:, enclosures:, unit_of_work:)
-          @keepers = keepers
-          @enclosures = enclosures
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            keeper = @keepers.find(command.keeper_id)
-            raise Errors::KeeperNotFound, "飼育員 #{command.keeper_id} は存在しません" if keeper.nil?
+        def call
+          Result.capture(:clean_enclosure) do
+            enclosure = @command.unit_of_work.run do
+              keeper = @command.keepers.find(@command.keeper_id)
+              raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません" if keeper.nil?
 
-            enclosure = @enclosures.find(command.enclosure_id)
-            raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if enclosure.nil?
+              enclosure = @command.enclosures.find(@command.enclosure_id)
+              raise Errors::EnclosureNotFound, "エリア #{@command.enclosure_id} は存在しません" if enclosure.nil?
 
-            cleaning = Domain::Cleaning.new(
-              keeper: keeper, enclosure: enclosure, amount: command.amount
-            )
-            cleaning.perform
-            @enclosures.save(enclosure)
-            enclosure
+              Domain::Cleaning.new(keeper: keeper, enclosure: enclosure, amount: @command.amount).perform
+              @command.enclosures.save(enclosure)
+              enclosure
+            end
+            ReadModels::EnclosureProfile.housed(enclosure, housings: @command.housings)
           end
         end
       end

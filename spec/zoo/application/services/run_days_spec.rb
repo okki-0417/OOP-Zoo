@@ -18,17 +18,15 @@ RSpec.describe Zoo::Application::Services::RunDays do
   let(:animals) { in_memory::InMemoryAnimalRepository.new([survivor, elder]) }
   let(:housings) { in_memory::InMemoryHousingRepository.new([housed(survivor, enclosure), housed(elder, enclosure)]) }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
-  let(:open_for_a_day) do
-    Zoo::Application::Services::OpenForADay.new(
-      enclosures: enclosures, animals: animals, housings: housings,
-      unit_of_work: unit_of_work
+  let(:service) do
+    described_class.new(
+      command: commands::RunDaysCommand.new(days: 3).bind(enclosures:, animals:, housings:, unit_of_work:)
     )
   end
-  let(:service) { described_class.new(open_for_a_day: open_for_a_day) }
 
   describe '#call' do
-    it '3日進めると days=3 のサマリを返し、寿命超過個体の老衰死を集計すること' do
-      summary = service.call(commands::RunDaysCommand.new(days: 3))
+    it 'days=3 で進めると result.value が days=3 の RunDaysSummary になり、寿命超過個体の老衰死を集計すること' do
+      summary = service.call.value
 
       expect(summary.days).to eq(3)
       expect(summary.total_deaths).to eq(1)

@@ -4,21 +4,22 @@ module Zoo
   module Application
     module Queries
       class EnclosureList
-        def initialize(enclosures:, housings:)
-          @enclosures = enclosures
-          @housings = housings
+        def initialize(command:)
+          @command = command
         end
 
         def call
-          @enclosures.all.map do |enclosure|
-            ReadModels::EnclosureSummary.new(
-              id: enclosure.id.to_s,
-              name: enclosure.name,
-              population: @housings.occupants_of(enclosure).size,
-              capacity: enclosure.capacity,
-              cleanliness: enclosure.cleanliness_level,
-              filthy: enclosure.filthy?
-            )
+          Result.capture(:enclosure_list) do
+            @command.enclosures.all.map do |enclosure|
+              ReadModels::EnclosureSummary.new(
+                id: enclosure.id.to_s,
+                name: enclosure.name,
+                population: @command.housings.occupants_of(enclosure).size,
+                capacity: enclosure.capacity,
+                cleanliness: enclosure.cleanliness_level,
+                filthy: enclosure.filthy?
+              )
+            end
           end
         end
       end

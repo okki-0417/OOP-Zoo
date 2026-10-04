@@ -4,26 +4,27 @@ module Zoo
   module Application
     module Services
       class AddEnclosure
-        def initialize(enclosures:, zoo:, unit_of_work:)
-          @enclosures = enclosures
-          @zoo = zoo
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            enclosure = Domain::Enclosure.new(
-              name: command.name,
-              temperature: command.temperature,
-              capacity: command.capacity
-            )
+        def call
+          Result.capture(:add_enclosure) do
+            enclosure = @command.unit_of_work.run do
+              enclosure = Domain::Enclosure.new(
+                name: @command.name,
+                temperature: Domain::Shared::Temperature.celsius(@command.celsius),
+                capacity: @command.capacity
+              )
 
-            zoo = @zoo.load
-            zoo.purchase(Domain::Enclosure.construction_cost(capacity: command.capacity))
-            @zoo.save(zoo)
+              zoo = @command.zoo.load
+              zoo.purchase(Domain::Enclosure.construction_cost(capacity: @command.capacity))
+              @command.zoo.save(zoo)
 
-            @enclosures.save(enclosure)
-            enclosure
+              @command.enclosures.save(enclosure)
+              enclosure
+            end
+            ReadModels::EnclosureProfile.of(enclosure, occupants: [])
           end
         end
       end

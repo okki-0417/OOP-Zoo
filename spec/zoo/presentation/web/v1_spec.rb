@@ -71,24 +71,16 @@ RSpec.describe 'GET /api/v1 最小ゲームループ' do
   end
 
   describe 'POST /api/v1/animals' do
-    it '種・名前・性別を渡すと201で動物プロフィールを返すこと' do
+    it 'POST /api/v1/animals は廃止されており404を返すこと' do
       post_json '/api/v1/animals', species: 'lion', name: 'レオ', sex: 'male'
 
-      expect(last_response.status).to eq(201)
-      expect(body).to include('name' => 'レオ', 'species' => 'ライオン', 'alive' => true)
-    end
-
-    it '未知の種は400に翻訳されること' do
-      post_json '/api/v1/animals', species: 'dragon', name: 'X', sex: 'male'
-
-      expect(last_response.status).to eq(400)
-      expect(body['error']).to include('code' => 'ArgumentError')
+      expect(last_response.status).to eq(404)
     end
   end
 
   describe 'GET /api/v1/animals' do
     it '取得した動物の一覧を返すこと' do
-      post_json '/api/v1/animals', species: 'lion', name: 'レオ', sex: 'male'
+      post_json '/animals', species: 'lion', name: 'レオ', sex: 'male'
 
       get '/api/v1/animals'
 
@@ -101,7 +93,7 @@ RSpec.describe 'GET /api/v1 最小ゲームループ' do
     it '動物をエリアに収容すると occupants にその個体が現れること' do
       post_json '/api/v1/enclosures', name: 'サバンナ', celsius: 30, capacity: 6
       enclosure_id = body['id']
-      post_json '/api/v1/animals', species: 'lion', name: 'レオ', sex: 'male'
+      post_json '/animals', species: 'lion', name: 'レオ', sex: 'male'
       animal_id = body['id']
 
       post_json "/api/v1/enclosures/#{enclosure_id}/occupants", animal_id: animal_id
@@ -125,7 +117,7 @@ RSpec.describe 'GET /api/v1 最小ゲームループ' do
     it '1日運営し visitors/income/balance/reputation を返すこと' do
       post_json '/api/v1/enclosures', name: 'サバンナ', celsius: 30, capacity: 6
       enclosure_id = body['id']
-      post_json '/api/v1/animals', species: 'grevys_zebra', name: 'シマオ', sex: 'male'
+      post_json '/animals', species: 'grevys_zebra', name: 'シマオ', sex: 'male'
       animal_id = body['id']
       post_json "/api/v1/enclosures/#{enclosure_id}/occupants", animal_id: animal_id
 
@@ -141,7 +133,7 @@ RSpec.describe 'GET /api/v1 最小ゲームループ' do
       post_json '/api/v1/enclosures', name: 'サバンナ', celsius: 30, capacity: 6
       enclosure_id = body['id']
 
-      post_json '/api/v1/animals', species: 'lion', name: 'レオ', sex: 'male'
+      post_json '/animals', species: 'lion', name: 'レオ', sex: 'male'
       animal_id = body['id']
 
       post_json "/api/v1/enclosures/#{enclosure_id}/occupants", animal_id: animal_id

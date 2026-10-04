@@ -4,21 +4,24 @@ module Zoo
   module Application
     module Services
       class ExamineAnimal
-        def initialize(veterinarians:, animals:, unit_of_work:)
-          @veterinarians = veterinarians
-          @animals = animals
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            vet = @veterinarians.find(command.veterinarian_id)
-            raise Errors::VeterinarianNotFound, "獣医 #{command.veterinarian_id} は存在しません" if vet.nil?
+        def call
+          Result.capture(:examine_animal) do
+            @command.unit_of_work.run do
+              vet = @command.veterinarians.find(@command.veterinarian_id)
+              raise Errors::VeterinarianNotFound, "獣医 #{@command.veterinarian_id} は存在しません" if vet.nil?
 
-            animal = @animals.find(command.animal_id)
-            raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
+              animal = @command.animals.find(@command.animal_id)
+              raise Errors::AnimalNotFound, "動物 #{@command.animal_id} は存在しません" if animal.nil?
 
-            Domain::Examining.new(veterinarian: vet, animal: animal).diagnosis
+              ReadModels::ExaminationReport.new(
+                animal_id: animal.id.to_s,
+                diagnosis: Domain::Examining.new(veterinarian: vet, animal: animal).diagnosis
+              )
+            end
           end
         end
       end

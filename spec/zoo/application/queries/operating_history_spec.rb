@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Zoo::Application::Queries::OperatingHistory do
   balance   = Zoo::Domain::Shared::Balance
   in_memory = Zoo::Infrastructure::InMemory
+  commands  = Zoo::Application::Commands
 
   def operating(day:, income:, cost:)
     Zoo::Domain::Operating.reconstitute(
@@ -21,7 +22,7 @@ RSpec.describe Zoo::Application::Queries::OperatingHistory do
     operatings.save(operating(day: 2, income: 60_000, cost: 8_000))
     operatings.save(operating(day: 1, income: 40_000, cost: 8_000))
 
-    history = described_class.new(operatings: operatings).call
+    history = described_class.new(command: commands::OperatingHistoryCommand.new.bind(operatings: operatings)).call.value
 
     expect(history.map(&:day)).to eq([1, 2])
     expect(history.first.net_income).to eq(balance.new(32_000))
@@ -30,6 +31,8 @@ RSpec.describe Zoo::Application::Queries::OperatingHistory do
   end
 
   it '運営履歴が無ければ空を返すこと' do
-    expect(described_class.new(operatings: in_memory::InMemoryOperatingRepository.new).call).to be_empty
+    command = commands::OperatingHistoryCommand.new.bind(operatings: in_memory::InMemoryOperatingRepository.new)
+
+    expect(described_class.new(command: command).call.value).to be_empty
   end
 end

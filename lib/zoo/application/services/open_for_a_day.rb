@@ -4,38 +4,31 @@ module Zoo
   module Application
     module Services
       class OpenForADay
-        def initialize(enclosures:, animals:, housings:, unit_of_work:)
-          @enclosures = enclosures
-          @animals = animals
-          @housings = housings
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(season: Domain::Season.spring)
-          deceased = []
+        def call
+          Result.capture(:open_for_a_day) do
+            @command.housings.all_occupancies.flat_map do |occupancy|
+              enclosure = occupancy.enclosure
 
-          @housings.all_occupancies.each do |occupancy|
-            enclosure = occupancy.enclosure
+              @command.unit_of_work.run do
+                Domain::Infestation.new(enclosure, occupancy).spread
+                Domain::Contagion.new(enclosure, occupancy).spread
+                occupancy.each do |animal|
+                  Domain::AnimalDay.new(animal:, enclosure:, occupancy:, season: @command.season).run
+                end
+                enclosure.soil(occupancy.count)
+                enclosure.deplete_enrichment
 
-            dead = @unit_of_work.run do
-              Domain::Infestation.new(enclosure, occupancy).spread
-              Domain::Contagion.new(enclosure, occupancy).spread
-              occupancy.each do |animal|
-                Domain::AnimalDay.new(animal:, enclosure:, occupancy:, season:).run
+                dead_animals = occupancy.select(&:dead?)
+                @command.enclosures.save(enclosure)
+                occupancy.each { |animal| @command.animals.save(animal) }
+                dead_animals
               end
-              enclosure.soil(occupancy.count)
-              enclosure.deplete_enrichment
-
-              dead_animals = occupancy.select(&:dead?)
-              @enclosures.save(enclosure)
-              occupancy.each { |animal| @animals.save(animal) }
-              dead_animals
             end
-
-            deceased.concat(dead)
           end
-
-          deceased
         end
       end
     end

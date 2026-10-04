@@ -6,63 +6,58 @@ module Zoo
       class DeliverAnimal
         BIRTH_BUZZ = 40
 
-        def initialize(animals:, enclosures:, housings:, keepers:, breedings:, births:, zoo:, unit_of_work:)
-          @animals = animals
-          @enclosures = enclosures
-          @housings = housings
-          @keepers = keepers
-          @breedings = breedings
-          @births = births
-          @zoo = zoo
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            dam = @animals.find(command.dam_id)
-            raise Errors::AnimalNotFound, "動物 #{command.dam_id} は存在しません" if dam.nil?
+        def call
+          Result.capture(:deliver_animal) do
+            @command.unit_of_work.run do
+              dam = @command.animals.find(@command.dam_id)
+              raise Errors::AnimalNotFound, "動物 #{@command.dam_id} は存在しません" if dam.nil?
 
-            enclosure = @enclosures.find(command.enclosure_id)
-            raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if enclosure.nil?
+              enclosure = @command.enclosures.find(@command.enclosure_id)
+              raise Errors::EnclosureNotFound, "エリア #{@command.enclosure_id} は存在しません" if enclosure.nil?
 
-            keeper = find_keeper(command.keeper_id)
+              keeper = find_keeper
 
-            breeding = @breedings.for_dam(dam.id)
-            raise Errors::BreedingNotFound, "動物 #{command.dam_id} の受胎記録がありません" if breeding.nil?
+              breeding = @command.breedings.for_dam(dam.id)
+              raise Errors::BreedingNotFound, "動物 #{@command.dam_id} の受胎記録がありません" if breeding.nil?
 
-            zoo = @zoo.load
+              zoo = @command.zoo.load
 
-            birth = Domain::Birth.new(
-              sire: breeding.sire, dam: dam, occurred_on: zoo.day, season: zoo.season, keeper_id: keeper&.id
-            ).deliver
-            child = birth.offspring
+              birth = Domain::Birth.new(
+                sire: breeding.sire, dam: dam, occurred_on: zoo.day, season: zoo.season, keeper_id: keeper&.id
+              ).deliver
+              child = birth.offspring
 
-            occupancy = @housings.all_occupancies.find { |o| o.enclosure == enclosure } ||
-                        Domain::Occupancy.new(housings: [], enclosure: enclosure)
-            housing = Domain::Housing.new(
-              animal: child, enclosure: enclosure, occupancy: occupancy, occurred_on: zoo.day, keeper_id: keeper&.id
-            )
-            housing.admission_violation!
+              occupancy = @command.housings.all_occupancies.find { |o| o.enclosure == enclosure } ||
+                          Domain::Occupancy.new(housings: [], enclosure: enclosure)
+              housing = Domain::Housing.new(
+                animal: child, enclosure: enclosure, occupancy: occupancy, occurred_on: zoo.day, keeper_id: keeper&.id
+              )
+              housing.admission_violation!
 
-            @animals.save(dam)
-            @animals.save(child)
-            @births.save(birth)
-            @housings.save(housing)
+              @command.animals.save(dam)
+              @command.animals.save(child)
+              @command.births.save(birth)
+              @command.housings.save(housing)
 
-            zoo.generate_buzz(BIRTH_BUZZ)
-            @zoo.save(zoo)
+              zoo.generate_buzz(BIRTH_BUZZ)
+              @command.zoo.save(zoo)
 
-            child
+              child
+            end
           end
         end
 
         private
 
-        def find_keeper(keeper_id)
-          return nil if keeper_id.nil?
+        def find_keeper
+          return nil if @command.keeper_id.nil?
 
-          keeper = @keepers.find(keeper_id)
-          raise Errors::KeeperNotFound, "飼育員 #{keeper_id} は存在しません" if keeper.nil?
+          keeper = @command.keepers.find(@command.keeper_id)
+          raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません" if keeper.nil?
 
           keeper
         end

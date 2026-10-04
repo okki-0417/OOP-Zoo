@@ -7,7 +7,6 @@ RSpec.describe Zoo::Application::Services::DischargeKeeper do
   taxonomy  = Zoo::Domain
   husbandry = Zoo::Domain
   staff     = Zoo::Domain
-  commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:keeper) { staff::Keeper.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal]) }
@@ -19,10 +18,10 @@ RSpec.describe Zoo::Application::Services::DischargeKeeper do
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:assignments) { in_memory::InMemoryAssignmentRepository.new }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
-  let(:service) do
-    described_class.new(
-      keepers: keepers, enclosures: enclosures, assignments: assignments, unit_of_work: unit_of_work
-    )
+
+  def discharge(keeper_id: keeper.id, enclosure_id: enclosure.id)
+    command = Zoo::Application::Commands::DischargeKeeperCommand.new(keeper_id:, enclosure_id:)
+    described_class.new(command: command.bind(keepers:, enclosures:, assignments:, unit_of_work:)).call
   end
 
   def assign
@@ -30,30 +29,23 @@ RSpec.describe Zoo::Application::Services::DischargeKeeper do
   end
 
   describe '#call' do
-    it '担当中のエリアを退任すると現在の担当から外れること' do
+    it '担当中のエリアを退任すると success になり現在の担当から外れること' do
       assign
 
-      service.call(commands::DischargeKeeperCommand.new(keeper_id: keeper.id, enclosure_id: enclosure.id))
-
+      expect(discharge.success?).to be(true)
       expect(assignments.enclosures_of(keeper)).to be_empty
     end
 
-    it '担当していないエリアの退任は AssignmentNotFound が発生すること' do
-      command = commands::DischargeKeeperCommand.new(keeper_id: keeper.id, enclosure_id: enclosure.id)
-
-      expect { service.call(command) }.to raise_error(Zoo::Application::Errors::AssignmentNotFound)
+    it '担当していないエリアの退任は failure で error が AssignmentNotFound となること' do
+      expect(discharge.error).to be_a(Zoo::Application::Errors::AssignmentNotFound)
     end
 
-    it '存在しない keeper_id を渡すと KeeperNotFound が発生すること' do
-      command = commands::DischargeKeeperCommand.new(keeper_id: 'missing', enclosure_id: enclosure.id)
-
-      expect { service.call(command) }.to raise_error(Zoo::Application::Errors::KeeperNotFound)
+    it '存在しない keeper_id "missing" を渡すと failure で error が KeeperNotFound となること' do
+      expect(discharge(keeper_id: 'missing').error).to be_a(Zoo::Application::Errors::KeeperNotFound)
     end
 
-    it '存在しない enclosure_id を渡すと EnclosureNotFound が発生すること' do
-      command = commands::DischargeKeeperCommand.new(keeper_id: keeper.id, enclosure_id: 'missing')
-
-      expect { service.call(command) }.to raise_error(Zoo::Application::Errors::EnclosureNotFound)
+    it '存在しない enclosure_id "missing" を渡すと failure で error が EnclosureNotFound となること' do
+      expect(discharge(enclosure_id: 'missing').error).to be_a(Zoo::Application::Errors::EnclosureNotFound)
     end
   end
 end

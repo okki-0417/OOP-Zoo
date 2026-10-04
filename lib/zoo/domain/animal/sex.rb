@@ -24,7 +24,7 @@ module Zoo
 
         def initialize(value)
           symbol = value.to_sym
-          raise ArgumentError, "未知の性別です: #{value}" unless VALUES.key?(symbol)
+          raise Errors::InvalidValue, "未知の性別です: #{value}" unless VALUES.key?(symbol)
 
           @value = symbol
           freeze

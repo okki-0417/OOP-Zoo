@@ -7,6 +7,7 @@ RSpec.describe Zoo::Application::Queries::Population do
   husbandry = Zoo::Domain
   catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
+  commands  = Zoo::Application::Commands
 
   let(:zebras) { build_pair(catalog.grevys_zebra) }
   let(:giraffe) { build_adult(catalog.reticulated_giraffe, name: 'キリン') }
@@ -25,11 +26,11 @@ RSpec.describe Zoo::Application::Queries::Population do
     events.concat(macaques.map { |m| housed(m, monkey_mountain) })
     in_memory::InMemoryHousingRepository.new(events)
   end
-  let(:query) { described_class.new(housings: housings) }
+  let(:query) { described_class.new(command: commands::PopulationCommand.new.bind(housings: housings)) }
 
   describe '#call' do
     it '全エリアの occupants 合計を返すこと(サバンナ3頭+モンキーマウンテン2頭=5)' do
-      expect(query.call).to eq(5)
+      expect(query.call.value).to eq(5)
     end
   end
 end

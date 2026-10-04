@@ -4,17 +4,13 @@ module Zoo
   module Application
     module Queries
       class KeeperList
-        def initialize(keepers:)
-          @keepers = keepers
+        def initialize(command:)
+          @command = command
         end
 
         def call
-          @keepers.all.map do |keeper|
-            ReadModels::KeeperSummary.new(
-              id: keeper.id.to_s,
-              name: keeper.name,
-              specialties: keeper.specialties_label
-            )
+          Result.capture(:keeper_list) do
+            @command.keepers.all.map { |keeper| ReadModels::KeeperSummary.of(keeper) }
           end
         end
       end

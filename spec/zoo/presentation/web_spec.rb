@@ -80,12 +80,27 @@ RSpec.describe Zoo::Presentation::Web do
       expect(container.animals.all.size).to eq(1)
     end
 
-    it '未知の種は {error:{code:"ArgumentError"}} で400に翻訳されること' do
+    it 'species=dragon(未知の種)は {error:{code:"SpeciesNotFound"}} で404に翻訳されること' do
       post_json '/animals', species: 'dragon', name: 'X', sex: 'male'
+
+      expect(last_response.status).to eq(404)
+      expect(body['error']).to include('code' => 'SpeciesNotFound')
+      expect(body['error']['message']).to include('未知の種')
+    end
+
+    it 'sex=other(未知の性別)は {error:{code:"InvalidValue"}} で422に翻訳され保存されないこと' do
+      post_json '/animals', species: 'lion', name: 'X', sex: 'other'
+
+      expect(last_response.status).to eq(422)
+      expect(body['error']).to include('code' => 'InvalidValue')
+      expect(container.animals.all).to be_empty
+    end
+
+    it 'species を省略すると {error:{code:"ArgumentError"}} で400に翻訳されること' do
+      post_json '/animals', name: 'X', sex: 'male'
 
       expect(last_response.status).to eq(400)
       expect(body['error']).to include('code' => 'ArgumentError')
-      expect(body['error']['message']).to include('未知の種')
     end
   end
 

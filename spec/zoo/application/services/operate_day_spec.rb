@@ -26,17 +26,18 @@ RSpec.describe Zoo::Application::Services::OperateDay do
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
 
   let(:no_outbreak) { instance_double(Random, rand: 99) }
-  let(:service) do
-    described_class.new(
-      animals: animals, enclosures: enclosures, housings: housings,
-      keepers: keepers, veterinarians: veterinarians, zoo: zoo, operatings: operatings,
-      unit_of_work: unit_of_work, random: no_outbreak
+  let(:service) { operate_with(no_outbreak) }
+
+  def operate_with(random)
+    command = Zoo::Application::Commands::OperateDayCommand.new(random:).bind(
+      animals:, enclosures:, housings:, keepers:, veterinarians:, zoo:, operatings:, unit_of_work:
     )
+    described_class.new(command: command)
   end
 
   describe '#call' do
-    it '展示1種(EN)・評判50・料金¥2,000で来園12人を集め、収入¥24,000・費用を計上すること' do
-      report = service.call
+    it '展示1種(EN)・評判50・料金¥2,000で来園12人を集め、result.value の Operating に収入¥24,000・費用を計上すること' do
+      report = service.call.value
 
       zebra_food = catalog.grevys_zebra.daily_food_cost.yen
       upkeep = Zoo::Domain::Enclosure::UPKEEP_YEN
@@ -63,7 +64,7 @@ RSpec.describe Zoo::Application::Services::OperateDay do
     it '死亡が無い日は評判が体験へドリフトするが、来場12人と露出が小さく単日では表示は据え置き(50のまま)、残高に純益が反映されること' do
       cost = Zoo::Domain::Enclosure::UPKEEP_YEN +
              catalog.grevys_zebra.daily_food_cost.yen
-      report = service.call
+      report = service.call.value
 
       expect(report.deaths).to eq(0)
       expect(report.reputation).to eq(50)
@@ -71,16 +72,11 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect(report.balance).not_to be_negative
     end
 
-    it '疫病が発生する乱数だと在園個体が発病し、report.outbreak に名前が入ること' do
+    it '疫病が発生する乱数(rand=0)だと在園個体が発病し、result.value.outbreak に名前が入ること' do
       outbreak_random = instance_double(Random)
       allow(outbreak_random).to receive(:rand).and_return(0)
-      service = described_class.new(
-        animals: animals, enclosures: enclosures, housings: housings,
-        keepers: keepers, veterinarians: veterinarians, zoo: zoo, operatings: operatings,
-        unit_of_work: unit_of_work, random: outbreak_random
-      )
 
-      report = service.call
+      report = operate_with(outbreak_random).call.value
 
       expect(report.outbreak).to eq('シマオ')
       expect(animals.find(zebra.id)).to be_sick

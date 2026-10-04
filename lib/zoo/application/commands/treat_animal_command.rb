@@ -3,12 +3,19 @@
 module Zoo
   module Application
     module Commands
-      TreatAnimalCommand = Data.define(:veterinarian_id, :animal_id) do
-        def initialize(veterinarian_id:, animal_id:)
+      TreatAnimalCommand = Data.define(
+        :veterinarian_id, :animal_id,
+        :veterinarians, :animals, :housings, :unit_of_work
+      ) do
+        def initialize(veterinarian_id:, animal_id:, veterinarians: nil, animals: nil, housings: nil, unit_of_work: nil)
           raise ArgumentError, 'veterinarian_id は必須です' if veterinarian_id.nil?
           raise ArgumentError, 'animal_id は必須です' if animal_id.nil?
 
           super
+        end
+
+        def bind(veterinarians:, animals:, housings:, unit_of_work:, **)
+          with(veterinarians:, animals:, housings:, unit_of_work:)
         end
       end
     end

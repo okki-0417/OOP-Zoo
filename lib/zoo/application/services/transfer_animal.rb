@@ -4,30 +4,30 @@ module Zoo
   module Application
     module Services
       class TransferAnimal
-        def initialize(enclosures:, animals:, housings:, unit_of_work:)
-          @enclosures = enclosures
-          @animals = animals
-          @housings = housings
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            target = @enclosures.find(command.enclosure_id)
-            raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if target.nil?
+        def call
+          Result.capture(:transfer_animal) do
+            animal, target = @command.unit_of_work.run do
+              target = @command.enclosures.find(@command.enclosure_id)
+              raise Errors::EnclosureNotFound, "エリア #{@command.enclosure_id} は存在しません" if target.nil?
 
-            animal = @animals.find(command.animal_id)
-            raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
+              animal = @command.animals.find(@command.animal_id)
+              raise Errors::AnimalNotFound, "動物 #{@command.animal_id} は存在しません" if animal.nil?
 
-            occupancy = @housings.all_occupancies.find { |o| o.enclosure == target } ||
-                        Domain::Occupancy.new(housings: [], enclosure: target)
-            housing = Domain::Housing.new(animal: animal, enclosure: target, occupancy: occupancy)
-            housing.admission_violation!
+              occupancy = @command.housings.all_occupancies.find { |o| o.enclosure == target } ||
+                          Domain::Occupancy.new(housings: [], enclosure: target)
+              housing = Domain::Housing.new(animal: animal, enclosure: target, occupancy: occupancy)
+              housing.admission_violation!
 
-            current = @housings.current_housing_of(animal)
-            @housings.save(Domain::Releasing.of(current)) if current
-            @housings.save(housing)
-            target
+              current = @command.housings.current_housing_of(animal)
+              @command.housings.save(Domain::Releasing.of(current)) if current
+              @command.housings.save(housing)
+              [animal, target]
+            end
+            ReadModels::AnimalProfile.of(animal, enclosure: target)
           end
         end
       end

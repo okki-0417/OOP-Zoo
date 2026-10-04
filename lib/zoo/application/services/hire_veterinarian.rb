@@ -4,22 +4,23 @@ module Zoo
   module Application
     module Services
       class HireVeterinarian
-        def initialize(veterinarians:, zoo:, unit_of_work:)
-          @veterinarians = veterinarians
-          @zoo = zoo
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            veterinarian = Domain::Veterinarian.new(name: command.name)
+        def call
+          Result.capture(:hire_veterinarian) do
+            veterinarian = @command.unit_of_work.run do
+              veterinarian = Domain::Veterinarian.new(name: @command.name)
 
-            zoo = @zoo.load
-            zoo.purchase(Domain::Veterinarian.signing_fee)
-            @zoo.save(zoo)
+              zoo = @command.zoo.load
+              zoo.purchase(Domain::Veterinarian.signing_fee)
+              @command.zoo.save(zoo)
 
-            @veterinarians.save(veterinarian)
-            veterinarian
+              @command.veterinarians.save(veterinarian)
+              veterinarian
+            end
+            ReadModels::VeterinarianSummary.of(veterinarian)
           end
         end
       end

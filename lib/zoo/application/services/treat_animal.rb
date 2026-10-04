@@ -4,23 +4,24 @@ module Zoo
   module Application
     module Services
       class TreatAnimal
-        def initialize(veterinarians:, animals:, unit_of_work:)
-          @veterinarians = veterinarians
-          @animals = animals
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            vet = @veterinarians.find(command.veterinarian_id)
-            raise Errors::VeterinarianNotFound, "獣医 #{command.veterinarian_id} は存在しません" if vet.nil?
+        def call
+          Result.capture(:treat_animal) do
+            animal = @command.unit_of_work.run do
+              vet = @command.veterinarians.find(@command.veterinarian_id)
+              raise Errors::VeterinarianNotFound, "獣医 #{@command.veterinarian_id} は存在しません" if vet.nil?
 
-            animal = @animals.find(command.animal_id)
-            raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
+              animal = @command.animals.find(@command.animal_id)
+              raise Errors::AnimalNotFound, "動物 #{@command.animal_id} は存在しません" if animal.nil?
 
-            Domain::Treating.new(veterinarian: vet, animal: animal).perform
-            @animals.save(animal)
-            animal
+              Domain::Treating.new(veterinarian: vet, animal: animal).perform
+              @command.animals.save(animal)
+              animal
+            end
+            ReadModels::AnimalProfile.housed(animal, housings: @command.housings)
           end
         end
       end

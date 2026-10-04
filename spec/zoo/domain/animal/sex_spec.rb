@@ -8,7 +8,7 @@ RSpec.describe Zoo::Domain::Animal::Sex do
     expect(described_class.female).to be_female
   end
 
-  it '未知の性別はエラーになること' do
-    expect { described_class.new(:unknown) }.to raise_error(ArgumentError)
+  it '未知の性別 :unknown は Domain::Errors::InvalidValue になること' do
+    expect { described_class.new(:unknown) }.to raise_error(Zoo::Domain::Errors::InvalidValue)
   end
 end

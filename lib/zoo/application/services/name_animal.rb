@@ -4,21 +4,22 @@ module Zoo
   module Application
     module Services
       class NameAnimal
-        def initialize(animals:, unit_of_work:)
-          @animals = animals
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            animal = @animals.find(command.animal_id)
-            raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
+        def call
+          Result.capture(:name_animal) do
+            @command.unit_of_work.run do
+              animal = @command.animals.find(@command.animal_id)
+              raise Errors::AnimalNotFound, "動物 #{@command.animal_id} は存在しません" if animal.nil?
 
-            animal.name_animal(name: command.name)
+              animal.name_animal(name: @command.name)
 
-            @animals.save(animal)
+              @command.animals.save(animal)
+            end
+            nil
           end
-          nil
         end
       end
     end

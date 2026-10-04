@@ -4,22 +4,24 @@ module Zoo
   module Application
     module Services
       class HireKeeper
-        def initialize(keepers:, zoo:, unit_of_work:)
-          @keepers = keepers
-          @zoo = zoo
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            keeper = Domain::Keeper.new(name: command.name, specialties: command.specialties)
+        def call
+          Result.capture(:hire_keeper) do
+            keeper = @command.unit_of_work.run do
+              specialties = @command.specialties.map { |key| Domain::TaxonClass.new(key) }
+              keeper = Domain::Keeper.new(name: @command.name, specialties: specialties)
 
-            zoo = @zoo.load
-            zoo.purchase(Domain::Keeper.signing_fee)
-            @zoo.save(zoo)
+              zoo = @command.zoo.load
+              zoo.purchase(Domain::Keeper.signing_fee)
+              @command.zoo.save(zoo)
 
-            @keepers.save(keeper)
-            keeper
+              @command.keepers.save(keeper)
+              keeper
+            end
+            ReadModels::KeeperSummary.of(keeper)
           end
         end
       end

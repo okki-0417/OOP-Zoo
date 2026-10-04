@@ -8,7 +8,6 @@ RSpec.describe Zoo::Application::Services::AssignKeeper do
   husbandry = Zoo::Domain
   staff     = Zoo::Domain
   catalog   = Zoo::Domain::SpeciesCatalog
-  commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:keeper) { staff::Keeper.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal]) }
@@ -21,11 +20,12 @@ RSpec.describe Zoo::Application::Services::AssignKeeper do
   let(:housings) { in_memory::InMemoryHousingRepository.new }
   let(:assignments) { in_memory::InMemoryAssignmentRepository.new }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
-  let(:service) do
+
+  def assign(keeper_id: keeper.id, enclosure_id: enclosure.id)
+    command = Zoo::Application::Commands::AssignKeeperCommand.new(keeper_id:, enclosure_id:)
     described_class.new(
-      keepers: keepers, enclosures: enclosures, housings: housings,
-      assignments: assignments, unit_of_work: unit_of_work
-    )
+      command: command.bind(keepers:, enclosures:, housings:, assignments:, unit_of_work:)
+    ).call
   end
 
   def house(animal, enclosure)
@@ -34,33 +34,26 @@ RSpec.describe Zoo::Application::Services::AssignKeeper do
   end
 
   describe '#call' do
-    it '専門の綱の動物がいるエリアへ担当割り当てすると assignments に保存されること' do
+    it '専門の綱(哺乳類)のライオンがいるエリアへ担当割り当てすると success になり assignments に保存されること' do
       house(build_adult(catalog.lion), enclosure)
 
-      service.call(commands::AssignKeeperCommand.new(keeper_id: keeper.id, enclosure_id: enclosure.id))
-
+      expect(assign.success?).to be(true)
       expect(assignments.enclosures_of(keeper)).to contain_exactly(enclosure)
     end
 
-    it '専門外の綱の動物がいるエリアへの担当割り当ては AssignmentNotAllowed で保存されないこと' do
+    it '専門外の綱(鳥類)のペンギンがいるエリアへの担当割り当ては failure で error が AssignmentNotAllowed となり保存されないこと' do
       house(build_adult(catalog.emperor_penguin), enclosure)
 
-      command = commands::AssignKeeperCommand.new(keeper_id: keeper.id, enclosure_id: enclosure.id)
-
-      expect { service.call(command) }.to raise_error(Zoo::Domain::Errors::AssignmentNotAllowed)
+      expect(assign.error).to be_a(Zoo::Domain::Errors::AssignmentNotAllowed)
       expect(assignments.all).to be_empty
     end
 
-    it '存在しない keeper_id を渡すと KeeperNotFound が発生すること' do
-      command = commands::AssignKeeperCommand.new(keeper_id: 'missing', enclosure_id: enclosure.id)
-
-      expect { service.call(command) }.to raise_error(Zoo::Application::Errors::KeeperNotFound)
+    it '存在しない keeper_id "missing" を渡すと failure で error が KeeperNotFound となること' do
+      expect(assign(keeper_id: 'missing').error).to be_a(Zoo::Application::Errors::KeeperNotFound)
     end
 
-    it '存在しない enclosure_id を渡すと EnclosureNotFound が発生すること' do
-      command = commands::AssignKeeperCommand.new(keeper_id: keeper.id, enclosure_id: 'missing')
-
-      expect { service.call(command) }.to raise_error(Zoo::Application::Errors::EnclosureNotFound)
+    it '存在しない enclosure_id "missing" を渡すと failure で error が EnclosureNotFound となること' do
+      expect(assign(enclosure_id: 'missing').error).to be_a(Zoo::Application::Errors::EnclosureNotFound)
     end
   end
 end

@@ -3,13 +3,17 @@
 module Zoo
   module Application
     module Commands
-      AddEnclosureCommand = Data.define(:name, :temperature, :capacity) do
-        def initialize(name:, temperature:, capacity:)
+      AddEnclosureCommand = Data.define(:name, :celsius, :capacity, :enclosures, :zoo, :unit_of_work) do
+        def initialize(name:, celsius:, capacity:, enclosures: nil, zoo: nil, unit_of_work: nil)
           raise ArgumentError, 'name は必須です' if name.nil?
-          raise ArgumentError, 'temperature は必須です' if temperature.nil?
+          raise ArgumentError, 'celsius は必須です' if celsius.nil?
           raise ArgumentError, 'capacity は必須です' if capacity.nil?
 
           super
+        end
+
+        def bind(enclosures:, zoo:, unit_of_work:, **)
+          with(enclosures:, zoo:, unit_of_work:)
         end
       end
     end

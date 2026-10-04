@@ -5,9 +5,10 @@ require 'spec_helper'
 RSpec.describe Zoo::Application::Queries::DeceasedList do
   catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
+  commands  = Zoo::Application::Commands
 
   let(:animals) { in_memory::InMemoryAnimalRepository.new }
-  let(:query) { described_class.new(animals: animals) }
+  let(:query) { described_class.new(command: commands::DeceasedListCommand.new.bind(animals: animals)) }
 
   describe '#call' do
     it '死亡した動物を死因つきの慰霊記録として返すこと' do
@@ -15,7 +16,7 @@ RSpec.describe Zoo::Application::Queries::DeceasedList do
       lion.die(cause: :old_age)
       animals.save(lion)
 
-      record = query.call.first
+      record = query.call.value.first
 
       expect(record.name).to eq('レオ')
       expect(record.species).to eq('ライオン')
@@ -23,7 +24,7 @@ RSpec.describe Zoo::Application::Queries::DeceasedList do
     end
 
     it '死亡が無ければ空配列を返すこと' do
-      expect(query.call).to eq([])
+      expect(query.call.value).to eq([])
     end
   end
 end

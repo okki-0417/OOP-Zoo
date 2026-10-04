@@ -6,7 +6,6 @@ RSpec.describe Zoo::Application::Services::ReleaseAnimal do
   shared    = Zoo::Domain::Shared
   husbandry = Zoo::Domain
   catalog   = Zoo::Domain::SpeciesCatalog
-  commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:lion) { build_adult(catalog.lion, name: 'レオ') }
@@ -16,22 +15,34 @@ RSpec.describe Zoo::Application::Services::ReleaseAnimal do
   let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
   let(:housings) { in_memory::InMemoryHousingRepository.new([housed(lion, enclosure)]) }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, housings]) }
-  let(:service) do
-    described_class.new(animals: animals, housings: housings, unit_of_work: unit_of_work)
+
+  def release(animal_id)
+    command = Zoo::Application::Commands::ReleaseAnimalCommand.new(animal_id:).bind(animals:, housings:, unit_of_work:)
+    described_class.new(command: command).call
   end
 
   describe '#call' do
     it '収容中の個体を退去させるとエリアの occupants から外れること' do
-      service.call(commands::ReleaseAnimalCommand.new(animal_id: lion.id))
+      release(lion.id)
 
       expect(occupants_of(housings, enclosure)).not_to include(lion)
+    end
+
+    it '退去に成功すると result.value が enclosure_id=nil の AnimalProfile になること' do
+      profile = release(lion.id).value
+
+      expect(profile).to have_attributes(id: lion.id.to_s, enclosure_id: nil, enclosure_name: nil)
+    end
+
+    it '存在しない animal_id=\'missing\' を渡すと result.error が AnimalNotFound になること' do
+      expect(release('missing').error).to be_a(Zoo::Application::Errors::AnimalNotFound)
     end
 
     it 'どのエリアにも収容されていない個体だと ArgumentError になること' do
       loose = build_adult(catalog.lion, name: '野良')
       animals.save(loose)
 
-      expect { service.call(commands::ReleaseAnimalCommand.new(animal_id: loose.id)) }
+      expect { release(loose.id) }
         .to raise_error(ArgumentError, /収容されていません/)
     end
   end

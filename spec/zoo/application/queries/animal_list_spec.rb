@@ -5,13 +5,15 @@ require 'spec_helper'
 RSpec.describe Zoo::Application::Queries::AnimalList do
   catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
+  commands  = Zoo::Application::Commands
 
   let(:lion) { build_adult(catalog.lion, name: 'レオ') }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
+  let(:query) { described_class.new(command: commands::AnimalListCommand.new.bind(animals: animals)) }
 
   describe '#call' do
     it '個体ごとに id・名前・種名・生存フラグの読み取りモデルを返すこと' do
-      row = described_class.new(animals: animals).call.first
+      row = query.call.value.first
 
       expect(row.id).to eq(lion.id.to_s)
       expect(row.name).to eq('レオ')
@@ -20,7 +22,7 @@ RSpec.describe Zoo::Application::Queries::AnimalList do
     end
 
     it '満タンで健康な個体は health=max_health・ailing=false を返すこと' do
-      row = described_class.new(animals: animals).call.first
+      row = query.call.value.first
 
       expect(row.health).to eq(100)
       expect(row.max_health).to eq(100)
@@ -28,9 +30,9 @@ RSpec.describe Zoo::Application::Queries::AnimalList do
     end
 
     it '集約ではなく ReadModels::AnimalSummary を返すこと' do
-      result = described_class.new(animals: animals).call
+      rows = query.call.value
 
-      expect(result).to all(be_a(Zoo::Application::ReadModels::AnimalSummary))
+      expect(rows).to all(be_a(Zoo::Application::ReadModels::AnimalSummary))
     end
   end
 end

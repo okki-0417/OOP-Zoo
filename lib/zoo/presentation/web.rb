@@ -22,12 +22,20 @@ module Zoo
 
       options('*') { 200 }
 
+      def self.with_v1(verb, path, &)
+        [path, "/api/v1#{path}"].each { |versioned| public_send(verb, versioned, &) }
+      end
+
       helpers do
         def container
           settings.container ||= Zoo::Composition::Container.new
         end
 
         def request_params
+          @request_params ||= parse_request_params
+        end
+
+        def parse_request_params
           return params unless request.media_type == 'application/json' && request.content_length.to_i.positive?
 
           body = JSON.parse(request.body.read)
@@ -35,8 +43,16 @@ module Zoo
           (body.is_a?(Hash) ? body : {}).merge(params)
         end
 
-        def dispatch(action_class)
-          code, data = action_class.new(container: container).call(request_params)
+        def integer(key)
+          Integer(request_params[key].to_s)
+        end
+
+        def commands
+          Application::Commands
+        end
+
+        def respond(use_case, command)
+          code, data = container.public_send(use_case, command, renderer: Renderers::Json)
           content_type :json
           status code
           data.to_json
@@ -50,53 +66,88 @@ module Zoo
         end
       end
 
-      error(Application::Errors::ApplicationError) { error_json(404) }
-      error(Domain::Errors::DomainError) { error_json(422) }
       error(ArgumentError) { error_json(400) }
 
-      get('/species') { dispatch(ListSpecies) }
-      get('/foods') { dispatch(ListFoods) }
-      get('/taxon-classes') { dispatch(ListTaxonClasses) }
+      with_v1(:get, '/species') { respond(:species_list, commands::SpeciesListCommand.new) }
+      get('/foods') { respond(:food_list, commands::FoodListCommand.new) }
+      with_v1(:get, '/taxon-classes') { respond(:taxon_class_list, commands::TaxonClassListCommand.new) }
 
-      get('/animals') { dispatch(ListAnimals) }
-      post('/animals') { dispatch(AcquireAnimal) }
-      get('/animals/:id') { dispatch(ShowAnimal) }
-      patch('/animals/:id/name') { dispatch(RenameAnimal) }
-      post('/animals/:id/feedings') { dispatch(FeedAnimal) }
-      post('/animals/:id/treatments') { dispatch(TreatAnimal) }
-      post('/animals/:id/examinations') { dispatch(ExamineAnimal) }
-      post('/animals/:id/transfer') { dispatch(TransferAnimal) }
+      with_v1(:get, '/animals') { respond(:animal_list, commands::AnimalListCommand.new) }
+      post('/animals') do
+        respond(:acquire_animal, commands::AcquireAnimalCommand.new(
+                                   species_code: request_params['species'], name: request_params['name'], sex: request_params['sex']
+                                 ))
+      end
+      get('/animals/:id') { respond(:animal_detail, commands::AnimalDetailCommand.new(animal_id: params['id'])) }
+      patch('/animals/:id/name') do
+        respond(:rename_animal, commands::RenameAnimalCommand.new(
+                                  animal_id: params['id'], new_name: request_params['name']
+                                ))
+      end
+      post('/animals/:id/feedings') do
+        respond(:feed_animal, commands::FeedAnimalCommand.new(
+                                keeper_id: request_params['keeper_id'], animal_id: params['id'], food_code: request_params['food']
+                              ))
+      end
+      post('/animals/:id/treatments') do
+        respond(:treat_animal, commands::TreatAnimalCommand.new(
+                                 veterinarian_id: request_params['veterinarian_id'], animal_id: params['id']
+                               ))
+      end
+      post('/animals/:id/examinations') do
+        respond(:examine_animal, commands::ExamineAnimalCommand.new(
+                                   veterinarian_id: request_params['veterinarian_id'], animal_id: params['id']
+                                 ))
+      end
+      post('/animals/:id/transfer') do
+        respond(:transfer_animal, commands::TransferAnimalCommand.new(
+                                    animal_id: params['id'], enclosure_id: request_params['enclosure_id']
+                                  ))
+      end
 
-      get('/enclosures') { dispatch(ListEnclosures) }
-      post('/enclosures') { dispatch(AddEnclosure) }
-      get('/enclosures/:id') { dispatch(ShowEnclosure) }
-      post('/enclosures/:id/occupants') { dispatch(HouseAnimal) }
-      delete('/enclosures/:id/occupants/:animal_id') { dispatch(ReleaseAnimal) }
-      post('/enclosures/:id/cleanings') { dispatch(CleanEnclosure) }
+      with_v1(:get, '/enclosures') { respond(:enclosure_list, commands::EnclosureListCommand.new) }
+      with_v1(:post, '/enclosures') do
+        respond(:add_enclosure, commands::AddEnclosureCommand.new(
+                                  name: request_params['name'], celsius: integer('celsius'), capacity: integer('capacity')
+                                ))
+      end
+      get('/enclosures/:id') do
+        respond(:enclosure_detail, commands::EnclosureDetailCommand.new(enclosure_id: params['id']))
+      end
+      with_v1(:post, '/enclosures/:id/occupants') do
+        respond(:house_animal, commands::HouseAnimalCommand.new(
+                                 enclosure_id: params['id'], animal_id: request_params['animal_id']
+                               ))
+      end
+      delete('/enclosures/:id/occupants/:animal_id') do
+        respond(:release_animal, commands::ReleaseAnimalCommand.new(animal_id: params['animal_id']))
+      end
+      post('/enclosures/:id/cleanings') do
+        respond(:clean_enclosure, commands::CleanEnclosureCommand.new(
+                                    keeper_id: request_params['keeper_id'], enclosure_id: params['id']
+                                  ))
+      end
 
-      get('/keepers') { dispatch(ListKeepers) }
-      post('/keepers') { dispatch(HireKeeper) }
-      get('/veterinarians') { dispatch(ListVeterinarians) }
-      post('/veterinarians') { dispatch(HireVeterinarian) }
+      get('/keepers') { respond(:keeper_list, commands::KeeperListCommand.new) }
+      with_v1(:post, '/keepers') do
+        respond(:hire_keeper, commands::HireKeeperCommand.new(
+                                name: request_params['name'], specialties: request_params['specialties']
+                              ))
+      end
+      get('/veterinarians') { respond(:veterinarian_list, commands::VeterinarianListCommand.new) }
+      post('/veterinarians') do
+        respond(:hire_veterinarian, commands::HireVeterinarianCommand.new(name: request_params['name']))
+      end
 
-      get('/report') { dispatch(Report) }
-      get('/deceased') { dispatch(ListDeceased) }
-      get('/threatened') { dispatch(ListThreatened) }
-      post('/visitors') { dispatch(AdmitVisitors) }
-      patch('/admission-fee') { dispatch(SetAdmissionFee) }
-      post('/operate') { dispatch(OperateDay) }
-      post('/run-days') { dispatch(RunDays) }
-
-      get('/api/v1/species')                          { dispatch(ListSpecies) }
-      get('/api/v1/taxon-classes')                    { dispatch(ListTaxonClasses) }
-      get('/api/v1/report')                           { dispatch(Report) }
-      post('/api/v1/enclosures')                      { dispatch(AddEnclosure) }
-      get('/api/v1/enclosures')                       { dispatch(ListEnclosures) }
-      post('/api/v1/animals')                         { dispatch(AcquireAnimal) }
-      get('/api/v1/animals')                          { dispatch(ListAnimals) }
-      post('/api/v1/enclosures/:id/occupants')        { dispatch(HouseAnimal) }
-      post('/api/v1/keepers')                         { dispatch(HireKeeper) }
-      post('/api/v1/operate')                         { dispatch(OperateDay) }
+      with_v1(:get, '/report') { respond(:zoo_report, commands::ZooReportCommand.new) }
+      get('/deceased') { respond(:deceased_list, commands::DeceasedListCommand.new) }
+      get('/threatened') { respond(:threatened_species, commands::ThreatenedSpeciesCommand.new) }
+      post('/visitors') { respond(:admit_visitors, commands::AdmitVisitorsCommand.new(count: integer('count'))) }
+      patch('/admission-fee') do
+        respond(:set_admission_fee, commands::SetAdmissionFeeCommand.new(fee: integer('fee')))
+      end
+      with_v1(:post, '/operate') { respond(:operate_day, commands::OperateDayCommand.new) }
+      post('/run-days') { respond(:run_days, commands::RunDaysCommand.new(days: integer('days'))) }
 
       get '/' do
         index = File.join(settings.public_folder, 'index.html')

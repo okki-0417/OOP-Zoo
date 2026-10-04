@@ -7,6 +7,7 @@ RSpec.describe Zoo::Application::Queries::EnclosureList do
   husbandry = Zoo::Domain
   catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
+  commands  = Zoo::Application::Commands
 
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
@@ -16,9 +17,13 @@ RSpec.describe Zoo::Application::Queries::EnclosureList do
     in_memory::InMemoryHousingRepository.new([housed(build_adult(catalog.lion, name: 'レオ'), enclosure)])
   end
 
+  let(:query) do
+    described_class.new(command: commands::EnclosureListCommand.new.bind(enclosures: enclosures, housings: housings))
+  end
+
   describe '#call' do
     it 'エリアごとに id・名前・収容数・定員の読み取りモデルを返すこと' do
-      row = described_class.new(enclosures: enclosures, housings: housings).call.first
+      row = query.call.value.first
 
       expect(row.id).to eq(enclosure.id.to_s)
       expect(row.name).to eq('ライオンの丘')
@@ -27,16 +32,16 @@ RSpec.describe Zoo::Application::Queries::EnclosureList do
     end
 
     it '清掃直後のエリアは cleanliness=100・filthy=false を返すこと' do
-      row = described_class.new(enclosures: enclosures, housings: housings).call.first
+      row = query.call.value.first
 
       expect(row.cleanliness).to eq(100)
       expect(row.filthy).to be(false)
     end
 
     it '集約ではなく ReadModels::EnclosureSummary を返すこと' do
-      result = described_class.new(enclosures: enclosures, housings: housings).call
+      rows = query.call.value
 
-      expect(result).to all(be_a(Zoo::Application::ReadModels::EnclosureSummary))
+      expect(rows).to all(be_a(Zoo::Application::ReadModels::EnclosureSummary))
     end
   end
 end

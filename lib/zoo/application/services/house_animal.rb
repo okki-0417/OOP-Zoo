@@ -4,28 +4,28 @@ module Zoo
   module Application
     module Services
       class HouseAnimal
-        def initialize(enclosures:, animals:, housings:, unit_of_work:)
-          @enclosures = enclosures
-          @animals = animals
-          @housings = housings
-          @unit_of_work = unit_of_work
+        def initialize(command:)
+          @command = command
         end
 
-        def call(command)
-          @unit_of_work.run do
-            enclosure = @enclosures.find(command.enclosure_id)
-            raise Errors::EnclosureNotFound, "エリア #{command.enclosure_id} は存在しません" if enclosure.nil?
+        def call
+          Result.capture(:house_animal) do
+            enclosure = @command.unit_of_work.run do
+              enclosure = @command.enclosures.find(@command.enclosure_id)
+              raise Errors::EnclosureNotFound, "エリア #{@command.enclosure_id} は存在しません" if enclosure.nil?
 
-            animal = @animals.find(command.animal_id)
-            raise Errors::AnimalNotFound, "動物 #{command.animal_id} は存在しません" if animal.nil?
+              animal = @command.animals.find(@command.animal_id)
+              raise Errors::AnimalNotFound, "動物 #{@command.animal_id} は存在しません" if animal.nil?
 
-            occupancy = @housings.all_occupancies.find { |o| o.enclosure == enclosure } ||
-                        Domain::Occupancy.new(housings: [], enclosure: enclosure)
-            housing = Domain::Housing.new(animal: animal, enclosure: enclosure, occupancy: occupancy)
-            housing.admission_violation!
+              occupancy = @command.housings.all_occupancies.find { |o| o.enclosure == enclosure } ||
+                          Domain::Occupancy.new(housings: [], enclosure: enclosure)
+              housing = Domain::Housing.new(animal: animal, enclosure: enclosure, occupancy: occupancy)
+              housing.admission_violation!
 
-            @housings.save(housing)
-            enclosure
+              @command.housings.save(housing)
+              enclosure
+            end
+            ReadModels::EnclosureProfile.housed(enclosure, housings: @command.housings)
           end
         end
       end

@@ -3,11 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::AddEnclosure do
-  shared    = Zoo::Domain::Shared
   domain    = Zoo::Domain
   money     = Zoo::Domain::Shared::Money
   balance   = Zoo::Domain::Shared::Balance
-  commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
 
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new }
@@ -18,36 +16,38 @@ RSpec.describe Zoo::Application::Services::AddEnclosure do
     )
   end
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures]) }
-  let(:service) { described_class.new(enclosures: enclosures, zoo: zoo_repo, unit_of_work: unit_of_work) }
-  let(:command) do
-    commands::AddEnclosureCommand.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
+
+  def add(name: 'ライオンの丘', celsius: 28, capacity: 4)
+    command = Zoo::Application::Commands::AddEnclosureCommand.new(name:, celsius:, capacity:)
+    described_class.new(command: command.bind(enclosures:, zoo: zoo_repo, unit_of_work:)).call
   end
 
   describe '#call' do
-    it '採番された id で find できるエリアが保存されること' do
-      enclosure = service.call(command)
+    it 'name "ライオンの丘" で建設すると、採番 id で find できるエリアが保存され、value が population 0 の EnclosureProfile であること' do
+      profile = add.value
 
-      expect(enclosures.find(enclosure.id)).to eq(enclosure)
-      expect(enclosure.name).to eq('ライオンの丘')
+      expect(profile).to be_a(Zoo::Application::ReadModels::EnclosureProfile)
+      expect(enclosures.find(profile.id).name).to eq('ライオンの丘')
+      expect(profile).to have_attributes(name: 'ライオンの丘', capacity: 4, population: 0, occupants: [])
     end
 
-    it '建設費(定員4で70,000円)ぶん残高が減ること' do
-      service.call(command)
+    it '建設費(capacity 4 で 70,000円)ぶん残高が減ること' do
+      add
 
       expect(zoo_repo.load.balance).to eq(balance.new(30_000))
     end
 
-    it '空の name を渡すと Enclosure の不変条件で ArgumentError が発生すること' do
-      bad = commands::AddEnclosureCommand.new(name: '', temperature: shared::Temperature.celsius(28), capacity: 4)
-
-      expect { service.call(bad) }.to raise_error(ArgumentError)
+    it '空の name "" を渡すと Enclosure の不変条件で ArgumentError が発生すること' do
+      expect { add(name: '') }.to raise_error(ArgumentError)
     end
 
-    context '残高が建設費に満たないとき' do
+    context '残高(10,000円)が建設費に満たないとき' do
       let(:funds) { 10_000 }
 
-      it 'InsufficientFunds になり、エリアは保存されないこと' do
-        expect { service.call(command) }.to raise_error(Zoo::Domain::Errors::InsufficientFunds)
+      it 'failure になり error が InsufficientFunds で、エリアは保存されず残高も変わらないこと' do
+        result = add
+
+        expect(result.error).to be_a(Zoo::Domain::Errors::InsufficientFunds)
         expect(enclosures.all).to be_empty
         expect(zoo_repo.load.balance).to eq(balance.new(10_000))
       end

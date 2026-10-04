@@ -7,12 +7,12 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
   husbandry = Zoo::Domain
   catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
+  commands  = Zoo::Application::Commands
 
   let(:zebra) { build_adult(catalog.grevys_zebra, name: 'シマオ') }
   let(:enclosure) do
     husbandry::Enclosure.new(name: 'サバンナ', temperature: shared::Temperature.celsius(30), capacity: 6)
   end
-  let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:housings) { in_memory::InMemoryHousingRepository.new([housed(zebra, enclosure)]) }
   let(:animals) { in_memory::InMemoryAnimalRepository.new }
   let(:births) { in_memory::InMemoryBirthRepository.new }
@@ -21,13 +21,14 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
   end
 
   let(:query) do
-    described_class.new(enclosures: enclosures, housings: housings, zoo: zoo,
-                        animals: animals, births: births)
+    described_class.new(
+      command: commands::ZooReportCommand.new.bind(housings: housings, zoo: zoo, animals: animals, births: births)
+    )
   end
 
   describe '#call' do
     it '在園・種数・絶滅危惧種数を集計すること' do
-      stats = query.call
+      stats = query.call.value
 
       expect(stats.population).to eq(1)
       expect(stats.species_count).to eq(1)
@@ -49,7 +50,7 @@ RSpec.describe Zoo::Application::Queries::ZooReport do
       dead2.die(cause: :starvation)
       animals.save(dead2)
 
-      stats = query.call
+      stats = query.call.value
 
       expect(stats.births).to eq(1)
       expect(stats.deaths_by_cause).to eq(old_age: 1, starvation: 1)

@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::TransferAnimal do
   catalog   = Zoo::Domain::SpeciesCatalog
-  commands  = Zoo::Application::Commands
   in_memory = Zoo::Infrastructure::InMemory
 
   def enclosure(name, capacity)
@@ -21,25 +20,40 @@ RSpec.describe Zoo::Application::Services::TransferAnimal do
   let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
   let(:housings) { in_memory::InMemoryHousingRepository.new([housed(lion, from)]) }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
-  let(:service) do
-    described_class.new(enclosures: enclosures, animals: animals, housings: housings, unit_of_work: unit_of_work)
+
+  def transfer(enclosure_id)
+    command = Zoo::Application::Commands::TransferAnimalCommand.new(animal_id: lion.id, enclosure_id:)
+                                                               .bind(enclosures:, animals:, housings:, unit_of_work:)
+    described_class.new(command: command).call
   end
 
   describe '#call' do
     it '個体を別エリアへ移すと、移送先に収容され移送元から外れること' do
-      service.call(commands::TransferAnimalCommand.new(animal_id: lion.id, enclosure_id: to.id))
+      transfer(to.id)
 
       expect(occupants_of(housings, to)).to include(lion)
       expect(occupants_of(housings, from)).not_to include(lion)
     end
 
-    it '移送先が満員だと HousingNotAllowed になり、個体は移送元に残ること' do
+    it '移送に成功すると result.value が enclosure_name=\'丘B\' の AnimalProfile になること' do
+      profile = transfer(to.id).value
+
+      expect(profile).to have_attributes(id: lion.id.to_s, enclosure_id: to.id.to_s, enclosure_name: '丘B')
+    end
+
+    it '存在しない enclosure_id=\'missing\' を渡すと result.error が EnclosureNotFound になること' do
+      expect(transfer('missing').error).to be_a(Zoo::Application::Errors::EnclosureNotFound)
+    end
+
+    it '移送先が満員だと result.error が定員を理由とする HousingNotAllowed になり、個体は移送元に残ること' do
       full = enclosure('満室', 1)
       enclosures.save(full)
       housings.save(housed(build_adult(catalog.lion, name: '先住'), full))
 
-      expect { service.call(commands::TransferAnimalCommand.new(animal_id: lion.id, enclosure_id: full.id)) }
-        .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /定員/)
+      result = transfer(full.id)
+
+      expect(result.error).to be_a(Zoo::Domain::Errors::HousingNotAllowed)
+      expect(result.error.message).to match(/定員/)
       expect(occupants_of(housings, from)).to include(lion)
     end
   end

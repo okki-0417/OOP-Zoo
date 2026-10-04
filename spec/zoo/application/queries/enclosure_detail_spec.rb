@@ -7,6 +7,7 @@ RSpec.describe Zoo::Application::Queries::EnclosureDetail do
   husbandry = Zoo::Domain
   catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
+  commands  = Zoo::Application::Commands
 
   let(:lion) { build_adult(catalog.lion, name: 'レオ') }
   let(:enclosure) do
@@ -14,11 +15,17 @@ RSpec.describe Zoo::Application::Queries::EnclosureDetail do
   end
   let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
   let(:housings) { in_memory::InMemoryHousingRepository.new([housed(lion, enclosure)]) }
-  let(:query) { described_class.new(enclosures: enclosures, housings: housings) }
+  let(:query) do
+    lambda do |enclosure_id|
+      command = commands::EnclosureDetailCommand.new(enclosure_id: enclosure_id)
+                                                .bind(enclosures: enclosures, housings: housings)
+      described_class.new(command: command).call
+    end
+  end
 
   describe '#call' do
     it '定員・収容数・清潔度・収容個体を含む詳細を返すこと' do
-      profile = query.call(enclosure.id)
+      profile = query.call(enclosure.id).value
 
       expect(profile.name).to eq('ライオンの丘')
       expect(profile.capacity).to eq(4)
@@ -27,8 +34,11 @@ RSpec.describe Zoo::Application::Queries::EnclosureDetail do
       expect(profile.occupants.map(&:name)).to eq(['レオ'])
     end
 
-    it '存在しない id では nil を返すこと' do
-      expect(query.call('missing')).to be_nil
+    it "存在しない id 'missing' では EnclosureNotFound の失敗 Result を返すこと" do
+      result = query.call('missing')
+
+      expect(result).to be_failure
+      expect(result.error).to be_a(Zoo::Application::Errors::EnclosureNotFound)
     end
   end
 end

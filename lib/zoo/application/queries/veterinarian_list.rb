@@ -4,13 +4,13 @@ module Zoo
   module Application
     module Queries
       class VeterinarianList
-        def initialize(veterinarians:)
-          @veterinarians = veterinarians
+        def initialize(command:)
+          @command = command
         end
 
         def call
-          @veterinarians.all.map do |vet|
-            ReadModels::VeterinarianSummary.new(id: vet.id.to_s, name: vet.name)
+          Result.capture(:veterinarian_list) do
+            @command.veterinarians.all.map { |vet| ReadModels::VeterinarianSummary.of(vet) }
           end
         end
       end

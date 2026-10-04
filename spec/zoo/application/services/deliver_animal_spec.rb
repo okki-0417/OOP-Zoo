@@ -29,15 +29,11 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
       Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
     )
   end
-  let(:service) do
-    described_class.new(animals: animals, enclosures: enclosures, housings: housings, keepers: keepers,
-                        breedings: breedings, births: births, zoo: zoo, unit_of_work: unit_of_work)
-  end
-
-  def command(dam_id: dam.id, enclosure_id: enclosure.id, keeper_id: nil)
-    Zoo::Application::Commands::DeliverAnimalCommand.new(
-      dam_id: dam_id, enclosure_id: enclosure_id, keeper_id: keeper_id
-    )
+  def deliver(dam_id: dam.id, enclosure_id: enclosure.id, keeper_id: nil)
+    command = Zoo::Application::Commands::DeliverAnimalCommand.new(dam_id:, enclosure_id:, keeper_id:)
+    described_class.new(
+      command: command.bind(animals:, enclosures:, housings:, keepers:, breedings:, births:, zoo:, unit_of_work:)
+    ).call
   end
 
   def conceive_dam
@@ -55,8 +51,8 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
   describe '#call' do
     before { prepare_dam_for_delivery }
 
-    it 'dam_id/enclosure_id を渡すと、生まれた子が両親を parent_ids に持ちエリアに収容されること' do
-      child = service.call(command)
+    it 'dam_id/enclosure_id を渡すと、value の生まれた子が両親を parent_ids に持ちエリアに収容されること' do
+      child = deliver.value
 
       expect(child.parent_ids).to contain_exactly(sire.id, dam.id)
       expect(occupants_of(housings, enclosure)).to include(child)
@@ -64,20 +60,22 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
     end
 
     it '出産に成功すると Birth が births に1件永続化されること' do
-      service.call(command)
+      deliver
 
       expect(births.all.size).to eq(1)
       expect(births.all.first).to be_a(Zoo::Domain::Birth)
     end
 
-    it '定員1の満員エリアに収容できず HousingNotAllowed になると、子が保存されずロールバックされること' do
+    it '定員1の満員エリアに収容できず failure で error が HousingNotAllowed(定員) になると、子が保存されずロールバックされること' do
       resident = build_adult(catalog.lion, name: '先住')
       full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
       enclosures.save(full)
       housings.save(housed(resident, full))
 
-      expect { service.call(command(enclosure_id: full.id)) }
-        .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /定員/)
+      error = deliver(enclosure_id: full.id).error
+
+      expect(error).to be_a(Zoo::Domain::Errors::HousingNotAllowed)
+      expect(error.message).to match(/定員/)
       expect(animals.all.size).to eq(2)
     end
 
@@ -87,39 +85,33 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
       enclosures.save(full)
       housings.save(housed(resident, full))
 
-      expect { service.call(command(enclosure_id: full.id)) }
-        .to raise_error(Zoo::Domain::Errors::HousingNotAllowed, /定員/)
+      expect(deliver(enclosure_id: full.id).error).to be_a(Zoo::Domain::Errors::HousingNotAllowed)
       expect(births.all).to be_empty
     end
 
-    it '存在しない dam_id を渡すと AnimalNotFound が発生すること' do
-      expect { service.call(command(dam_id: 'missing')) }
-        .to raise_error(Zoo::Application::Errors::AnimalNotFound)
+    it '存在しない dam_id "missing" を渡すと failure で error が AnimalNotFound となること' do
+      expect(deliver(dam_id: 'missing').error).to be_a(Zoo::Application::Errors::AnimalNotFound)
     end
 
-    it '存在しない enclosure_id を渡すと EnclosureNotFound が発生すること' do
-      expect { service.call(command(enclosure_id: 'missing')) }
-        .to raise_error(Zoo::Application::Errors::EnclosureNotFound)
+    it '存在しない enclosure_id "missing" を渡すと failure で error が EnclosureNotFound となること' do
+      expect(deliver(enclosure_id: 'missing').error).to be_a(Zoo::Application::Errors::EnclosureNotFound)
     end
 
-    it '存在しない keeper_id を渡すと KeeperNotFound が発生すること' do
-      expect { service.call(command(keeper_id: 'missing')) }
-        .to raise_error(Zoo::Application::Errors::KeeperNotFound)
+    it '存在しない keeper_id "missing" を渡すと failure で error が KeeperNotFound となること' do
+      expect(deliver(keeper_id: 'missing').error).to be_a(Zoo::Application::Errors::KeeperNotFound)
     end
   end
 
   describe '出産準備前の dam' do
-    it '受胎済みでも妊娠期間が満ちていない dam には BreedingNotAllowed が伝播すること' do
+    it '受胎済みでも妊娠期間が満ちていない dam は failure で error が BreedingNotAllowed となること' do
       conceive_dam
       animals.save(dam)
 
-      expect { service.call(command) }
-        .to raise_error(Zoo::Domain::Errors::BreedingNotAllowed)
+      expect(deliver.error).to be_a(Zoo::Domain::Errors::BreedingNotAllowed)
     end
 
-    it '受胎記録のない dam には BreedingNotFound が発生すること' do
-      expect { service.call(command) }
-        .to raise_error(Zoo::Application::Errors::BreedingNotFound)
+    it '受胎記録のない dam は failure で error が BreedingNotFound となること' do
+      expect(deliver.error).to be_a(Zoo::Application::Errors::BreedingNotFound)
     end
   end
 end

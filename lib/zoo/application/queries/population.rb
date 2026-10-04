@@ -4,12 +4,14 @@ module Zoo
   module Application
     module Queries
       class Population
-        def initialize(housings:)
-          @housings = housings
+        def initialize(command:)
+          @command = command
         end
 
         def call
-          @housings.all_occupants.size
+          Result.capture(:population) do
+            @command.housings.all_occupants.size
+          end
         end
       end
     end

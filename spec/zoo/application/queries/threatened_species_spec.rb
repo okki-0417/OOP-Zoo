@@ -7,6 +7,7 @@ RSpec.describe Zoo::Application::Queries::ThreatenedSpecies do
   husbandry = Zoo::Domain
   catalog   = Zoo::Domain::SpeciesCatalog
   in_memory = Zoo::Infrastructure::InMemory
+  commands  = Zoo::Application::Commands
 
   let(:zebras) { build_pair(catalog.grevys_zebra) }
   let(:giraffe) { build_adult(catalog.reticulated_giraffe, name: 'キリン') }
@@ -25,24 +26,24 @@ RSpec.describe Zoo::Application::Queries::ThreatenedSpecies do
     events.concat(macaques.map { |m| housed(m, monkey_mountain) })
     in_memory::InMemoryHousingRepository.new(events)
   end
-  let(:query) { described_class.new(housings: housings) }
+  let(:query) { described_class.new(command: commands::ThreatenedSpeciesCommand.new.bind(housings: housings)) }
 
   describe '#call' do
     it '展示中の絶滅危惧種だけを種ごとに集計し、LC のニホンザルは含めないこと' do
-      names = query.call.map(&:name_ja)
+      names = query.call.value.map(&:name_ja)
 
       expect(names).to contain_exactly('グレビーシマウマ', 'アミメキリン')
     end
 
     it 'グレビーシマウマ2頭を展示すると count=2・status_code=\'EN\' の読み取りモデルを返すこと' do
-      zebra = query.call.find { |read_model| read_model.name_ja == 'グレビーシマウマ' }
+      zebra = query.call.value.find { |read_model| read_model.name_ja == 'グレビーシマウマ' }
 
       expect(zebra.count).to eq(2)
       expect(zebra.status_code).to eq('EN')
     end
 
     it '集約ではなく読み取りモデル(ReadModels::ExhibitedSpecies)を返すこと' do
-      expect(query.call).to all(be_a(Zoo::Application::ReadModels::ExhibitedSpecies))
+      expect(query.call.value).to all(be_a(Zoo::Application::ReadModels::ExhibitedSpecies))
     end
   end
 end

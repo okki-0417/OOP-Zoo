@@ -19,8 +19,9 @@ RSpec.describe Zoo::Application::Services::OpenForADay do
   let(:housings) { in_memory::InMemoryHousingRepository.new([housed(survivor, enclosure), housed(elder, enclosure)]) }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
   let(:service) do
-    described_class.new(enclosures: enclosures, animals: animals, housings: housings,
-                        unit_of_work: unit_of_work)
+    described_class.new(
+      command: Zoo::Application::Commands::OpenForADayCommand.new.bind(enclosures:, animals:, housings:, unit_of_work:)
+    )
   end
 
   describe '#call' do
@@ -34,8 +35,8 @@ RSpec.describe Zoo::Application::Services::OpenForADay do
       expect(enclosures.find(enclosure.id).cleanliness.level).to be < 100
     end
 
-    it '寿命を超えた個体は死亡してエリアの occupants から外れ、戻り値に含まれること' do
-      dead = service.call
+    it '寿命を超えた個体は死亡してエリアの occupants から外れ、result.value の配列に含まれること' do
+      dead = service.call.value
 
       expect(dead).to include(elder)
       expect(occupants_of(housings, enclosure)).not_to include(elder)
