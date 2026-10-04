@@ -1,7 +1,5 @@
-<script setup lang="ts">
-import HelloWorld from "./components/HelloWorld.vue";
-</script>
-
 <template>
-  <HelloWorld />
+  <main>
+    <h1>OOP-Zoo</h1>
+  </main>
 </template>
