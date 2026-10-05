@@ -3,17 +3,22 @@
 require 'spec_helper'
 require 'rack/test'
 require 'json'
+require 'stringio'
 
 RSpec.describe Zoo::Presentation::Web do
   include Rack::Test::Methods
 
   let(:container) { Zoo::Composition::Container.new }
+  let(:log) { StringIO.new }
 
   def app
     described_class
   end
 
-  before { described_class.set(:container, container) }
+  before do
+    described_class.set(:container, container)
+    described_class.set(:operation_logger, Logger.new(log))
+  end
 
   def graphql(query, variables = {})
     post '/graphql', { query:, variables: }.to_json, 'CONTENT_TYPE' => 'application/json'
@@ -53,5 +58,19 @@ RSpec.describe Zoo::Presentation::Web do
 
     expect(last_response.status).to eq(200)
     expect(last_response.headers['Access-Control-Allow-Origin']).to eq('*')
+  end
+
+  it 'mutation AcquireAnimal($name) を送ると、操作の種類と名前・variables・1行に詰めたクエリ・エラーコードをログに出すこと' do
+    graphql(
+      "mutation AcquireAnimal($name: String!) {\n  acquireAnimal(speciesCode: \"dragon\", name: $name, sex: MALE) { id }\n}",
+      { name: 'X' }
+    )
+
+    expect(log.string).to include('Processing mutation AcquireAnimal')
+    expect(log.string).to include('Variables: {"name":"X"}')
+    expect(log.string).to include(
+      'Query: mutation AcquireAnimal($name: String!) { acquireAnimal(speciesCode: "dragon", name: $name, sex: MALE) { id } }'
+    )
+    expect(log.string).to match(/Completed in \d+ms \(errors: SpeciesNotFound\)/)
   end
 end
