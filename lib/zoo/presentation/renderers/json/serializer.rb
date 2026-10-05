@@ -43,7 +43,8 @@ module Zoo
           def rounds_report(report)
             {
               keeper_id: report.keeper_id, keeper_name: report.keeper_name,
-              remaining_minutes: report.remaining_minutes, rounds: report.rounds
+              remaining_minutes: report.remaining_minutes,
+              rounds: report.rounds.map { |round| round.merge(enclosure: round[:enclosure].to_h) }
             }
           end
 

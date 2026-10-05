@@ -96,6 +96,12 @@ async function hire() {
             <span class="avatar small">🧑‍🌾</span>
             <strong class="grow">{{ k.name }}</strong>
             <span class="muted">{{ k.specialties || "専門なし" }}</span>
+            <span class="muted">
+              {{ k.enclosures.length ? k.enclosures.map((e) => e.name).join("・") : "担当なし" }}
+            </span>
+            <span class="badge" :class="k.remaining_minutes === 0 ? 'badge-bad' : ''"
+              >残り{{ k.remaining_minutes }}分</span
+            >
           </li>
         </ul>
       </QueryState>

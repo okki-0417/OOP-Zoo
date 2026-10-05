@@ -22,6 +22,7 @@ export const router = createRouter({
       component: () => import("./views/EnclosureView.vue"),
       props: true,
     },
+    { path: "/work", name: "work", component: () => import("./views/WorkView.vue") },
     { path: "/staff", name: "staff", component: () => import("./views/StaffView.vue") },
   ],
   scrollBehavior: () => ({ top: 0 }),

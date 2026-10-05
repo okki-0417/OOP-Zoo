@@ -224,7 +224,8 @@ RSpec.describe Zoo::Presentation::Rest do
 
       expect(last_response.status).to eq(200)
       expect(body).to include('keeper_id' => keeper_id, 'remaining_minutes' => 470)
-      expect(body['rounds'].first).to include('fed' => ['レオ'], 'skipped' => [], 'cleaned' => false)
+      expect(body['rounds'].first).to include('enclosure' => { 'id' => enclosure_id, 'name' => 'サバンナ' },
+                                              'fed' => ['レオ'], 'skipped' => [], 'cleaned' => false)
       get "/animals/#{animal_id}"
       expect(body['meals_today']).to eq(['meat'])
     end

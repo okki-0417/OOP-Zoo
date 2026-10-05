@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const tabs = [
   { to: "/", label: "園長室", icon: "🏛️" },
+  { to: "/work", label: "今日の業務", icon: "📋" },
   { to: "/animals", label: "どうぶつ", icon: "🦒" },
   { to: "/enclosures", label: "エリア", icon: "🌳" },
   { to: "/staff", label: "スタッフ", icon: "🧑‍🌾" },

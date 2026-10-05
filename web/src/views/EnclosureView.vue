@@ -20,6 +20,16 @@ const { busy, run } = useCommand();
 
 const keeperId = ref("");
 const animalId = ref("");
+const assigneeId = ref("");
+
+const unassigned = computed(() => {
+  const assigned = new Set(enclosure.data.value?.keepers.map((k) => k.id));
+  return (keepers.data.value ?? []).filter((k) => !assigned.has(k.id));
+});
+
+function remainingOf(id: string) {
+  return keepers.data.value?.find((k) => k.id === id)?.remaining_minutes;
+}
 
 watch(keepers.data, (list) => (keeperId.value ||= list?.[0]?.id ?? ""));
 
@@ -43,7 +53,54 @@ async function clean() {
       ),
     (e) => `${e.name}をきれいにしました`,
   );
-  if (cleaned) enclosure.data.value = cleaned;
+  if (!cleaned) return;
+  enclosure.data.value = cleaned;
+  void keepers.reload();
+}
+
+async function enrich() {
+  const enriched = await run(
+    () =>
+      unwrap(
+        api.POST("/enclosures/{enclosure_id}/enrichments", {
+          params: path.value,
+          body: { keeper_id: keeperId.value },
+        }),
+      ),
+    (e) => `${e.name}に遊具を補充しました`,
+  );
+  if (!enriched) return;
+  enclosure.data.value = enriched;
+  void keepers.reload();
+}
+
+async function assign() {
+  const assigned = await run(
+    () =>
+      unwrap(
+        api.POST("/enclosures/{enclosure_id}/keepers", {
+          params: path.value,
+          body: { keeper_id: assigneeId.value },
+        }),
+      ),
+    () => "担当に割り当てました",
+  );
+  if (!assigned) return;
+  enclosure.data.value = assigned;
+  assigneeId.value = "";
+}
+
+async function discharge(id: string, name: string) {
+  const discharged = await run(
+    () =>
+      unwrap(
+        api.DELETE("/enclosures/{enclosure_id}/keepers/{keeper_id}", {
+          params: { path: { enclosure_id: props.id, keeper_id: id } },
+        }),
+      ),
+    () => `${name}さんを担当から外しました`,
+  );
+  if (discharged) enclosure.data.value = discharged;
 }
 
 async function house() {
@@ -96,16 +153,47 @@ async function release(id: string, name: string) {
             invert
           />
           <MeterBar label="清潔度" :value="enclosure.data.value.cleanliness" :max="100" />
+          <MeterBar label="刺激" :value="enclosure.data.value.enrichment" :max="100" />
           <form class="row bottom" @submit.prevent="clean">
             <label class="field grow">
-              担当飼育員
+              作業する飼育員
               <select v-model="keeperId" required>
                 <option v-for="k in keepers.data.value" :key="k.id" :value="k.id">
-                  {{ k.name }}
+                  {{ k.name }}（残り{{ k.remaining_minutes }}分）
                 </option>
               </select>
             </label>
-            <button class="btn btn-primary" :disabled="busy || !keeperId">🧹 清掃</button>
+            <button class="btn btn-primary" :disabled="busy || !keeperId">🧹 清掃 60分</button>
+            <button type="button" class="btn" :disabled="busy || !keeperId" @click="enrich">
+              🧸 補充 30分
+            </button>
+          </form>
+        </section>
+
+        <h2 class="section-title">担当飼育員</h2>
+        <section class="card stack">
+          <ul v-if="enclosure.data.value.keepers.length" class="list plain">
+            <li v-for="k in enclosure.data.value.keepers" :key="k.id" class="row">
+              <span>🧑‍🌾</span>
+              <strong class="grow">{{ k.name }}</strong>
+              <span class="muted">残り{{ remainingOf(k.id) ?? "-" }}分</span>
+              <button class="btn small-btn" :disabled="busy" @click="discharge(k.id, k.name)">
+                外す
+              </button>
+            </li>
+          </ul>
+          <p v-else class="muted">担当がいません。日々の見回りが行われません</p>
+          <form class="row bottom" @submit.prevent="assign">
+            <label class="field grow">
+              担当に加える
+              <select v-model="assigneeId" required>
+                <option value="" disabled>選んでください</option>
+                <option v-for="k in unassigned" :key="k.id" :value="k.id">
+                  {{ k.name }}（{{ k.specialties }}）
+                </option>
+              </select>
+            </label>
+            <button class="btn" :disabled="busy || !assigneeId">割り当て</button>
           </form>
         </section>
 
@@ -173,6 +261,10 @@ async function release(id: string, name: string) {
 .small-btn {
   padding: 6px 12px;
   font-size: 0.8rem;
+}
+
+.list.plain {
+  padding: 0;
 }
 
 .note {
