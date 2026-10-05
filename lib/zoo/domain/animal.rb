@@ -203,6 +203,10 @@ module Zoo
         @stress.stressed?
       end
 
+      def severely_stressed?
+        @stress.severe?
+      end
+
       def stress_level
         @stress.level
       end

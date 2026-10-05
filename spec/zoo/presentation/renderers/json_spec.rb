@@ -35,6 +35,39 @@ RSpec.describe Zoo::Presentation::Renderers::Json do
       expect(body).to include(name: 'レオ', species: 'ライオン', enclosure_id: nil)
     end
 
+    it 'animal_detail の AnimalProfile は栄養・ストレス・妊娠・その日の食事を含む本文になること' do
+      lion = build_adult(catalog.lion, name: 'レオ')
+      lion.take_meal([:meat])
+      profile = Zoo::Application::ReadModels::AnimalProfile.of(lion, enclosure: nil)
+
+      _status, body = described_class.render(result.success(:animal_detail, profile))
+      expect(body).to include(
+        nutrition: 100, malnourished: false, stress: 0, stressed: false, severely_stressed: false,
+        hungry: false, days_until_starving: 10, meals_today: ['meat'], contagious: false,
+        expecting: false, gestation_days: nil, gestation_period_days: 110, ready_to_deliver: false
+      )
+    end
+
+    it 'animal_prognosis の AnimalOutlook は outlook を文字列にした本文になること' do
+      outlook = Zoo::Application::ReadModels::AnimalOutlook.new(
+        animal_id: 'a1', housed: true, outlook: :guarded, days_to_death: 12, cause_of_death: '病死'
+      )
+      expect(described_class.render(result.success(:animal_prognosis, outlook))).to eq(
+        [200, { animal_id: 'a1', housed: true, outlook: 'guarded', days_to_death: 12, cause_of_death: '病死' }]
+      )
+    end
+
+    it 'alert_list の Alert は severity/kind を文字列に、subject を入れ子にした配列になること' do
+      alert = Zoo::Application::ReadModels::Alert.new(
+        severity: :warning, kind: :filthy, subject_type: :enclosure, subject_id: 'e1', subject_name: '丘',
+        message: '不潔です'
+      )
+      expect(described_class.render(result.success(:alert_list, [alert]))).to eq(
+        [200, [{ severity: 'warning', kind: 'filthy', subject: { type: 'enclosure', id: 'e1', name: '丘' },
+                 message: '不潔です' }]]
+      )
+    end
+
     it 'admit_visitors の Money(¥20000) は 200 と {revenue: 20000} になること' do
       revenue = Zoo::Domain::Shared::Money.yen(20_000)
 

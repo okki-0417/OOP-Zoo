@@ -128,6 +128,57 @@ RSpec.describe Zoo::Presentation::Rest do
     end
   end
 
+  describe 'GET /animals/:id/prognosis' do
+    it '未収容の個体は housed=false・outlook=null を返すこと' do
+      id = acquire(name: 'レオ')
+
+      get "/animals/#{id}/prognosis"
+
+      expect(last_response.status).to eq(200)
+      expect(body).to eq('animal_id' => id, 'housed' => false, 'outlook' => nil, 'days_to_death' => nil,
+                         'cause_of_death' => nil)
+    end
+
+    it '収容中の健康な個体は housed=true・outlook="good" を返すこと' do
+      id = acquire(name: 'レオ')
+      partner = acquire(name: 'ナラ', sex: 'female')
+      enclosure_id = build_enclosure(celsius: 25)
+      [id, partner].each { |animal_id| post_json "/enclosures/#{enclosure_id}/occupants", animal_id: }
+
+      get "/animals/#{id}/prognosis"
+
+      expect(body).to include('housed' => true, 'outlook' => 'good', 'days_to_death' => nil)
+    end
+
+    it '存在しない id は AnimalNotFound で404に翻訳されること' do
+      get '/animals/missing/prognosis'
+
+      expect(last_response.status).to eq(404)
+    end
+  end
+
+  describe 'GET /alerts' do
+    it '未収容の個体がいると kind="unhoused"・subject に個体を持つ警告を返すこと' do
+      id = acquire(name: 'レオ')
+      hire_keeper
+
+      get '/alerts'
+
+      expect(last_response.status).to eq(200)
+      expect(body).to include(
+        'severity' => 'warning', 'kind' => 'unhoused',
+        'subject' => { 'type' => 'animal', 'id' => id, 'name' => 'レオ' },
+        'message' => 'どのエリアにも収容されていません'
+      )
+    end
+
+    it '何も問題がなければ空配列を返すこと' do
+      get '/alerts'
+
+      expect(body).to eq([])
+    end
+  end
+
   describe 'GET /animals' do
     it '取得した全個体のサマリ配列を返すこと' do
       acquire(name: 'レオ')

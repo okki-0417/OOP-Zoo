@@ -94,6 +94,19 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Animal' }
         '404': { $ref: '#/components/responses/Error' }
+  /animals/{animal_id}/prognosis:
+    parameters:
+      - { name: animal_id, in: path, required: true, schema: { type: string } }
+    get:
+      summary: 予後(給餌は続け、治療も環境改善もしなかった場合の見通し)
+      operationId: showAnimalPrognosis
+      responses:
+        '200':
+          description: 予後
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AnimalOutlook' }
+        '404': { $ref: '#/components/responses/Error' }
   /animals/{animal_id}/name:
     parameters:
       - { name: animal_id, in: path, required: true, schema: { type: string } }
@@ -408,6 +421,18 @@ paths:
               schema: { $ref: '#/components/schemas/Veterinarian' }
         '400': { $ref: '#/components/responses/Error' }
 
+  /alerts:
+    get:
+      summary: 要対応の一覧(重大度順)
+      operationId: listAlerts
+      responses:
+        '200':
+          description: 要対応の一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Alert' }
   /report:
     get:
       summary: 園の統計
@@ -551,8 +576,9 @@ components:
       type: object
       required:
         [id, name, species, taxon_class, diet, conservation_code, conservation_label,
-         sex, life_stage, age_in_days, health, max_health, weak, hunger, starving,
-         alive, parents]
+         sex, life_stage, age_in_days, health, max_health, weak, hunger, hungry, starving,
+         days_until_starving, meals_today, nutrition, malnourished, stress, stressed, severely_stressed,
+         contagious, expecting, gestation_period_days, ready_to_deliver, alive, parents]
       properties:
         id: { type: string }
         name: { type: string }
@@ -568,13 +594,55 @@ components:
         max_health: { type: integer }
         weak: { type: boolean }
         hunger: { type: integer }
+        hungry: { type: boolean }
         starving: { type: boolean }
+        days_until_starving: { type: integer, description: 給餌が途絶えた場合に飢餓へ至るまでの日数 }
+        meals_today:
+          type: array
+          description: その日に食べた餌のカテゴリ(1日の終わりに栄養状態の評価に使われる)
+          items: { type: string, enum: [meat, fish, insect, plant, fruit, seed] }
+        nutrition: { type: integer }
+        malnourished: { type: boolean }
+        stress: { type: integer }
+        stressed: { type: boolean }
+        severely_stressed: { type: boolean }
         illness: { type: string, nullable: true }
+        contagious: { type: boolean }
+        expecting: { type: boolean }
+        gestation_days: { type: integer, nullable: true }
+        gestation_period_days: { type: integer }
+        ready_to_deliver: { type: boolean }
         alive: { type: boolean }
         cause: { type: string, nullable: true }
         parents: { type: integer }
         enclosure_id: { type: string, nullable: true }
         enclosure_name: { type: string, nullable: true }
+    AnimalOutlook:
+      type: object
+      required: [animal_id, housed, outlook, days_to_death, cause_of_death]
+      properties:
+        animal_id: { type: string }
+        housed: { type: boolean, description: 未収容なら日々の営みが進まないため予後は出ない }
+        outlook: { type: string, enum: [good, guarded, grave], nullable: true }
+        days_to_death: { type: integer, nullable: true, description: 30日以内に死亡する見込みの日数 }
+        cause_of_death: { type: string, nullable: true }
+    Alert:
+      type: object
+      required: [severity, kind, subject, message]
+      properties:
+        severity: { type: string, enum: [critical, warning, notice] }
+        kind:
+          type: string
+          enum: [insolvent, no_keeper, no_veterinarian, filthy, overcrowded, barren,
+                 grave, guarded, starving, hungry, sick, malnourished, stressed, climate, due, unhoused]
+        subject:
+          type: object
+          required: [type, id, name]
+          properties:
+            type: { type: string, enum: [zoo, enclosure, animal] }
+            id: { type: string, nullable: true }
+            name: { type: string }
+        message: { type: string }
     EnclosureSummary:
       type: object
       required: [id, name, population, capacity, cleanliness, filthy]

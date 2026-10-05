@@ -28,6 +28,7 @@ module Zoo
       get('/animals') { respond(:animal_list) }
       post('/animals') { respond(:acquire_animal, :species_code, :name, :sex) }
       get('/animals/:animal_id') { respond(:animal_detail, :animal_id) }
+      get('/animals/:animal_id/prognosis') { respond(:animal_prognosis, :animal_id) }
       patch('/animals/:animal_id/name') { respond(:rename_animal, :animal_id, :new_name) }
       post('/animals/:animal_id/feedings') { respond(:feed_animal, :animal_id, :keeper_id, :food_code) }
       post('/animals/:animal_id/treatments') { respond(:treat_animal, :animal_id, :veterinarian_id) }
@@ -49,6 +50,7 @@ module Zoo
       post('/veterinarians') { respond(:hire_veterinarian, :name) }
 
       get('/report') { respond(:zoo_report) }
+      get('/alerts') { respond(:alert_list) }
       get('/deceased') { respond(:deceased_list) }
       get('/threatened') { respond(:threatened_species) }
       post('/visitors') { respond(:admit_visitors, count: integer('count')) }

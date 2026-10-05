@@ -24,6 +24,10 @@ module Zoo
         course.cause_of_death
       end
 
+      def cause_of_death_label
+        cause_of_death && Animal::Death.new(cause: cause_of_death).to_s
+      end
+
       def outlook
         return :good if days_to_death.nil?
         return :grave if days_to_death <= GRAVE_DAYS
