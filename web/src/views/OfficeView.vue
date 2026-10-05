@@ -219,12 +219,13 @@ async function changeFee() {
               前日 {{ yesterday.netIncome < 0 ? "" : "+" }}{{ yen(yesterday.netIncome) }}
             </p>
           </div>
-          <div class="card kpi">
+          <RouterLink to="/reputation" class="card kpi link-card">
             <MeterBar label="評判" :value="zoo.reputation" :max="100" />
             <p v-if="yesterday" class="muted">
               前日の来園 {{ yesterday.visitors.toLocaleString() }} 人
             </p>
-          </div>
+            <p class="more">内訳を見る ›</p>
+          </RouterLink>
         </section>
       </QueryState>
 
@@ -354,6 +355,16 @@ async function changeFee() {
   display: grid;
   gap: 6px;
   align-content: start;
+}
+
+.link-card:hover {
+  border-color: var(--brand);
+}
+
+.more {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--brand);
 }
 
 .figure {

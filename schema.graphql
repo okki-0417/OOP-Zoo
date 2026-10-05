@@ -262,6 +262,10 @@ type Zoo {
   admissionFee: Int!
   balance: Int!
   day: Int!
+  exhibitCondition: Int!
+  expectedReputationChange: Float!
+  expectedVisitors: Int!
+  experience: Int!
   name: String!
   reputation: Int!
 }

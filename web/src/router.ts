@@ -10,6 +10,12 @@ export const router = createRouter({
       meta: { section: "office" },
     },
     {
+      path: "/reputation",
+      name: "reputation",
+      component: () => import("./views/ReputationView.vue"),
+      meta: { section: "office" },
+    },
+    {
       path: "/animals",
       name: "animals",
       component: () => import("./views/AnimalsView.vue"),
