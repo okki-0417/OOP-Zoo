@@ -13,13 +13,31 @@ const severities: { key: Alert["severity"]; label: string }[] = [
   { key: "notice", label: "注意" },
 ];
 
+type Case = {
+  key: string;
+  severity: Alert["severity"];
+  subject: Alert["subject"];
+  alerts: Alert[];
+};
+
+const cases = computed(() => {
+  const grouped = new Map<string, Case>();
+  for (const alert of props.alerts) {
+    const key = `${alert.subject.type}:${alert.subject.id ?? alert.kind}`;
+    const found = grouped.get(key);
+    if (found) found.alerts.push(alert);
+    else
+      grouped.set(key, { key, severity: alert.severity, subject: alert.subject, alerts: [alert] });
+  }
+  return [...grouped.values()];
+});
 const counts = computed(() =>
   Object.fromEntries(
-    severities.map(({ key }) => [key, props.alerts.filter((a) => a.severity === key).length]),
+    severities.map(({ key }) => [key, cases.value.filter((c) => c.severity === key).length]),
   ),
 );
 const visible = computed(() =>
-  filter.value === "all" ? props.alerts : props.alerts.filter((a) => a.severity === filter.value),
+  filter.value === "all" ? cases.value : cases.value.filter((c) => c.severity === filter.value),
 );
 
 const kindIcons: Record<Alert["kind"], string> = {
@@ -53,7 +71,7 @@ function linkOf(alert: Alert) {
   <section class="card inbox">
     <div class="segmented" role="group" aria-label="重大度">
       <button type="button" :aria-pressed="filter === 'all'" @click="filter = 'all'">
-        すべて {{ alerts.length }}
+        すべて {{ cases.length }}
       </button>
       <button
         v-for="s in severities"
@@ -68,19 +86,21 @@ function linkOf(alert: Alert) {
 
     <p v-if="visible.length === 0" class="empty">対応が必要なことはありません 🎉</p>
     <ul v-else class="items">
-      <li v-for="(alert, index) in visible" :key="index">
+      <li v-for="c in visible" :key="c.key">
         <component
-          :is="linkOf(alert) ? 'RouterLink' : 'div'"
-          :to="linkOf(alert)"
+          :is="linkOf(c.alerts[0]!) ? 'RouterLink' : 'div'"
+          :to="linkOf(c.alerts[0]!)"
           class="item"
-          :class="alert.severity"
+          :class="c.severity"
         >
-          <span class="icon">{{ kindIcons[alert.kind] }}</span>
+          <span class="icon">{{ kindIcons[c.alerts[0]!.kind] }}</span>
           <span class="grow">
-            <strong>{{ alert.subject.name }}</strong>
-            <span class="message">{{ alert.message }}</span>
+            <strong>{{ c.subject.name }}</strong>
+            <span v-for="alert in c.alerts" :key="alert.kind" class="message">
+              {{ c.alerts.length > 1 ? kindIcons[alert.kind] : "" }} {{ alert.message }}
+            </span>
           </span>
-          <span v-if="linkOf(alert)" class="go">対処 ›</span>
+          <span v-if="linkOf(c.alerts[0]!)" class="go">対処 ›</span>
         </component>
       </li>
     </ul>
