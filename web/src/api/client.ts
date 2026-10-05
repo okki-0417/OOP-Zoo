@@ -10,7 +10,6 @@ export type Animal = Schemas["Animal"];
 export type AnimalOutlook = Schemas["AnimalOutlook"];
 export type AnimalSummary = Schemas["AnimalSummary"];
 export type Enclosure = Schemas["Enclosure"];
-export type EnclosureSummary = Schemas["EnclosureSummary"];
 export type Keeper = Schemas["Keeper"];
 export type Veterinarian = Schemas["Veterinarian"];
 export type Deceased = Schemas["Deceased"];

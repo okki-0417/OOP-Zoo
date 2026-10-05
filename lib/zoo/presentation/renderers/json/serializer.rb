@@ -24,16 +24,10 @@ module Zoo
             }
           end
 
-          def enclosure_summary(summary)
-            {
-              id: summary.id, name: summary.name, population: summary.population, capacity: summary.capacity,
-              cleanliness: summary.cleanliness, filthy: summary.filthy
-            }
-          end
-
           def enclosure(profile)
             {
-              id: profile.id, name: profile.name, capacity: profile.capacity, population: profile.population,
+              id: profile.id, name: profile.name, celsius: profile.celsius, climate_controlled: profile.climate_controlled,
+              capacity: profile.capacity, population: profile.population,
               cleanliness: profile.cleanliness, filthy: profile.filthy,
               enrichment: profile.enrichment, barren: profile.barren,
               keepers: profile.keepers.map(&:to_h),

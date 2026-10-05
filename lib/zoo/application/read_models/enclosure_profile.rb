@@ -4,12 +4,14 @@ module Zoo
   module Application
     module ReadModels
       EnclosureProfile = Data.define(
-        :id, :name, :capacity, :population, :cleanliness, :filthy, :enrichment, :barren, :keepers, :occupants
+        :id, :name, :celsius, :climate_controlled, :capacity, :population, :cleanliness, :filthy, :enrichment, :barren, :keepers, :occupants
       ) do
         def self.of(enclosure, occupants:, keepers:)
           new(
             id: enclosure.id.to_s,
             name: enclosure.name,
+            celsius: enclosure.temperature.celsius,
+            climate_controlled: enclosure.climate_controlled?,
             capacity: enclosure.capacity,
             population: occupants.size,
             cleanliness: enclosure.cleanliness_level,

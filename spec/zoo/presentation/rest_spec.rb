@@ -318,15 +318,20 @@ RSpec.describe Zoo::Presentation::Rest do
   end
 
   describe 'GET /enclosures' do
-    it '登録済みエリアのサマリ配列を返すこと' do
-      build_enclosure(name: 'サバンナ', capacity: 6)
+    it '登録済みエリアを、設定温度・担当・住人つきの配列で返すこと' do
+      savanna = build_enclosure(name: 'サバンナ', celsius: 30, capacity: 6)
       build_enclosure(name: '熱帯雨林', capacity: 4)
+      lion = acquire(name: 'レオ')
+      post_json "/enclosures/#{savanna}/occupants", animal_id: lion
 
       get '/enclosures'
 
       expect(last_response.status).to eq(200)
       expect(body.map { |e| e['name'] }).to contain_exactly('サバンナ', '熱帯雨林')
-      expect(body.first).to include('capacity', 'population', 'cleanliness', 'filthy')
+      row = body.find { |e| e['name'] == 'サバンナ' }
+      expect(row).to include('celsius' => 30.0, 'climate_controlled' => false, 'capacity' => 6, 'population' => 1,
+                             'keepers' => [])
+      expect(row['occupants'].map { |o| o['name'] }).to eq(['レオ'])
     end
 
     it 'エリアが0件のとき空配列を返すこと' do

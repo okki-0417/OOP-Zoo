@@ -43,7 +43,7 @@ module Zoo
             animal_prognosis: ->(outlook) { [200, a.animal_outlook(outlook)] },
             deceased_list: ->(records) { [200, records.map { |record| s.deceased(record) }] },
             enclosure_detail: ->(profile) { [200, s.enclosure(profile)] },
-            enclosure_list: ->(summaries) { [200, summaries.map { |summary| s.enclosure_summary(summary) }] },
+            enclosure_list: ->(profiles) { [200, profiles.map { |profile| s.enclosure(profile) }] },
             operating_history: ->(summaries) { [200, summaries.map { |summary| s.operating_summary(summary) }] },
             keeper_list: ->(summaries) { [200, summaries.map { |summary| s.keeper(summary) }] },
             threatened_species: ->(records) { [200, records.map { |record| s.exhibited_species(record) }] },

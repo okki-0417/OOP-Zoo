@@ -18,7 +18,9 @@ RSpec.describe Zoo::Application::Queries::EnclosureList do
   end
 
   let(:query) do
-    described_class.new(command: commands::EnclosureListCommand.new.bind(enclosures: enclosures, housings: housings))
+    described_class.new(command: commands::EnclosureListCommand.new.bind(
+      enclosures:, housings:, assignments: Factory::AssignmentRepository.build
+    ))
   end
 
   describe '#call' do
@@ -38,10 +40,18 @@ RSpec.describe Zoo::Application::Queries::EnclosureList do
       expect(row.filthy).to be(false)
     end
 
-    it '集約ではなく ReadModels::EnclosureSummary を返すこと' do
+    it '設定温度28℃・空調なしのエリアは celsius=28.0・climate_controlled=false を返すこと' do
+      expect(query.call.value.first).to have_attributes(celsius: 28.0, climate_controlled: false)
+    end
+
+    it '住んでいるレオを occupants に AnimalSummary として返すこと' do
+      expect(query.call.value.first.occupants.map(&:name)).to eq(['レオ'])
+    end
+
+    it '集約ではなく ReadModels::EnclosureProfile を返すこと' do
       rows = query.call.value
 
-      expect(rows).to all(be_a(Zoo::Application::ReadModels::EnclosureSummary))
+      expect(rows).to all(be_a(Zoo::Application::ReadModels::EnclosureProfile))
     end
   end
 end

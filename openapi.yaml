@@ -233,7 +233,7 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/EnclosureSummary' }
+                items: { $ref: '#/components/schemas/Enclosure' }
     post:
       summary: エリアを増設する
       operationId: addEnclosure
@@ -783,22 +783,15 @@ components:
                   id: { type: string }
                   name: { type: string }
               done: { type: boolean }
-    EnclosureSummary:
-      type: object
-      required: [id, name, population, capacity, cleanliness, filthy]
-      properties:
-        id: { type: string }
-        name: { type: string }
-        population: { type: integer }
-        capacity: { type: integer }
-        cleanliness: { type: integer }
-        filthy: { type: boolean }
     Enclosure:
       type: object
-      required: [id, name, capacity, population, cleanliness, filthy, enrichment, barren, keepers, occupants]
+      required: [id, name, celsius, climate_controlled, capacity, population, cleanliness, filthy, enrichment,
+                 barren, keepers, occupants]
       properties:
         id: { type: string }
         name: { type: string }
+        celsius: { type: number, description: エリアの設定温度 }
+        climate_controlled: { type: boolean }
         capacity: { type: integer }
         population: { type: integer }
         cleanliness: { type: integer }
