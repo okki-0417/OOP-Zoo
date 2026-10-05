@@ -244,7 +244,7 @@ export type SetAdmissionFeeMutation = { setAdmissionFee: { admissionFee: number 
 export type ReputationQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ReputationQuery = { zoo: { reputation: number, admissionFee: number, exhibitCondition: number, experience: number, expectedVisitors: number, reputationDrift: number, reputationDecay: number, reputationSwingLimit: number, visitorsForFullSwing: number }, animals: Array<{ id: string, name: string | null, alive: boolean, visibleCondition: number, blemishes: Array<{ cause: BlemishCause, penalty: number }>, stressors: Array<{ cause: StressorCause, amount: number }>, species: { nameJa: string }, enclosure: { id: string, name: string } | null }>, operatings: Array<{ deaths: number, outbreak: string | null }> };
+export type ReputationQuery = { zoo: { reputation: number, admissionFee: number, exhibitCondition: number, experience: number, expectedVisitors: number, reputationDrift: number, reputationDecay: number, reputationSwingLimit: number, visitorsForFullSwing: number, buzz: number, spectacle: number, spectacleSaturation: number, willingnessToPay: number }, animals: Array<{ id: string, name: string | null, alive: boolean, visibleCondition: number, blemishes: Array<{ cause: BlemishCause, penalty: number }>, stressors: Array<{ cause: StressorCause, amount: number }>, species: { code: string, nameJa: string, charisma: number }, enclosure: { id: string, name: string } | null }>, operatings: Array<{ deaths: number, outbreak: string | null }> };
 
 export type StaffQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -691,6 +691,10 @@ export const ReputationDocument = new TypedDocumentString(`
     reputationDecay
     reputationSwingLimit
     visitorsForFullSwing
+    buzz
+    spectacle
+    spectacleSaturation
+    willingnessToPay
   }
   animals {
     id
@@ -706,7 +710,9 @@ export const ReputationDocument = new TypedDocumentString(`
       amount
     }
     species {
+      code
       nameJa
+      charisma
     }
     enclosure {
       id

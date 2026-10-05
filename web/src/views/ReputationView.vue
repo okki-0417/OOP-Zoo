@@ -22,6 +22,10 @@ const ReputationQuery = graphql(`
       reputationDecay
       reputationSwingLimit
       visitorsForFullSwing
+      buzz
+      spectacle
+      spectacleSaturation
+      willingnessToPay
     }
     animals {
       id
@@ -37,7 +41,9 @@ const ReputationQuery = graphql(`
         amount
       }
       species {
+        code
         nameJa
+        charisma
       }
       enclosure {
         id
@@ -80,6 +86,13 @@ const exhibited = computed(() =>
     .filter((animal) => animal.alive && animal.enclosure)
     .sort((a, b) => a.visibleCondition - b.visibleCondition),
 );
+
+const exhibitedSpecies = computed(() =>
+  [
+    ...new Map(exhibited.value.map((animal) => [animal.species.code, animal.species])).values(),
+  ].sort((a, b) => b.charisma - a.charisma),
+);
+const popularity = computed(() => (zoo.value ? zoo.value.spectacle - zoo.value.buzz : 0));
 
 const lastDay = computed(() => query.data.value?.operatings.at(-1));
 
@@ -229,23 +242,124 @@ function signed(value: number, digits = 0) {
                 </li>
               </ul>
             </li>
-            <li class="node">
-              <span class="label">
-                来園の見込み
-                <span
-                  class="info"
-                  tabindex="0"
-                  :data-tip="`来園者が多いほど評判は速く動く。${zoo.visitorsForFullSwing.toLocaleString()}人で最速、いま ${swingRate}%`"
-                  >ⓘ</span
-                >
-              </span>
-              <GaugeBar
-                class="gauge"
-                :value="zoo.expectedVisitors"
-                :max="zoo.visitorsForFullSwing"
-              />
-              <span class="value">{{ zoo.expectedVisitors.toLocaleString() }}人</span>
-              <RouterLink to="/animals" class="action">人気の動物を導入する ›</RouterLink>
+            <li>
+              <div class="node">
+                <span class="label">
+                  来園の見込み
+                  <span
+                    class="info"
+                    tabindex="0"
+                    :data-tip="`来園者が多いほど評判は速く動く。${zoo.visitorsForFullSwing.toLocaleString()}人で最速、いま ${swingRate}%`"
+                    >ⓘ</span
+                  >
+                </span>
+                <GaugeBar
+                  class="gauge"
+                  :value="zoo.expectedVisitors"
+                  :max="zoo.visitorsForFullSwing"
+                />
+                <span class="value">{{ zoo.expectedVisitors.toLocaleString() }}人</span>
+                <span class="action" />
+              </div>
+              <ul>
+                <li>
+                  <div class="node">
+                    <span class="label">
+                      展示の魅力
+                      <span
+                        class="info"
+                        tabindex="0"
+                        data-tip="人気度と話題性の合計。来園者数の上限と、払ってもよい入園料の上限を決める"
+                        >ⓘ</span
+                      >
+                    </span>
+                    <GaugeBar class="gauge" :value="zoo.spectacle" :max="zoo.spectacleSaturation" />
+                    <span class="value">{{ zoo.spectacle }}</span>
+                    <span class="action" />
+                  </div>
+                  <ul>
+                    <li>
+                      <div class="node">
+                        <span class="label">
+                          展示中の種の人気度
+                          <span
+                            class="info"
+                            tabindex="0"
+                            data-tip="種ごとに1回だけ数え、同じ種を増やしても上がらない。合計が大きくなるほど伸びは鈍る"
+                            >ⓘ</span
+                          >
+                        </span>
+                        <GaugeBar
+                          class="gauge"
+                          :value="popularity"
+                          :max="zoo.spectacleSaturation"
+                        />
+                        <span class="value">{{ popularity }}</span>
+                        <RouterLink to="/animals" class="action">未展示の種を導入する ›</RouterLink>
+                      </div>
+                      <ul>
+                        <li v-for="species in exhibitedSpecies" :key="species.code" class="node">
+                          <span class="label">
+                            {{ emojiOf(species.nameJa) }} {{ species.nameJa }}
+                          </span>
+                          <GaugeBar class="gauge" :value="species.charisma" :max="100" />
+                          <span class="value">{{ species.charisma }}</span>
+                          <span class="action" />
+                        </li>
+                      </ul>
+                    </li>
+                    <li class="node">
+                      <span class="label">
+                        話題性
+                        <span
+                          class="info"
+                          tabindex="0"
+                          data-tip="赤ちゃんが生まれると増え、毎日少しずつ冷める"
+                          >ⓘ</span
+                        >
+                      </span>
+                      <GaugeBar class="gauge" :value="zoo.buzz" :max="zoo.spectacleSaturation" />
+                      <span class="value">{{ zoo.buzz }}</span>
+                      <span class="action" />
+                    </li>
+                  </ul>
+                </li>
+                <li class="node">
+                  <span class="label">
+                    評判
+                    <span
+                      class="info"
+                      tabindex="0"
+                      data-tip="来園者数の上限と、払ってもよい入園料の上限の両方に掛かる"
+                      >ⓘ</span
+                    >
+                  </span>
+                  <GaugeBar class="gauge" :value="zoo.reputation" :max="100" />
+                  <span class="value">{{ zoo.reputation }}</span>
+                  <span class="action" />
+                </li>
+                <li class="node">
+                  <span class="label">
+                    入園料 {{ yen(zoo.admissionFee) }}
+                    <span
+                      class="info"
+                      tabindex="0"
+                      :data-tip="`来園者が払ってもよい上限は ${yen(zoo.willingnessToPay)}。上限に近いほど来園者が減り、超えると誰も来ない`"
+                      >ⓘ</span
+                    >
+                  </span>
+                  <GaugeBar
+                    class="gauge"
+                    :value="zoo.admissionFee"
+                    :max="zoo.willingnessToPay"
+                    invert
+                  />
+                  <span class="value"
+                    >{{ Math.round((zoo.admissionFee / zoo.willingnessToPay) * 100) }}%</span
+                  >
+                  <RouterLink to="/" class="action">入園料を見直す ›</RouterLink>
+                </li>
+              </ul>
             </li>
           </ul>
         </li>

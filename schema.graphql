@@ -247,6 +247,7 @@ type SkippedWork {
 }
 
 type Species {
+  charisma: Int!
   code: String!
   conservationCode: String!
   conservationLabel: String!
@@ -292,6 +293,7 @@ type Veterinarian {
 type Zoo {
   admissionFee: Int!
   balance: Int!
+  buzz: Int!
   day: Int!
   exhibitCondition: Int!
   expectedVisitors: Int!
@@ -301,5 +303,8 @@ type Zoo {
   reputationDecay: Float!
   reputationDrift: Float!
   reputationSwingLimit: Int!
+  spectacle: Int!
+  spectacleSaturation: Int!
   visitorsForFullSwing: Int!
+  willingnessToPay: Int!
 }

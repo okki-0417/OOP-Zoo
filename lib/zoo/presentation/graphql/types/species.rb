@@ -12,6 +12,7 @@ module Zoo
           field :conservation_code, String, null: false
           field :conservation_label, String, null: false
           field :threatened, Boolean, null: false, method: :threatened?
+          field :charisma, Integer, null: false
 
           def code
             Domain::SpeciesCatalog.keys.find { |key| Domain::SpeciesCatalog.find(key) == object }.to_s

@@ -17,6 +17,10 @@ module Zoo
           field :reputation_decay, Float, null: false
           field :reputation_swing_limit, Integer, null: false
           field :visitors_for_full_swing, Integer, null: false
+          field :buzz, Integer, null: false
+          field :spectacle, Integer, null: false
+          field :spectacle_saturation, Integer, null: false
+          field :willingness_to_pay, Integer, null: false
 
           def balance
             object.balance.yen
@@ -53,6 +57,21 @@ module Zoo
 
           def visitors_for_full_swing
             Domain::Zoo::Reputation::EXPOSURE_REFERENCE
+          end
+
+          def spectacle
+            Domain::Spectacle.new(on_exhibit:, buzz: object.buzz).value.round
+          end
+
+          def spectacle_saturation
+            Domain::Spectacle::SATURATION
+          end
+
+          def willingness_to_pay
+            attraction = Domain::VisitorAttraction
+            spending = Domain::Spectacle.new(on_exhibit:, buzz: object.buzz).value *
+                       attraction::WILLINGNESS_PER_SPECTACLE_YEN * object.reputation_factor
+            (attraction::WILLINGNESS_BASE_YEN + spending).round
           end
 
           private
