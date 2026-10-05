@@ -21,6 +21,13 @@ RSpec.describe 'SQLite staff repositories' do
       expect(found.name).to eq('田中')
       expect(found.specialties.map(&:value)).to contain_exactly(:mammal, :bird)
     end
+
+    it 'その日の勤務時間(clock_in(130) → worked_minutes=130)を保存・復元できること' do
+      keeper = staff::Keeper.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal]).clock_in(130)
+      repository.save(keeper)
+
+      expect(repository.find(keeper.id).worked_minutes).to eq(130)
+    end
   end
 
   describe sqlite::VeterinarianRepository do

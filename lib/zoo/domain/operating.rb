@@ -80,6 +80,7 @@ module Zoo
           )
         )
 
+        @keepers.each(&:end_shift)
         @zoo.advance_day
         snapshot!
         self
@@ -91,6 +92,10 @@ module Zoo
 
       def casualties
         @dead.dup
+      end
+
+      def keepers
+        @keepers.dup
       end
 
       def on_exhibit

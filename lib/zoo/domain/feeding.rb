@@ -4,6 +4,7 @@ module Zoo
   module Domain
     class Feeding
       SATIETY_FACTOR_RANGE = (0.3..3.0)
+      WORK_MINUTES = 10
 
       def initialize(animal:, foods:, keeper: nil)
         @keeper = keeper
@@ -13,6 +14,7 @@ module Zoo
 
       def serve
         reject!(attendance_violations + palatability_violations)
+        @keeper.clock_in(WORK_MINUTES)
         @animal.satisfy_hunger(satiety)
         @animal.take_meal(offered_categories)
         self
@@ -38,6 +40,9 @@ module Zoo
           violations << "飼育員#{@keeper.name}は#{@animal.taxon_class.label}を担当できません"
         end
         violations << "#{@animal.name}は死亡しているため給餌できません" if @animal.dead?
+        unless @keeper.available_for?(WORK_MINUTES)
+          violations << "飼育員#{@keeper.name}は今日の勤務時間が足りません(残り#{@keeper.remaining_minutes}分)"
+        end
         violations
       end
 

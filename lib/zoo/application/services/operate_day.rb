@@ -27,6 +27,7 @@ module Zoo
               @command.operatings.save(operating)
               @command.enclosures.save_all(operating.enclosures)
               @command.animals.save_all(operating.on_exhibit)
+              operating.keepers.each { |keeper| @command.keepers.save(keeper) }
               @command.zoo.save(operating.zoo)
 
               operating

@@ -20,6 +20,40 @@ module Zoo
         expect { described_class.new(name: '空', specialties: []) }.to raise_error(ArgumentError)
       end
 
+      describe '#clock_in' do
+        it 'clock_in(100) で worked_minutes=100・remaining_minutes=380 になり、self を返すこと' do
+          keeper = described_class.new(name: '田中', specialties: [TaxonClass.mammal])
+          expect(keeper.clock_in(100)).to be(keeper)
+          expect(keeper).to have_attributes(worked_minutes: 100, remaining_minutes: 380)
+        end
+
+        it '残り20分で clock_in(30) すると WorkNotAllowed になり、勤務時間は変わらないこと' do
+          keeper = described_class.new(name: '田中', specialties: [TaxonClass.mammal]).clock_in(460)
+          expect { keeper.clock_in(30) }.to raise_error(Errors::WorkNotAllowed, '飼育員田中は今日の勤務時間が足りません(残り20分)')
+          expect(keeper.worked_minutes).to eq(460)
+        end
+      end
+
+      describe '#available_for? / #end_shift' do
+        it '残り20分なら available_for?(20) は true・(21) は false、end_shift で480分に戻ること' do
+          keeper = described_class.new(name: '田中', specialties: [TaxonClass.mammal]).clock_in(460)
+          expect(keeper.available_for?(20)).to be(true)
+          expect(keeper.available_for?(21)).to be(false)
+          expect(keeper.end_shift.remaining_minutes).to eq(480)
+        end
+      end
+
+      describe '.reconstitute' do
+        it 'shift を渡さなければ勤務時間0、渡せばその勤務時間で復元すること' do
+          plain = described_class.reconstitute(id: Shared::Identifier.new, name: '田中', specialties: [TaxonClass.mammal])
+          worked = described_class.reconstitute(
+            id: Shared::Identifier.new, name: '田中', specialties: [TaxonClass.mammal], shift: Keeper::Shift.new(200)
+          )
+          expect(plain.worked_minutes).to eq(0)
+          expect(worked.worked_minutes).to eq(200)
+        end
+      end
+
       it '#to_s は 飼育員 名前(専門担当) の形で表されること' do
         expect(mammal_keeper.to_s).to start_with('飼育員 田中(')
         expect(mammal_keeper.to_s).to end_with('担当)')

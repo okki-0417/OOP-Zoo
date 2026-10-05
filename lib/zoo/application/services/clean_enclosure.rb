@@ -19,6 +19,7 @@ module Zoo
 
               Domain::Cleaning.new(keeper: keeper, enclosure: enclosure, amount: @command.amount).perform
               @command.enclosures.save(enclosure)
+              @command.keepers.save(keeper)
               enclosure
             end
             ReadModels::EnclosureProfile.housed(enclosure, housings: @command.housings)

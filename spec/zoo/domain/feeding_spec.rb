@@ -68,6 +68,17 @@ module Zoo
             .to raise_error(Errors::FeedingNotAllowed, /死亡/)
         end
 
+        it '給餌1回で飼育員の勤務時間を WORK_MINUTES(10分)使うこと' do
+          expect { feeding(lion, [FoodCatalog.horse_meat]).serve }.to change { keeper.worked_minutes }.by(10)
+        end
+
+        it '飼育員の残り勤務時間が9分なら FeedingNotAllowed になり、空腹は変わらないこと' do
+          keeper.clock_in(471)
+          expect { feeding(lion, [FoodCatalog.horse_meat]).serve }
+            .to raise_error(Errors::FeedingNotAllowed, /勤務時間が足りません\(残り9分\)/)
+          expect(lion.hunger_level).to eq(50)
+        end
+
         it '複数の違反をまとめて報告すること' do
           lion.die
           expect { feeding(lion, [FoodCatalog.hay], by: bird_keeper).serve }

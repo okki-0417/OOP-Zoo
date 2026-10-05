@@ -12,6 +12,7 @@ RSpec.describe Zoo::Infrastructure::Sqlite::Database do
         legacy.run('CREATE TABLE animals (id TEXT PRIMARY KEY, name TEXT)')
         legacy.run('CREATE TABLE enclosures (id TEXT PRIMARY KEY, name TEXT)')
         legacy.run('CREATE TABLE housing_events (seq INTEGER PRIMARY KEY, id TEXT, animal_id TEXT)')
+        legacy.run('CREATE TABLE keepers (id TEXT PRIMARY KEY, name TEXT)')
         legacy.run("INSERT INTO animals (id, name) VALUES ('a1', 'レオ')")
         legacy.disconnect
 
@@ -21,6 +22,7 @@ RSpec.describe Zoo::Infrastructure::Sqlite::Database do
           .to eq([{ 'nutrition' => 100, 'meals' => '', 'miscarried' => 0 }])
         expect(database.dataset(:enclosures).columns).to include(:enrichment, :climate_controlled)
         expect(database.dataset(:housing_events).columns).to include(:closes_housing_id)
+        expect(database.dataset(:keepers).columns).to include(:worked_minutes)
       end
     end
 

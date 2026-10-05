@@ -5,6 +5,8 @@ module Zoo
     class Cleaning
       include Shared::Entity
 
+      WORK_MINUTES = 60
+
       attr_reader :id, :keeper, :enclosure, :occurred_on
 
       def initialize(keeper:, enclosure:, amount: 100, occurred_on: 0, id: Shared::Identifier.new)
@@ -25,6 +27,7 @@ module Zoo
       end
 
       def perform
+        @keeper.clock_in(WORK_MINUTES)
         @enclosure.clean(@amount)
       end
 

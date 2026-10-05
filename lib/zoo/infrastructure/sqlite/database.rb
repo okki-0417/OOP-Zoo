@@ -21,6 +21,9 @@ module Zoo
           },
           housing_events: {
             closes_housing_id: 'TEXT'
+          },
+          keepers: {
+            worked_minutes: 'INTEGER NOT NULL DEFAULT 0'
           }
         }.freeze
 

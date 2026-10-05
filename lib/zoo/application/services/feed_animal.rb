@@ -22,6 +22,7 @@ module Zoo
 
               Domain::Feeding.new(keeper: keeper, animal: animal, foods: [food]).serve
               @command.animals.save(animal)
+              @command.keepers.save(keeper)
               animal
             end
             ReadModels::AnimalProfile.housed(animal, housings: @command.housings)

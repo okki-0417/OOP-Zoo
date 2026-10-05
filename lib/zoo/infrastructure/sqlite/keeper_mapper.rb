@@ -8,7 +8,8 @@ module Zoo
           {
             id: keeper.id.to_s,
             name: keeper.name,
-            specialties: keeper.specialties.map(&:value).join(',')
+            specialties: keeper.specialties.map(&:value).join(','),
+            worked_minutes: keeper.worked_minutes
           }
         end
 
@@ -16,7 +17,8 @@ module Zoo
           Domain::Keeper.reconstitute(
             id: Domain::Shared::Identifier.new(row['id']),
             name: row['name'],
-            specialties: parse_specialties(row['specialties'])
+            specialties: parse_specialties(row['specialties']),
+            shift: Domain::Keeper::Shift.new(row['worked_minutes'])
           )
         end
 

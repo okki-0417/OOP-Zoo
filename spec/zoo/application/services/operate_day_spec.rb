@@ -104,6 +104,15 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect(animals.find(zebra.id)).to be_sick
     end
 
+    it '1日を締めると、その日200分働いた飼育員の勤務時間がリセットされ保存されること' do
+      keeper = build_keeper.clock_in(200)
+      keepers.save(keeper)
+
+      service.call
+
+      expect(keepers.find(keeper.id).remaining_minutes).to eq(480)
+    end
+
     it 'その日に死亡した個体を result.value.casualties で返すこと' do
       elder = build_animal(catalog.grevys_zebra, name: '老', age_in_days: 1_000_000)
       animals.save(elder)

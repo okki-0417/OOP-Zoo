@@ -25,14 +25,42 @@ module Zoo
         @id = id
         @name = name
         @specialties = specialties
+        @shift = Shift.fresh
       end
 
-      def self.reconstitute(id:, name:, specialties:)
+      def self.reconstitute(id:, name:, specialties:, shift: Shift.fresh)
         allocate.tap do |keeper|
           keeper.instance_variable_set(:@id, id)
           keeper.instance_variable_set(:@name, name)
           keeper.instance_variable_set(:@specialties, specialties)
+          keeper.instance_variable_set(:@shift, shift)
         end
+      end
+
+      def available_for?(minutes)
+        @shift.allows?(minutes)
+      end
+
+      def clock_in(minutes)
+        unless available_for?(minutes)
+          raise Errors::WorkNotAllowed, "飼育員#{@name}は今日の勤務時間が足りません(残り#{remaining_minutes}分)"
+        end
+
+        @shift = @shift.worked(minutes)
+        self
+      end
+
+      def remaining_minutes
+        @shift.remaining_minutes
+      end
+
+      def worked_minutes
+        @shift.worked_minutes
+      end
+
+      def end_shift
+        @shift = Shift.fresh
+        self
       end
 
       def specialized_in?(taxon_class)
