@@ -3,9 +3,6 @@
 module Zoo
   module Domain
     class Rounding
-      SOILED_THRESHOLD = 70
-      DULL_THRESHOLD = 50
-
       Report = Data.define(:enclosure, :fed, :skipped, :cleaned, :enriched) do
         def cleaned? = cleaned
         def enriched? = enriched
@@ -22,8 +19,8 @@ module Zoo
         reject_unassigned!
         @skipped = []
         fed = feed_the_hungry
-        cleaned = soiled? && !attempt(Cleaning, '勤務時間が足りず清掃できません').nil?
-        enriched = dull? && !attempt(Enriching, '勤務時間が足りず遊具を補充できません').nil?
+        cleaned = enclosure.soiled? && !attempt(Cleaning, '勤務時間が足りず清掃できません').nil?
+        enriched = enclosure.dull? && !attempt(Enriching, '勤務時間が足りず遊具を補充できません').nil?
         Report.new(enclosure:, fed:, skipped: @skipped, cleaned:, enriched:)
       end
 
@@ -40,7 +37,7 @@ module Zoo
       end
 
       def feed_the_hungry
-        @occupancy.select { |animal| animal.alive? && animal.meals.variety.zero? }.each_with_object([]) do |animal, fed|
+        @occupancy.select { |animal| animal.alive? && !animal.fed_today? }.each_with_object([]) do |animal, fed|
           next unless feedable?(animal)
 
           Feeding.new(keeper: @keeper, animal:, foods: Ration.new(animal:, foods: @foods).foods).serve
@@ -57,14 +54,6 @@ module Zoo
 
         @skipped << [animal.name, '勤務時間が足りず給餌できません']
         false
-      end
-
-      def soiled?
-        enclosure.cleanliness_level <= SOILED_THRESHOLD
-      end
-
-      def dull?
-        enclosure.enrichment.level <= DULL_THRESHOLD
       end
 
       def attempt(work, reason_if_short)

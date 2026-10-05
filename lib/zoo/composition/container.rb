@@ -52,6 +52,7 @@ module Zoo
         treat_animal: Application::Services::TreatAnimal,
         animal_detail: Application::Queries::AnimalDetail,
         alert_list: Application::Queries::AlertList,
+        checklist: Application::Queries::Checklist,
         animal_list: Application::Queries::AnimalList,
         animal_prognosis: Application::Queries::AnimalPrognosis,
         deceased_list: Application::Queries::DeceasedList,

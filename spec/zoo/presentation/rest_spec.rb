@@ -266,6 +266,25 @@ RSpec.describe Zoo::Presentation::Rest do
     end
   end
 
+  describe 'GET /checklist' do
+    it '収容したレオに給餌すると、給餌の日課が done_count=1・total=1 でレオを done=true にすること' do
+      id = acquire(name: 'レオ')
+      enclosure_id = build_enclosure
+      keeper_id = hire_keeper
+      post_json "/enclosures/#{enclosure_id}/occupants", animal_id: id
+      post_json "/animals/#{id}/feedings", keeper_id:, food_code: 'horse_meat'
+
+      get '/checklist'
+
+      expect(last_response.status).to eq(200)
+      expect(body.map { |chore| chore['kind'] }).to eq(%w[feeding treatment cleaning enrichment])
+      expect(body.first).to include(
+        'label' => '給餌', 'done_count' => 1, 'total' => 1,
+        'items' => [{ 'subject' => { 'type' => 'animal', 'id' => id, 'name' => 'レオ' }, 'done' => true }]
+      )
+    end
+  end
+
   describe 'GET /animals' do
     it '取得した全個体のサマリ配列を返すこと' do
       acquire(name: 'レオ')

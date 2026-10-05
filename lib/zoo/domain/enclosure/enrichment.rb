@@ -10,6 +10,7 @@ module Zoo
         MIN = 0
         MAX = 100
         BARREN_THRESHOLD = 30
+        DULL_THRESHOLD = 50
 
         attr_reader :level
 
@@ -38,6 +39,10 @@ module Zoo
 
         def barren?
           @level <= BARREN_THRESHOLD
+        end
+
+        def dull?
+          @level <= DULL_THRESHOLD
         end
 
         def <=>(other)

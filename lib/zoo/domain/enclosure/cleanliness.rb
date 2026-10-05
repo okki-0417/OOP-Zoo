@@ -10,6 +10,7 @@ module Zoo
         MIN = 0
         MAX = 100
         FILTHY_THRESHOLD = 30
+        SOILED_THRESHOLD = 70
 
         attr_reader :level
 
@@ -38,6 +39,10 @@ module Zoo
 
         def filthy?
           @level <= FILTHY_THRESHOLD
+        end
+
+        def soiled?
+          @level <= SOILED_THRESHOLD
         end
 
         def <=>(other)

@@ -62,6 +62,31 @@ RSpec.describe '飼育員の勤務と日課' do
     end
   end
 
+  describe '日課の手入れが要る状態' do
+    it '清潔度70以下に汚れてきたエリアは、不潔(30以下)になる前でも清掃が要ること' do
+      expect(pen.tap { |e| e.soil(30) }).to be_soiled
+      expect(pen.tap { |e| e.soil(30) }).not_to be_filthy
+      expect(pen.tap { |e| e.soil(29) }).not_to be_soiled
+    end
+
+    it '刺激度50以下に減ってきたエリアは、退屈(30以下)になる前でも遊具などの補充が要ること' do
+      expect(pen.tap { |e| e.deplete_enrichment(50) }).to be_dull
+      expect(pen.tap { |e| e.deplete_enrichment(50) }).not_to be_barren
+      expect(pen.tap { |e| e.deplete_enrichment(49) }).not_to be_dull
+    end
+
+    it 'その日に一度でも餌を食べた動物は給餌済みで、1日が終わるとまた未給餌に戻ること' do
+      lion = build_adult(catalog.lion)
+      expect(lion).not_to be_fed_today
+
+      Zoo::Domain::Feeding.new(keeper: build_keeper, animal: lion, foods: [foods.horse_meat]).serve
+      expect(lion).to be_fed_today
+
+      lion.settle_nutrition
+      expect(lion).not_to be_fed_today
+    end
+  end
+
   describe '給餌計画(その日に与える餌の組み合わせ)' do
     def ration_of(animal)
       Zoo::Domain::Ration.new(animal:, foods: Zoo::Domain::FoodCatalog.all)

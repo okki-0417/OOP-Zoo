@@ -5,6 +5,7 @@ type Schemas = components["schemas"];
 type ErrorBody = Schemas["Error"];
 
 export type Alert = Schemas["Alert"];
+export type Chore = Schemas["Chore"];
 export type Animal = Schemas["Animal"];
 export type AnimalOutlook = Schemas["AnimalOutlook"];
 export type AnimalSummary = Schemas["AnimalSummary"];

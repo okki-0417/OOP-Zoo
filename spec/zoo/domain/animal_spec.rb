@@ -173,6 +173,13 @@ module Zoo
         end
       end
 
+      describe '#fed_today?' do
+        it 'take_meal([:meat]) 前は false、後は true を返すこと' do
+          animal = build
+          expect { animal.take_meal([:meat]) }.to change(animal, :fed_today?).from(false).to(true)
+        end
+      end
+
       describe '#settle_nutrition' do
         it 'ライオン(必要1カテゴリ)が [:meat] を食べた日は nutrition_level が 50 から 70 に上がり、meals が空に戻ること' do
           animal = Animal.reconstitute(

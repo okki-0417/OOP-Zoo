@@ -31,6 +31,10 @@ module Zoo
           savanna.clean(100)
           expect(savanna).not_to be_filthy
         end
+
+        it 'soil(30) で清潔度70になると soiled? が true になること' do
+          expect(savanna.soil(30)).to be_soiled
+        end
       end
 
       describe '環境エンリッチメント' do
@@ -41,6 +45,10 @@ module Zoo
         it 'deplete_enrichment で刺激が枯れると barren? になること' do
           savanna.deplete_enrichment(100)
           expect(savanna).to be_barren
+        end
+
+        it 'deplete_enrichment(50) で刺激度50になると dull? が true になること' do
+          expect(savanna.deplete_enrichment(50)).to be_dull
         end
 
         it 'enrich で刺激を補充すると barren? が解けること' do

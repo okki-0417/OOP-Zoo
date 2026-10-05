@@ -30,14 +30,14 @@ RSpec.describe Zoo::Domain::Rounding do
       expect(keeper.worked_minutes).to eq(10)
     end
 
-    it '清潔度71では清掃せず、70では清掃すること(SOILED_THRESHOLD=70)' do
+    it '清潔度71では清掃せず、70では清掃すること(Cleanliness::SOILED_THRESHOLD=70)' do
       enclosure.soil(29)
       expect(rounding([]).perform).not_to be_cleaned
       enclosure.soil(1)
       expect(rounding([]).perform).to be_cleaned
     end
 
-    it '刺激度51では補充せず、50では補充すること(DULL_THRESHOLD=50)' do
+    it '刺激度51では補充せず、50では補充すること(Enrichment::DULL_THRESHOLD=50)' do
       enclosure.deplete_enrichment(49)
       expect(rounding([]).perform).not_to be_enriched
       enclosure.deplete_enrichment(1)

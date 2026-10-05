@@ -38,6 +38,7 @@ module Zoo
             treat_animal: ->(profile) { [200, a.animal(profile)] },
             animal_detail: ->(profile) { [200, a.animal(profile)] },
             alert_list: ->(alerts) { [200, alerts.map { |alert| s.alert(alert) }] },
+            checklist: ->(chores) { [200, chores.map { |chore| s.chore(chore) }] },
             animal_list: ->(summaries) { [200, summaries.map { |summary| a.animal_summary(summary) }] },
             animal_prognosis: ->(outlook) { [200, a.animal_outlook(outlook)] },
             deceased_list: ->(records) { [200, records.map { |record| s.deceased(record) }] },

@@ -71,6 +71,13 @@ RSpec.describe Zoo::Domain::Enclosure::Cleanliness do
     end
   end
 
+  describe '#soiled?' do
+    it 'level=70(SOILED_THRESHOLD)は true、71 は false を返すこと' do
+      expect(described_class.new(70)).to be_soiled
+      expect(described_class.new(71)).not_to be_soiled
+    end
+  end
+
   describe '大小比較(Comparable)' do
     it 'level の大小で比較されること' do
       expect(described_class.new(10)).to be < described_class.new(20)

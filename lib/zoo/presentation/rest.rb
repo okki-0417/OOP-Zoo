@@ -55,6 +55,7 @@ module Zoo
 
       get('/report') { respond(:zoo_report) }
       get('/alerts') { respond(:alert_list) }
+      get('/checklist') { respond(:checklist) }
       get('/operatings') { respond(:operating_history) }
       get('/deceased') { respond(:deceased_list) }
       get('/threatened') { respond(:threatened_species) }

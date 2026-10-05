@@ -69,6 +69,20 @@ RSpec.describe Zoo::Presentation::Renderers::Json do
       )
     end
 
+    it 'checklist の Chore は done_count/total を数え、items の subject を入れ子にした配列になること' do
+      read_models = Zoo::Application::ReadModels
+      chore = read_models::Chore.new(
+        kind: :cleaning, label: '清掃',
+        items: [read_models::ChoreItem.new(subject_type: :enclosure, subject_id: 'e1', subject_name: '丘', done: true),
+                read_models::ChoreItem.new(subject_type: :enclosure, subject_id: 'e2', subject_name: '谷', done: false)]
+      )
+      expect(described_class.render(result.success(:checklist, [chore]))).to eq(
+        [200, [{ kind: 'cleaning', label: '清掃', done_count: 1, total: 2,
+                 items: [{ subject: { type: 'enclosure', id: 'e1', name: '丘' }, done: true },
+                         { subject: { type: 'enclosure', id: 'e2', name: '谷' }, done: false }] }]]
+      )
+    end
+
     it 'admit_visitors の Money(¥20000) は 200 と {revenue: 20000} になること' do
       revenue = Zoo::Domain::Shared::Money.yen(20_000)
 

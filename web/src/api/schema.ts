@@ -4,1738 +4,1774 @@
  */
 
 export interface paths {
-  "/species": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/species": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 種カタログ(選択肢) */
+        get: operations["listSpecies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 種カタログ(選択肢) */
-    get: operations["listSpecies"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/foods": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/foods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 餌カタログ(選択肢) */
+        get: operations["listFoods"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 餌カタログ(選択肢) */
-    get: operations["listFoods"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/taxon-classes": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/taxon-classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 綱の一覧(飼育員の専門選択肢) */
+        get: operations["listTaxonClasses"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 綱の一覧(飼育員の専門選択肢) */
-    get: operations["listTaxonClasses"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/animals": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/animals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 個体一覧 */
+        get: operations["listAnimals"];
+        put?: never;
+        /** 個体を導入する */
+        post: operations["acquireAnimal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 個体一覧 */
-    get: operations["listAnimals"];
-    put?: never;
-    /** 個体を導入する */
-    post: operations["acquireAnimal"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/animals/{animal_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
+    "/animals/{animal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        /** 個体詳細 */
+        get: operations["showAnimal"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 個体詳細 */
-    get: operations["showAnimal"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/animals/{animal_id}/prognosis": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
+    "/animals/{animal_id}/prognosis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        /** 予後(給餌は続け、治療も環境改善もしなかった場合の見通し) */
+        get: operations["showAnimalPrognosis"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 予後(給餌は続け、治療も環境改善もしなかった場合の見通し) */
-    get: operations["showAnimalPrognosis"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/animals/{animal_id}/name": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
+    "/animals/{animal_id}/name": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 改名する */
+        patch: operations["renameAnimal"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** 改名する */
-    patch: operations["renameAnimal"];
-    trace?: never;
-  };
-  "/animals/{animal_id}/feedings": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
+    "/animals/{animal_id}/feedings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 給餌する */
+        post: operations["feedAnimal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 給餌する */
-    post: operations["feedAnimal"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/animals/{animal_id}/treatments": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
+    "/animals/{animal_id}/treatments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 治療する */
+        post: operations["treatAnimal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 治療する */
-    post: operations["treatAnimal"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/animals/{animal_id}/examinations": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
+    "/animals/{animal_id}/examinations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 診察する */
+        post: operations["examineAnimal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 診察する */
-    post: operations["examineAnimal"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/animals/{animal_id}/transfer": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
+    "/animals/{animal_id}/transfer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 別エリアへ移送する */
+        post: operations["transferAnimal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 別エリアへ移送する */
-    post: operations["transferAnimal"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/enclosures": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/enclosures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** エリア一覧 */
+        get: operations["listEnclosures"];
+        put?: never;
+        /** エリアを増設する */
+        post: operations["addEnclosure"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** エリア一覧 */
-    get: operations["listEnclosures"];
-    put?: never;
-    /** エリアを増設する */
-    post: operations["addEnclosure"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/enclosures/{enclosure_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-      };
-      cookie?: never;
+    "/enclosures/{enclosure_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+            };
+            cookie?: never;
+        };
+        /** エリア詳細 */
+        get: operations["showEnclosure"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** エリア詳細 */
-    get: operations["showEnclosure"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/enclosures/{enclosure_id}/occupants": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-      };
-      cookie?: never;
+    "/enclosures/{enclosure_id}/occupants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 個体を収容する */
+        post: operations["houseAnimal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 個体を収容する */
-    post: operations["houseAnimal"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/enclosures/{enclosure_id}/occupants/{animal_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-        animal_id: string;
-      };
-      cookie?: never;
+    "/enclosures/{enclosure_id}/occupants/{animal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 個体をエリアから退去させる */
+        delete: operations["releaseAnimal"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** 個体をエリアから退去させる */
-    delete: operations["releaseAnimal"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/enclosures/{enclosure_id}/cleanings": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-      };
-      cookie?: never;
+    "/enclosures/{enclosure_id}/cleanings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** エリアを清掃する */
+        post: operations["cleanEnclosure"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** エリアを清掃する */
-    post: operations["cleanEnclosure"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/enclosures/{enclosure_id}/enrichments": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-      };
-      cookie?: never;
+    "/enclosures/{enclosure_id}/enrichments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 遊具などを補充して刺激度を戻す(飼育員の勤務時間を30分使う) */
+        post: operations["enrichEnclosure"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 遊具などを補充して刺激度を戻す(飼育員の勤務時間を30分使う) */
-    post: operations["enrichEnclosure"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/enclosures/{enclosure_id}/keepers": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-      };
-      cookie?: never;
+    "/enclosures/{enclosure_id}/keepers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 飼育員をエリアの担当に割り当てる(在籍する綱をすべて専門にしている必要がある) */
+        post: operations["assignKeeper"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 飼育員をエリアの担当に割り当てる(在籍する綱をすべて専門にしている必要がある) */
-    post: operations["assignKeeper"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/enclosures/{enclosure_id}/keepers/{keeper_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-        keeper_id: string;
-      };
-      cookie?: never;
+    "/enclosures/{enclosure_id}/keepers/{keeper_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+                keeper_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 飼育員をエリアの担当から外す */
+        delete: operations["dischargeKeeper"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** 飼育員をエリアの担当から外す */
-    delete: operations["dischargeKeeper"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/breedings": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/breedings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 繁殖させる */
+        post: operations["breedAnimals"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 繁殖させる */
-    post: operations["breedAnimals"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/keepers": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/keepers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 飼育員一覧 */
+        get: operations["listKeepers"];
+        put?: never;
+        /** 飼育員を採用する */
+        post: operations["hireKeeper"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 飼育員一覧 */
-    get: operations["listKeepers"];
-    put?: never;
-    /** 飼育員を採用する */
-    post: operations["hireKeeper"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/keepers/{keeper_id}/rounds": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        keeper_id: string;
-      };
-      cookie?: never;
+    "/keepers/{keeper_id}/rounds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                keeper_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 担当エリアを見回る(未給餌の動物への給餌・汚れたら清掃・刺激が乏しければ補充) */
+        post: operations["makeRounds"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 担当エリアを見回る(未給餌の動物への給餌・汚れたら清掃・刺激が乏しければ補充) */
-    post: operations["makeRounds"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/veterinarians": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/veterinarians": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 獣医一覧 */
+        get: operations["listVeterinarians"];
+        put?: never;
+        /** 獣医を採用する */
+        post: operations["hireVeterinarian"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 獣医一覧 */
-    get: operations["listVeterinarians"];
-    put?: never;
-    /** 獣医を採用する */
-    post: operations["hireVeterinarian"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/alerts": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 要対応の一覧(重大度順) */
+        get: operations["listAlerts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 要対応の一覧(重大度順) */
-    get: operations["listAlerts"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/operatings": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 今日の日課(給餌・治療・清掃・遊具の補充)の進み具合 */
+        get: operations["getChecklist"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 運営記録(日ごとの収支・来園者・死亡) */
-    get: operations["listOperatings"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/report": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/operatings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 運営記録(日ごとの収支・来園者・死亡) */
+        get: operations["listOperatings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 園の統計 */
-    get: operations["getReport"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/deceased": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 園の統計 */
+        get: operations["getReport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 慰霊記録(死亡個体) */
-    get: operations["listDeceased"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/threatened": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/deceased": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 慰霊記録(死亡個体) */
+        get: operations["listDeceased"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** 展示中の絶滅危惧種 */
-    get: operations["listThreatened"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/visitors": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/threatened": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 展示中の絶滅危惧種 */
+        get: operations["listThreatened"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 来園者を受け入れる */
-    post: operations["admitVisitors"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/admission-fee": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/visitors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 来園者を受け入れる */
+        post: operations["admitVisitors"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** 入園料を改定する */
-    patch: operations["setAdmissionFee"];
-    trace?: never;
-  };
-  "/operate": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/admission-fee": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 入園料を改定する */
+        patch: operations["setAdmissionFee"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 1日運営する */
-    post: operations["operateDay"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/run-days": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/operate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 1日運営する */
+        post: operations["operateDay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** 複数日運営する */
-    post: operations["runDays"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
+    "/run-days": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 複数日運営する */
+        post: operations["runDays"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    Error: {
-      error: {
-        code: string;
-        message: string;
-      };
+    schemas: {
+        Error: {
+            error: {
+                code: string;
+                message: string;
+            };
+        };
+        AnimalSummary: {
+            id: string;
+            name: string;
+            species: string;
+            alive: boolean;
+            health: number;
+            max_health: number;
+            ailing: boolean;
+            hungry: boolean;
+            /** @description その日のうちに給餌されたか */
+            fed_today: boolean;
+        };
+        Animal: {
+            id: string;
+            name: string;
+            species: string;
+            taxon_class: string;
+            diet: string;
+            conservation_code: string;
+            conservation_label: string;
+            sex: string;
+            life_stage: string;
+            age_in_days: number;
+            /** @description 食性に合う餌の分類 */
+            diet_categories: ("meat" | "fish" | "insect" | "plant" | "fruit" | "seed")[];
+            health: number;
+            max_health: number;
+            weak: boolean;
+            hunger: number;
+            hungry: boolean;
+            starving: boolean;
+            /** @description 給餌が途絶えた場合に飢餓へ至るまでの日数 */
+            days_until_starving: number;
+            /** @description その日に食べた餌のカテゴリ(1日の終わりに栄養状態の評価に使われる) */
+            meals_today: ("meat" | "fish" | "insect" | "plant" | "fruit" | "seed")[];
+            nutrition: number;
+            malnourished: boolean;
+            stress: number;
+            stressed: boolean;
+            severely_stressed: boolean;
+            illness?: string | null;
+            contagious: boolean;
+            expecting: boolean;
+            gestation_days?: number | null;
+            gestation_period_days: number;
+            ready_to_deliver: boolean;
+            alive: boolean;
+            /** @description 死因(老衰・餓死・病死など) */
+            cause?: string | null;
+            parents: number;
+            enclosure_id?: string | null;
+            enclosure_name?: string | null;
+        };
+        OperatingSummary: {
+            day: number;
+            visitors: number;
+            income: number;
+            cost: number;
+            net_income: number;
+            deaths: number;
+            balance: number;
+            reputation: number;
+            outbreak: string | null;
+        };
+        AnimalOutlook: {
+            animal_id: string;
+            /** @description 未収容なら日々の営みが進まないため予後は出ない */
+            housed: boolean;
+            /** @enum {string|null} */
+            outlook: "good" | "guarded" | "grave" | null;
+            /** @description 30日以内に死亡する見込みの日数 */
+            days_to_death: number | null;
+            cause_of_death: string | null;
+        };
+        Alert: {
+            /** @enum {string} */
+            severity: "critical" | "warning" | "notice";
+            /** @enum {string} */
+            kind: "insolvent" | "no_keeper" | "no_veterinarian" | "unassigned" | "filthy" | "overcrowded" | "barren" | "grave" | "guarded" | "starving" | "hungry" | "sick" | "malnourished" | "stressed" | "climate" | "due" | "unhoused";
+            subject: {
+                /** @enum {string} */
+                type: "zoo" | "enclosure" | "animal";
+                id: string | null;
+                name: string;
+            };
+            message: string;
+        };
+        Chore: {
+            /** @enum {string} */
+            kind: "feeding" | "treatment" | "cleaning" | "enrichment";
+            label: string;
+            done_count: number;
+            total: number;
+            items: {
+                subject: {
+                    /** @enum {string} */
+                    type: "enclosure" | "animal";
+                    id: string;
+                    name: string;
+                };
+                done: boolean;
+            }[];
+        };
+        EnclosureSummary: {
+            id: string;
+            name: string;
+            population: number;
+            capacity: number;
+            cleanliness: number;
+            filthy: boolean;
+        };
+        Enclosure: {
+            id: string;
+            name: string;
+            capacity: number;
+            population: number;
+            cleanliness: number;
+            filthy: boolean;
+            enrichment: number;
+            barren: boolean;
+            /** @description 担当の飼育員 */
+            keepers: components["schemas"]["Ref"][];
+            occupants: components["schemas"]["AnimalSummary"][];
+        };
+        Ref: {
+            id: string;
+            name: string;
+        };
+        Keeper: {
+            id: string;
+            name: string;
+            specialties: string;
+            /** @description その日に働いた分数 */
+            worked_minutes: number;
+            /** @description その日の残り勤務時間(1日480分) */
+            remaining_minutes: number;
+            /** @description 担当エリア */
+            enclosures: components["schemas"]["Ref"][];
+        };
+        RoundsReport: {
+            keeper_id: string;
+            keeper_name: string;
+            remaining_minutes: number;
+            rounds: {
+                enclosure: components["schemas"]["Ref"];
+                fed: string[];
+                skipped: {
+                    subject: string;
+                    reason: string;
+                }[];
+                cleaned: boolean;
+                enriched: boolean;
+            }[];
+        };
+        Veterinarian: {
+            id: string;
+            name: string;
+        };
+        Deceased: {
+            name: string;
+            species: string;
+            cause: string;
+        };
+        ExhibitedSpecies: {
+            name_ja: string;
+            status_code: string;
+            status_label: string;
+            count: number;
+        };
+        ExamineResult: {
+            animal_id: string;
+            /** @enum {string} */
+            result: "dead" | "sick" | "injured" | "healthy";
+        };
+        DayReport: {
+            visitors: number;
+            income: number;
+            cost: number;
+            deaths: number;
+            balance: number;
+            reputation: number;
+            bankrupt: boolean;
+            outbreak?: string | null;
+        };
+        RunDaysSummary: {
+            days: number;
+            total_deaths: number;
+            deaths_by_cause: {
+                [key: string]: number;
+            };
+        };
+        ZooStatistics: {
+            population: number;
+            species_count: number;
+            threatened_count: number;
+            births: number;
+            deaths_by_cause: {
+                [key: string]: number;
+            };
+            revenue: number;
+            balance: number;
+            reputation: number;
+        };
+        SpeciesRef: {
+            key: string;
+            name_ja: string;
+            taxon_class: string;
+            diet: string;
+            conservation_code: string;
+            conservation_label: string;
+        };
+        FoodRef: {
+            key: string;
+            name_ja: string;
+            category: string;
+            satiety: number;
+        };
+        TaxonClassRef: {
+            key: string;
+            label: string;
+        };
     };
-    AnimalSummary: {
-      id: string;
-      name: string;
-      species: string;
-      alive: boolean;
-      health: number;
-      max_health: number;
-      ailing: boolean;
-      hungry: boolean;
-      /** @description その日のうちに給餌されたか */
-      fed_today: boolean;
+    responses: {
+        /** @description エラー(3つの輪: 400=形式 / 404=存在 / 422=ドメイン規則) */
+        Error: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
     };
-    Animal: {
-      id: string;
-      name: string;
-      species: string;
-      taxon_class: string;
-      diet: string;
-      conservation_code: string;
-      conservation_label: string;
-      sex: string;
-      life_stage: string;
-      age_in_days: number;
-      /** @description 食性に合う餌の分類 */
-      diet_categories: ("meat" | "fish" | "insect" | "plant" | "fruit" | "seed")[];
-      health: number;
-      max_health: number;
-      weak: boolean;
-      hunger: number;
-      hungry: boolean;
-      starving: boolean;
-      /** @description 給餌が途絶えた場合に飢餓へ至るまでの日数 */
-      days_until_starving: number;
-      /** @description その日に食べた餌のカテゴリ(1日の終わりに栄養状態の評価に使われる) */
-      meals_today: ("meat" | "fish" | "insect" | "plant" | "fruit" | "seed")[];
-      nutrition: number;
-      malnourished: boolean;
-      stress: number;
-      stressed: boolean;
-      severely_stressed: boolean;
-      illness?: string | null;
-      contagious: boolean;
-      expecting: boolean;
-      gestation_days?: number | null;
-      gestation_period_days: number;
-      ready_to_deliver: boolean;
-      alive: boolean;
-      /** @description 死因(老衰・餓死・病死など) */
-      cause?: string | null;
-      parents: number;
-      enclosure_id?: string | null;
-      enclosure_name?: string | null;
-    };
-    OperatingSummary: {
-      day: number;
-      visitors: number;
-      income: number;
-      cost: number;
-      net_income: number;
-      deaths: number;
-      balance: number;
-      reputation: number;
-      outbreak: string | null;
-    };
-    AnimalOutlook: {
-      animal_id: string;
-      /** @description 未収容なら日々の営みが進まないため予後は出ない */
-      housed: boolean;
-      /** @enum {string|null} */
-      outlook: "good" | "guarded" | "grave" | null;
-      /** @description 30日以内に死亡する見込みの日数 */
-      days_to_death: number | null;
-      cause_of_death: string | null;
-    };
-    Alert: {
-      /** @enum {string} */
-      severity: "critical" | "warning" | "notice";
-      /** @enum {string} */
-      kind:
-        | "insolvent"
-        | "no_keeper"
-        | "no_veterinarian"
-        | "unassigned"
-        | "filthy"
-        | "overcrowded"
-        | "barren"
-        | "grave"
-        | "guarded"
-        | "starving"
-        | "hungry"
-        | "sick"
-        | "malnourished"
-        | "stressed"
-        | "climate"
-        | "due"
-        | "unhoused";
-      subject: {
-        /** @enum {string} */
-        type: "zoo" | "enclosure" | "animal";
-        id: string | null;
-        name: string;
-      };
-      message: string;
-    };
-    EnclosureSummary: {
-      id: string;
-      name: string;
-      population: number;
-      capacity: number;
-      cleanliness: number;
-      filthy: boolean;
-    };
-    Enclosure: {
-      id: string;
-      name: string;
-      capacity: number;
-      population: number;
-      cleanliness: number;
-      filthy: boolean;
-      enrichment: number;
-      barren: boolean;
-      /** @description 担当の飼育員 */
-      keepers: components["schemas"]["Ref"][];
-      occupants: components["schemas"]["AnimalSummary"][];
-    };
-    Ref: {
-      id: string;
-      name: string;
-    };
-    Keeper: {
-      id: string;
-      name: string;
-      specialties: string;
-      /** @description その日に働いた分数 */
-      worked_minutes: number;
-      /** @description その日の残り勤務時間(1日480分) */
-      remaining_minutes: number;
-      /** @description 担当エリア */
-      enclosures: components["schemas"]["Ref"][];
-    };
-    RoundsReport: {
-      keeper_id: string;
-      keeper_name: string;
-      remaining_minutes: number;
-      rounds: {
-        enclosure: components["schemas"]["Ref"];
-        fed: string[];
-        skipped: {
-          subject: string;
-          reason: string;
-        }[];
-        cleaned: boolean;
-        enriched: boolean;
-      }[];
-    };
-    Veterinarian: {
-      id: string;
-      name: string;
-    };
-    Deceased: {
-      name: string;
-      species: string;
-      cause: string;
-    };
-    ExhibitedSpecies: {
-      name_ja: string;
-      status_code: string;
-      status_label: string;
-      count: number;
-    };
-    ExamineResult: {
-      animal_id: string;
-      /** @enum {string} */
-      result: "dead" | "sick" | "injured" | "healthy";
-    };
-    DayReport: {
-      visitors: number;
-      income: number;
-      cost: number;
-      deaths: number;
-      balance: number;
-      reputation: number;
-      bankrupt: boolean;
-      outbreak?: string | null;
-    };
-    RunDaysSummary: {
-      days: number;
-      total_deaths: number;
-      deaths_by_cause: {
-        [key: string]: number;
-      };
-    };
-    ZooStatistics: {
-      population: number;
-      species_count: number;
-      threatened_count: number;
-      births: number;
-      deaths_by_cause: {
-        [key: string]: number;
-      };
-      revenue: number;
-      balance: number;
-      reputation: number;
-    };
-    SpeciesRef: {
-      key: string;
-      name_ja: string;
-      taxon_class: string;
-      diet: string;
-      conservation_code: string;
-      conservation_label: string;
-    };
-    FoodRef: {
-      key: string;
-      name_ja: string;
-      category: string;
-      satiety: number;
-    };
-    TaxonClassRef: {
-      key: string;
-      label: string;
-    };
-  };
-  responses: {
-    /** @description エラー(3つの輪: 400=形式 / 404=存在 / 422=ドメイン規則) */
-    Error: {
-      headers: {
-        [name: string]: unknown;
-      };
-      content: {
-        "application/json": components["schemas"]["Error"];
-      };
-    };
-  };
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  listSpecies: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 種の一覧 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["SpeciesRef"][];
-        };
-      };
-    };
-  };
-  listFoods: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 餌の一覧 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["FoodRef"][];
-        };
-      };
-    };
-  };
-  listTaxonClasses: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 綱の一覧 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["TaxonClassRef"][];
-        };
-      };
-    };
-  };
-  listAnimals: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 個体サマリの配列 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["AnimalSummary"][];
-        };
-      };
-    };
-  };
-  acquireAnimal: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          /** @description 種キー(/species の key) */
-          species_code: string;
-          name: string;
-          /** @enum {string} */
-          sex: "male" | "female";
-        };
-      };
-    };
-    responses: {
-      /** @description 作成された個体 */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Animal"];
-        };
-      };
-      400: components["responses"]["Error"];
-    };
-  };
-  showAnimal: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 個体プロフィール */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Animal"];
-        };
-      };
-      404: components["responses"]["Error"];
-    };
-  };
-  showAnimalPrognosis: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 予後 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["AnimalOutlook"];
-        };
-      };
-      404: components["responses"]["Error"];
-    };
-  };
-  renameAnimal: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          new_name: string;
-        };
-      };
-    };
-    responses: {
-      /** @description 更新後の個体 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Animal"];
-        };
-      };
-      404: components["responses"]["Error"];
-    };
-  };
-  feedAnimal: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          keeper_id: string;
-          /** @description 餌キー(/foods の key) */
-          food_code: string;
-        };
-      };
-    };
-    responses: {
-      /** @description 更新後の個体 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Animal"];
-        };
-      };
-      404: components["responses"]["Error"];
-      422: components["responses"]["Error"];
-    };
-  };
-  treatAnimal: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          veterinarian_id: string;
-        };
-      };
-    };
-    responses: {
-      /** @description 更新後の個体 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Animal"];
-        };
-      };
-      404: components["responses"]["Error"];
-      422: components["responses"]["Error"];
-    };
-  };
-  examineAnimal: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          veterinarian_id: string;
-        };
-      };
-    };
-    responses: {
-      /** @description 診察結果 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ExamineResult"];
-        };
-      };
-      404: components["responses"]["Error"];
-    };
-  };
-  transferAnimal: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        animal_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          enclosure_id: string;
-        };
-      };
-    };
-    responses: {
-      /** @description 移送後の個体 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Animal"];
-        };
-      };
-      404: components["responses"]["Error"];
-      422: components["responses"]["Error"];
-    };
-  };
-  listEnclosures: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description エリアサマリの配列 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["EnclosureSummary"][];
-        };
-      };
-    };
-  };
-  addEnclosure: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          name: string;
-          celsius: number;
-          capacity: number;
-        };
-      };
-    };
-    responses: {
-      /** @description 作成されたエリア */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Enclosure"];
-        };
-      };
-      400: components["responses"]["Error"];
-    };
-  };
-  showEnclosure: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description エリアプロフィール */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Enclosure"];
-        };
-      };
-      404: components["responses"]["Error"];
-    };
-  };
-  houseAnimal: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          animal_id: string;
-        };
-      };
-    };
-    responses: {
-      /** @description 収容後のエリア */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Enclosure"];
-        };
-      };
-      404: components["responses"]["Error"];
-      422: components["responses"]["Error"];
-    };
-  };
-  releaseAnimal: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-        animal_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 退去した個体 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Animal"];
-        };
-      };
-      404: components["responses"]["Error"];
-    };
-  };
-  cleanEnclosure: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          keeper_id: string;
-          /** @default 100 */
-          amount?: number;
-        };
-      };
-    };
-    responses: {
-      /** @description 清掃後のエリア */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Enclosure"];
-        };
-      };
-      404: components["responses"]["Error"];
-      422: components["responses"]["Error"];
-    };
-  };
-  enrichEnclosure: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          keeper_id: string;
-        };
-      };
-    };
-    responses: {
-      /** @description 補充後のエリア */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Enclosure"];
-        };
-      };
-      404: components["responses"]["Error"];
-      422: components["responses"]["Error"];
-    };
-  };
-  assignKeeper: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          keeper_id: string;
-        };
-      };
-    };
-    responses: {
-      /** @description 割り当て後のエリア */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Enclosure"];
-        };
-      };
-      404: components["responses"]["Error"];
-      422: components["responses"]["Error"];
-    };
-  };
-  dischargeKeeper: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        enclosure_id: string;
-        keeper_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 担当を外した後のエリア */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Enclosure"];
-        };
-      };
-      404: components["responses"]["Error"];
-      422: components["responses"]["Error"];
-    };
-  };
-  breedAnimals: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          sire_id: string;
-          dam_id: string;
-          enclosure_id: string;
-          name: string;
-          /** @enum {string} */
-          sex: "male" | "female";
-        };
-      };
-    };
-    responses: {
-      /** @description 誕生した個体 */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Animal"];
-        };
-      };
-      404: components["responses"]["Error"];
-      422: components["responses"]["Error"];
-    };
-  };
-  listKeepers: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 飼育員の配列 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Keeper"][];
-        };
-      };
-    };
-  };
-  hireKeeper: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          name: string;
-          specialties: string[];
-        };
-      };
-    };
-    responses: {
-      /** @description 採用された飼育員 */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Keeper"];
-        };
-      };
-      400: components["responses"]["Error"];
-    };
-  };
-  makeRounds: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        keeper_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 見回りの結果 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["RoundsReport"];
-        };
-      };
-      404: components["responses"]["Error"];
-    };
-  };
-  listVeterinarians: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 獣医の配列 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Veterinarian"][];
-        };
-      };
-    };
-  };
-  hireVeterinarian: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          name: string;
-        };
-      };
-    };
-    responses: {
-      /** @description 採用された獣医 */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Veterinarian"];
-        };
-      };
-      400: components["responses"]["Error"];
-    };
-  };
-  listAlerts: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 要対応の一覧 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Alert"][];
-        };
-      };
-    };
-  };
-  listOperatings: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 古い順の運営記録 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["OperatingSummary"][];
-        };
-      };
-    };
-  };
-  getReport: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 園全体の統計 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ZooStatistics"];
-        };
-      };
-    };
-  };
-  listDeceased: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 死亡記録の配列 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["Deceased"][];
-        };
-      };
-    };
-  };
-  listThreatened: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description 絶滅危惧種の配列 */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ExhibitedSpecies"][];
-        };
-      };
-    };
-  };
-  admitVisitors: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          count: number;
-        };
-      };
-    };
-    responses: {
-      /** @description 得られた収益(円) */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            revenue: number;
-          };
-        };
-      };
-    };
-  };
-  setAdmissionFee: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          fee: number;
-        };
-      };
-    };
-    responses: {
-      /** @description 改定後の入園料(円) */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": {
-            admission_fee: number;
-          };
-        };
-      };
-    };
-  };
-  operateDay: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description その日の収支レポート */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DayReport"];
-        };
-      };
-    };
-  };
-  runDays: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": {
-          days: number;
-        };
-      };
-    };
-    responses: {
-      /** @description 推移サマリ */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["RunDaysSummary"];
-        };
-      };
-    };
-  };
+    listSpecies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 種の一覧 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpeciesRef"][];
+                };
+            };
+        };
+    };
+    listFoods: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 餌の一覧 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FoodRef"][];
+                };
+            };
+        };
+    };
+    listTaxonClasses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 綱の一覧 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxonClassRef"][];
+                };
+            };
+        };
+    };
+    listAnimals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 個体サマリの配列 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnimalSummary"][];
+                };
+            };
+        };
+    };
+    acquireAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description 種キー(/species の key) */
+                    species_code: string;
+                    name: string;
+                    /** @enum {string} */
+                    sex: "male" | "female";
+                };
+            };
+        };
+        responses: {
+            /** @description 作成された個体 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Animal"];
+                };
+            };
+            400: components["responses"]["Error"];
+        };
+    };
+    showAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 個体プロフィール */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Animal"];
+                };
+            };
+            404: components["responses"]["Error"];
+        };
+    };
+    showAnimalPrognosis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 予後 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnimalOutlook"];
+                };
+            };
+            404: components["responses"]["Error"];
+        };
+    };
+    renameAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    new_name: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 更新後の個体 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Animal"];
+                };
+            };
+            404: components["responses"]["Error"];
+        };
+    };
+    feedAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    keeper_id: string;
+                    /** @description 餌キー(/foods の key) */
+                    food_code: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 更新後の個体 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Animal"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    treatAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    veterinarian_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 更新後の個体 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Animal"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    examineAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    veterinarian_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 診察結果 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamineResult"];
+                };
+            };
+            404: components["responses"]["Error"];
+        };
+    };
+    transferAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    enclosure_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 移送後の個体 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Animal"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    listEnclosures: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description エリアサマリの配列 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnclosureSummary"][];
+                };
+            };
+        };
+    };
+    addEnclosure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    celsius: number;
+                    capacity: number;
+                };
+            };
+        };
+        responses: {
+            /** @description 作成されたエリア */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Enclosure"];
+                };
+            };
+            400: components["responses"]["Error"];
+        };
+    };
+    showEnclosure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description エリアプロフィール */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Enclosure"];
+                };
+            };
+            404: components["responses"]["Error"];
+        };
+    };
+    houseAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    animal_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 収容後のエリア */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Enclosure"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    releaseAnimal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+                animal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 退去した個体 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Animal"];
+                };
+            };
+            404: components["responses"]["Error"];
+        };
+    };
+    cleanEnclosure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    keeper_id: string;
+                    /** @default 100 */
+                    amount?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description 清掃後のエリア */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Enclosure"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    enrichEnclosure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    keeper_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 補充後のエリア */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Enclosure"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    assignKeeper: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    keeper_id: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 割り当て後のエリア */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Enclosure"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    dischargeKeeper: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                enclosure_id: string;
+                keeper_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 担当を外した後のエリア */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Enclosure"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    breedAnimals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    sire_id: string;
+                    dam_id: string;
+                    enclosure_id: string;
+                    name: string;
+                    /** @enum {string} */
+                    sex: "male" | "female";
+                };
+            };
+        };
+        responses: {
+            /** @description 誕生した個体 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Animal"];
+                };
+            };
+            404: components["responses"]["Error"];
+            422: components["responses"]["Error"];
+        };
+    };
+    listKeepers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 飼育員の配列 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Keeper"][];
+                };
+            };
+        };
+    };
+    hireKeeper: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                    specialties: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description 採用された飼育員 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Keeper"];
+                };
+            };
+            400: components["responses"]["Error"];
+        };
+    };
+    makeRounds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                keeper_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 見回りの結果 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoundsReport"];
+                };
+            };
+            404: components["responses"]["Error"];
+        };
+    };
+    listVeterinarians: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 獣医の配列 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Veterinarian"][];
+                };
+            };
+        };
+    };
+    hireVeterinarian: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    name: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 採用された獣医 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Veterinarian"];
+                };
+            };
+            400: components["responses"]["Error"];
+        };
+    };
+    listAlerts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 要対応の一覧 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Alert"][];
+                };
+            };
+        };
+    };
+    getChecklist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 日課ごとの対象と、済んだかどうか */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Chore"][];
+                };
+            };
+        };
+    };
+    listOperatings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 古い順の運営記録 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatingSummary"][];
+                };
+            };
+        };
+    };
+    getReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 園全体の統計 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ZooStatistics"];
+                };
+            };
+        };
+    };
+    listDeceased: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 死亡記録の配列 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Deceased"][];
+                };
+            };
+        };
+    };
+    listThreatened: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 絶滅危惧種の配列 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExhibitedSpecies"][];
+                };
+            };
+        };
+    };
+    admitVisitors: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    count: number;
+                };
+            };
+        };
+        responses: {
+            /** @description 得られた収益(円) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        revenue: number;
+                    };
+                };
+            };
+        };
+    };
+    setAdmissionFee: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    fee: number;
+                };
+            };
+        };
+        responses: {
+            /** @description 改定後の入園料(円) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        admission_fee: number;
+                    };
+                };
+            };
+        };
+    };
+    operateDay: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description その日の収支レポート */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DayReport"];
+                };
+            };
+        };
+    };
+    runDays: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    days: number;
+                };
+            };
+        };
+        responses: {
+            /** @description 推移サマリ */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunDaysSummary"];
+                };
+            };
+        };
+    };
 }

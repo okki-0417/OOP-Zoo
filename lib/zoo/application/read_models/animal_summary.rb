@@ -14,7 +14,7 @@ module Zoo
             max_health: animal.max_health,
             ailing: animal.alive? && (animal.sick? || animal.starving? || animal.weak?),
             hungry: animal.alive? && animal.hungry?,
-            fed_today: animal.meals.variety.positive?
+            fed_today: animal.fed_today?
           )
         end
       end

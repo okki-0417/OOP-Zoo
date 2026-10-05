@@ -15,6 +15,15 @@ module Zoo
             }
           end
 
+          def chore(chore)
+            {
+              kind: chore.kind.to_s, label: chore.label, done_count: chore.done_count, total: chore.total,
+              items: chore.items.map do |item|
+                { subject: { type: item.subject_type.to_s, id: item.subject_id, name: item.subject_name }, done: item.done }
+              end
+            }
+          end
+
           def enclosure_summary(summary)
             {
               id: summary.id, name: summary.name, population: summary.population, capacity: summary.capacity,

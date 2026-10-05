@@ -276,6 +276,10 @@ module Zoo
         self
       end
 
+      def fed_today?
+        @meals.variety.positive?
+      end
+
       def settle_nutrition
         return self if dead?
 

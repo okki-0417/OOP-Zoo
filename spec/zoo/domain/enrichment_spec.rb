@@ -37,6 +37,13 @@ module Zoo
         end
       end
 
+      describe '#dull?' do
+        it 'level=50(DULL_THRESHOLD)は true、51 は false を返すこと' do
+          expect(described_class.new(50).dull?).to be(true)
+          expect(described_class.new(51).dull?).to be(false)
+        end
+      end
+
       it '同じ値どうしは等価であること' do
         expect(described_class.new(40)).to eq(described_class.new(40))
       end

@@ -84,6 +84,10 @@ module Zoo
         @cleanliness.filthy?
       end
 
+      def soiled?
+        @cleanliness.soiled?
+      end
+
       def cleanliness_level
         @cleanliness.level
       end
@@ -100,6 +104,10 @@ module Zoo
 
       def barren?
         @enrichment.barren?
+      end
+
+      def dull?
+        @enrichment.dull?
       end
     end
   end

@@ -508,6 +508,18 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/Alert' }
+  /checklist:
+    get:
+      summary: 今日の日課(給餌・治療・清掃・遊具の補充)の進み具合
+      operationId: getChecklist
+      responses:
+        '200':
+          description: 日課ごとの対象と、済んだかどうか
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Chore' }
   /operatings:
     get:
       summary: 運営記録(日ごとの収支・来園者・死亡)
@@ -749,6 +761,28 @@ components:
             id: { type: string, nullable: true }
             name: { type: string }
         message: { type: string }
+    Chore:
+      type: object
+      required: [kind, label, done_count, total, items]
+      properties:
+        kind: { type: string, enum: [feeding, treatment, cleaning, enrichment] }
+        label: { type: string }
+        done_count: { type: integer }
+        total: { type: integer }
+        items:
+          type: array
+          items:
+            type: object
+            required: [subject, done]
+            properties:
+              subject:
+                type: object
+                required: [type, id, name]
+                properties:
+                  type: { type: string, enum: [enclosure, animal] }
+                  id: { type: string }
+                  name: { type: string }
+              done: { type: boolean }
     EnclosureSummary:
       type: object
       required: [id, name, population, capacity, cleanliness, filthy]
