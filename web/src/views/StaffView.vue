@@ -85,9 +85,8 @@ async function hire() {
 
 <template>
   <PageHeader
-    title="スタッフ詰所"
-    :crumbs="[{ label: '動物園', to: '/zoo' }]"
-    subtitle="飼育員の担当エリアと勤務時間、獣医の顔ぶれ"
+    title="スタッフ"
+    :subtitle="`飼育員 ${keepers.data.value?.length ?? 0} 人・獣医 ${veterinarians.data.value?.length ?? 0} 人`"
   >
     <button class="btn" @click="hiring = !hiring">{{ hiring ? "閉じる" : "＋ 採用" }}</button>
     <button
@@ -161,44 +160,62 @@ async function hire() {
     empty-text="飼育員がいません。採用しましょう"
     @retry="keepers.reload"
   >
-    <ul class="people">
-      <li v-for="keeper in keepers.data.value" :key="keeper.id" class="card person">
-        <div class="row">
-          <span class="portrait">🧑‍🌾</span>
-          <span class="grow">
-            <strong class="name">{{ keeper.name }}</strong>
-            <span class="muted">{{ keeper.specialties || "専門なし" }}</span>
-          </span>
-          <template v-if="keeper.enclosures.length">
-            <span v-if="pendingOf(keeper)" class="badge badge-warn"
-              >未給餌 {{ pendingOf(keeper) }}</span
-            >
-            <span v-else class="badge badge-good">給餌済み</span>
-          </template>
-        </div>
-        <MeterBar label="勤務時間(分)" :value="keeper.worked_minutes" :max="SHIFT_MINUTES" invert />
-        <div v-if="keeper.enclosures.length" class="areas">
-          <RouterLink
-            v-for="area in keeper.enclosures"
-            :key="area.id"
-            :to="`/enclosures/${area.id}`"
-            class="area"
-          >
-            🌳 {{ area.name }}
-          </RouterLink>
-        </div>
-        <p v-else class="muted note">
-          担当エリアがありません。エリアの中で担当に割り当てると見回れます
-        </p>
-        <button
-          class="btn"
-          :disabled="busy || keeper.enclosures.length === 0"
-          @click="makeRounds([keeper])"
-        >
-          見回る
-        </button>
-      </li>
-    </ul>
+    <div class="card table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>名前</th>
+            <th>専門</th>
+            <th>担当エリア</th>
+            <th>勤務時間(分)</th>
+            <th>給餌</th>
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="keeper in keepers.data.value" :key="keeper.id">
+            <td>
+              <strong>🧑‍🌾 {{ keeper.name }}</strong>
+            </td>
+            <td>{{ keeper.specialties || "—" }}</td>
+            <td>
+              <span v-if="keeper.enclosures.length" class="areas">
+                <RouterLink
+                  v-for="area in keeper.enclosures"
+                  :key="area.id"
+                  :to="`/enclosures/${area.id}`"
+                  class="cell-link"
+                >
+                  {{ area.name }}
+                </RouterLink>
+              </span>
+              <span v-else class="badge badge-warn">未割り当て</span>
+            </td>
+            <td class="meter-cell">
+              <MeterBar label="" :value="keeper.worked_minutes" :max="SHIFT_MINUTES" invert />
+            </td>
+            <td>
+              <template v-if="keeper.enclosures.length">
+                <span v-if="pendingOf(keeper)" class="badge badge-warn"
+                  >未給餌 {{ pendingOf(keeper) }}</span
+                >
+                <span v-else class="badge badge-good">済み</span>
+              </template>
+              <span v-else class="muted">—</span>
+            </td>
+            <td class="actions">
+              <button
+                class="btn btn-small"
+                :disabled="busy || keeper.enclosures.length === 0"
+                @click="makeRounds([keeper])"
+              >
+                見回る
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </QueryState>
 
   <h2 class="section-title">獣医</h2>
@@ -209,14 +226,22 @@ async function hire() {
     empty-text="獣医がいません。病気の治療ができません"
     @retry="veterinarians.reload"
   >
-    <ul class="people">
-      <li v-for="v in veterinarians.data.value" :key="v.id" class="card person">
-        <div class="row">
-          <span class="portrait">🧑‍⚕️</span>
-          <strong class="name grow">{{ v.name }}</strong>
-        </div>
-      </li>
-    </ul>
+    <div class="card table-card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>名前</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="v in veterinarians.data.value" :key="v.id">
+            <td>
+              <strong>🧑‍⚕️ {{ v.name }}</strong>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </QueryState>
 </template>
 
@@ -243,56 +268,10 @@ async function hire() {
   font-size: 0.85rem;
 }
 
-.people {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 12px;
-}
-
-.person {
-  display: grid;
-  gap: 10px;
-  align-content: start;
-}
-
-.portrait {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--surface-sunk);
-  font-size: 1.6rem;
-}
-
-.name {
-  display: block;
-  font-size: 1.05rem;
-}
-
 .areas {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-}
-
-.area {
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--surface-sunk);
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.area:hover {
-  color: var(--brand);
-}
-
-.note {
-  font-size: 0.85rem;
+  gap: 4px 12px;
 }
 
 .specialties {
@@ -322,16 +301,5 @@ async function hire() {
   background: var(--brand);
   border-color: var(--brand);
   color: var(--brand-ink);
-}
-
-.slide-enter-from,
-.slide-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-.slide-enter-active,
-.slide-leave-active {
-  transition: all 0.2s ease;
 }
 </style>

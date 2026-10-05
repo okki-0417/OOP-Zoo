@@ -47,7 +47,7 @@ function percent(done: number, all: number) {
         <strong>{{ doneCount }} / {{ total }}</strong>
         <span class="muted"> 件完了</span>
       </span>
-      <RouterLink to="/zoo/staff" class="btn">🚶 見回りへ</RouterLink>
+      <RouterLink to="/staff" class="btn">🚶 見回りへ</RouterLink>
     </div>
     <div class="bar" role="progressbar" :aria-valuenow="percent(doneCount, total)">
       <span :style="{ width: `${percent(doneCount, total)}%` }" />

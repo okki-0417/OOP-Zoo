@@ -4,7 +4,9 @@ import { useRoute } from "vue-router";
 const route = useRoute();
 const tabs = [
   { to: "/", section: "office", label: "園長室", icon: "🏛️" },
-  { to: "/zoo", section: "zoo", label: "動物園", icon: "🗺️" },
+  { to: "/animals", section: "animals", label: "動物", icon: "🐾" },
+  { to: "/enclosures", section: "enclosures", label: "エリア", icon: "🌳" },
+  { to: "/staff", section: "staff", label: "スタッフ", icon: "🧑‍🌾" },
 ];
 </script>
 

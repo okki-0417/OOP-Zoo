@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { api, unwrap } from "../api/client";
-import HabitatScene from "../components/HabitatScene.vue";
 import MeterBar from "../components/MeterBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
@@ -137,7 +136,7 @@ async function release(id: string, name: string) {
 <template>
   <PageHeader
     :title="enclosure.data.value?.name ?? 'エリア'"
-    :crumbs="[{ label: '動物園', to: '/zoo' }]"
+    :crumbs="[{ label: 'エリア', to: '/enclosures' }]"
     :subtitle="
       enclosure.data.value
         ? `設定 ${enclosure.data.value.celsius}℃${enclosure.data.value.climate_controlled ? '（空調）' : ''}・${enclosure.data.value.population} / ${enclosure.data.value.capacity} 頭`
@@ -152,10 +151,69 @@ async function release(id: string, name: string) {
     @retry="enclosure.reload"
   >
     <div v-if="enclosure.data.value" class="inside">
-      <div class="habitat">
-        <HabitatScene :enclosure="enclosure.data.value" large />
-        <p class="muted hint">動物をクリックすると、その個体の様子を見られます</p>
-      </div>
+      <section class="stack">
+        <form class="toolbar" @submit.prevent="house">
+          <select v-model="animalId" class="inline-select grow" required aria-label="収容する動物">
+            <option value="" disabled>収容する動物…</option>
+            <option v-for="a in candidates" :key="a.id" :value="a.id">
+              {{ emojiOf(a.species) }} {{ a.name }}（{{ a.species }}）
+            </option>
+          </select>
+          <button class="btn btn-primary btn-small" :disabled="busy || !animalId || full">
+            収容
+          </button>
+          <span v-if="full" class="muted">満員です</span>
+        </form>
+        <div v-if="enclosure.data.value.occupants.length" class="card table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>名前</th>
+                <th>種</th>
+                <th>体力</th>
+                <th>状態</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="occupant in enclosure.data.value.occupants" :key="occupant.id">
+                <td>
+                  <RouterLink :to="`/animals/${occupant.id}`" class="cell-link">
+                    <span>{{ emojiOf(occupant.species) }}</span>
+                    {{ occupant.name }}
+                  </RouterLink>
+                </td>
+                <td>{{ occupant.species }}</td>
+                <td class="meter-cell">
+                  <MeterBar label="" :value="occupant.health" :max="occupant.max_health" />
+                </td>
+                <td>
+                  <div class="badges">
+                    <span v-if="occupant.ailing" class="badge badge-bad">不調</span>
+                    <span v-if="occupant.hungry" class="badge badge-bad">空腹</span>
+                    <span v-if="!occupant.fed_today" class="badge badge-warn">未給餌</span>
+                    <span
+                      v-if="!occupant.ailing && !occupant.hungry && occupant.fed_today"
+                      class="badge badge-good"
+                      >良好</span
+                    >
+                  </div>
+                </td>
+                <td class="actions">
+                  <button
+                    class="btn btn-small"
+                    :disabled="busy"
+                    @click="release(occupant.id, occupant.name)"
+                  >
+                    退去
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p v-else class="card empty">住人はいません</p>
+      </section>
 
       <aside class="inspector">
         <section class="card stack">
@@ -205,36 +263,6 @@ async function release(id: string, name: string) {
             <button class="btn" :disabled="busy || !assigneeId">割り当て</button>
           </form>
         </section>
-
-        <section class="card stack">
-          <h2 class="panel-title">住人</h2>
-          <ul v-if="enclosure.data.value.occupants.length" class="people">
-            <li v-for="occupant in enclosure.data.value.occupants" :key="occupant.id" class="row">
-              <RouterLink :to="`/animals/${occupant.id}`" class="row grow">
-                <span>{{ emojiOf(occupant.species) }}</span>
-                <strong>{{ occupant.name }}</strong>
-                <span class="muted">{{ occupant.species }}</span>
-              </RouterLink>
-              <button
-                class="btn small-btn"
-                :disabled="busy"
-                @click="release(occupant.id, occupant.name)"
-              >
-                退去
-              </button>
-            </li>
-          </ul>
-          <form class="row bottom" @submit.prevent="house">
-            <select v-model="animalId" class="grow" required aria-label="迎え入れる動物">
-              <option value="" disabled>迎え入れる…</option>
-              <option v-for="a in candidates" :key="a.id" :value="a.id">
-                {{ emojiOf(a.species) }} {{ a.name }}（{{ a.species }}）
-              </option>
-            </select>
-            <button class="btn btn-primary" :disabled="busy || !animalId || full">収容</button>
-          </form>
-          <p v-if="full" class="muted">満員のため収容できません</p>
-        </section>
       </aside>
     </div>
   </QueryState>
@@ -252,23 +280,6 @@ async function release(id: string, name: string) {
   .inside {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-
-.habitat {
-  position: sticky;
-  top: 16px;
-  padding: 10px;
-  border-radius: 28px;
-  background: #b98d5e;
-  box-shadow:
-    0 0 0 4px #8a6239,
-    0 10px 24px rgb(40 30 10 / 25%);
-}
-
-.hint {
-  margin: 8px 6px 0;
-  font-size: 0.8rem;
-  color: #fff8e8;
 }
 
 .inspector {

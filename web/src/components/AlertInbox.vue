@@ -63,7 +63,7 @@ const kindIcons: Record<Alert["kind"], string> = {
 function linkOf(alert: Alert) {
   if (alert.subject.type === "animal") return `/animals/${alert.subject.id}`;
   if (alert.subject.type === "enclosure") return `/enclosures/${alert.subject.id}`;
-  if (alert.kind === "no_keeper" || alert.kind === "no_veterinarian") return "/zoo/staff";
+  if (alert.kind === "no_keeper" || alert.kind === "no_veterinarian") return "/staff";
   return undefined;
 }
 </script>
