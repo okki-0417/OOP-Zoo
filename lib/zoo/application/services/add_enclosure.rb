@@ -14,11 +14,13 @@ module Zoo
               enclosure = Domain::Enclosure.new(
                 name: @command.name,
                 temperature: Domain::Shared::Temperature.celsius(@command.celsius),
-                capacity: @command.capacity
+                capacity: @command.capacity,
+                climate_controlled: @command.climate_controlled
               )
 
               zoo = @command.zoo.load
-              zoo.purchase(Domain::Enclosure.construction_cost(capacity: @command.capacity))
+              zoo.purchase(Domain::Enclosure.construction_cost(capacity: @command.capacity,
+                                                               climate_controlled: @command.climate_controlled))
               @command.zoo.save(zoo)
 
               @command.enclosures.save(enclosure)

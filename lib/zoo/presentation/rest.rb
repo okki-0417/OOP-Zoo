@@ -37,7 +37,7 @@ module Zoo
 
       get('/enclosures') { respond(:enclosure_list) }
       post('/enclosures') do
-        respond(:add_enclosure, :name, celsius: integer('celsius'), capacity: integer('capacity'))
+        respond(:add_enclosure, :name, :climate_controlled, celsius: integer('celsius'), capacity: integer('capacity'))
       end
       get('/enclosures/:enclosure_id') { respond(:enclosure_detail, :enclosure_id) }
       post('/enclosures/:enclosure_id/occupants') { respond(:house_animal, :enclosure_id, :animal_id) }

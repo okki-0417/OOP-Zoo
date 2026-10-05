@@ -313,7 +313,13 @@ RSpec.describe Zoo::Presentation::Rest do
       post_json '/enclosures', name: 'サバンナ', celsius: 30, capacity: 6
 
       expect(last_response.status).to eq(201)
-      expect(body).to include('name' => 'サバンナ', 'capacity' => 6, 'population' => 0)
+      expect(body).to include('name' => 'サバンナ', 'capacity' => 6, 'population' => 0, 'climate_controlled' => false)
+    end
+
+    it 'climate_controlled=true を渡すと空調付きのエリアを返すこと' do
+      post_json '/enclosures', name: '夜行性館', celsius: 22, capacity: 2, climate_controlled: true
+
+      expect(body).to include('climate_controlled' => true)
     end
   end
 

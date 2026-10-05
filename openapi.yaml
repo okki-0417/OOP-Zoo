@@ -248,6 +248,7 @@ paths:
                 name: { type: string }
                 celsius: { type: integer }
                 capacity: { type: integer }
+                climate_controlled: { type: boolean, default: false, description: 空調を入れると季節の影響を受けないが、建設費と維持費が上がる }
       responses:
         '201':
           description: 作成されたエリア

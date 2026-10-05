@@ -17,8 +17,8 @@ RSpec.describe Zoo::Application::Services::AddEnclosure do
   end
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures]) }
 
-  def add(name: 'ライオンの丘', celsius: 28, capacity: 4)
-    command = Zoo::Application::Commands::AddEnclosureCommand.new(name:, celsius:, capacity:)
+  def add(name: 'ライオンの丘', celsius: 28, capacity: 4, climate_controlled: false)
+    command = Zoo::Application::Commands::AddEnclosureCommand.new(name:, celsius:, capacity:, climate_controlled:)
     described_class.new(command: command.bind(enclosures:, zoo: zoo_repo, unit_of_work:)).call
   end
 
@@ -35,6 +35,17 @@ RSpec.describe Zoo::Application::Services::AddEnclosure do
       add
 
       expect(zoo_repo.load.balance).to eq(balance.new(30_000))
+    end
+
+    context '資金が 200,000円 のとき' do
+      let(:funds) { 200_000 }
+
+      it 'climate_controlled=true なら空調付きで建ち、建設費 70,000円 + 空調 50,000円 で残高 80,000円 になること' do
+        profile = add(climate_controlled: true).value
+
+        expect(profile.climate_controlled).to be(true)
+        expect(zoo_repo.load.balance).to eq(balance.new(80_000))
+      end
     end
 
     it '空の name "" を渡すと Enclosure の不変条件で ArgumentError が発生すること' do
