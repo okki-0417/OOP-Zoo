@@ -131,6 +131,29 @@ module Zoo
         end
       end
 
+      describe '#dup' do
+        it '複製の免疫を増やしても元の個体の免疫は増えないこと' do
+          animal = build
+          copy = animal.dup
+          copy.fall_ill(illnesses.cold)
+          copy.recover
+          expect(animal.immunities).to eq([])
+          expect(copy.immunities).to eq([illnesses.cold])
+        end
+
+        it '複製は同じ id を持ち、元の個体と等価であること' do
+          animal = build
+          expect(animal.dup).to eq(animal)
+        end
+      end
+
+      describe '#days_until_starving' do
+        it 'ライオン(1日+10)の空腹度95は1日、空腹度0は10日を返すこと' do
+          expect(build.get_hungrier(95).days_until_starving).to eq(1)
+          expect(build.days_until_starving).to eq(10)
+        end
+      end
+
       describe '#take_meal' do
         it '[:meat] を2回 take_meal しても meals.categories は [:meat] のままであること' do
           animal = build

@@ -72,6 +72,12 @@ module Zoo
         end
       end
 
+      def initialize_copy(source)
+        super
+        @immunities = source.immunities
+        @parent_ids = source.parent_ids.dup
+      end
+
       def cry_out
         current_voice.tap { @health = @health.decreased_by(CRY_OUT_DAMAGE) if alive? }
       end
@@ -244,6 +250,10 @@ module Zoo
 
       def starving?
         @hunger.starving?
+      end
+
+      def days_until_starving
+        ((Hunger::MAX - @hunger.level).to_f / @species.daily_hunger).ceil
       end
 
       def hunger_level
