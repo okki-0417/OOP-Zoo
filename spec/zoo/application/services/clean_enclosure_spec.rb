@@ -27,13 +27,13 @@ RSpec.describe Zoo::Application::Services::CleanEnclosure do
   end
 
   describe '#call' do
-    it '清潔度20まで汚れたエリアを amount 50 で清掃すると level が70になり、value の EnclosureProfile の cleanliness も70であること' do
+    it '清潔度20まで汚れたエリアを amount 50 で清掃すると level が70になり、value の enclosure の cleanliness_level も70であること' do
       enclosure.soil(80)
 
       result = clean(commands::CleanEnclosureCommand.new(keeper_id: keeper.id, enclosure_id: enclosure.id, amount: 50))
 
       expect(enclosures.find(enclosure.id).cleanliness.level).to eq(70)
-      expect(result.value).to have_attributes(id: enclosure.id.to_s, cleanliness: 70)
+      expect(result.value[:enclosure]).to have_attributes(id: enclosure.id, cleanliness_level: 70)
     end
 
     it 'amount 省略で呼ぶと level が100まで回復すること' do
@@ -44,13 +44,13 @@ RSpec.describe Zoo::Application::Services::CleanEnclosure do
       expect(enclosures.find(enclosure.id).cleanliness.level).to eq(100)
     end
 
-    it '収容中のライオンがいるとき value の EnclosureProfile の occupants にその個体が含まれること' do
+    it '収容中のライオンがいるとき value の occupants にその個体が含まれること' do
       lion = build_adult(catalog.lion, name: 'レオ')
       housings.save(housed(lion, enclosure))
 
       result = clean(commands::CleanEnclosureCommand.new(keeper_id: keeper.id, enclosure_id: enclosure.id))
 
-      expect(result.value.occupants.map(&:name)).to eq(['レオ'])
+      expect(result.value[:occupants].map(&:name)).to eq(['レオ'])
     end
 
     it "存在しない keeper_id='missing' を渡すと failure で error が Application::Errors::KeeperNotFound となること" do

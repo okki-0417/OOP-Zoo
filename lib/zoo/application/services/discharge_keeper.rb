@@ -23,9 +23,11 @@ module Zoo
               @command.assignments.save(relieving)
               enclosure
             end
-            ReadModels::EnclosureProfile.housed(
-              enclosure, housings: @command.housings, assignments: @command.assignments
-            )
+            {
+              enclosure:,
+              occupants: @command.housings.occupants_of(enclosure),
+              keepers: @command.assignments.keepers_of(enclosure)
+            }
           end
         end
 

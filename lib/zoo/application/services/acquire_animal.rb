@@ -31,7 +31,7 @@ module Zoo
 
               animal
             end
-            ReadModels::AnimalProfile.of(animal, enclosure: nil)
+            { animal:, enclosure: nil }
           end
         end
       end

@@ -24,12 +24,12 @@ RSpec.describe Zoo::Application::Services::MakeRounds do
   end
 
   describe '#call' do
-    it '担当エリアを見回ってレオに給餌し、RoundsReport に給餌した名前と残り勤務時間(470分)を返すこと' do
-      report = make_rounds.value
+    it '担当エリアを見回ってレオに給餌し、給餌した個体と残り勤務時間(470分)の飼育員を返すこと' do
+      view = make_rounds.value
 
-      expect(report).to have_attributes(keeper_name: '飼育員', remaining_minutes: 470)
-      expect(report.rounds).to eq([{ enclosure: Zoo::Application::ReadModels::StaffRef.of(hill), fed: ['レオ'],
-                                     skipped: [], cleaned: false, enriched: false }])
+      expect(view[:keeper]).to have_attributes(name: '飼育員', remaining_minutes: 470)
+      expect(view[:reports].map(&:enclosure)).to eq([hill])
+      expect(view[:reports].first.fed.map(&:name)).to eq(['レオ'])
     end
 
     it '給餌した個体と勤務時間を使った飼育員を保存すること' do
@@ -39,8 +39,10 @@ RSpec.describe Zoo::Application::Services::MakeRounds do
       expect(keepers.find(keeper.id).worked_minutes).to eq(10)
     end
 
-    it '担当エリアがなければ rounds は空で、勤務時間も使わないこと' do
-      expect(make_rounds(tendings: []).value).to have_attributes(rounds: [], remaining_minutes: 480)
+    it '担当エリアがなければ reports は空で、勤務時間も使わないこと' do
+      view = make_rounds(tendings: []).value
+      expect(view[:reports]).to eq([])
+      expect(view[:keeper].remaining_minutes).to eq(480)
     end
 
     it "存在しない keeper_id 'missing' は KeeperNotFound の失敗 Result を返すこと" do

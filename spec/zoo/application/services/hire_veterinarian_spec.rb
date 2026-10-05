@@ -25,10 +25,9 @@ RSpec.describe Zoo::Application::Services::HireVeterinarian do
 
   describe '#call' do
     it 'name=\'山田\' で雇うと、result.value の id で find できる獣医が保存されること' do
-      summary = service.call.value
+      veterinarian = service.call.value
 
-      expect(veterinarians.find(summary.id).name).to eq('山田')
-      expect(summary.name).to eq('山田')
+      expect(veterinarians.find(veterinarian.id).name).to eq('山田')
     end
 
     it '採用の一時金(30,000円)ぶん残高が減ること' do

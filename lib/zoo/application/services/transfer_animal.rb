@@ -27,7 +27,7 @@ module Zoo
               @command.housings.save(housing)
               [animal, target]
             end
-            ReadModels::AnimalProfile.of(animal, enclosure: target)
+            { animal:, enclosure: target }
           end
         end
       end

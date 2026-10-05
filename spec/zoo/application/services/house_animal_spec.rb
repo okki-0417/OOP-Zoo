@@ -32,12 +32,11 @@ RSpec.describe Zoo::Application::Services::HouseAnimal do
       expect(occupants_of(housings, enclosure)).to include(lion)
     end
 
-    it '収容に成功すると result.value が population=1 で occupants にレオを含む EnclosureProfile になること' do
-      profile = call_with(enclosure_id: enclosure.id, animal_id: lion.id).value
+    it '収容に成功すると result.value の occupants がレオ1頭になること' do
+      view = call_with(enclosure_id: enclosure.id, animal_id: lion.id).value
 
-      expect(profile).to be_a(Zoo::Application::ReadModels::EnclosureProfile)
-      expect(profile.population).to eq(1)
-      expect(profile.occupants.map(&:name)).to eq(['レオ'])
+      expect(view[:enclosure]).to eq(enclosure)
+      expect(view[:occupants].map(&:name)).to eq(['レオ'])
     end
 
     it '存在しない enclosure_id=\'missing\' を渡すと result.error が Application::Errors::EnclosureNotFound になること' do

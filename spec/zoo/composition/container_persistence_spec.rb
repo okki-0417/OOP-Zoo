@@ -15,10 +15,10 @@ RSpec.describe 'Zoo::Composition::Container 永続化' do
       original = Zoo::Composition::Container.new
       enclosure = original.add_enclosure(
         commands::AddEnclosureCommand.new(name: 'ライオンの丘', celsius: 28, capacity: 4), renderer: passthrough
-      ).value
+      ).value[:enclosure]
       lion = original.acquire_animal(
         commands::AcquireAnimalCommand.new(species_code: 'lion', name: 'レオ', sex: 'male'), renderer: passthrough
-      ).value
+      ).value[:animal]
       original.house_animal(
         commands::HouseAnimalCommand.new(enclosure_id: enclosure.id, animal_id: lion.id), renderer: passthrough
       )

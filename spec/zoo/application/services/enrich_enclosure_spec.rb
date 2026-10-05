@@ -16,10 +16,13 @@ RSpec.describe Zoo::Application::Services::EnrichEnclosure do
   end
 
   describe '#call' do
-    it '刺激度40のエリアを100に戻し、EnclosureProfile(enrichment=100・barren=false)を返して飼育員の勤務時間30分を保存すること' do
+    it '刺激度40のエリアを100に戻し、enrichment.level=100・barren?=false のエリアを返して飼育員の勤務時間30分を保存すること' do
       hill.deplete_enrichment(60)
 
-      expect(enrich.value).to have_attributes(enrichment: 100, barren: false)
+      enclosure = enrich.value[:enclosure]
+
+      expect(enclosure.enrichment.level).to eq(100)
+      expect(enclosure).not_to be_barren
       expect(keepers.find(keeper.id).worked_minutes).to eq(30)
     end
 

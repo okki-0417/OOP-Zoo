@@ -21,7 +21,7 @@ module Zoo
               @command.keepers.save(keeper)
               keeper
             end
-            ReadModels::KeeperSummary.of(keeper)
+            { keeper:, enclosures: [] }
           end
         end
       end

@@ -33,13 +33,13 @@ RSpec.describe Zoo::Application::Services::FeedAnimal do
       expect(animals.find(lion.id).hunger_level).to eq(5)
     end
 
-    it '給餌に成功すると result.value が給餌後の hunger を持つ AnimalProfile になること' do
+    it '給餌に成功すると result.value の animal が給餌後の hunger_level 5 になること' do
       lion.get_hungrier(40)
 
       result = call_with(keeper_id: mammal_keeper.id, animal_id: lion.id)
 
-      expect(result.value).to be_a(Zoo::Application::ReadModels::AnimalProfile)
-      expect(result.value).to have_attributes(id: lion.id.to_s, hunger: 5)
+      expect(result.value[:animal]).to eq(lion)
+      expect(result.value[:animal].hunger_level).to eq(5)
     end
 
     it '哺乳類のライオンに鳥類担当の飼育員が給餌しようとすると result.error が Domain::Errors::FeedingNotAllowed になること' do

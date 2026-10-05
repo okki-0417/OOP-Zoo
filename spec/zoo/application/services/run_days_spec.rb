@@ -36,12 +36,8 @@ RSpec.describe Zoo::Application::Services::RunDays do
   end
 
   describe '#call' do
-    it 'days=3 で進めると result.value が days=3 の RunDaysSummary になり、寿命超過個体の老衰死を集計すること' do
-      summary = service.call.value
-
-      expect(summary.days).to eq(3)
-      expect(summary.total_deaths).to eq(1)
-      expect(summary.deaths_by_cause).to eq(old_age: 1)
+    it 'days=3 で進めると result.value が days=3 になり、寿命超過個体の老衰死を集計すること' do
+      expect(service.call.value).to eq(days: 3, total_deaths: 1, deaths_by_cause: { old_age: 1 })
     end
 
     it 'days=3 で進めると /operate と同じ1日の運営が3回行われ、園の経過日数が3進み運営記録が3件残ること' do

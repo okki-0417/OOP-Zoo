@@ -24,13 +24,13 @@ RSpec.describe Zoo::Application::Services::TreatAnimal do
   end
 
   describe '#call' do
-    it '肺炎のペンギンを獣医が治療すると sick? が false になり、result.value が illness=nil の AnimalProfile になること' do
+    it '肺炎のペンギンを獣医が治療すると sick? が false になり、result.value の animal の illness_name が nil になること' do
       penguin.fall_ill(medical::IllnessCatalog.pneumonia)
 
-      profile = treat(veterinarian_id: vet.id, animal_id: penguin.id).value
+      animal = treat(veterinarian_id: vet.id, animal_id: penguin.id).value[:animal]
 
       expect(animals.find(penguin.id)).not_to be_sick
-      expect(profile).to have_attributes(id: penguin.id.to_s, illness: nil)
+      expect(animal.illness_name).to be_nil
     end
 
     it '存在しない veterinarian_id=\'missing\' を渡すと result.error が Application::Errors::VeterinarianNotFound になること' do

@@ -21,7 +21,7 @@ module Zoo
               @command.animals.save(animal)
               animal
             end
-            ReadModels::AnimalProfile.housed(animal, housings: @command.housings)
+            { animal:, enclosure: animal.alive? ? @command.housings.current_housing_of(animal)&.enclosure : nil }
           end
         end
       end

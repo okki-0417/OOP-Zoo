@@ -15,7 +15,7 @@ RSpec.describe Zoo::Composition::Container do
   end
 
   it 'acquire_animal→house_animal を同一コンテナで実行すると、共有リポジトリ越しに population.value が1になること' do
-    lion = run(:acquire_animal, commands::AcquireAnimalCommand.new(species_code: 'lion', name: 'レオ', sex: 'male')).value
+    lion = run(:acquire_animal, commands::AcquireAnimalCommand.new(species_code: 'lion', name: 'レオ', sex: 'male')).value[:animal]
     enclosure = container.enclosures.save(
       husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
     )

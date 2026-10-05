@@ -35,10 +35,11 @@ RSpec.describe Zoo::Application::Services::TransferAnimal do
       expect(occupants_of(housings, from)).not_to include(lion)
     end
 
-    it '移送に成功すると result.value が enclosure_name=\'丘B\' の AnimalProfile になること' do
-      profile = transfer(to.id).value
+    it '移送に成功すると result.value の enclosure が丘Bになること' do
+      view = transfer(to.id).value
 
-      expect(profile).to have_attributes(id: lion.id.to_s, enclosure_id: to.id.to_s, enclosure_name: '丘B')
+      expect(view[:animal]).to eq(lion)
+      expect(view[:enclosure].name).to eq('丘B')
     end
 
     it '存在しない enclosure_id=\'missing\' を渡すと result.error が EnclosureNotFound になること' do

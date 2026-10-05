@@ -14,10 +14,10 @@ RSpec.describe 'Container on SQLite (end-to-end)' do
       container = Zoo::Composition::Container.new(database: path)
       enclosure = container.add_enclosure(
         commands::AddEnclosureCommand.new(name: 'サバンナ', celsius: 30, capacity: 6), renderer: passthrough
-      ).value
+      ).value[:enclosure]
       zebra = container.acquire_animal(
         commands::AcquireAnimalCommand.new(species_code: 'grevys_zebra', name: 'シマオ', sex: 'male'), renderer: passthrough
-      ).value
+      ).value[:animal]
       container.house_animal(
         commands::HouseAnimalCommand.new(enclosure_id: enclosure.id, animal_id: zebra.id), renderer: passthrough
       )

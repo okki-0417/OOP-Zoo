@@ -7,91 +7,100 @@ module Zoo
         module Serializer
           module_function
 
-          def alert(alert)
+          def ref(member)
+            { id: member.id.to_s, name: member.name }
+          end
+
+          def alert(severity:, kind:, subject_type:, subject:, message:)
             {
-              severity: alert.severity.to_s, kind: alert.kind.to_s,
-              subject: { type: alert.subject_type.to_s, id: alert.subject_id, name: alert.subject_name },
-              message: alert.message
+              severity: severity.to_s, kind: kind.to_s,
+              subject: { type: subject_type.to_s, id: subject_type == :zoo ? nil : subject.id.to_s, name: subject.name },
+              message: message
             }
           end
 
-          def chore(chore)
+          def chore(kind:, label:, items:)
             {
-              kind: chore.kind.to_s, label: chore.label, done_count: chore.done_count, total: chore.total,
-              items: chore.items.map do |item|
-                { subject: { type: item.subject_type.to_s, id: item.subject_id, name: item.subject_name }, done: item.done }
+              kind: kind.to_s, label: label, done_count: items.count { |item| item[:done] }, total: items.size,
+              items: items.map do |item|
+                { subject: { type: item[:type].to_s, **ref(item[:subject]) }, done: item[:done] }
               end
             }
           end
 
-          def enclosure(profile)
+          def enclosure(enclosure:, occupants:, keepers:)
             {
-              id: profile.id, name: profile.name, celsius: profile.celsius, climate_controlled: profile.climate_controlled,
-              capacity: profile.capacity, population: profile.population,
-              cleanliness: profile.cleanliness, filthy: profile.filthy,
-              enrichment: profile.enrichment, barren: profile.barren,
-              keepers: profile.keepers.map(&:to_h),
-              occupants: profile.occupants.map { |o| AnimalSerializer.animal_summary(o) }
+              id: enclosure.id.to_s, name: enclosure.name, celsius: enclosure.temperature.celsius,
+              climate_controlled: enclosure.climate_controlled?,
+              capacity: enclosure.capacity, population: occupants.size,
+              cleanliness: enclosure.cleanliness_level, filthy: enclosure.filthy?,
+              enrichment: enclosure.enrichment.level, barren: enclosure.barren?,
+              keepers: keepers.map { |keeper| ref(keeper) },
+              occupants: occupants.map { |animal| AnimalSerializer.animal_summary(animal) }
             }
           end
 
-          def keeper(summary)
+          def keeper(keeper:, enclosures:)
             {
-              id: summary.id, name: summary.name, specialties: summary.specialties,
-              worked_minutes: summary.worked_minutes, remaining_minutes: summary.remaining_minutes,
-              enclosures: summary.enclosures.map(&:to_h)
+              id: keeper.id.to_s, name: keeper.name, specialties: keeper.specialties_label,
+              worked_minutes: keeper.worked_minutes, remaining_minutes: keeper.remaining_minutes,
+              enclosures: enclosures.map { |enclosure| ref(enclosure) }
             }
           end
 
-          def rounds_report(report)
+          def rounds_report(keeper:, reports:)
             {
-              keeper_id: report.keeper_id, keeper_name: report.keeper_name,
-              remaining_minutes: report.remaining_minutes,
-              rounds: report.rounds.map { |round| round.merge(enclosure: round[:enclosure].to_h) }
+              keeper_id: keeper.id.to_s, keeper_name: keeper.name,
+              remaining_minutes: keeper.remaining_minutes,
+              rounds: reports.map do |report|
+                {
+                  enclosure: ref(report.enclosure),
+                  fed: report.fed.map(&:name),
+                  skipped: report.skipped.map { |subject, reason| { subject:, reason: } },
+                  cleaned: report.cleaned?,
+                  enriched: report.enriched?
+                }
+              end
             }
           end
 
-          def veterinarian(summary)
-            { id: summary.id, name: summary.name }
+          def veterinarian(veterinarian)
+            ref(veterinarian)
           end
 
-          def deceased(record)
-            { name: record.name, species: record.species, cause: record.cause }
+          def deceased(animal)
+            { name: animal.name, species: animal.species_name, cause: animal.cause_of_death_label }
           end
 
-          def exhibited_species(record)
+          def exhibited_species(species:, count:)
+            status = species.conservation_status
+            { name_ja: species.name_ja, status_code: status.code, status_label: status.label, count: count }
+          end
+
+          def day_report(operating)
             {
-              name_ja: record.name_ja, status_code: record.status_code,
-              status_label: record.status_label, count: record.count
+              visitors: operating.visitors, income: operating.income.yen, cost: operating.cost.yen,
+              deaths: operating.deaths, balance: operating.balance.yen, reputation: operating.reputation,
+              bankrupt: operating.balance.negative?, outbreak: operating.outbreak
             }
           end
 
-          def day_report(report)
+          def operating_summary(operating)
             {
-              visitors: report.visitors, income: report.income.yen, cost: report.cost.yen,
-              deaths: report.deaths, balance: report.balance.yen, reputation: report.reputation,
-              bankrupt: report.balance.negative?, outbreak: report.outbreak
+              day: operating.day, visitors: operating.visitors, income: operating.income.yen, cost: operating.cost.yen,
+              net_income: operating.net_income.yen, deaths: operating.deaths, balance: operating.balance.yen,
+              reputation: operating.reputation, outbreak: operating.outbreak
             }
           end
 
-          def operating_summary(summary)
-            {
-              day: summary.day, visitors: summary.visitors, income: summary.income.yen, cost: summary.cost.yen,
-              net_income: summary.net_income.yen, deaths: summary.deaths, balance: summary.balance.yen,
-              reputation: summary.reputation, outbreak: summary.outbreak
-            }
+          def run_days_summary(days:, total_deaths:, deaths_by_cause:)
+            { days:, total_deaths:, deaths_by_cause: }
           end
 
-          def run_days_summary(summary)
-            { days: summary.days, total_deaths: summary.total_deaths, deaths_by_cause: summary.deaths_by_cause }
-          end
-
-          def zoo_statistics(stats)
+          def zoo_statistics(zoo:, population:, species_count:, threatened_count:, births:, deaths_by_cause:)
             {
-              population: stats.population, species_count: stats.species_count,
-              threatened_count: stats.threatened_count, births: stats.births,
-              deaths_by_cause: stats.deaths_by_cause,
-              revenue: stats.revenue.yen, balance: stats.balance.yen, reputation: stats.reputation
+              population:, species_count:, threatened_count:, births:, deaths_by_cause:,
+              revenue: zoo.revenue.yen, balance: zoo.balance.yen, reputation: zoo.reputation_score
             }
           end
 

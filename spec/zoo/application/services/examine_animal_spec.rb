@@ -21,17 +21,14 @@ RSpec.describe Zoo::Application::Services::ExamineAnimal do
   end
 
   describe '#call' do
-    it '健康な個体を診ると value が animal_id と diagnosis :healthy を持つ ExaminationReport になること' do
-      report = examine.value
-
-      expect(report).to be_a(Zoo::Application::ReadModels::ExaminationReport)
-      expect(report).to have_attributes(animal_id: penguin.id.to_s, diagnosis: :healthy)
+    it '健康な個体を診ると value が { animal: その個体, diagnosis: :healthy } になること' do
+      expect(examine.value).to eq(animal: penguin, diagnosis: :healthy)
     end
 
     it '肺炎の個体を診ると value.diagnosis が :sick になること' do
       penguin.fall_ill(medical::IllnessCatalog.pneumonia)
 
-      expect(examine.value.diagnosis).to eq(:sick)
+      expect(examine.value[:diagnosis]).to eq(:sick)
     end
 
     it "存在しない veterinarian_id='missing' で failure になり error が Application::Errors::VeterinarianNotFound となること" do

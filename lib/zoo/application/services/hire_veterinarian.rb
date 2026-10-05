@@ -20,7 +20,7 @@ module Zoo
               @command.veterinarians.save(veterinarian)
               veterinarian
             end
-            ReadModels::VeterinarianSummary.of(veterinarian)
+            veterinarian
           end
         end
       end

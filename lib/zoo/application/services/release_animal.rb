@@ -20,7 +20,7 @@ module Zoo
               @command.housings.save(Domain::Releasing.of(current))
               animal
             end
-            ReadModels::AnimalProfile.of(animal, enclosure: nil)
+            { animal:, enclosure: nil }
           end
         end
       end

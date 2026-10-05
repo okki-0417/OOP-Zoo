@@ -18,11 +18,11 @@ RSpec.describe Zoo::Application::Services::RenameAnimal do
   end
 
   describe '#call' do
-    it 'new_name=\'シンバ\' で改名すると名前が変わり、result.value が name=\'シンバ\' の AnimalProfile になること' do
-      profile = rename(lion.id, 'シンバ').value
+    it 'new_name=\'シンバ\' で改名すると名前が変わり、result.value の animal の名前が \'シンバ\' になること' do
+      animal = rename(lion.id, 'シンバ').value[:animal]
 
       expect(animals.find(lion.id).name.to_s).to eq('シンバ')
-      expect(profile).to have_attributes(id: lion.id.to_s, name: 'シンバ')
+      expect(animal.name.to_s).to eq('シンバ')
     end
 
     it '存在しない animal_id=\'missing\' で result.error が Application::Errors::AnimalNotFound になること' do

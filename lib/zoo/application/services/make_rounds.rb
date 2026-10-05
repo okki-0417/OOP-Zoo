@@ -16,7 +16,7 @@ module Zoo
 
               reports = @command.assignments.enclosures_of(keeper).map { |enclosure| round(keeper, enclosure) }
               persist(keeper, reports)
-              ReadModels::RoundsReport.of(keeper, reports)
+              { keeper:, reports: }
             end
           end
         end

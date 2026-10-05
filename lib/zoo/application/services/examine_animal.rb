@@ -17,10 +17,7 @@ module Zoo
               animal = @command.animals.find(@command.animal_id)
               raise Errors::AnimalNotFound, "動物 #{@command.animal_id} は存在しません" if animal.nil?
 
-              ReadModels::ExaminationReport.new(
-                animal_id: animal.id.to_s,
-                diagnosis: Domain::Examining.new(veterinarian: vet, animal: animal).diagnosis
-              )
+              { animal:, diagnosis: Domain::Examining.new(veterinarian: vet, animal: animal).diagnosis }
             end
           end
         end
