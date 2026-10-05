@@ -227,7 +227,7 @@ export type SetAdmissionFeeMutation = { setAdmissionFee: { admissionFee: number 
 export type ReputationQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ReputationQuery = { zoo: { reputation: number, admissionFee: number, exhibitCondition: number, experience: number, expectedVisitors: number, expectedReputationChange: number }, animals: Array<{ id: string, name: string | null, alive: boolean, visibleCondition: number, stressed: boolean, sick: boolean, weak: boolean, species: { nameJa: string }, enclosure: { id: string, name: string } | null }>, operatings: Array<{ day: number, reputation: number, visitors: number, deaths: number, outbreak: string | null }> };
+export type ReputationQuery = { zoo: { reputation: number, admissionFee: number, exhibitCondition: number, experience: number, expectedVisitors: number, expectedReputationChange: number }, animals: Array<{ id: string, name: string | null, alive: boolean, visibleCondition: number, stressed: boolean, sick: boolean, weak: boolean, species: { nameJa: string }, enclosure: { id: string, name: string } | null }>, operatings: Array<{ deaths: number, outbreak: string | null }> };
 
 export type StaffQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -685,9 +685,6 @@ export const ReputationDocument = new TypedDocumentString(`
     }
   }
   operatings {
-    day
-    reputation
-    visitors
     deaths
     outbreak
   }

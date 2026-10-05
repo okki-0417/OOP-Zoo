@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { graphql } from "../api/generated";
-import MeterBar from "../components/MeterBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
 import { useQuery } from "../composables/useQuery";
@@ -35,9 +34,6 @@ const ReputationQuery = graphql(`
       }
     }
     operatings {
-      day
-      reputation
-      visitors
       deaths
       outbreak
     }
@@ -47,39 +43,39 @@ const ReputationQuery = graphql(`
 const query = useQuery(ReputationQuery);
 
 const zoo = computed(() => query.data.value?.zoo);
-const feeEffect = computed(() =>
-  zoo.value ? zoo.value.exhibitCondition - zoo.value.experience : 0,
-);
 const change = computed(() => {
   const value = zoo.value?.expectedReputationChange ?? 0;
   return `${value < 0 ? "−" : "+"}${Math.abs(value).toFixed(1)}`;
 });
-const heading = computed(() => {
+const feeEffect = computed(() =>
+  zoo.value ? zoo.value.exhibitCondition - zoo.value.experience : 0,
+);
+const pull = computed(() => {
   if (!zoo.value) return "";
-  if (zoo.value.expectedVisitors === 0) return "来園者がいないので、体験では評判が動きません";
-  if (zoo.value.experience > zoo.value.reputation)
-    return "体験が評判を上回っています。来園者が増えるほど評判は上がります";
-  if (zoo.value.experience < zoo.value.reputation)
-    return "体験が評判を下回っています。このままだと評判は下がっていきます";
-  return "体験と評判が釣り合っています";
+  if (zoo.value.experience > zoo.value.reputation) return "評判より高いので、評判を引き上げる";
+  if (zoo.value.experience < zoo.value.reputation) return "評判より低いので、評判を引き下げる";
+  return "評判と釣り合っている";
 });
 
-const blemished = computed(() =>
+const exhibited = computed(() =>
   (query.data.value?.animals ?? [])
-    .filter((animal) => animal.alive && animal.enclosure && animal.visibleCondition < 100)
+    .filter((animal) => animal.alive && animal.enclosure)
+    .map((animal) => ({
+      ...animal,
+      causes: [animal.stressed && "ストレス", animal.sick && "病気", animal.weak && "衰弱"].filter(
+        (cause): cause is string => Boolean(cause),
+      ),
+    }))
     .sort((a, b) => a.visibleCondition - b.visibleCondition),
 );
 
-const history = computed(() => {
-  const days = query.data.value?.operatings ?? [];
-  return days
-    .map((day, index) => ({
-      ...day,
-      delta: day.reputation - (days[index - 1]?.reputation ?? day.reputation),
-    }))
-    .slice(-14)
-    .reverse();
-});
+const lastDay = computed(() => query.data.value?.operatings.at(-1));
+
+function tone(value: number) {
+  if (value >= 60) return "good";
+  if (value >= 30) return "warn";
+  return "bad";
+}
 </script>
 
 <template>
@@ -91,220 +87,232 @@ const history = computed(() => {
     :empty="!zoo"
     @retry="query.reload"
   >
-    <template v-if="zoo">
-      <section class="kpis">
-        <div class="card kpi">
-          <MeterBar label="いまの評判" :value="zoo.reputation" :max="100" />
-        </div>
-        <div class="card kpi">
-          <MeterBar label="来園者の体験（評判が向かう先）" :value="zoo.experience" :max="100" />
-        </div>
-        <div class="card kpi">
-          <p class="muted">明日の見込み</p>
-          <p class="figure" :class="zoo.expectedReputationChange < 0 ? 'minus' : 'plus'">
-            {{ change }}
-          </p>
-          <p class="muted">
-            来園 {{ zoo.expectedVisitors.toLocaleString() }} 人の見込み・事故がなければ
-          </p>
-        </div>
-      </section>
-
-      <p class="card verdict">{{ heading }}</p>
-
-      <h2 class="section-title">体験の内訳</h2>
-      <section class="card">
-        <dl class="ledger">
-          <dt>展示動物の見た目（平均）</dt>
-          <dd>{{ zoo.exhibitCondition }}</dd>
-          <dt>入園料 {{ yen(zoo.admissionFee) }} による差し引き</dt>
-          <dd :class="{ minus: feeEffect > 0 }">−{{ feeEffect }}</dd>
-          <dt class="total">来園者の体験</dt>
-          <dd class="total">{{ zoo.experience }}</dd>
-        </dl>
-        <p class="muted note">
-          評判は毎日、来園者の体験に少しずつ近づきます。来園者が多いほど速く動き、下がるときは上がるときより速く動きます。中立を超えた分は、何もしなければ少しずつ減ります。死亡や感染症の発生があると、その日に大きく下がります。
-        </p>
-      </section>
-    </template>
+    <section v-if="zoo" class="card tree">
+      <details open>
+        <summary class="node root">
+          <span class="label">評判</span>
+          <span class="value" :class="tone(zoo.reputation)">{{ zoo.reputation }}</span>
+          <span class="hint" :class="zoo.expectedReputationChange < 0 ? 'minus' : 'plus'">
+            明日 {{ change }}
+          </span>
+        </summary>
+        <ul>
+          <li>
+            <details open>
+              <summary class="node">
+                <span class="label">来園者の体験</span>
+                <span class="value" :class="tone(zoo.experience)">{{ zoo.experience }}</span>
+                <span class="hint">{{ pull }}</span>
+              </summary>
+              <ul>
+                <li>
+                  <details>
+                    <summary class="node">
+                      <span class="label">展示動物の見た目（平均）</span>
+                      <span class="value" :class="tone(zoo.exhibitCondition)">
+                        {{ zoo.exhibitCondition }}
+                      </span>
+                      <span class="hint">{{ exhibited.length }} 頭</span>
+                    </summary>
+                    <ul>
+                      <li v-if="exhibited.length === 0" class="leaf">
+                        <span class="hint">展示中の動物がいません</span>
+                      </li>
+                      <li v-for="animal in exhibited" :key="animal.id">
+                        <details v-if="animal.causes.length > 0">
+                          <summary class="node">
+                            <RouterLink :to="`/animals/${animal.id}`" class="label link">
+                              {{ emojiOf(animal.species.nameJa) }} {{ animal.name }}
+                            </RouterLink>
+                            <span class="value" :class="tone(animal.visibleCondition)">
+                              {{ animal.visibleCondition }}
+                            </span>
+                            <span class="hint">{{ animal.enclosure?.name }}</span>
+                          </summary>
+                          <ul>
+                            <li v-for="cause in animal.causes" :key="cause" class="leaf">
+                              <span class="label minus">{{ cause }}</span>
+                            </li>
+                          </ul>
+                        </details>
+                        <div v-else class="leaf">
+                          <RouterLink :to="`/animals/${animal.id}`" class="label link">
+                            {{ emojiOf(animal.species.nameJa) }} {{ animal.name }}
+                          </RouterLink>
+                          <span class="value good">{{ animal.visibleCondition }}</span>
+                          <span class="hint">{{ animal.enclosure?.name }}</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </details>
+                </li>
+                <li class="leaf">
+                  <span class="label">入園料 {{ yen(zoo.admissionFee) }}</span>
+                  <span class="value" :class="{ minus: feeEffect > 0 }">−{{ feeEffect }}</span>
+                  <RouterLink to="/" class="hint link">高いほど体験が下がる</RouterLink>
+                </li>
+              </ul>
+            </details>
+          </li>
+          <li class="leaf">
+            <span class="label">来園の見込み</span>
+            <span class="value">{{ zoo.expectedVisitors.toLocaleString() }} 人</span>
+            <span class="hint">多いほど、評判が体験へ速く近づく</span>
+          </li>
+          <li class="leaf">
+            <span class="label">自然減衰</span>
+            <span class="hint">中立を超えた分は、毎日少しずつ減る</span>
+          </li>
+          <li>
+            <details>
+              <summary class="node">
+                <span class="label">前日の出来事</span>
+                <span
+                  class="value"
+                  :class="{ minus: lastDay && (lastDay.deaths > 0 || lastDay.outbreak) }"
+                >
+                  {{ lastDay && (lastDay.deaths > 0 || lastDay.outbreak) ? "あり" : "なし" }}
+                </span>
+                <span class="hint">死亡や発病があると、その日に大きく下がる</span>
+              </summary>
+              <ul>
+                <li class="leaf">
+                  <span class="label">死亡</span>
+                  <span class="value" :class="{ minus: (lastDay?.deaths ?? 0) > 0 }">
+                    {{ lastDay?.deaths ?? 0 }} 頭
+                  </span>
+                </li>
+                <li class="leaf">
+                  <span class="label">発病</span>
+                  <span class="value" :class="{ minus: lastDay?.outbreak }">
+                    {{ lastDay?.outbreak ?? "なし" }}
+                  </span>
+                </li>
+              </ul>
+            </details>
+          </li>
+        </ul>
+      </details>
+    </section>
   </QueryState>
-
-  <h2 class="section-title">見た目が損なわれている展示動物</h2>
-  <QueryState
-    :loading="query.loading.value"
-    :error="query.error.value"
-    :empty="blemished.length === 0"
-    empty-text="展示中の動物はみな良い状態です"
-    @retry="query.reload"
-  >
-    <div class="card table-card">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>名前</th>
-            <th>種</th>
-            <th>エリア</th>
-            <th>見た目</th>
-            <th>原因</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="animal in blemished" :key="animal.id">
-            <td>
-              <RouterLink :to="`/animals/${animal.id}`" class="cell-link">
-                <span>{{ emojiOf(animal.species.nameJa) }}</span>
-                {{ animal.name }}
-              </RouterLink>
-            </td>
-            <td>{{ animal.species.nameJa }}</td>
-            <td>
-              <RouterLink
-                v-if="animal.enclosure"
-                :to="`/enclosures/${animal.enclosure.id}`"
-                class="cell-link"
-              >
-                {{ animal.enclosure.name }}
-              </RouterLink>
-            </td>
-            <td class="meter-cell">
-              <MeterBar label="" :value="animal.visibleCondition" :max="100" />
-            </td>
-            <td>
-              <div class="badges">
-                <span v-if="animal.stressed" class="badge badge-warn">ストレス</span>
-                <span v-if="animal.sick" class="badge badge-bad">病気</span>
-                <span v-if="animal.weak" class="badge badge-bad">衰弱</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </QueryState>
-
-  <h2 class="section-title">評判の推移</h2>
-  <section class="card">
-    <p v-if="history.length === 0" class="muted">まだ営業記録がありません</p>
-    <table v-else class="ledger-table">
-      <thead>
-        <tr>
-          <th>日</th>
-          <th>評判</th>
-          <th>前日比</th>
-          <th>来園</th>
-          <th>出来事</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="day in history" :key="day.day">
-          <td>{{ day.day }}</td>
-          <td>{{ day.reputation }}</td>
-          <td :class="{ plus: day.delta > 0, minus: day.delta < 0 }">
-            {{ day.delta > 0 ? "+" : "" }}{{ day.delta }}
-          </td>
-          <td>{{ day.visitors.toLocaleString() }}</td>
-          <td>
-            <span v-if="day.deaths > 0" class="badge badge-bad">死亡 {{ day.deaths }} 頭</span>
-            <span v-if="day.outbreak" class="badge badge-warn">{{ day.outbreak }} が発病</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
 </template>
 
 <style scoped>
-.kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+.tree {
+  --branch: color-mix(in srgb, var(--ink-soft) 45%, transparent);
+  padding: 20px 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tree ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.tree li {
+  position: relative;
+  padding-left: 22px;
+}
+
+.tree li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 20px;
+  border-left: 1px solid var(--branch);
+  border-bottom: 1px solid var(--branch);
+}
+
+.tree li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 20px;
+  bottom: 0;
+  left: 0;
+  border-left: 1px solid var(--branch);
+}
+
+.node,
+.leaf {
+  display: flex;
+  align-items: baseline;
   gap: 12px;
+  min-height: 40px;
+  padding: 8px 0;
 }
 
-.kpi {
-  display: grid;
-  gap: 6px;
-  align-content: start;
+.node {
+  cursor: pointer;
+  list-style: none;
 }
 
-.figure {
-  font-size: 1.6rem;
+.node::-webkit-details-marker {
+  display: none;
+}
+
+.tree .leaf {
+  padding-left: 26px;
+}
+
+.tree li.leaf {
+  padding-left: 48px;
+}
+
+.node::before {
+  content: "▸";
+  flex: 0 0 14px;
+  text-align: center;
+  color: var(--ink-soft);
+  transition: transform 0.15s ease;
+}
+
+details[open] > .node::before {
+  transform: rotate(90deg);
+}
+
+.root {
+  font-size: 1.2rem;
+}
+
+.label {
+  font-weight: 700;
+}
+
+.value {
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.15;
 }
 
-.verdict {
-  margin-top: 12px;
-  font-weight: 700;
+.root .value {
+  font-size: 1.6rem;
 }
 
-.ledger {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 6px 0;
-  margin: 0;
-}
-
-.ledger dt {
-  color: var(--ink-soft);
-}
-
-.ledger dd {
-  margin: 0;
-  padding-left: 16px;
-  text-align: right;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.ledger .total {
-  padding-top: 6px;
-  border-top: 1px solid var(--line);
-  color: var(--ink);
-}
-
-.note {
-  margin-top: 12px;
+.hint {
   font-size: 0.85rem;
-}
-
-.ledger-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
-}
-
-.ledger-table th {
-  font-size: 0.75rem;
   color: var(--ink-soft);
-  text-align: right;
-  padding-bottom: 6px;
 }
 
-.ledger-table td {
-  text-align: right;
-  padding: 6px 0;
-  border-top: 1px solid var(--line);
-  font-weight: 700;
+.link:hover {
+  color: var(--brand);
+  text-decoration: underline;
 }
 
-.ledger-table th:first-child,
-.ledger-table td:first-child {
-  text-align: left;
+.good {
+  color: var(--good);
 }
 
-.ledger-table th:last-child,
-.ledger-table td:last-child {
-  width: 45%;
-  text-align: left;
-  padding-left: 24px;
+.warn {
+  color: var(--warn);
+}
+
+.bad,
+.minus {
+  color: var(--bad);
 }
 
 .plus {
   color: var(--good);
-}
-
-.minus {
-  color: var(--bad);
 }
 </style>
