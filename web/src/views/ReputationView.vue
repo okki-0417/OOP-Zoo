@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { graphql } from "../api/generated";
+import type { BlemishCause } from "../api/generated/graphql";
+import GaugeBar from "../components/GaugeBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
 import { useQuery } from "../composables/useQuery";
@@ -15,16 +17,20 @@ const ReputationQuery = graphql(`
       exhibitCondition
       experience
       expectedVisitors
-      expectedReputationChange
+      reputationDrift
+      reputationDecay
+      reputationSwingLimit
+      visitorsForFullSwing
     }
     animals {
       id
       name
       alive
       visibleCondition
-      stressed
-      sick
-      weak
+      blemishes {
+        cause
+        penalty
+      }
       species {
         nameJa
       }
@@ -40,41 +46,40 @@ const ReputationQuery = graphql(`
   }
 `);
 
+const causeLabels: Record<BlemishCause, string> = {
+  STRESSED: "ストレス",
+  SICK: "病気",
+  WEAK: "衰弱",
+};
+
 const query = useQuery(ReputationQuery);
 
 const zoo = computed(() => query.data.value?.zoo);
-const change = computed(() => {
-  const value = zoo.value?.expectedReputationChange ?? 0;
-  return `${value < 0 ? "−" : "+"}${Math.abs(value).toFixed(1)}`;
-});
 const feeEffect = computed(() =>
-  zoo.value ? zoo.value.exhibitCondition - zoo.value.experience : 0,
+  zoo.value ? zoo.value.experience - zoo.value.exhibitCondition : 0,
 );
 const pull = computed(() => {
   if (!zoo.value) return "";
-  if (zoo.value.experience > zoo.value.reputation) return "評判より高いので、評判を引き上げる";
-  if (zoo.value.experience < zoo.value.reputation) return "評判より低いので、評判を引き下げる";
-  return "評判と釣り合っている";
+  if (zoo.value.experience > zoo.value.reputation) return "体験が評判より高いので、引き上げる";
+  if (zoo.value.experience < zoo.value.reputation) return "体験が評判より低いので、引き下げる";
+  return "体験と評判が釣り合っている";
 });
+const swingRate = computed(() =>
+  zoo.value
+    ? Math.min(100, Math.round((zoo.value.expectedVisitors / zoo.value.visitorsForFullSwing) * 100))
+    : 0,
+);
 
 const exhibited = computed(() =>
   (query.data.value?.animals ?? [])
     .filter((animal) => animal.alive && animal.enclosure)
-    .map((animal) => ({
-      ...animal,
-      causes: [animal.stressed && "ストレス", animal.sick && "病気", animal.weak && "衰弱"].filter(
-        (cause): cause is string => Boolean(cause),
-      ),
-    }))
     .sort((a, b) => a.visibleCondition - b.visibleCondition),
 );
 
 const lastDay = computed(() => query.data.value?.operatings.at(-1));
 
-function tone(value: number) {
-  if (value >= 60) return "good";
-  if (value >= 30) return "warn";
-  return "bad";
+function signed(value: number, digits = 0) {
+  return `${value < 0 ? "−" : "+"}${Math.abs(value).toFixed(digits)}`;
 }
 </script>
 
@@ -91,102 +96,155 @@ function tone(value: number) {
       <details open>
         <summary class="node root">
           <span class="label">評判</span>
-          <span class="value" :class="tone(zoo.reputation)">{{ zoo.reputation }}</span>
-          <span class="hint" :class="zoo.expectedReputationChange < 0 ? 'minus' : 'plus'">
-            明日 {{ change }}
-          </span>
+          <GaugeBar class="gauge" :value="zoo.reputation" :max="100" />
+          <span class="value">{{ zoo.reputation }}</span>
+          <span class="hint">明日 {{ signed(zoo.reputationDrift + zoo.reputationDecay, 1) }}</span>
         </summary>
         <ul>
           <li>
             <details open>
               <summary class="node">
-                <span class="label">来園者の体験</span>
-                <span class="value" :class="tone(zoo.experience)">{{ zoo.experience }}</span>
+                <span class="label">体験による寄り</span>
+                <GaugeBar
+                  class="gauge"
+                  :value="zoo.reputationDrift"
+                  :min="-zoo.reputationSwingLimit"
+                  :max="zoo.reputationSwingLimit"
+                />
+                <span class="value">{{ signed(zoo.reputationDrift, 1) }}</span>
                 <span class="hint">{{ pull }}</span>
               </summary>
               <ul>
                 <li>
-                  <details>
+                  <details open>
                     <summary class="node">
-                      <span class="label">展示動物の見た目（平均）</span>
-                      <span class="value" :class="tone(zoo.exhibitCondition)">
-                        {{ zoo.exhibitCondition }}
-                      </span>
-                      <span class="hint">{{ exhibited.length }} 頭</span>
+                      <span class="label">来園者の体験</span>
+                      <GaugeBar
+                        class="gauge"
+                        :value="zoo.experience"
+                        :max="100"
+                        :marker="zoo.reputation"
+                      />
+                      <span class="value">{{ zoo.experience }}</span>
+                      <span class="hint">印はいまの評判</span>
                     </summary>
                     <ul>
-                      <li v-if="exhibited.length === 0" class="leaf">
-                        <span class="hint">展示中の動物がいません</span>
-                      </li>
-                      <li v-for="animal in exhibited" :key="animal.id">
-                        <details v-if="animal.causes.length > 0">
+                      <li>
+                        <details open>
                           <summary class="node">
-                            <RouterLink :to="`/animals/${animal.id}`" class="label link">
-                              {{ emojiOf(animal.species.nameJa) }} {{ animal.name }}
-                            </RouterLink>
-                            <span class="value" :class="tone(animal.visibleCondition)">
-                              {{ animal.visibleCondition }}
-                            </span>
-                            <span class="hint">{{ animal.enclosure?.name }}</span>
+                            <span class="label">展示動物の見た目</span>
+                            <GaugeBar class="gauge" :value="zoo.exhibitCondition" :max="100" />
+                            <span class="value">{{ zoo.exhibitCondition }}</span>
+                            <span class="hint">{{ exhibited.length }} 頭の平均</span>
                           </summary>
                           <ul>
-                            <li v-for="cause in animal.causes" :key="cause" class="leaf">
-                              <span class="label minus">{{ cause }}</span>
+                            <li v-for="animal in exhibited" :key="animal.id">
+                              <details v-if="animal.blemishes.length > 0" open>
+                                <summary class="node">
+                                  <RouterLink :to="`/animals/${animal.id}`" class="label link">
+                                    {{ emojiOf(animal.species.nameJa) }} {{ animal.name }}
+                                  </RouterLink>
+                                  <GaugeBar
+                                    class="gauge"
+                                    :value="animal.visibleCondition"
+                                    :max="100"
+                                  />
+                                  <span class="value">{{ animal.visibleCondition }}</span>
+                                  <span class="hint">{{ animal.enclosure?.name }}</span>
+                                </summary>
+                                <ul>
+                                  <li
+                                    v-for="blemish in animal.blemishes"
+                                    :key="blemish.cause"
+                                    class="leaf"
+                                  >
+                                    <span class="label">{{ causeLabels[blemish.cause] }}</span>
+                                    <GaugeBar
+                                      class="gauge"
+                                      :value="-blemish.penalty"
+                                      :min="-100"
+                                      :max="100"
+                                    />
+                                    <span class="value">{{ signed(-blemish.penalty) }}</span>
+                                    <span class="hint" />
+                                  </li>
+                                </ul>
+                              </details>
+                              <div v-else class="leaf">
+                                <RouterLink :to="`/animals/${animal.id}`" class="label link">
+                                  {{ emojiOf(animal.species.nameJa) }} {{ animal.name }}
+                                </RouterLink>
+                                <GaugeBar
+                                  class="gauge"
+                                  :value="animal.visibleCondition"
+                                  :max="100"
+                                />
+                                <span class="value">{{ animal.visibleCondition }}</span>
+                                <span class="hint">{{ animal.enclosure?.name }}</span>
+                              </div>
                             </li>
                           </ul>
                         </details>
-                        <div v-else class="leaf">
-                          <RouterLink :to="`/animals/${animal.id}`" class="label link">
-                            {{ emojiOf(animal.species.nameJa) }} {{ animal.name }}
-                          </RouterLink>
-                          <span class="value good">{{ animal.visibleCondition }}</span>
-                          <span class="hint">{{ animal.enclosure?.name }}</span>
-                        </div>
+                      </li>
+                      <li class="leaf">
+                        <span class="label">入園料 {{ yen(zoo.admissionFee) }}</span>
+                        <GaugeBar class="gauge" :value="feeEffect" :min="-100" :max="100" />
+                        <span class="value">{{ signed(feeEffect) }}</span>
+                        <span class="hint">高いほど体験が下がる</span>
                       </li>
                     </ul>
                   </details>
                 </li>
                 <li class="leaf">
-                  <span class="label">入園料 {{ yen(zoo.admissionFee) }}</span>
-                  <span class="value" :class="{ minus: feeEffect > 0 }">−{{ feeEffect }}</span>
-                  <RouterLink to="/" class="hint link">高いほど体験が下がる</RouterLink>
+                  <span class="label">来園の見込み</span>
+                  <GaugeBar
+                    class="gauge"
+                    :value="zoo.expectedVisitors"
+                    :max="zoo.visitorsForFullSwing"
+                  />
+                  <span class="value">{{ zoo.expectedVisitors.toLocaleString() }}人</span>
+                  <span class="hint">
+                    {{ zoo.visitorsForFullSwing.toLocaleString() }}人で最速・いま {{ swingRate }}%
+                  </span>
                 </li>
               </ul>
             </details>
           </li>
           <li class="leaf">
-            <span class="label">来園の見込み</span>
-            <span class="value">{{ zoo.expectedVisitors.toLocaleString() }} 人</span>
-            <span class="hint">多いほど、評判が体験へ速く近づく</span>
-          </li>
-          <li class="leaf">
             <span class="label">自然減衰</span>
-            <span class="hint">中立を超えた分は、毎日少しずつ減る</span>
+            <GaugeBar
+              class="gauge"
+              :value="zoo.reputationDecay"
+              :min="-zoo.reputationSwingLimit"
+              :max="zoo.reputationSwingLimit"
+            />
+            <span class="value">{{ signed(zoo.reputationDecay, 1) }}</span>
+            <span class="hint">中立を超えた分が毎日減る</span>
           </li>
           <li>
-            <details>
+            <details open>
               <summary class="node">
                 <span class="label">前日の出来事</span>
-                <span
-                  class="value"
-                  :class="{ minus: lastDay && (lastDay.deaths > 0 || lastDay.outbreak) }"
-                >
-                  {{ lastDay && (lastDay.deaths > 0 || lastDay.outbreak) ? "あり" : "なし" }}
-                </span>
-                <span class="hint">死亡や発病があると、その日に大きく下がる</span>
+                <span class="gauge" />
+                <span class="value" />
+                <span class="hint">死亡・発病でその日に大きく下がる</span>
               </summary>
               <ul>
                 <li class="leaf">
                   <span class="label">死亡</span>
+                  <span class="gauge" />
                   <span class="value" :class="{ minus: (lastDay?.deaths ?? 0) > 0 }">
-                    {{ lastDay?.deaths ?? 0 }} 頭
+                    {{ lastDay?.deaths ?? 0 }}頭
                   </span>
+                  <span class="hint" />
                 </li>
                 <li class="leaf">
                   <span class="label">発病</span>
+                  <span class="gauge" />
                   <span class="value" :class="{ minus: lastDay?.outbreak }">
-                    {{ lastDay?.outbreak ?? "なし" }}
+                    {{ lastDay?.outbreak ? "あり" : "なし" }}
                   </span>
+                  <span class="hint">{{ lastDay?.outbreak }}</span>
                 </li>
               </ul>
             </details>
@@ -202,6 +260,7 @@ function tone(value: number) {
   --branch: color-mix(in srgb, var(--ink-soft) 45%, transparent);
   padding: 20px 24px;
   font-variant-numeric: tabular-nums;
+  overflow-x: auto;
 }
 
 .tree ul {
@@ -238,10 +297,11 @@ function tone(value: number) {
 .node,
 .leaf {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
+  min-width: 720px;
   min-height: 40px;
-  padding: 8px 0;
+  padding: 4px 0;
 }
 
 .node {
@@ -251,14 +311,6 @@ function tone(value: number) {
 
 .node::-webkit-details-marker {
   display: none;
-}
-
-.tree .leaf {
-  padding-left: 26px;
-}
-
-.tree li.leaf {
-  padding-left: 48px;
 }
 
 .node::before {
@@ -273,25 +325,39 @@ details[open] > .node::before {
   transform: rotate(90deg);
 }
 
-.root {
-  font-size: 1.2rem;
+.tree .leaf {
+  padding-left: 26px;
+}
+
+.tree li.leaf {
+  padding-left: 48px;
 }
 
 .label {
+  flex: 1;
+  min-width: 0;
   font-weight: 700;
 }
 
+.gauge {
+  flex: 0 0 240px;
+}
+
 .value {
+  flex: 0 0 72px;
+  text-align: right;
   font-weight: 800;
 }
 
-.root .value {
-  font-size: 1.6rem;
-}
-
 .hint {
+  flex: 0 0 260px;
   font-size: 0.85rem;
   color: var(--ink-soft);
+}
+
+.root .label,
+.root .value {
+  font-size: 1.2rem;
 }
 
 .link:hover {
@@ -299,20 +365,7 @@ details[open] > .node::before {
   text-decoration: underline;
 }
 
-.good {
-  color: var(--good);
-}
-
-.warn {
-  color: var(--warn);
-}
-
-.bad,
 .minus {
   color: var(--bad);
-}
-
-.plus {
-  color: var(--good);
 }
 </style>

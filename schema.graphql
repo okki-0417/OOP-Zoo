@@ -43,6 +43,7 @@ type Animal {
   ageInDays: Int!
   ailing: Boolean!
   alive: Boolean!
+  blemishes: [Blemish!]!
   causeOfDeath: String
   companionship: Companionship
   contagious: Boolean!
@@ -77,6 +78,17 @@ type Animal {
   thermalSuitability: ThermalSuitability
   visibleCondition: Int!
   weak: Boolean!
+}
+
+type Blemish {
+  cause: BlemishCause!
+  penalty: Int!
+}
+
+enum BlemishCause {
+  SICK
+  STRESSED
+  WEAK
 }
 
 type Companionship {
@@ -263,9 +275,12 @@ type Zoo {
   balance: Int!
   day: Int!
   exhibitCondition: Int!
-  expectedReputationChange: Float!
   expectedVisitors: Int!
   experience: Int!
   name: String!
   reputation: Int!
+  reputationDecay: Float!
+  reputationDrift: Float!
+  reputationSwingLimit: Int!
+  visitorsForFullSwing: Int!
 }

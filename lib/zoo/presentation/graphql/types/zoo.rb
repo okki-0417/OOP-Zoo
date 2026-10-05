@@ -13,7 +13,10 @@ module Zoo
           field :exhibit_condition, Integer, null: false
           field :experience, Integer, null: false
           field :expected_visitors, Integer, null: false
-          field :expected_reputation_change, Float, null: false
+          field :reputation_drift, Float, null: false
+          field :reputation_decay, Float, null: false
+          field :reputation_swing_limit, Integer, null: false
+          field :visitors_for_full_swing, Integer, null: false
 
           def balance
             object.balance.yen
@@ -35,8 +38,21 @@ module Zoo
             Domain::VisitorAttraction.new(on_exhibit:, zoo: object).expected_visitors
           end
 
-          def expected_reputation_change
-            object.reputation.after_day(experience:, exposure: expected_visitors).value - object.reputation.value
+          def reputation_drift
+            object.reputation.after_day(experience:, exposure: expected_visitors).value -
+              object.reputation.value - reputation_decay
+          end
+
+          def reputation_decay
+            object.reputation.after_day(experience:, exposure: 0).value - object.reputation.value
+          end
+
+          def reputation_swing_limit
+            Domain::Zoo::Reputation::DRIFT_CAP * Domain::Zoo::Reputation::DOWN_MULTIPLIER
+          end
+
+          def visitors_for_full_swing
+            Domain::Zoo::Reputation::EXPOSURE_REFERENCE
           end
 
           private

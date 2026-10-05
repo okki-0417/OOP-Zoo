@@ -18,6 +18,7 @@ module Zoo
           field :weak, Boolean, null: false, method: :weak?
           field :ailing, Boolean, null: false, method: :ailing?
           field :visible_condition, Integer, null: false
+          field :blemishes, [Blemish], null: false
           field :hunger, Integer, null: false, method: :hunger_level
           field :hungry, Boolean, null: false, method: :hungry?
           field :starving, Boolean, null: false, method: :starving?
@@ -45,6 +46,14 @@ module Zoo
 
           def meals_today
             object.meals.categories
+          end
+
+          def blemishes
+            {
+              stressed: [object.stressed?, Domain::Animal::VISIBLE_STRESSED_PENALTY],
+              sick: [object.sick?, Domain::Animal::VISIBLE_SICK_PENALTY],
+              weak: [object.weak?, Domain::Animal::VISIBLE_WEAK_PENALTY]
+            }.filter_map { |cause, (present, penalty)| { cause:, penalty: } if present }
           end
 
           def parents
