@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { api, unwrap, type Animal, type ExamineResult } from "../api/client";
+import { api, unwrap, type Animal, type AnimalOutlook, type ExamineResult } from "../api/client";
 import MeterBar from "../components/MeterBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
@@ -16,7 +16,25 @@ const keepers = useQuery(() => unwrap(api.GET("/keepers")));
 const veterinarians = useQuery(() => unwrap(api.GET("/veterinarians")));
 const foods = useQuery(() => unwrap(api.GET("/foods")));
 const enclosures = useQuery(() => unwrap(api.GET("/enclosures")));
+const prognosis = useQuery(() =>
+  unwrap(api.GET("/animals/{animal_id}/prognosis", { params: path.value })),
+);
 const { busy, run } = useCommand();
+
+const outlooks: Record<NonNullable<AnimalOutlook["outlook"]>, { label: string; tone: string }> = {
+  good: { label: "良好", tone: "badge-good" },
+  guarded: { label: "要注意", tone: "badge-warn" },
+  grave: { label: "危篤", tone: "badge-bad" },
+};
+
+const foodCategories: Record<string, string> = {
+  meat: "肉",
+  fish: "魚",
+  insect: "昆虫",
+  plant: "植物",
+  fruit: "果実",
+  seed: "種子",
+};
 
 const keeperId = ref("");
 const foodCode = ref("");
@@ -40,7 +58,9 @@ const diagnosis: Record<ExamineResult["result"], string> = {
 };
 
 function show(updated: Animal | undefined) {
-  if (updated) animal.data.value = updated;
+  if (!updated) return;
+  animal.data.value = updated;
+  void prognosis.reload();
 }
 
 async function feed() {
@@ -167,12 +187,42 @@ async function rename() {
             :max="animal.data.value.max_health"
           />
           <MeterBar label="空腹" :value="animal.data.value.hunger" :max="100" invert />
+          <MeterBar label="栄養" :value="animal.data.value.nutrition" :max="100" />
+          <MeterBar label="ストレス" :value="animal.data.value.stress" :max="100" invert />
+          <dl class="facts">
+            <dt>飢餓まで</dt>
+            <dd>給餌が途絶えると {{ animal.data.value.days_until_starving }} 日</dd>
+            <dt>今日の食事</dt>
+            <dd>
+              {{
+                animal.data.value.meals_today.length
+                  ? animal.data.value.meals_today.map((c) => foodCategories[c] ?? c).join("・")
+                  : "まだ食べていません"
+              }}
+            </dd>
+            <template v-if="animal.data.value.expecting">
+              <dt>妊娠</dt>
+              <dd>
+                {{ animal.data.value.gestation_days }} /
+                {{ animal.data.value.gestation_period_days }} 日
+                <span v-if="animal.data.value.ready_to_deliver" class="badge badge-good"
+                  >出産の時期</span
+                >
+              </dd>
+            </template>
+          </dl>
           <div class="tags">
             <span v-if="animal.data.value.starving" class="badge badge-bad">飢えている</span>
             <span v-if="animal.data.value.weak" class="badge badge-bad">衰弱</span>
             <span v-if="animal.data.value.illness" class="badge badge-bad"
-              >🦠 {{ animal.data.value.illness }}</span
+              >🦠 {{ animal.data.value.illness
+              }}{{ animal.data.value.contagious ? "(感染性)" : "" }}</span
             >
+            <span v-if="animal.data.value.malnourished" class="badge badge-bad">栄養失調</span>
+            <span v-if="animal.data.value.severely_stressed" class="badge badge-bad"
+              >強いストレス</span
+            >
+            <span v-else-if="animal.data.value.stressed" class="badge badge-warn">ストレス</span>
             <span v-if="animal.data.value.parents > 0" class="badge badge-good">園生まれ</span>
           </div>
           <RouterLink
@@ -186,6 +236,28 @@ async function rename() {
           </RouterLink>
           <p v-else class="muted">どのエリアにも収容されていません</p>
         </section>
+
+        <template v-if="animal.data.value.alive">
+          <h2 class="section-title">予後</h2>
+          <section class="card stack">
+            <template v-if="prognosis.data.value?.housed && prognosis.data.value.outlook">
+              <div class="row">
+                <span class="badge" :class="outlooks[prognosis.data.value.outlook].tone">
+                  {{ outlooks[prognosis.data.value.outlook].label }}
+                </span>
+                <span class="grow">
+                  {{
+                    prognosis.data.value.days_to_death
+                      ? `このままだと ${prognosis.data.value.days_to_death} 日以内に${prognosis.data.value.cause_of_death}する見込み`
+                      : "30日以内に命に関わる見込みはありません"
+                  }}
+                </span>
+              </div>
+              <p class="muted">給餌を続け、治療や環境の改善をしなかった場合の見通しです</p>
+            </template>
+            <p v-else class="muted">収容されていないため、日々の経過も予後もありません</p>
+          </section>
+        </template>
       </div>
 
       <div v-if="animal.data.value.alive">
@@ -317,5 +389,22 @@ async function rename() {
 
 .bottom {
   align-items: end;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.facts dt {
+  color: var(--ink-soft);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 700;
 }
 </style>

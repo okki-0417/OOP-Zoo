@@ -4,7 +4,9 @@ import type { components, paths } from "./schema";
 type Schemas = components["schemas"];
 type ErrorBody = Schemas["Error"];
 
+export type Alert = Schemas["Alert"];
 export type Animal = Schemas["Animal"];
+export type AnimalOutlook = Schemas["AnimalOutlook"];
 export type AnimalSummary = Schemas["AnimalSummary"];
 export type Enclosure = Schemas["Enclosure"];
 export type EnclosureSummary = Schemas["EnclosureSummary"];
@@ -13,6 +15,7 @@ export type Veterinarian = Schemas["Veterinarian"];
 export type Deceased = Schemas["Deceased"];
 export type ExhibitedSpecies = Schemas["ExhibitedSpecies"];
 export type DayReport = Schemas["DayReport"];
+export type OperatingSummary = Schemas["OperatingSummary"];
 export type RunDaysSummary = Schemas["RunDaysSummary"];
 export type ZooStatistics = Schemas["ZooStatistics"];
 export type SpeciesRef = Schemas["SpeciesRef"];

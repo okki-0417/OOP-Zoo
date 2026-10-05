@@ -18,6 +18,9 @@ module Zoo
           enclosures: {
             enrichment: 'INTEGER NOT NULL DEFAULT 100',
             climate_controlled: 'INTEGER NOT NULL DEFAULT 0'
+          },
+          housing_events: {
+            closes_housing_id: 'TEXT'
           }
         }.freeze
 

@@ -110,6 +110,7 @@ async function acquire() {
             <div class="row">
               <strong class="grow name">{{ animal.name }}</strong>
               <span v-if="animal.ailing && animal.alive" class="badge badge-bad">不調</span>
+              <span v-if="animal.alive && !animal.fed_today" class="badge badge-warn">未給餌</span>
             </div>
             <span class="muted">{{ animal.species }}</span>
             <MeterBar
