@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef } from "vue";
 import { api, unwrap, type DayReport } from "../api/client";
-import AlertInbox from "../components/AlertInbox.vue";
+import ChoreChecklist from "../components/ChoreChecklist.vue";
 import MeterBar from "../components/MeterBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
+import { useAlerts } from "../composables/useAlerts";
 import { useCommand } from "../composables/useCommand";
 import { useQuery } from "../composables/useQuery";
 import { yen } from "../lib/currency";
 
 const report = useQuery(() => unwrap(api.GET("/report")));
-const alerts = useQuery(() => unwrap(api.GET("/alerts")));
-const animals = useQuery(() => unwrap(api.GET("/animals")));
+const checklist = useQuery(() => unwrap(api.GET("/checklist")));
 const operatings = useQuery(() => unwrap(api.GET("/operatings")));
 const threatened = useQuery(() => unwrap(api.GET("/threatened")));
 const deceased = useQuery(() => unwrap(api.GET("/deceased")));
+const { critical } = useAlerts();
 
 const { busy, run } = useCommand();
 const lastDay = shallowRef<DayReport>();
@@ -23,17 +24,13 @@ const fee = ref(1500);
 const today = computed(() => (operatings.data.value?.at(-1)?.day ?? 0) + 1);
 const yesterday = computed(() => operatings.data.value?.at(-1));
 const recentDays = computed(() => (operatings.data.value ?? []).slice(-7).reverse());
-const unfed = computed(() =>
-  (animals.data.value ?? []).filter((animal) => animal.alive && !animal.fed_today),
-);
-const critical = computed(() =>
-  (alerts.data.value ?? []).filter((alert) => alert.severity === "critical"),
+const unfinished = computed(() =>
+  (checklist.data.value ?? []).filter((chore) => chore.done_count < chore.total),
 );
 
 function refresh() {
   void report.reload();
-  void alerts.reload();
-  void animals.reload();
+  void checklist.reload();
   void operatings.reload();
   void threatened.reload();
   void deceased.reload();
@@ -41,7 +38,9 @@ function refresh() {
 
 function confirmClosing(days: number) {
   const concerns = [
-    unfed.value.length > 0 && `まだ給餌していない動物が ${unfed.value.length} 頭います`,
+    ...unfinished.value.map(
+      (chore) => `${chore.label}が ${chore.total - chore.done_count} 件残っています`,
+    ),
     critical.value.length > 0 && `緊急の対応が ${critical.value.length} 件残っています`,
   ].filter(Boolean);
   if (concerns.length === 0) return true;
@@ -80,75 +79,47 @@ async function changeFee() {
 <template>
   <PageHeader title="園長室" :subtitle="`${today}日目の営業中`" />
 
-  <QueryState
-    :loading="report.loading.value"
-    :error="report.error.value"
-    :empty="!report.data.value"
-    @retry="report.reload"
-  >
-    <section v-if="report.data.value" class="kpis">
-      <div class="card kpi">
-        <p class="muted">資金</p>
-        <p class="figure" :class="{ negative: report.data.value.balance < 0 }">
-          {{ yen(report.data.value.balance) }}
-        </p>
-        <p v-if="yesterday" class="delta" :class="yesterday.net_income < 0 ? 'minus' : 'plus'">
-          前日 {{ yesterday.net_income < 0 ? "" : "+" }}{{ yen(yesterday.net_income) }}
-        </p>
-      </div>
-      <div class="card kpi">
-        <MeterBar label="評判" :value="report.data.value.reputation" :max="100" />
-        <p v-if="yesterday" class="muted">
-          前日の来園 {{ yesterday.visitors.toLocaleString() }} 人
-        </p>
-      </div>
-      <div class="card kpi stats">
-        <div>
-          <p class="muted">飼育数</p>
-          <p class="figure">{{ report.data.value.population }}</p>
-        </div>
-        <div>
-          <p class="muted">種数</p>
-          <p class="figure">{{ report.data.value.species_count }}</p>
-        </div>
-        <div>
-          <p class="muted">希少種</p>
-          <p class="figure">{{ report.data.value.threatened_count }}</p>
-        </div>
-        <div>
-          <p class="muted">誕生</p>
-          <p class="figure">{{ report.data.value.births }}</p>
-        </div>
-      </div>
-    </section>
-  </QueryState>
-
   <div class="board">
     <div>
-      <h2 class="section-title">要対応</h2>
       <QueryState
-        :loading="alerts.loading.value"
-        :error="alerts.error.value"
-        :empty="!alerts.data.value"
-        @retry="alerts.reload"
+        :loading="report.loading.value"
+        :error="report.error.value"
+        :empty="!report.data.value"
+        @retry="report.reload"
       >
-        <AlertInbox :alerts="alerts.data.value ?? []" />
+        <section v-if="report.data.value" class="kpis">
+          <div class="card kpi">
+            <p class="muted">資金</p>
+            <p class="figure" :class="{ negative: report.data.value.balance < 0 }">
+              {{ yen(report.data.value.balance) }}
+            </p>
+            <p v-if="yesterday" class="delta" :class="yesterday.net_income < 0 ? 'minus' : 'plus'">
+              前日 {{ yesterday.net_income < 0 ? "" : "+" }}{{ yen(yesterday.net_income) }}
+            </p>
+          </div>
+          <div class="card kpi">
+            <MeterBar label="評判" :value="report.data.value.reputation" :max="100" />
+            <p v-if="yesterday" class="muted">
+              前日の来園 {{ yesterday.visitors.toLocaleString() }} 人
+            </p>
+          </div>
+        </section>
+      </QueryState>
+
+      <h2 class="section-title">今日の日課</h2>
+      <QueryState
+        :loading="checklist.loading.value"
+        :error="checklist.error.value"
+        :empty="!checklist.data.value"
+        @retry="checklist.reload"
+      >
+        <ChoreChecklist :chores="checklist.data.value ?? []" />
       </QueryState>
     </div>
 
     <div>
       <h2 class="section-title">日次締め</h2>
       <section class="card stack">
-        <ul class="checks">
-          <li :class="unfed.length ? 'ng' : 'ok'">
-            <RouterLink to="/animals">
-              {{ unfed.length ? `未給餌 ${unfed.length} 頭` : "全頭に給餌済み" }}
-            </RouterLink>
-          </li>
-          <li :class="critical.length ? 'ng' : 'ok'">
-            {{ critical.length ? `緊急の対応 ${critical.length} 件` : "緊急の対応なし" }}
-          </li>
-        </ul>
         <div class="row">
           <button class="btn btn-primary btn-block" :disabled="busy" @click="closeDay">
             🌙 今日を締める
@@ -253,7 +224,7 @@ async function changeFee() {
 <style scoped>
 .kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
 }
 
@@ -274,11 +245,6 @@ async function changeFee() {
   color: var(--bad);
 }
 
-.stats {
-  grid-template-columns: repeat(4, 1fr);
-  text-align: center;
-}
-
 .delta {
   font-size: 0.85rem;
   font-weight: 700;
@@ -292,35 +258,14 @@ async function changeFee() {
   margin-bottom: 24px;
 }
 
+.board > * > .section-title:first-child {
+  margin-top: 0;
+}
+
 @media (width < 1100px) {
   .board {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-
-.checks {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 6px;
-  font-weight: 700;
-}
-
-.checks li::before {
-  margin-right: 8px;
-}
-
-.checks .ok::before {
-  content: "✅";
-}
-
-.checks .ng::before {
-  content: "⚠️";
-}
-
-.checks .ng {
-  color: var(--warn);
 }
 
 .day {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AlertBell from "./AlertBell.vue";
+
 defineProps<{ title: string; back?: string; subtitle?: string }>();
 </script>
 
@@ -10,6 +12,7 @@ defineProps<{ title: string; back?: string; subtitle?: string }>();
       <p v-if="subtitle" class="muted">{{ subtitle }}</p>
     </div>
     <div class="actions"><slot /></div>
+    <AlertBell />
   </header>
 </template>
 
