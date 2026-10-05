@@ -46,10 +46,10 @@ const ReputationQuery = graphql(`
   }
 `);
 
-const causeLabels: Record<BlemishCause, string> = {
-  STRESSED: "ストレス",
-  SICK: "病気",
-  WEAK: "衰弱",
+const causes: Record<BlemishCause, { label: string; remedy: string }> = {
+  STRESSED: { label: "ストレス", remedy: "原因を確かめる" },
+  SICK: { label: "病気", remedy: "治療する" },
+  WEAK: { label: "衰弱", remedy: "給餌・治療する" },
 };
 
 const query = useQuery(ReputationQuery);
@@ -94,15 +94,23 @@ function signed(value: number, digits = 0) {
   >
     <section v-if="zoo" class="card tree">
       <div class="node root">
-        <span class="label">評判</span>
+        <span class="label">
+          評判
+          <small class="forecast"
+            >明日 {{ signed(zoo.reputationDrift + zoo.reputationDecay, 1) }}</small
+          >
+        </span>
         <GaugeBar class="gauge" :value="zoo.reputation" :max="100" />
         <span class="value">{{ zoo.reputation }}</span>
-        <span class="hint">明日 {{ signed(zoo.reputationDrift + zoo.reputationDecay, 1) }}</span>
+        <span class="action" />
       </div>
       <ul>
         <li>
           <div class="node">
-            <span class="label">体験による寄り</span>
+            <span class="label">
+              体験による寄り
+              <span class="info" tabindex="0" :data-tip="pull">ⓘ</span>
+            </span>
             <GaugeBar
               class="gauge"
               :value="zoo.reputationDrift"
@@ -110,12 +118,20 @@ function signed(value: number, digits = 0) {
               :max="zoo.reputationSwingLimit"
             />
             <span class="value">{{ signed(zoo.reputationDrift, 1) }}</span>
-            <span class="hint">{{ pull }}</span>
+            <span class="action" />
           </div>
           <ul>
             <li>
               <div class="node">
-                <span class="label">来園者の体験</span>
+                <span class="label">
+                  来園者の体験
+                  <span
+                    class="info"
+                    tabindex="0"
+                    data-tip="評判はこの値に毎日少しずつ近づく。印はいまの評判"
+                    >ⓘ</span
+                  >
+                </span>
                 <GaugeBar
                   class="gauge"
                   :value="zoo.experience"
@@ -123,29 +139,38 @@ function signed(value: number, digits = 0) {
                   :marker="zoo.reputation"
                 />
                 <span class="value">{{ zoo.experience }}</span>
-                <span class="hint">印はいまの評判</span>
+                <span class="action" />
               </div>
               <ul>
                 <li>
                   <div class="node">
-                    <span class="label">展示動物の見た目</span>
+                    <span class="label">
+                      展示動物の見た目
+                      <span
+                        class="info"
+                        tabindex="0"
+                        :data-tip="`展示中 ${exhibited.length} 頭の見た目の平均`"
+                        >ⓘ</span
+                      >
+                    </span>
                     <GaugeBar class="gauge" :value="zoo.exhibitCondition" :max="100" />
                     <span class="value">{{ zoo.exhibitCondition }}</span>
-                    <span class="hint">{{ exhibited.length }} 頭の平均</span>
+                    <span class="action" />
                   </div>
                   <ul>
                     <li v-for="animal in exhibited" :key="animal.id">
                       <div class="node">
-                        <RouterLink :to="`/animals/${animal.id}`" class="label link">
+                        <span class="label">
                           {{ emojiOf(animal.species.nameJa) }} {{ animal.name }}
-                        </RouterLink>
+                          <small class="muted">{{ animal.enclosure?.name }}</small>
+                        </span>
                         <GaugeBar class="gauge" :value="animal.visibleCondition" :max="100" />
                         <span class="value">{{ animal.visibleCondition }}</span>
-                        <span class="hint">{{ animal.enclosure?.name }}</span>
+                        <span class="action" />
                       </div>
                       <ul v-if="animal.blemishes.length > 0">
                         <li v-for="blemish in animal.blemishes" :key="blemish.cause" class="node">
-                          <span class="label">{{ causeLabels[blemish.cause] }}</span>
+                          <span class="label">{{ causes[blemish.cause].label }}</span>
                           <GaugeBar
                             class="gauge"
                             :value="-blemish.penalty"
@@ -153,36 +178,50 @@ function signed(value: number, digits = 0) {
                             :max="100"
                           />
                           <span class="value">{{ signed(-blemish.penalty) }}</span>
-                          <span class="hint" />
+                          <RouterLink :to="`/animals/${animal.id}`" class="action">
+                            {{ causes[blemish.cause].remedy }} ›
+                          </RouterLink>
                         </li>
                       </ul>
                     </li>
                   </ul>
                 </li>
                 <li class="node">
-                  <span class="label">入園料 {{ yen(zoo.admissionFee) }}</span>
+                  <span class="label">
+                    入園料 {{ yen(zoo.admissionFee) }}
+                    <span class="info" tabindex="0" data-tip="入園料が高いほど体験が下がる">ⓘ</span>
+                  </span>
                   <GaugeBar class="gauge" :value="feeEffect" :min="-100" :max="100" />
                   <span class="value">{{ signed(feeEffect) }}</span>
-                  <span class="hint">高いほど体験が下がる</span>
+                  <RouterLink to="/" class="action">入園料を見直す ›</RouterLink>
                 </li>
               </ul>
             </li>
             <li class="node">
-              <span class="label">来園の見込み</span>
+              <span class="label">
+                来園の見込み
+                <span
+                  class="info"
+                  tabindex="0"
+                  :data-tip="`来園者が多いほど評判は速く動く。${zoo.visitorsForFullSwing.toLocaleString()}人で最速、いま ${swingRate}%`"
+                  >ⓘ</span
+                >
+              </span>
               <GaugeBar
                 class="gauge"
                 :value="zoo.expectedVisitors"
                 :max="zoo.visitorsForFullSwing"
               />
               <span class="value">{{ zoo.expectedVisitors.toLocaleString() }}人</span>
-              <span class="hint">
-                {{ zoo.visitorsForFullSwing.toLocaleString() }}人で最速・いま {{ swingRate }}%
-              </span>
+              <RouterLink to="/animals" class="action">人気の動物を導入する ›</RouterLink>
             </li>
           </ul>
         </li>
         <li class="node">
-          <span class="label">自然減衰</span>
+          <span class="label">
+            自然減衰
+            <span class="info" tabindex="0" data-tip="中立を超えた分が毎日少しずつ減る">ⓘ</span>
+          </span>
           <GaugeBar
             class="gauge"
             :value="zoo.reputationDecay"
@@ -190,14 +229,19 @@ function signed(value: number, digits = 0) {
             :max="zoo.reputationSwingLimit"
           />
           <span class="value">{{ signed(zoo.reputationDecay, 1) }}</span>
-          <span class="hint">中立を超えた分が毎日減る</span>
+          <span class="action" />
         </li>
         <li>
           <div class="node">
-            <span class="label">前日の出来事</span>
+            <span class="label">
+              前日の出来事
+              <span class="info" tabindex="0" data-tip="死亡や発病があると、その日に大きく下がる"
+                >ⓘ</span
+              >
+            </span>
             <span class="gauge" />
             <span class="value" />
-            <span class="hint">死亡・発病でその日に大きく下がる</span>
+            <span class="action" />
           </div>
           <ul>
             <li class="node">
@@ -206,7 +250,7 @@ function signed(value: number, digits = 0) {
               <span class="value" :class="{ minus: (lastDay?.deaths ?? 0) > 0 }">
                 {{ lastDay?.deaths ?? 0 }}頭
               </span>
-              <span class="hint" />
+              <RouterLink to="/" class="action">日課を確かめる ›</RouterLink>
             </li>
             <li class="node">
               <span class="label">発病</span>
@@ -214,7 +258,7 @@ function signed(value: number, digits = 0) {
               <span class="value" :class="{ minus: lastDay?.outbreak }">
                 {{ lastDay?.outbreak ? "あり" : "なし" }}
               </span>
-              <span class="hint">{{ lastDay?.outbreak }}</span>
+              <RouterLink to="/animals" class="action">要注意の動物を見る ›</RouterLink>
             </li>
           </ul>
         </li>
@@ -287,20 +331,62 @@ function signed(value: number, digits = 0) {
   font-weight: 800;
 }
 
-.hint {
-  flex: 0 0 260px;
+.action {
+  flex: 0 0 200px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+a.action:hover {
+  text-decoration: underline;
+}
+
+.forecast {
+  margin-left: 8px;
   font-size: 0.85rem;
   color: var(--ink-soft);
+}
+
+.info {
+  position: relative;
+  margin-left: 4px;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--ink-soft);
+  cursor: help;
+}
+
+.info::after {
+  content: attr(data-tip);
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 6px);
+  left: -8px;
+  width: max-content;
+  max-width: 280px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+}
+
+.info:hover::after,
+.info:focus::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 .root .label,
 .root .value {
   font-size: 1.2rem;
-}
-
-.link:hover {
-  color: var(--brand);
-  text-decoration: underline;
 }
 
 .minus {
