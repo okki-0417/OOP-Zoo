@@ -22,11 +22,10 @@ const { toasts, dismiss } = useToast();
 .toasts {
   position: fixed;
   z-index: 20;
-  inset: 12px 12px auto;
+  inset: 16px 16px auto auto;
   display: grid;
   gap: 8px;
-  max-width: 456px;
-  margin: 0 auto;
+  width: min(380px, calc(100vw - 32px));
   pointer-events: none;
 }
 
@@ -56,7 +55,7 @@ const { toasts, dismiss } = useToast();
 .toast-enter-from,
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-12px);
+  transform: translateX(16px);
 }
 
 .toast-enter-active,

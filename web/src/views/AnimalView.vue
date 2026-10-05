@@ -128,38 +128,39 @@ async function rename() {
     :empty="!animal.data.value"
     @retry="animal.reload"
   >
-    <template v-if="animal.data.value">
-      <section class="card profile" :class="{ dead: !animal.data.value.alive }">
-        <div class="portrait">
-          {{
-            animal.data.value.alive
-              ? emojiOf(animal.data.value.species, animal.data.value.taxon_class)
-              : "🪦"
-          }}
-        </div>
-        <div class="stack">
-          <p class="species">{{ animal.data.value.species }}</p>
-          <div class="tags">
-            <span class="badge">{{ animal.data.value.sex }}</span>
-            <span class="badge"
-              >{{ animal.data.value.life_stage }}・{{ animal.data.value.age_in_days }}日</span
-            >
-            <span class="badge"
-              >{{ animal.data.value.taxon_class }}・{{ animal.data.value.diet }}</span
-            >
-            <span class="badge badge-warn">
-              {{ animal.data.value.conservation_code }} {{ animal.data.value.conservation_label }}
-            </span>
+    <div v-if="animal.data.value" class="columns">
+      <div>
+        <h2 class="section-title">プロフィール</h2>
+        <section class="card profile" :class="{ dead: !animal.data.value.alive }">
+          <div class="portrait">
+            {{
+              animal.data.value.alive
+                ? emojiOf(animal.data.value.species, animal.data.value.taxon_class)
+                : "🪦"
+            }}
           </div>
-        </div>
-      </section>
+          <div class="stack">
+            <p class="species">{{ animal.data.value.species }}</p>
+            <div class="tags">
+              <span class="badge">{{ animal.data.value.sex }}</span>
+              <span class="badge"
+                >{{ animal.data.value.life_stage }}・{{ animal.data.value.age_in_days }}日</span
+              >
+              <span class="badge"
+                >{{ animal.data.value.taxon_class }}・{{ animal.data.value.diet }}</span
+              >
+              <span class="badge badge-warn">
+                {{ animal.data.value.conservation_code }} {{ animal.data.value.conservation_label }}
+              </span>
+            </div>
+          </div>
+        </section>
 
-      <section v-if="!animal.data.value.alive" class="card memorial">
-        <p>🕊️ {{ animal.data.value.cause ?? "不明" }}により亡くなりました</p>
-      </section>
+        <section v-if="!animal.data.value.alive" class="card memorial">
+          <p>🕊️ {{ animal.data.value.cause ?? "不明" }}により亡くなりました</p>
+        </section>
 
-      <template v-else>
-        <section class="card stack">
+        <section v-else class="card stack">
           <MeterBar
             label="体力"
             :value="animal.data.value.health"
@@ -185,7 +186,9 @@ async function rename() {
           </RouterLink>
           <p v-else class="muted">どのエリアにも収容されていません</p>
         </section>
+      </div>
 
+      <div v-if="animal.data.value.alive">
         <h2 class="section-title">ごはん</h2>
         <form class="card stack" @submit.prevent="feed">
           <div class="row">
@@ -251,8 +254,8 @@ async function rename() {
             <button class="btn" :disabled="busy || !newName">改名</button>
           </form>
         </section>
-      </template>
-    </template>
+      </div>
+    </div>
   </QueryState>
 </template>
 

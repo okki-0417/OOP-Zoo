@@ -45,67 +45,78 @@ async function hire() {
 <template>
   <PageHeader title="スタッフ" />
 
-  <form class="card stack" @submit.prevent="hire">
-    <div class="segmented" role="group" aria-label="職種">
-      <button type="button" :aria-pressed="role === 'keeper'" @click="role = 'keeper'">
-        🧑‍🌾 飼育員
-      </button>
-      <button type="button" :aria-pressed="role === 'veterinarian'" @click="role = 'veterinarian'">
-        🧑‍⚕️ 獣医
-      </button>
+  <div class="columns">
+    <div>
+      <h2 class="section-title">採用</h2>
+      <form class="card stack" @submit.prevent="hire">
+        <div class="segmented" role="group" aria-label="職種">
+          <button type="button" :aria-pressed="role === 'keeper'" @click="role = 'keeper'">
+            🧑‍🌾 飼育員
+          </button>
+          <button
+            type="button"
+            :aria-pressed="role === 'veterinarian'"
+            @click="role = 'veterinarian'"
+          >
+            🧑‍⚕️ 獣医
+          </button>
+        </div>
+        <label class="field">
+          名前
+          <input v-model.trim="name" required maxlength="20" placeholder="例: 田中" />
+        </label>
+        <fieldset v-if="role === 'keeper'" class="specialties">
+          <legend class="muted">専門（複数可）</legend>
+          <button
+            v-for="t in taxonClasses.data.value"
+            :key="t.key"
+            type="button"
+            class="chip"
+            :aria-pressed="specialties.includes(t.key)"
+            @click="toggle(t.key)"
+          >
+            {{ t.label }}
+          </button>
+        </fieldset>
+        <button class="btn btn-primary" :disabled="busy || !name">採用する</button>
+      </form>
     </div>
-    <label class="field">
-      名前
-      <input v-model.trim="name" required maxlength="20" placeholder="例: 田中" />
-    </label>
-    <fieldset v-if="role === 'keeper'" class="specialties">
-      <legend class="muted">専門（複数可）</legend>
-      <button
-        v-for="t in taxonClasses.data.value"
-        :key="t.key"
-        type="button"
-        class="chip"
-        :aria-pressed="specialties.includes(t.key)"
-        @click="toggle(t.key)"
+
+    <div>
+      <h2 class="section-title">飼育員</h2>
+      <QueryState
+        :loading="keepers.loading.value"
+        :error="keepers.error.value"
+        :empty="!keepers.data.value?.length"
+        empty-text="飼育員がいません"
+        @retry="keepers.reload"
       >
-        {{ t.label }}
-      </button>
-    </fieldset>
-    <button class="btn btn-primary" :disabled="busy || !name">採用する</button>
-  </form>
+        <ul class="card list">
+          <li v-for="k in keepers.data.value" :key="k.id" class="row">
+            <span class="avatar small">🧑‍🌾</span>
+            <strong class="grow">{{ k.name }}</strong>
+            <span class="muted">{{ k.specialties || "専門なし" }}</span>
+          </li>
+        </ul>
+      </QueryState>
 
-  <h2 class="section-title">飼育員</h2>
-  <QueryState
-    :loading="keepers.loading.value"
-    :error="keepers.error.value"
-    :empty="!keepers.data.value?.length"
-    empty-text="飼育員がいません"
-    @retry="keepers.reload"
-  >
-    <ul class="card list">
-      <li v-for="k in keepers.data.value" :key="k.id" class="row">
-        <span class="avatar small">🧑‍🌾</span>
-        <strong class="grow">{{ k.name }}</strong>
-        <span class="muted">{{ k.specialties || "専門なし" }}</span>
-      </li>
-    </ul>
-  </QueryState>
-
-  <h2 class="section-title">獣医</h2>
-  <QueryState
-    :loading="veterinarians.loading.value"
-    :error="veterinarians.error.value"
-    :empty="!veterinarians.data.value?.length"
-    empty-text="獣医がいません"
-    @retry="veterinarians.reload"
-  >
-    <ul class="card list">
-      <li v-for="v in veterinarians.data.value" :key="v.id" class="row">
-        <span class="avatar small">🧑‍⚕️</span>
-        <strong class="grow">{{ v.name }}</strong>
-      </li>
-    </ul>
-  </QueryState>
+      <h2 class="section-title">獣医</h2>
+      <QueryState
+        :loading="veterinarians.loading.value"
+        :error="veterinarians.error.value"
+        :empty="!veterinarians.data.value?.length"
+        empty-text="獣医がいません"
+        @retry="veterinarians.reload"
+      >
+        <ul class="card list">
+          <li v-for="v in veterinarians.data.value" :key="v.id" class="row">
+            <span class="avatar small">🧑‍⚕️</span>
+            <strong class="grow">{{ v.name }}</strong>
+          </li>
+        </ul>
+      </QueryState>
+    </div>
+  </div>
 </template>
 
 <style scoped>

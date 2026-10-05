@@ -85,65 +85,70 @@ async function release(id: string, name: string) {
     :empty="!enclosure.data.value"
     @retry="enclosure.reload"
   >
-    <template v-if="enclosure.data.value">
-      <section class="card stack">
-        <MeterBar
-          label="収容数"
-          :value="enclosure.data.value.population"
-          :max="enclosure.data.value.capacity"
-          invert
-        />
-        <MeterBar label="清潔度" :value="enclosure.data.value.cleanliness" :max="100" />
-        <form class="row bottom" @submit.prevent="clean">
+    <div v-if="enclosure.data.value" class="columns">
+      <div>
+        <h2 class="section-title">状態</h2>
+        <section class="card stack">
+          <MeterBar
+            label="収容数"
+            :value="enclosure.data.value.population"
+            :max="enclosure.data.value.capacity"
+            invert
+          />
+          <MeterBar label="清潔度" :value="enclosure.data.value.cleanliness" :max="100" />
+          <form class="row bottom" @submit.prevent="clean">
+            <label class="field grow">
+              担当飼育員
+              <select v-model="keeperId" required>
+                <option v-for="k in keepers.data.value" :key="k.id" :value="k.id">
+                  {{ k.name }}
+                </option>
+              </select>
+            </label>
+            <button class="btn btn-primary" :disabled="busy || !keeperId">🧹 清掃</button>
+          </form>
+        </section>
+
+        <h2 class="section-title">迎え入れる</h2>
+        <form class="card row bottom" @submit.prevent="house">
           <label class="field grow">
-            担当飼育員
-            <select v-model="keeperId" required>
-              <option v-for="k in keepers.data.value" :key="k.id" :value="k.id">
-                {{ k.name }}
+            動物
+            <select v-model="animalId" required>
+              <option value="" disabled>選んでください</option>
+              <option v-for="a in candidates" :key="a.id" :value="a.id">
+                {{ emojiOf(a.species) }} {{ a.name }}（{{ a.species }}）
               </option>
             </select>
           </label>
-          <button class="btn btn-primary" :disabled="busy || !keeperId">🧹 清掃</button>
+          <button class="btn btn-primary" :disabled="busy || !animalId || full">収容</button>
         </form>
-      </section>
+        <p v-if="full" class="muted note">満員のため収容できません</p>
+      </div>
 
-      <h2 class="section-title">住んでいる動物</h2>
-      <ul v-if="enclosure.data.value.occupants.length" class="card list">
-        <li v-for="occupant in enclosure.data.value.occupants" :key="occupant.id" class="row">
-          <RouterLink :to="`/animals/${occupant.id}`" class="row grow">
-            <span class="avatar small">{{ emojiOf(occupant.species) }}</span>
-            <span class="grow occupant">
-              <strong>{{ occupant.name }}</strong>
-              <span class="muted">{{ occupant.species }}</span>
-            </span>
-            <span v-if="occupant.ailing" class="badge badge-bad">不調</span>
-          </RouterLink>
-          <button
-            class="btn small-btn"
-            :disabled="busy"
-            @click="release(occupant.id, occupant.name)"
-          >
-            退去
-          </button>
-        </li>
-      </ul>
-      <p v-else class="card empty">まだ誰も住んでいません</p>
-
-      <h2 class="section-title">迎え入れる</h2>
-      <form class="card row bottom" @submit.prevent="house">
-        <label class="field grow">
-          動物
-          <select v-model="animalId" required>
-            <option value="" disabled>選んでください</option>
-            <option v-for="a in candidates" :key="a.id" :value="a.id">
-              {{ emojiOf(a.species) }} {{ a.name }}（{{ a.species }}）
-            </option>
-          </select>
-        </label>
-        <button class="btn btn-primary" :disabled="busy || !animalId || full">収容</button>
-      </form>
-      <p v-if="full" class="muted note">満員のため収容できません</p>
-    </template>
+      <div>
+        <h2 class="section-title">住んでいる動物</h2>
+        <ul v-if="enclosure.data.value.occupants.length" class="card list">
+          <li v-for="occupant in enclosure.data.value.occupants" :key="occupant.id" class="row">
+            <RouterLink :to="`/animals/${occupant.id}`" class="row grow">
+              <span class="avatar small">{{ emojiOf(occupant.species) }}</span>
+              <span class="grow occupant">
+                <strong>{{ occupant.name }}</strong>
+                <span class="muted">{{ occupant.species }}</span>
+              </span>
+              <span v-if="occupant.ailing" class="badge badge-bad">不調</span>
+            </RouterLink>
+            <button
+              class="btn small-btn"
+              :disabled="busy"
+              @click="release(occupant.id, occupant.name)"
+            >
+              退去
+            </button>
+          </li>
+        </ul>
+        <p v-else class="card empty">まだ誰も住んでいません</p>
+      </div>
+    </div>
   </QueryState>
 </template>
 

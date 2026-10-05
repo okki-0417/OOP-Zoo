@@ -33,27 +33,19 @@ async function build() {
   </PageHeader>
 
   <Transition name="slide">
-    <form v-if="building" class="card stack build" @submit.prevent="build">
+    <form v-if="building" class="card build" @submit.prevent="build">
       <label class="field">
         名前
         <input v-model.trim="draft.name" required maxlength="20" placeholder="例: 夜行性館" />
       </label>
-      <div class="row">
-        <label class="field grow">
-          室温(℃)
-          <input v-model.number="draft.celsius" type="number" required inputmode="numeric" />
-        </label>
-        <label class="field grow">
-          定員
-          <input
-            v-model.number="draft.capacity"
-            type="number"
-            min="1"
-            required
-            inputmode="numeric"
-          />
-        </label>
-      </div>
+      <label class="field">
+        室温(℃)
+        <input v-model.number="draft.celsius" type="number" required inputmode="numeric" />
+      </label>
+      <label class="field">
+        定員
+        <input v-model.number="draft.capacity" type="number" min="1" required inputmode="numeric" />
+      </label>
       <button class="btn btn-primary" :disabled="busy">建てる</button>
     </form>
   </Transition>
@@ -65,7 +57,7 @@ async function build() {
     empty-text="エリアがありません。まずは増設しましょう"
     @retry="enclosures.reload"
   >
-    <ul class="cards">
+    <ul class="card-grid">
       <li v-for="enclosure in enclosures.data.value" :key="enclosure.id">
         <RouterLink :to="`/enclosures/${enclosure.id}`" class="card enclosure">
           <div class="row">
@@ -92,15 +84,11 @@ async function build() {
 
 <style scoped>
 .build {
-  margin-bottom: 12px;
-}
-
-.cards {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
-  gap: 10px;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
 }
 
 .enclosure {

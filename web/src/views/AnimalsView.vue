@@ -53,7 +53,7 @@ async function acquire() {
   </PageHeader>
 
   <Transition name="slide">
-    <form v-if="acquiring" class="card stack acquire" @submit.prevent="acquire">
+    <form v-if="acquiring" class="card acquire" @submit.prevent="acquire">
       <label class="field">
         種
         <select v-model="draft.species_code" required>
@@ -98,7 +98,7 @@ async function acquire() {
     empty-text="該当する動物はいません"
     @retry="animals.reload"
   >
-    <ul class="cards">
+    <ul class="card-grid">
       <li v-for="animal in visible" :key="animal.id">
         <RouterLink
           :to="`/animals/${animal.id}`"
@@ -127,19 +127,16 @@ async function acquire() {
 
 <style scoped>
 .acquire {
-  margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
 }
 
 .filters {
-  margin: 4px 0 12px;
-}
-
-.cards {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
+  max-width: 420px;
+  margin: 4px 0 16px;
 }
 
 .animal {
@@ -147,10 +144,6 @@ async function acquire() {
   gap: 12px;
   align-items: flex-start;
   padding: 12px;
-}
-
-.animal:active {
-  transform: scale(0.99);
 }
 
 .animal.dead {
