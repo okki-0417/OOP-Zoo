@@ -5,7 +5,7 @@ module Zoo
     module ReadModels
       AnimalProfile = Data.define(
         :id, :name, :species, :taxon_class, :diet, :conservation_code, :conservation_label,
-        :sex, :life_stage, :age_in_days, :health, :max_health, :weak,
+        :sex, :life_stage, :age_in_days, :diet_categories, :health, :max_health, :weak,
         :hunger, :hungry, :starving, :days_until_starving, :meals_today,
         :nutrition, :malnourished, :stress, :stressed, :severely_stressed,
         :illness, :contagious, :expecting, :gestation_days, :gestation_period_days, :ready_to_deliver,
@@ -24,6 +24,7 @@ module Zoo
             sex: animal.sex_label,
             life_stage: animal.life_stage_label,
             age_in_days: animal.age_in_days,
+            diet_categories: animal.acceptable_food_categories.map(&:to_s),
             health: animal.current_health,
             max_health: animal.max_health,
             weak: animal.weak?,
@@ -44,7 +45,7 @@ module Zoo
             gestation_period_days: animal.gestation_period_days,
             ready_to_deliver: animal.ready_to_deliver?,
             alive: animal.alive?,
-            cause: animal.cause_of_death,
+            cause: animal.cause_of_death_label,
             parents: animal.parent_ids.size,
             enclosure_id: enclosure&.id&.to_s,
             enclosure_name: enclosure&.name

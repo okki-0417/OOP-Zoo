@@ -56,7 +56,7 @@ module Zoo
 
       def live_through_a_day(animal, enclosure)
         animal.satisfy_hunger(Animal::Hunger::MAX)
-        animal.take_meal(Food::CATEGORIES.select { |category| animal.accepts?(category) })
+        animal.take_meal(animal.acceptable_food_categories)
         Infestation.new(enclosure, [animal]).spread
         AnimalDay.new(animal:, enclosure:, occupancy: @occupancy, season: @season).run
         enclosure.soil(@occupancy.count)

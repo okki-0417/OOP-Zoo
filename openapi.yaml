@@ -665,7 +665,7 @@ components:
       type: object
       required:
         [id, name, species, taxon_class, diet, conservation_code, conservation_label,
-         sex, life_stage, age_in_days, health, max_health, weak, hunger, hungry, starving,
+         sex, life_stage, age_in_days, diet_categories, health, max_health, weak, hunger, hungry, starving,
          days_until_starving, meals_today, nutrition, malnourished, stress, stressed, severely_stressed,
          contagious, expecting, gestation_period_days, ready_to_deliver, alive, parents]
       properties:
@@ -679,6 +679,10 @@ components:
         sex: { type: string }
         life_stage: { type: string }
         age_in_days: { type: integer }
+        diet_categories:
+          type: array
+          description: 食性に合う餌の分類
+          items: { type: string, enum: [meat, fish, insect, plant, fruit, seed] }
         health: { type: integer }
         max_health: { type: integer }
         weak: { type: boolean }
@@ -702,7 +706,7 @@ components:
         gestation_period_days: { type: integer }
         ready_to_deliver: { type: boolean }
         alive: { type: boolean }
-        cause: { type: string, nullable: true }
+        cause: { type: string, nullable: true, description: 死因(老衰・餓死・病死など) }
         parents: { type: integer }
         enclosure_id: { type: string, nullable: true }
         enclosure_name: { type: string, nullable: true }

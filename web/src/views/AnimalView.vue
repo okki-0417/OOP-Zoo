@@ -43,7 +43,15 @@ const enclosureId = ref("");
 const newName = ref("");
 
 watch(keepers.data, (list) => (keeperId.value ||= list?.[0]?.id ?? ""));
-watch(foods.data, (list) => (foodCode.value ||= list?.[0]?.key ?? ""));
+const edibleFoods = computed(() =>
+  (foods.data.value ?? []).filter((food) =>
+    animal.data.value?.diet_categories.includes(food.category as Animal["diet_categories"][number]),
+  ),
+);
+
+watch(edibleFoods, (list) => {
+  if (!list.some((food) => food.key === foodCode.value)) foodCode.value = list[0]?.key ?? "";
+});
 watch(veterinarians.data, (list) => (veterinarianId.value ||= list?.[0]?.id ?? ""));
 
 const transferTargets = computed(() =>
@@ -268,14 +276,14 @@ async function rename() {
               飼育員
               <select v-model="keeperId" required>
                 <option v-for="k in keepers.data.value" :key="k.id" :value="k.id">
-                  {{ k.name }}
+                  {{ k.name }}（残り{{ k.remaining_minutes }}分）
                 </option>
               </select>
             </label>
             <label class="field grow">
               餌
               <select v-model="foodCode" required>
-                <option v-for="f in foods.data.value" :key="f.key" :value="f.key">
+                <option v-for="f in edibleFoods" :key="f.key" :value="f.key">
                   {{ f.name_ja }}（満腹+{{ f.satiety }}）
                 </option>
               </select>

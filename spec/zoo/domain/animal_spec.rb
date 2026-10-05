@@ -154,6 +154,17 @@ module Zoo
         end
       end
 
+      describe '#cause_of_death_label / #acceptable_food_categories' do
+        it '老衰で死んだライオンは "老衰"、生きていれば nil を返すこと' do
+          expect(build.die(cause: :old_age).cause_of_death_label).to eq('老衰')
+          expect(build.cause_of_death_label).to be_nil
+        end
+
+        it 'ライオン(肉食)が食べられる餌の分類は [:meat] であること' do
+          expect(build.acceptable_food_categories).to eq([:meat])
+        end
+      end
+
       describe '#take_meal' do
         it '[:meat] を2回 take_meal しても meals.categories は [:meat] のままであること' do
           animal = build

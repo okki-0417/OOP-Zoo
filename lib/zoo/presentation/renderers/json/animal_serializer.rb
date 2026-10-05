@@ -21,6 +21,7 @@ module Zoo
               taxon_class: profile.taxon_class, diet: profile.diet,
               conservation_code: profile.conservation_code, conservation_label: profile.conservation_label,
               sex: profile.sex, life_stage: profile.life_stage, age_in_days: profile.age_in_days,
+              diet_categories: profile.diet_categories,
               health: profile.health, max_health: profile.max_health, weak: profile.weak,
               hunger: profile.hunger, hungry: profile.hungry, starving: profile.starving,
               days_until_starving: profile.days_until_starving, meals_today: profile.meals_today,

@@ -20,7 +20,7 @@ RSpec.describe Zoo::Application::Queries::DeceasedList do
 
       expect(record.name).to eq('レオ')
       expect(record.species).to eq('ライオン')
-      expect(record.cause).to eq(:old_age)
+      expect(record.cause).to eq('老衰')
     end
 
     it '死亡が無ければ空配列を返すこと' do

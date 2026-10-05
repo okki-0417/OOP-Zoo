@@ -124,6 +124,10 @@ module Zoo
         @death&.cause
       end
 
+      def cause_of_death_label
+        @death&.to_s
+      end
+
       def incapacitated?
         dead? || @health.empty?
       end
@@ -383,6 +387,10 @@ module Zoo
 
       def accepts?(food_category)
         @species.accepts?(food_category)
+      end
+
+      def acceptable_food_categories
+        Food::CATEGORIES.select { |category| accepts?(category) }
       end
 
       def metabolic_factor

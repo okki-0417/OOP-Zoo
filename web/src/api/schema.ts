@@ -617,6 +617,8 @@ export interface components {
       sex: string;
       life_stage: string;
       age_in_days: number;
+      /** @description 食性に合う餌の分類 */
+      diet_categories: ("meat" | "fish" | "insect" | "plant" | "fruit" | "seed")[];
       health: number;
       max_health: number;
       weak: boolean;
@@ -639,6 +641,7 @@ export interface components {
       gestation_period_days: number;
       ready_to_deliver: boolean;
       alive: boolean;
+      /** @description 死因(老衰・餓死・病死など) */
       cause?: string | null;
       parents: number;
       enclosure_id?: string | null;

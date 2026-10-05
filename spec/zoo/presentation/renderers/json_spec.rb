@@ -35,7 +35,7 @@ RSpec.describe Zoo::Presentation::Renderers::Json do
       expect(body).to include(name: 'レオ', species: 'ライオン', enclosure_id: nil)
     end
 
-    it 'animal_detail の AnimalProfile は栄養・ストレス・妊娠・その日の食事を含む本文になること' do
+    it 'animal_detail の AnimalProfile は栄養・ストレス・妊娠・その日の食事・食べられる餌の分類を含む本文になること' do
       lion = build_adult(catalog.lion, name: 'レオ')
       lion.take_meal([:meat])
       profile = Zoo::Application::ReadModels::AnimalProfile.of(lion, enclosure: nil)
@@ -44,7 +44,8 @@ RSpec.describe Zoo::Presentation::Renderers::Json do
       expect(body).to include(
         nutrition: 100, malnourished: false, stress: 0, stressed: false, severely_stressed: false,
         hungry: false, days_until_starving: 10, meals_today: ['meat'], contagious: false,
-        expecting: false, gestation_days: nil, gestation_period_days: 110, ready_to_deliver: false
+        expecting: false, gestation_days: nil, gestation_period_days: 110, ready_to_deliver: false,
+        diet_categories: ['meat'], cause: nil
       )
     end
 
