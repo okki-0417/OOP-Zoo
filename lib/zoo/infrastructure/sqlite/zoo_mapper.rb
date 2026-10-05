@@ -12,7 +12,8 @@ module Zoo
             visitor_count: zoo.visitor_count,
             balance: zoo.balance.yen,
             reputation: zoo.reputation.value,
-            day: zoo.day
+            day: zoo.day,
+            buzz: zoo.buzz
           }
         end
 
@@ -24,7 +25,8 @@ module Zoo
             visitor_count: row['visitor_count'],
             balance: Domain::Shared::Balance.new(row['balance']),
             reputation: Domain::Zoo::Reputation.new(row['reputation']),
-            day: row['day']
+            day: row['day'],
+            buzz: row['buzz']
           )
         end
       end

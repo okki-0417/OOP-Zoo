@@ -37,12 +37,13 @@ module Zoo
         self
       end
 
-      def self.reconstitute(name:, admission_fee:, revenue:, visitor_count:, balance:, reputation:, day: 0)
+      def self.reconstitute(name:, admission_fee:, revenue:, visitor_count:, balance:, reputation:, day: 0, buzz: 0)
         new(name: name, admission_fee: admission_fee, reputation: reputation).tap do |zoo|
           zoo.instance_variable_set(:@revenue, revenue)
           zoo.instance_variable_set(:@visitor_count, visitor_count)
           zoo.instance_variable_set(:@balance, balance)
           zoo.instance_variable_set(:@day, day)
+          zoo.instance_variable_set(:@buzz, buzz)
         end
       end
 

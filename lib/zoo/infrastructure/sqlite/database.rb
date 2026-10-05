@@ -24,6 +24,9 @@ module Zoo
           },
           keepers: {
             worked_minutes: 'INTEGER NOT NULL DEFAULT 0'
+          },
+          zoo: {
+            buzz: 'INTEGER NOT NULL DEFAULT 0'
           }
         }.freeze
 
