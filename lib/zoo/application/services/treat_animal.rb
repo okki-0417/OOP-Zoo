@@ -21,7 +21,7 @@ module Zoo
               @command.animals.save(animal)
               animal
             end
-            { animal:, enclosure: animal.alive? ? @command.housings.current_housing_of(animal)&.enclosure : nil }
+            { animal:, enclosure: @command.housings.enclosure_of(animal) }
           end
         end
       end

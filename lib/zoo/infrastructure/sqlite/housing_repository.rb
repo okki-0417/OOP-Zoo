@@ -29,6 +29,12 @@ module Zoo
           build_events(current_housings.where(animal_id: animal.id.to_s).all).first
         end
 
+        def enclosure_of(animal)
+          return nil if animal.dead?
+
+          current_housing_of(animal)&.enclosure
+        end
+
         def occupants_of(enclosure)
           occupants(current_housings.where(enclosure_id: enclosure.id.to_s))
         end

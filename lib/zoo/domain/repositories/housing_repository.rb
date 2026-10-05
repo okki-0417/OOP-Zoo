@@ -16,6 +16,10 @@ module Zoo
           raise NotImplementedError, "#{self.class}#current_housing_of を実装してください"
         end
 
+        def enclosure_of(_animal)
+          raise NotImplementedError, "#{self.class}#enclosure_of を実装してください"
+        end
+
         def occupants_of(_enclosure)
           raise NotImplementedError, "#{self.class}#occupants_of を実装してください"
         end

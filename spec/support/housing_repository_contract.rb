@@ -94,6 +94,34 @@ RSpec.shared_examples 'a housing repository' do
     end
   end
 
+  describe '#enclosure_of' do
+    it '区画Aに収容中のレオは区画Aを返すこと' do
+      animal = build_adult(catalog.lion, name: 'レオ')
+      enclosure = pen('A')
+      persist_animals(animal)
+      repository.save(Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure))
+
+      expect(repository.enclosure_of(animal)).to eq(enclosure)
+    end
+
+    it '一度も収容していない個体は nil を返すこと' do
+      animal = build_adult(catalog.lion, name: 'レオ')
+      persist_animals(animal)
+
+      expect(repository.enclosure_of(animal)).to be_nil
+    end
+
+    it '区画Aに収容したまま死亡した個体は nil を返すこと' do
+      animal = build_adult(catalog.lion, name: 'レオ')
+      persist_animals(animal)
+      repository.save(Zoo::Domain::Housing.new(animal: animal, enclosure: pen('A')))
+      animal.die
+      persist_animals(animal)
+
+      expect(repository.enclosure_of(animal)).to be_nil
+    end
+  end
+
   describe '#occupants_of' do
     it 'その区画の現在の生存収容個体を返すこと' do
       resident = build_adult(catalog.lion, name: '在住')

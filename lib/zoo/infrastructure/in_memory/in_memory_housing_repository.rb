@@ -25,6 +25,12 @@ module Zoo
           current_housings[animal.id.to_s]
         end
 
+        def enclosure_of(animal)
+          return nil if animal.dead?
+
+          current_housing_of(animal)&.enclosure
+        end
+
         def occupants_of(enclosure)
           current_housings.values
                           .select { |housing| housing.enclosure_id.to_s == enclosure.id.to_s && housing.animal.alive? }

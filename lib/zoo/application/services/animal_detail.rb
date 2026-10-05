@@ -13,7 +13,7 @@ module Zoo
             animal = @command.animals.find(@command.animal_id)
             raise Errors::AnimalNotFound, "動物 #{@command.animal_id} は存在しません" if animal.nil?
 
-            { animal:, enclosure: animal.alive? ? @command.housings.current_housing_of(animal)&.enclosure : nil }
+            { animal:, enclosure: @command.housings.enclosure_of(animal) }
           end
         end
       end
