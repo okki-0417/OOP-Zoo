@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:run_days) do
-            dead = Array.new(@command.days) { deaths_of_a_day }.flatten
+            dead = Array.new(@command.days) { operate_day.casualties }.flatten
 
             ReadModels::RunDaysSummary.new(
               days: @command.days,
@@ -22,20 +22,11 @@ module Zoo
 
         private
 
-        def deaths_of_a_day
-          result = open_for_a_day.call
+        def operate_day
+          result = OperateDay.new(command: @command.operate_day_command).call
           raise result.error if result.failure?
 
           result.value
-        end
-
-        def open_for_a_day
-          OpenForADay.new(
-            command: Commands::OpenForADayCommand.new.bind(
-              enclosures: @command.enclosures, animals: @command.animals,
-              housings: @command.housings, unit_of_work: @command.unit_of_work
-            )
-          )
         end
       end
     end

@@ -19,15 +19,14 @@ RSpec.describe '栄養失調' do
 
   def feed_daily(animal, foods)
     keeper = build_keeper(Zoo::Domain::TaxonClass.mammal)
-    Zoo::Domain::Feeding.new(keeper: keeper, animal: animal, foods: foods).nourish
+    Zoo::Domain::Feeding.new(keeper: keeper, animal: animal, foods: foods).serve
+    animal.settle_nutrition
   end
 
   def malnourish(animal, times: 4)
     times.times { feed_daily(animal, [Zoo::Domain::FoodCatalog.banana]) }
     animal
   end
-
-  before { skip 'nourish の serve への統合可否を検討中・日次給餌ルーチン未配線のため保留' }
 
   describe '栄養バランスと福祉' do
     it '偏った餌しか与えられないと、満腹であってもストレスが増すこと' do

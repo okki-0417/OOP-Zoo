@@ -6,7 +6,7 @@ module Zoo
       const_set(:SERVICES, %i[
         acquire_animal add_enclosure admit_visitors assign_keeper clean_enclosure conceive_animals
         deliver_animal discharge_keeper examine_animal feed_animal hire_keeper hire_veterinarian
-        house_animal name_animal open_for_a_day operate_day release_animal rename_animal run_days
+        house_animal name_animal operate_day release_animal rename_animal run_days
         set_admission_fee transfer_animal treat_animal
         animal_detail animal_list deceased_list enclosure_detail enclosure_list keeper_list
         operating_history population revenue threatened_species veterinarian_list zoo_report

@@ -131,6 +131,38 @@ module Zoo
         end
       end
 
+      describe '#take_meal' do
+        it '[:meat] を2回 take_meal しても meals.categories は [:meat] のままであること' do
+          animal = build
+          animal.take_meal([:meat]).take_meal([:meat])
+          expect(animal.meals.categories).to eq([:meat])
+        end
+      end
+
+      describe '#settle_nutrition' do
+        it 'ライオン(必要1カテゴリ)が [:meat] を食べた日は nutrition_level が 50 から 70 に上がり、meals が空に戻ること' do
+          animal = Animal.reconstitute(
+            id: Shared::Identifier.new, species: SpeciesCatalog.lion, name: Animal::Name.new('レオ'),
+            sex: Animal::Sex.male, health: Animal::Health.full(100), hunger: Animal::Hunger.satisfied,
+            age_in_days: Animal::AgeInDays.new(365 * 5), illness: nil, death: nil, parent_ids: [],
+            nutrition: Animal::Nutrition.new(50)
+          )
+          animal.take_meal([:meat])
+          expect { animal.settle_nutrition }.to change { animal.nutrition_level }.from(50).to(70)
+          expect(animal.meals).to eq(Animal::Meals.none)
+        end
+
+        it '何も食べなかった日は nutrition_level が 100 から 75 に下がること' do
+          animal = build
+          expect { animal.settle_nutrition }.to change { animal.nutrition_level }.from(100).to(75)
+        end
+
+        it '死亡個体は nutrition_level が変わらないこと' do
+          animal = build.die
+          expect { animal.settle_nutrition }.not_to(change { animal.nutrition_level })
+        end
+      end
+
       describe '.reconstitute' do
         def reconstitute(health:, hunger:, stress:, illness:, death:, immunities: [], parent_ids: [])
           Animal.reconstitute(
@@ -171,6 +203,17 @@ module Zoo
           )
           expect(animal).to be_dead
           expect(animal.cause_of_death).to eq(:old_age)
+        end
+
+        it '栄養状態とその日の食事を復元すること' do
+          animal = Animal.reconstitute(
+            id: Shared::Identifier.new, species: SpeciesCatalog.lion, name: Animal::Name.new('レオ'),
+            sex: Animal::Sex.male, health: Animal::Health.full(100), hunger: Animal::Hunger.satisfied,
+            age_in_days: Animal::AgeInDays.new(365 * 5), illness: nil, death: nil, parent_ids: [],
+            nutrition: Animal::Nutrition.new(40), meals: Animal::Meals.new([:meat])
+          )
+          expect(animal.nutrition_level).to eq(40)
+          expect(animal.meals.categories).to eq([:meat])
         end
 
         it '鳴き声は保存せず、種の既定の声に戻ること(ライオンはガオー)' do

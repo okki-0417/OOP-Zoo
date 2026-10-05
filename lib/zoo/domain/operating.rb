@@ -58,7 +58,7 @@ module Zoo
 
         @occupancies.each do |occupancy|
           Infestation.new(occupancy.enclosure, occupancy).spread
-          Contagion.new(occupancy.enclosure, occupancy).spread
+          Contagion.new(occupancy.enclosure, occupancy, random: @random).spread
           occupancy.each do |animal|
             AnimalDay.new(animal:, enclosure: occupancy.enclosure, occupancy:, season: @zoo.season).run
           end
@@ -87,6 +87,10 @@ module Zoo
 
       def enclosures
         @occupancies.map(&:enclosure)
+      end
+
+      def casualties
+        @dead.dup
       end
 
       def on_exhibit

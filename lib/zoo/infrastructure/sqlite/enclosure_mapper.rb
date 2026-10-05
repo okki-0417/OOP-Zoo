@@ -10,7 +10,9 @@ module Zoo
             name: enclosure.name,
             celsius: enclosure.temperature.celsius,
             capacity: enclosure.capacity,
-            cleanliness: enclosure.cleanliness.level
+            cleanliness: enclosure.cleanliness.level,
+            enrichment: enclosure.enrichment.level,
+            climate_controlled: enclosure.climate_controlled? ? 1 : 0
           }
         end
 
@@ -20,7 +22,9 @@ module Zoo
             name: row['name'],
             temperature: Domain::Shared::Temperature.celsius(row['celsius']),
             capacity: row['capacity'],
-            cleanliness: Domain::Enclosure::Cleanliness.new(row['cleanliness'])
+            cleanliness: Domain::Enclosure::Cleanliness.new(row['cleanliness']),
+            enrichment: Domain::Enclosure::Enrichment.new(row['enrichment']),
+            climate_controlled: row['climate_controlled'] == 1
           )
         end
       end

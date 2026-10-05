@@ -17,7 +17,7 @@ module Zoo
 
       ILLNESS_VULNERABILITY_INCREMENT = 0.5
 
-      attr_reader :id, :species, :parent_ids, :illness
+      attr_reader :id, :species, :parent_ids, :illness, :meals
 
       def name
         @name.to_s
@@ -39,6 +39,7 @@ module Zoo
         @hunger = Hunger.satisfied
         @stress = Stress.calm
         @nutrition = Nutrition.nourished
+        @meals = Meals.none
         @death = nil
         @illness = nil
         @immunities = []
@@ -49,7 +50,7 @@ module Zoo
 
       def self.reconstitute(id:, species:, name:, sex:, health:, hunger:, age_in_days:, illness:, death:, parent_ids:,
                             stress: Stress.calm, immunities: [], nutrition: Nutrition.nourished,
-                            pregnancy: nil, miscarried: false)
+                            pregnancy: nil, miscarried: false, meals: Meals.none)
         allocate.tap do |animal|
           animal.instance_variable_set(:@id, id)
           animal.instance_variable_set(:@species, species)
@@ -59,6 +60,7 @@ module Zoo
           animal.instance_variable_set(:@hunger, hunger)
           animal.instance_variable_set(:@stress, stress)
           animal.instance_variable_set(:@nutrition, nutrition)
+          animal.instance_variable_set(:@meals, meals)
           animal.instance_variable_set(:@age_in_days, age_in_days)
           animal.instance_variable_set(:@voice, Voice.from(species.default_voice))
           animal.instance_variable_set(:@illness, illness)
@@ -251,14 +253,25 @@ module Zoo
       NUTRITION_GAIN = 20
       NUTRITION_LOSS = 25
 
-      def improve_nutrition
-        @nutrition = @nutrition.improved_by(NUTRITION_GAIN)
+      def take_meal(food_categories)
+        @meals = @meals.with(food_categories)
         self
       end
 
-      def decline_nutrition
-        @nutrition = @nutrition.declined_by(NUTRITION_LOSS)
+      def settle_nutrition
+        return self if dead?
+
+        @nutrition = if @meals.balanced_for?(required_food_variety)
+                       @nutrition.improved_by(NUTRITION_GAIN)
+                     else
+                       @nutrition.declined_by(NUTRITION_LOSS)
+                     end
+        @meals = Meals.none
         self
+      end
+
+      def nutrition_level
+        @nutrition.level
       end
 
       def malnourished?
@@ -424,6 +437,10 @@ module Zoo
 
       def expected_offspring_sex
         @pregnancy&.sex
+      end
+
+      def gestation_days
+        @pregnancy&.gestation_days
       end
 
       def expected_offspring_inbreeding

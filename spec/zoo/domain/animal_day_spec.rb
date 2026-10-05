@@ -44,6 +44,32 @@ RSpec.describe Zoo::Domain::AnimalDay do
         .to change { junior.current_health }.by_at_most(-1)
     end
 
+    it '給餌されなかった個体は settle_nutrition により nutrition_level が 100 から 75 になること' do
+      enclosure = savanna
+      lion = build_adult(catalog.lion)
+
+      expect { animal_day(lion, enclosure, [lion]).run }.to change { lion.nutrition_level }.from(100).to(75)
+    end
+
+    it '妊娠中のメスは gestate(1) され、gestation_days が 0 から 1 になること' do
+      enclosure = savanna
+      sire, dam = build_pair(catalog.lion)
+      dam.conceive
+
+      animal_day(dam, enclosure, [sire, dam]).run
+      dam.gestate(catalog.lion.gestation_period_days - 1)
+      expect(dam).to be_ready_to_deliver
+    end
+
+    it '外傷で死亡した個体は同じ日に加齢しないこと' do
+      enclosure = savanna
+      senior = build_animal(catalog.lion, name: '長老', sex: sex.male, age_in_days: 4000)
+      junior = build_adult(catalog.lion, name: '若', sex: sex.male, max_health: 1)
+
+      expect { animal_day(junior, enclosure, [senior, junior]).run }.not_to(change { junior.age_in_days })
+      expect(junior.cause_of_death).to eq(:injury)
+    end
+
     it '死亡している個体は加齢もストレスも受けないこと' do
       enclosure = savanna
       dead = build_adult(catalog.lion)

@@ -72,6 +72,28 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect(report.balance).not_to be_negative
     end
 
+    it '感染源と同居していても、伝播しない乱数(rand=99 ≥ 伝播確率50%)なら同居個体は発病しないこと' do
+      carrier = build_adult(catalog.grevys_zebra, name: '感染源', sex: Zoo::Domain::Animal::Sex.female)
+      carrier.fall_ill(Zoo::Domain::IllnessCatalog.cold)
+      animals.save(carrier)
+      housings.save(housed(carrier, enclosure))
+
+      service.call
+
+      expect(animals.find(zebra.id)).not_to be_sick
+    end
+
+    it '感染源と同居していて、伝播する乱数(rand=0)なら同居個体に感染すること' do
+      carrier = build_adult(catalog.grevys_zebra, name: '感染源', sex: Zoo::Domain::Animal::Sex.female)
+      carrier.fall_ill(Zoo::Domain::IllnessCatalog.cold)
+      animals.save(carrier)
+      housings.save(housed(carrier, enclosure))
+
+      operate_with(instance_double(Random, rand: 0)).call
+
+      expect(animals.find(zebra.id).illness).to eq(Zoo::Domain::IllnessCatalog.cold)
+    end
+
     it '疫病が発生する乱数(rand=0)だと在園個体が発病し、result.value.outbreak に名前が入ること' do
       outbreak_random = instance_double(Random)
       allow(outbreak_random).to receive(:rand).and_return(0)
@@ -80,6 +102,14 @@ RSpec.describe Zoo::Application::Services::OperateDay do
 
       expect(report.outbreak).to eq('シマオ')
       expect(animals.find(zebra.id)).to be_sick
+    end
+
+    it 'その日に死亡した個体を result.value.casualties で返すこと' do
+      elder = build_animal(catalog.grevys_zebra, name: '老', age_in_days: 1_000_000)
+      animals.save(elder)
+      housings.save(housed(elder, enclosure))
+
+      expect(service.call.value.casualties.map(&:name)).to eq(['老'])
     end
   end
 end

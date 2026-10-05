@@ -14,16 +14,7 @@ module Zoo
       def serve
         reject!(attendance_violations + palatability_violations)
         @animal.satisfy_hunger(satiety)
-        self
-      end
-
-      def nourish
-        reject!(attendance_violations)
-        if nutritionally_adequate?
-          @animal.improve_nutrition
-        else
-          @animal.decline_nutrition
-        end
+        @animal.take_meal(offered_categories)
         self
       end
 

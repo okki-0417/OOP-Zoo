@@ -97,28 +97,16 @@ module Zoo
         end
       end
 
-      describe '#nourish' do
-        before { skip 'nourish の serve への統合可否を検討中・日次給餌ルーチン未配線のため保留' }
-
-        it 'バランスの取れた給餌は栄養失調から回復させること' do
-          3.times { feeding(macaque, [FoodCatalog.banana]).nourish }
-          expect(macaque).to be_malnourished
-          3.times { feeding(macaque, [FoodCatalog.banana, FoodCatalog.cricket]).nourish }
-          expect(macaque).not_to be_malnourished
+      describe '#serve の食事記録' do
+        it '果実のバナナを与えると animal.meals.categories に :fruit が加わること' do
+          feeding(macaque, [FoodCatalog.banana]).serve
+          expect(macaque.meals.categories).to eq([:fruit])
         end
 
-        it '偏った給餌は栄養を悪化させること' do
-          3.times { feeding(macaque, [FoodCatalog.banana]).nourish }
-          expect(macaque).to be_malnourished
-        end
-
-        it '食性に合わない餌が混じっても raise しないこと' do
-          expect { feeding(elephant, [FoodCatalog.hay, FoodCatalog.horse_meat]).nourish }.not_to raise_error
-        end
-
-        it '専門外の飼育員は FeedingNotAllowed であること' do
-          expect { feeding(macaque, [FoodCatalog.banana], by: bird_keeper).nourish }
-            .to raise_error(Errors::FeedingNotAllowed)
+        it '同じ日に2回に分けてバナナとコオロギを与えると meals.categories が [:fruit, :insect] になること' do
+          feeding(macaque, [FoodCatalog.banana]).serve
+          feeding(macaque, [FoodCatalog.cricket]).serve
+          expect(macaque.meals.categories).to eq(%i[fruit insect])
         end
       end
     end

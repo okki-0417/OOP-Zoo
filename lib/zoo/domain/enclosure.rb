@@ -52,15 +52,17 @@ module Zoo
         season.felt_temperature(@temperature)
       end
 
-      def self.reconstitute(id:, name:, temperature:, capacity:, cleanliness:)
+      def self.reconstitute(id:, name:, temperature:, capacity:, cleanliness:,
+                            enrichment: Enrichment.stimulating, climate_controlled: false)
         allocate.tap do |enclosure|
           enclosure.instance_variable_set(:@id, id)
           enclosure.instance_variable_set(:@name, name)
           enclosure.instance_variable_set(:@temperature, temperature)
           enclosure.instance_variable_set(:@capacity, capacity)
           enclosure.instance_variable_set(:@area_sqm, nil)
+          enclosure.instance_variable_set(:@climate_controlled, climate_controlled)
           enclosure.instance_variable_set(:@cleanliness, cleanliness)
-          enclosure.instance_variable_set(:@enrichment, Enrichment.stimulating)
+          enclosure.instance_variable_set(:@enrichment, enrichment)
         end
       end
 

@@ -96,4 +96,21 @@ RSpec.describe '妊娠と出産' do
       end
     end
   end
+
+  describe '日々の経過' do
+    context '妊娠中のメスがエリアで1日を過ごすと' do
+      it '妊娠日数が1日進むこと' do
+        enclosure = Zoo::Domain::Enclosure.new(
+          name: '猛獣舎', temperature: Zoo::Domain::Shared::Temperature.celsius(20), capacity: 4
+        )
+        sire, dam = mated_dam(catalog.lion)
+        occupancy = build_occupancy(enclosure, [sire, dam])
+        Zoo::Domain::AnimalDay.new(animal: dam, enclosure:, occupancy:).run
+        dam.gestate(catalog.lion.gestation_period_days - 2)
+        expect(dam).not_to be_ready_to_deliver
+        dam.gestate(1)
+        expect(dam).to be_ready_to_deliver
+      end
+    end
+  end
 end

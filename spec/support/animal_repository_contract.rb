@@ -41,4 +41,37 @@ RSpec.shared_examples 'an animal repository' do
     expect(found).to be_sick
     expect(found.immune_to?(medical::IllnessCatalog.cold)).to be(true)
   end
+
+  it '栄養状態・その日の食事・妊娠日数を保存して復元できること' do
+    sire, dam = build_pair(catalog.lion)
+    dam.conceive(inbreeding: 0.125)
+    dam.gestate(30)
+    dam.take_meal([:meat])
+    dam.settle_nutrition
+    dam.settle_nutrition
+    dam.take_meal([:meat])
+
+    repository.save(dam)
+    found = repository.find(dam.id)
+
+    expect(found.nutrition_level).to eq(75)
+    expect(found.meals.categories).to eq([:meat])
+    expect(found.gestation_days).to eq(30)
+    expect(found.expected_offspring_inbreeding).to eq(0.125)
+    expect(found.expected_offspring_sex).to eq(dam.expected_offspring_sex)
+    expect(sire).not_to be_expecting
+  end
+
+  it '流産した事実を保存して復元できること' do
+    _sire, dam = build_pair(catalog.lion)
+    dam.conceive
+    dam.get_hungrier(100)
+    dam.gestate(1)
+
+    repository.save(dam)
+    found = repository.find(dam.id)
+
+    expect(found).to be_miscarried
+    expect(found).not_to be_expecting
+  end
 end

@@ -29,4 +29,18 @@ RSpec.shared_examples 'an enclosure repository' do
 
     expect(repository.all.size).to eq(2)
   end
+
+  it '刺激度と空調の有無を保存して復元できること' do
+    enclosure = Zoo::Domain::Enclosure.new(
+      name: '温室', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 4,
+      climate_controlled: true
+    )
+    enclosure.deplete_enrichment(40)
+
+    repository.save(enclosure)
+    found = repository.find(enclosure.id)
+
+    expect(found.enrichment.level).to eq(60)
+    expect(found).to be_climate_controlled
+  end
 end

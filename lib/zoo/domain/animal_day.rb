@@ -16,9 +16,13 @@ module Zoo
       def run
         return if @animal.dead?
 
+        @animal.settle_nutrition
         apply_welfare
         @animal.injure(@companionship.injury)
-        @animal.grow_older(1) unless @animal.dead?
+        return if @animal.dead?
+
+        @animal.grow_older(1)
+        @animal.gestate(1)
       end
 
       private

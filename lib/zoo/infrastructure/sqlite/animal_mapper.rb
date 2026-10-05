@@ -18,6 +18,12 @@ module Zoo
             health_max: animal.max_health,
             hunger: animal.hunger_level,
             stress: animal.stress_level,
+            nutrition: animal.nutrition_level,
+            meals: animal.meals.categories.join(','),
+            pregnancy_sex: animal.expected_offspring_sex&.value&.to_s,
+            gestation_days: animal.gestation_days,
+            pregnancy_inbreeding: animal.expected_offspring_inbreeding,
+            miscarried: animal.miscarried? ? 1 : 0,
             age_in_days: animal.age_in_days,
             illness_key: animal.illness && illness_key(animal.illness)&.to_s,
             immunities: animal.immunities.map { |ill| illness_key(ill)&.to_s }.compact.join(','),
@@ -35,6 +41,10 @@ module Zoo
             health: Domain::Animal::Health.new(current: row['health_current'], max: row['health_max']),
             hunger: Domain::Animal::Hunger.new(row['hunger']),
             stress: Domain::Animal::Stress.new(row['stress']),
+            nutrition: Domain::Animal::Nutrition.new(row['nutrition']),
+            meals: Domain::Animal::Meals.new(row['meals'].to_s.split(',')),
+            pregnancy: parse_pregnancy(row),
+            miscarried: row['miscarried'] == 1,
             age_in_days: Domain::Animal::AgeInDays.new(row['age_in_days']),
             illness: row['illness_key'] && Illnesses.find(row['illness_key']),
             immunities: parse_immunities(row['immunities']),
@@ -55,6 +65,16 @@ module Zoo
 
         def parse_parent_ids(value)
           value.to_s.split(',').reject(&:empty?).map { |id| Domain::Shared::Identifier.new(id) }
+        end
+
+        def parse_pregnancy(row)
+          return nil if row['pregnancy_sex'].nil?
+
+          Domain::Animal::Pregnancy.new(
+            sex: Domain::Animal::Sex.new(row['pregnancy_sex']),
+            gestation_days: row['gestation_days'],
+            inbreeding_coefficient: row['pregnancy_inbreeding']
+          )
         end
 
         def parse_immunities(value)

@@ -6,9 +6,25 @@ module Zoo
   module Infrastructure
     module Sqlite
       class Database
+        ADDED_COLUMNS = {
+          animals: {
+            nutrition: 'INTEGER NOT NULL DEFAULT 100',
+            meals: "TEXT NOT NULL DEFAULT ''",
+            pregnancy_sex: 'TEXT',
+            gestation_days: 'INTEGER',
+            pregnancy_inbreeding: 'REAL',
+            miscarried: 'INTEGER NOT NULL DEFAULT 0'
+          },
+          enclosures: {
+            enrichment: 'INTEGER NOT NULL DEFAULT 100',
+            climate_controlled: 'INTEGER NOT NULL DEFAULT 0'
+          }
+        }.freeze
+
         def initialize(path = ':memory:')
           @db = path == ':memory:' ? Sequel.sqlite : Sequel.sqlite(path)
           create_schema
+          add_missing_columns
         end
 
         def execute(sql, *params)
@@ -30,6 +46,15 @@ module Zoo
         end
 
         private
+
+        def add_missing_columns
+          ADDED_COLUMNS.each do |table, columns|
+            existing = @db.schema(table).map(&:first)
+            columns.except(*existing).each do |name, definition|
+              @db.run("ALTER TABLE #{table} ADD COLUMN #{name} #{definition}")
+            end
+          end
+        end
 
         def create_schema
           @db.run(<<~SQL)

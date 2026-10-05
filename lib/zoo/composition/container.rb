@@ -41,7 +41,6 @@ module Zoo
         hire_veterinarian: Application::Services::HireVeterinarian,
         house_animal: Application::Services::HouseAnimal,
         name_animal: Application::Services::NameAnimal,
-        open_for_a_day: Application::Services::OpenForADay,
         operate_day: Application::Services::OperateDay,
         release_animal: Application::Services::ReleaseAnimal,
         rename_animal: Application::Services::RenameAnimal,
