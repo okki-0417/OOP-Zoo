@@ -173,6 +173,19 @@ module Zoo
         end
       end
 
+      describe '#ailing?' do
+        it '健康なら false、肺炎(sick?)・空腹度100(starving?)・体力15/100(weak?)のいずれかなら true を返すこと' do
+          expect(build.ailing?).to be(false)
+          expect(build.tap { |a| a.fall_ill(illnesses.pneumonia) }.ailing?).to be(true)
+          expect(build.get_hungrier(100).ailing?).to be(true)
+          expect(build.tap { |a| a.injure(85) }.ailing?).to be(true)
+        end
+
+        it '肺炎のまま死亡した個体は false を返すこと' do
+          expect(build.tap { |a| a.fall_ill(illnesses.pneumonia) }.die.ailing?).to be(false)
+        end
+      end
+
       describe '#fed_today?' do
         it 'take_meal([:meat]) 前は false、後は true を返すこと' do
           animal = build

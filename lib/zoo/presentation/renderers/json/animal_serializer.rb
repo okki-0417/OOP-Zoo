@@ -11,7 +11,7 @@ module Zoo
             {
               id: animal.id.to_s, name: animal.name, species: animal.species_name, alive: animal.alive?,
               health: animal.current_health, max_health: animal.max_health,
-              ailing: animal.alive? && (animal.sick? || animal.starving? || animal.weak?),
+              ailing: animal.ailing?,
               hungry: animal.alive? && animal.hungry?, fed_today: animal.fed_today?
             }
           end

@@ -132,6 +132,10 @@ module Zoo
         dead? || @health.empty?
       end
 
+      def ailing?
+        alive? && (sick? || starving? || weak?)
+      end
+
       def die(cause: :unknown)
         return self if dead?
 

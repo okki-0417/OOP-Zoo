@@ -397,6 +397,39 @@ RSpec.describe '動物' do
     end
   end
 
+  describe '体調不良(手当てが要る状態)' do
+    it '健康で満腹な個体は体調不良ではないこと' do
+      expect(adult_lion).not_to be_ailing
+    end
+
+    context '病気(風邪)にかかっていると' do
+      it '体調不良であること' do
+        expect(adult_lion.tap { |lion| lion.fall_ill(illnesses.cold) }).to be_ailing
+      end
+    end
+
+    context '飢餓状態(空腹度100)だと' do
+      it '体調不良であること' do
+        expect(adult_lion.get_hungrier(100)).to be_ailing
+      end
+    end
+
+    context '衰弱(体力100のうち85を失う)していると' do
+      it '体調不良であること' do
+        expect(adult_lion.tap { |lion| lion.injure(85) }).to be_ailing
+      end
+    end
+
+    context '死んだ個体は' do
+      it '病気のまま死んでも体調不良とはみなさないこと' do
+        lion = adult_lion.tap { |animal| animal.fall_ill(illnesses.cold) }
+        lion.die
+
+        expect(lion).not_to be_ailing
+      end
+    end
+  end
+
   describe '見た目の表示' do
     it '名前・種・性別・ライフステージが分かる形で表されること' do
       expect(build_animal(name: 'Jack').to_s).to eq('Jack(ライオン/オス/幼体)')
