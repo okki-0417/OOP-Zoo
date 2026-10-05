@@ -21,7 +21,8 @@ RSpec.describe Zoo::Application::Services::DischargeKeeper do
 
   def discharge(keeper_id: keeper.id, enclosure_id: enclosure.id)
     command = Zoo::Application::Commands::DischargeKeeperCommand.new(keeper_id:, enclosure_id:)
-    described_class.new(command: command.bind(keepers:, enclosures:, assignments:, unit_of_work:)).call
+    described_class.new(command: command.bind(keepers:, enclosures:, housings: Factory::HousingRepository.build, assignments:,
+                                              unit_of_work:)).call
   end
 
   def assign

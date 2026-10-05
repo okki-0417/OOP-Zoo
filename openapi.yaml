@@ -328,6 +328,68 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Enclosure' }
         '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /enclosures/{enclosure_id}/enrichments:
+    parameters:
+      - { name: enclosure_id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: 遊具などを補充して刺激度を戻す(飼育員の勤務時間を30分使う)
+      operationId: enrichEnclosure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [keeper_id]
+              properties:
+                keeper_id: { type: string }
+      responses:
+        '200':
+          description: 補充後のエリア
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Enclosure' }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /enclosures/{enclosure_id}/keepers:
+    parameters:
+      - { name: enclosure_id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: 飼育員をエリアの担当に割り当てる(在籍する綱をすべて専門にしている必要がある)
+      operationId: assignKeeper
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [keeper_id]
+              properties:
+                keeper_id: { type: string }
+      responses:
+        '200':
+          description: 割り当て後のエリア
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Enclosure' }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+  /enclosures/{enclosure_id}/keepers/{keeper_id}:
+    parameters:
+      - { name: enclosure_id, in: path, required: true, schema: { type: string } }
+      - { name: keeper_id, in: path, required: true, schema: { type: string } }
+    delete:
+      summary: 飼育員をエリアの担当から外す
+      operationId: dischargeKeeper
+      responses:
+        '200':
+          description: 担当を外した後のエリア
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Enclosure' }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
 
   /breedings:
     post:
@@ -389,6 +451,19 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Keeper' }
         '400': { $ref: '#/components/responses/Error' }
+  /keepers/{keeper_id}/rounds:
+    parameters:
+      - { name: keeper_id, in: path, required: true, schema: { type: string } }
+    post:
+      summary: 担当エリアを見回る(未給餌の動物への給餌・汚れたら清掃・刺激が乏しければ補充)
+      operationId: makeRounds
+      responses:
+        '200':
+          description: 見回りの結果
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoundsReport' }
+        '404': { $ref: '#/components/responses/Error' }
   /veterinarians:
     get:
       summary: 獣医一覧
@@ -660,7 +735,7 @@ components:
         severity: { type: string, enum: [critical, warning, notice] }
         kind:
           type: string
-          enum: [insolvent, no_keeper, no_veterinarian, filthy, overcrowded, barren,
+          enum: [insolvent, no_keeper, no_veterinarian, unassigned, filthy, overcrowded, barren,
                  grave, guarded, starving, hungry, sick, malnourished, stressed, climate, due, unhoused]
         subject:
           type: object
@@ -682,7 +757,7 @@ components:
         filthy: { type: boolean }
     Enclosure:
       type: object
-      required: [id, name, capacity, population, cleanliness, filthy, occupants]
+      required: [id, name, capacity, population, cleanliness, filthy, enrichment, barren, keepers, occupants]
       properties:
         id: { type: string }
         name: { type: string }
@@ -690,16 +765,59 @@ components:
         population: { type: integer }
         cleanliness: { type: integer }
         filthy: { type: boolean }
+        enrichment: { type: integer }
+        barren: { type: boolean }
+        keepers:
+          type: array
+          description: 担当の飼育員
+          items: { $ref: '#/components/schemas/Ref' }
         occupants:
           type: array
           items: { $ref: '#/components/schemas/AnimalSummary' }
+    Ref:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string }
+        name: { type: string }
     Keeper:
       type: object
-      required: [id, name, specialties]
+      required: [id, name, specialties, worked_minutes, remaining_minutes, enclosures]
       properties:
         id: { type: string }
         name: { type: string }
         specialties: { type: string }
+        worked_minutes: { type: integer, description: その日に働いた分数 }
+        remaining_minutes: { type: integer, description: その日の残り勤務時間(1日480分) }
+        enclosures:
+          type: array
+          description: 担当エリア
+          items: { $ref: '#/components/schemas/Ref' }
+    RoundsReport:
+      type: object
+      required: [keeper_id, keeper_name, remaining_minutes, rounds]
+      properties:
+        keeper_id: { type: string }
+        keeper_name: { type: string }
+        remaining_minutes: { type: integer }
+        rounds:
+          type: array
+          items:
+            type: object
+            required: [enclosure, fed, skipped, cleaned, enriched]
+            properties:
+              enclosure: { $ref: '#/components/schemas/Ref' }
+              fed: { type: array, items: { type: string } }
+              skipped:
+                type: array
+                items:
+                  type: object
+                  required: [subject, reason]
+                  properties:
+                    subject: { type: string }
+                    reason: { type: string }
+              cleaned: { type: boolean }
+              enriched: { type: boolean }
     Veterinarian:
       type: object
       required: [id, name]

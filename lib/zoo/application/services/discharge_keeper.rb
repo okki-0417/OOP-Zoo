@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:discharge_keeper) do
-            @command.unit_of_work.run do
+            enclosure = @command.unit_of_work.run do
               keeper = @command.keepers.find(@command.keeper_id)
               raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません" if keeper.nil?
 
@@ -21,7 +21,11 @@ module Zoo
               relieving = Domain::Relieving.of(current_tending!(keeper, enclosure), assignment: assignment)
               relieving.violation!
               @command.assignments.save(relieving)
+              enclosure
             end
+            ReadModels::EnclosureProfile.housed(
+              enclosure, housings: @command.housings, assignments: @command.assignments
+            )
           end
         end
 

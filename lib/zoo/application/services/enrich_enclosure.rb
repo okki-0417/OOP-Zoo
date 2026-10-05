@@ -3,13 +3,13 @@
 module Zoo
   module Application
     module Services
-      class AssignKeeper
+      class EnrichEnclosure
         def initialize(command:)
           @command = command
         end
 
         def call
-          Result.capture(:assign_keeper) do
+          Result.capture(:enrich_enclosure) do
             enclosure = @command.unit_of_work.run do
               keeper = @command.keepers.find(@command.keeper_id)
               raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません" if keeper.nil?
@@ -17,14 +17,9 @@ module Zoo
               enclosure = @command.enclosures.find(@command.enclosure_id)
               raise Errors::EnclosureNotFound, "エリア #{@command.enclosure_id} は存在しません" if enclosure.nil?
 
-              occupancy = @command.housings.all_occupancies.find { |o| o.enclosure == enclosure } ||
-                          Domain::Occupancy.new(housings: [], enclosure: enclosure)
-              assignment = Domain::Assignment.new(enclosure, @command.assignments.keepers_of(enclosure))
-              tending = Domain::Tending.new(
-                keeper: keeper, enclosure: enclosure, occupancy: occupancy, assignment: assignment
-              )
-              tending.violation!
-              @command.assignments.save(tending)
+              Domain::Enriching.new(keeper:, enclosure:).perform
+              @command.enclosures.save(enclosure)
+              @command.keepers.save(keeper)
               enclosure
             end
             ReadModels::EnclosureProfile.housed(

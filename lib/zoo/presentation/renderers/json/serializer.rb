@@ -26,12 +26,25 @@ module Zoo
             {
               id: profile.id, name: profile.name, capacity: profile.capacity, population: profile.population,
               cleanliness: profile.cleanliness, filthy: profile.filthy,
+              enrichment: profile.enrichment, barren: profile.barren,
+              keepers: profile.keepers.map(&:to_h),
               occupants: profile.occupants.map { |o| AnimalSerializer.animal_summary(o) }
             }
           end
 
           def keeper(summary)
-            { id: summary.id, name: summary.name, specialties: summary.specialties }
+            {
+              id: summary.id, name: summary.name, specialties: summary.specialties,
+              worked_minutes: summary.worked_minutes, remaining_minutes: summary.remaining_minutes,
+              enclosures: summary.enclosures.map(&:to_h)
+            }
+          end
+
+          def rounds_report(report)
+            {
+              keeper_id: report.keeper_id, keeper_name: report.keeper_name,
+              remaining_minutes: report.remaining_minutes, rounds: report.rounds
+            }
           end
 
           def veterinarian(summary)

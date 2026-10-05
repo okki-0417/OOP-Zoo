@@ -19,7 +19,9 @@ module Zoo
               *StaffingAlerts.new(
                 zoo:, occupants:, keepers: @command.keepers.all, veterinarians: @command.veterinarians.all
               ).to_a,
-              *occupancies.flat_map { |occupancy| EnclosureAlerts.new(occupancy:).to_a },
+              *occupancies.flat_map do |occupancy|
+                EnclosureAlerts.new(occupancy:, keepers: @command.assignments.keepers_of(occupancy.enclosure)).to_a
+              end,
               *occupancies.flat_map { |occupancy| housed_animal_alerts(occupancy, zoo.season) },
               *unhoused_alerts(occupants)
             ].sort_by(&:rank)

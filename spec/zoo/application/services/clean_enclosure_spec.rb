@@ -22,7 +22,8 @@ RSpec.describe Zoo::Application::Services::CleanEnclosure do
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
 
   def clean(command)
-    described_class.new(command: command.bind(keepers:, enclosures:, housings:, unit_of_work:)).call
+    described_class.new(command: command.bind(keepers:, enclosures:, housings:, unit_of_work:,
+                                              assignments: Factory::AssignmentRepository.build)).call
   end
 
   describe '#call' do

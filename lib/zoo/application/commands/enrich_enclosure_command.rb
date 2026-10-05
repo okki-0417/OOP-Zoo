@@ -3,7 +3,7 @@
 module Zoo
   module Application
     module Commands
-      DischargeKeeperCommand = Data.define(
+      EnrichEnclosureCommand = Data.define(
         :keeper_id, :enclosure_id,
         :keepers, :enclosures, :housings, :assignments, :unit_of_work
       ) do

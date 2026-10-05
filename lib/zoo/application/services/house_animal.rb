@@ -25,7 +25,9 @@ module Zoo
               @command.housings.save(housing)
               enclosure
             end
-            ReadModels::EnclosureProfile.housed(enclosure, housings: @command.housings)
+            ReadModels::EnclosureProfile.housed(
+              enclosure, housings: @command.housings, assignments: @command.assignments
+            )
           end
         end
       end

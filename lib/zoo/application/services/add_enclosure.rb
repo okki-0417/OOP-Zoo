@@ -24,7 +24,7 @@ module Zoo
               @command.enclosures.save(enclosure)
               enclosure
             end
-            ReadModels::EnclosureProfile.of(enclosure, occupants: [])
+            ReadModels::EnclosureProfile.of(enclosure, occupants: [], keepers: [])
           end
         end
       end

@@ -18,8 +18,10 @@ RSpec.describe Zoo::Application::Queries::AlertList do
   end
 
   def alerts(animals: [lion, mate], housed_in: hill, zoo: Factory::ZooRepository.build, keepers: self.keepers,
-             veterinarians: self.veterinarians, unhoused: [])
+             veterinarians: self.veterinarians, unhoused: [], tended: true)
+    tendings = tended ? keepers.map { |keeper| Zoo::Domain::Tending.new(keeper:, enclosure: housed_in) } : []
     command = Factory::AlertListCommand.with_bind(
+      assignments: Factory::AssignmentRepository.build(tendings),
       animals: Factory::AnimalRepository.build(animals + unhoused),
       housings: Factory::HousingRepository.build(animals.map { |animal| housed(animal, housed_in) }),
       keepers: Factory::KeeperRepository.build(keepers),
@@ -62,6 +64,10 @@ RSpec.describe Zoo::Application::Queries::AlertList do
       hill.soil(80)
       hill.deplete_enrichment(80)
       expect(kinds(alerts)).to include([:filthy, 'ライオンの丘'], [:barren, 'ライオンの丘'])
+    end
+
+    it '動物がいるのに担当の飼育員がいないエリアは kind=:unassigned で返すこと' do
+      expect(kinds(alerts(tended: false))).to include([:unassigned, 'ライオンの丘'])
     end
 
     it '過密なエリアは kind=:overcrowded で返すこと' do
@@ -135,7 +141,7 @@ RSpec.describe Zoo::Application::Queries::AlertList do
       lion.get_hungrier(85)
 
       list = alerts(zoo:, keepers: [])
-      expect(list.map(&:severity)).to eq(%i[critical warning warning notice])
+      expect(list.map(&:severity)).to eq(%i[critical warning warning warning notice])
       expect(list[1]).to have_attributes(kind: :no_keeper)
     end
   end

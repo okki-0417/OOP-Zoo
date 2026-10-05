@@ -13,7 +13,9 @@ module Zoo
             enclosure = @command.enclosures.find(@command.enclosure_id)
             raise Errors::EnclosureNotFound, "エリア #{@command.enclosure_id} は存在しません" if enclosure.nil?
 
-            ReadModels::EnclosureProfile.housed(enclosure, housings: @command.housings)
+            ReadModels::EnclosureProfile.housed(
+              enclosure, housings: @command.housings, assignments: @command.assignments
+            )
           end
         end
       end

@@ -184,6 +184,65 @@ RSpec.describe Zoo::Presentation::Rest do
     end
   end
 
+  describe '担当割当と見回り' do
+    def assign(enclosure_id, keeper_id)
+      post_json "/enclosures/#{enclosure_id}/keepers", keeper_id:
+    end
+
+    it 'POST /enclosures/:id/keepers で担当を割り当てると、エリアの keepers と飼育員の enclosures に現れること' do
+      keeper_id = hire_keeper(name: '佐藤')
+      enclosure_id = build_enclosure(name: 'サバンナ')
+
+      assign(enclosure_id, keeper_id)
+
+      expect(last_response.status).to eq(200)
+      expect(body['keepers']).to eq([{ 'id' => keeper_id, 'name' => '佐藤' }])
+      get '/keepers'
+      expect(body.first).to include('enclosures' => [{ 'id' => enclosure_id, 'name' => 'サバンナ' }],
+                                    'remaining_minutes' => 480, 'worked_minutes' => 0)
+    end
+
+    it 'DELETE /enclosures/:id/keepers/:keeper_id で担当を外すと keepers が空になること' do
+      keeper_id = hire_keeper
+      enclosure_id = build_enclosure
+      assign(enclosure_id, keeper_id)
+
+      delete "/enclosures/#{enclosure_id}/keepers/#{keeper_id}"
+
+      expect(last_response.status).to eq(200)
+      expect(body['keepers']).to eq([])
+    end
+
+    it 'POST /keepers/:id/rounds で担当エリアの動物に給餌し、見回り結果を返すこと' do
+      keeper_id = hire_keeper
+      enclosure_id = build_enclosure(celsius: 25)
+      animal_id = acquire(name: 'レオ')
+      post_json "/enclosures/#{enclosure_id}/occupants", animal_id: animal_id
+      assign(enclosure_id, keeper_id)
+
+      post "/keepers/#{keeper_id}/rounds"
+
+      expect(last_response.status).to eq(200)
+      expect(body).to include('keeper_id' => keeper_id, 'remaining_minutes' => 470)
+      expect(body['rounds'].first).to include('fed' => ['レオ'], 'skipped' => [], 'cleaned' => false)
+      get "/animals/#{animal_id}"
+      expect(body['meals_today']).to eq(['meat'])
+    end
+
+    it 'POST /enclosures/:id/enrichments で刺激度を戻し(1回30分)、17回目で勤務時間(480分)が足りず WorkNotAllowed の422になること' do
+      keeper_id = hire_keeper
+      enclosure_id = build_enclosure
+
+      post_json "/enclosures/#{enclosure_id}/enrichments", keeper_id: keeper_id
+      expect(last_response.status).to eq(200)
+      expect(body).to include('enrichment' => 100, 'barren' => false)
+
+      16.times { post_json "/enclosures/#{enclosure_id}/enrichments", keeper_id: keeper_id }
+      expect(last_response.status).to eq(422)
+      expect(body['error']).to include('code' => 'WorkNotAllowed')
+    end
+  end
+
   describe 'GET /alerts' do
     it '未収容の個体がいると kind="unhoused"・subject に個体を持つ警告を返すこと' do
       id = acquire(name: 'レオ')

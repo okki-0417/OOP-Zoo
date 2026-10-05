@@ -18,7 +18,8 @@ RSpec.describe Zoo::Application::Queries::EnclosureDetail do
   let(:query) do
     lambda do |enclosure_id|
       command = commands::EnclosureDetailCommand.new(enclosure_id: enclosure_id)
-                                                .bind(enclosures: enclosures, housings: housings)
+                                                .bind(enclosures: enclosures, housings: housings,
+                                                      assignments: Factory::AssignmentRepository.build)
       described_class.new(command: command).call
     end
   end

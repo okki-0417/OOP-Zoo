@@ -44,6 +44,7 @@ const kindIcons: Record<Alert["kind"], string> = {
   insolvent: "💸",
   no_keeper: "🧑‍🌾",
   no_veterinarian: "🧑‍⚕️",
+  unassigned: "📋",
   filthy: "🧹",
   overcrowded: "📦",
   barren: "🪵",

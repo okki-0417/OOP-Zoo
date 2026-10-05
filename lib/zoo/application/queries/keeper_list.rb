@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:keeper_list) do
-            @command.keepers.all.map { |keeper| ReadModels::KeeperSummary.of(keeper) }
+            @command.keepers.all.map { |keeper| ReadModels::KeeperSummary.assigned(keeper, assignments: @command.assignments) }
           end
         end
       end

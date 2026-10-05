@@ -43,9 +43,13 @@ module Zoo
       post('/enclosures/:enclosure_id/occupants') { respond(:house_animal, :enclosure_id, :animal_id) }
       delete('/enclosures/:enclosure_id/occupants/:animal_id') { respond(:release_animal, :animal_id) }
       post('/enclosures/:enclosure_id/cleanings') { respond(:clean_enclosure, :enclosure_id, :keeper_id) }
+      post('/enclosures/:enclosure_id/enrichments') { respond(:enrich_enclosure, :enclosure_id, :keeper_id) }
+      post('/enclosures/:enclosure_id/keepers') { respond(:assign_keeper, :enclosure_id, :keeper_id) }
+      delete('/enclosures/:enclosure_id/keepers/:keeper_id') { respond(:discharge_keeper, :enclosure_id, :keeper_id) }
 
       get('/keepers') { respond(:keeper_list) }
       post('/keepers') { respond(:hire_keeper, :name, :specialties) }
+      post('/keepers/:keeper_id/rounds') { respond(:make_rounds, :keeper_id) }
       get('/veterinarians') { respond(:veterinarian_list) }
       post('/veterinarians') { respond(:hire_veterinarian, :name) }
 

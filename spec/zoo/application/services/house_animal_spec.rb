@@ -20,7 +20,8 @@ RSpec.describe Zoo::Application::Services::HouseAnimal do
 
   def call_with(enclosure_id:, animal_id:, enclosure_repo: enclosures)
     command = Zoo::Application::Commands::HouseAnimalCommand.new(enclosure_id:, animal_id:)
-                                                            .bind(enclosures: enclosure_repo, animals:, housings:, unit_of_work:)
+                                                            .bind(enclosures: enclosure_repo, animals:, housings:, unit_of_work:,
+                                                                  assignments: Factory::AssignmentRepository.build)
     described_class.new(command: command).call
   end
 
