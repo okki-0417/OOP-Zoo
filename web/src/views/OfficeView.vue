@@ -1,46 +1,172 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef } from "vue";
-import { api, unwrap, type DayReport } from "../api/client";
-import ChoreChecklist from "../components/ChoreChecklist.vue";
+import { computed, ref, shallowRef, watch } from "vue";
+import { graphql } from "../api/generated";
+import type { OperateDayMutation } from "../api/generated/graphql";
+import ChoreChecklist, { type Chore } from "../components/ChoreChecklist.vue";
 import MeterBar from "../components/MeterBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
 import { useAlerts } from "../composables/useAlerts";
-import { useCommand } from "../composables/useCommand";
+import { useMutation } from "../composables/useMutation";
 import { useQuery } from "../composables/useQuery";
 import { yen } from "../lib/currency";
 
-const report = useQuery(() => unwrap(api.GET("/report")));
-const checklist = useQuery(() => unwrap(api.GET("/checklist")));
-const operatings = useQuery(() => unwrap(api.GET("/operatings")));
-const threatened = useQuery(() => unwrap(api.GET("/threatened")));
-const deceased = useQuery(() => unwrap(api.GET("/deceased")));
+const OfficeQuery = graphql(`
+  query Office {
+    zoo {
+      balance
+      reputation
+      admissionFee
+    }
+    operatings {
+      day
+      visitors
+      netIncome
+      deaths
+    }
+    enclosures {
+      id
+      name
+      soiled
+      dull
+      occupants {
+        id
+        name
+        alive
+        fedToday
+        species {
+          nameJa
+          threatened
+          conservationCode
+          conservationLabel
+        }
+      }
+    }
+    animals {
+      id
+      name
+      alive
+      sick
+      causeOfDeath
+      species {
+        nameJa
+      }
+    }
+  }
+`);
+
+const OperateDayMutation = graphql(`
+  mutation OperateDay {
+    operateDay {
+      visitors
+      income
+      cost
+      deaths
+      balance
+      outbreak
+    }
+  }
+`);
+
+const RunDaysMutation = graphql(`
+  mutation RunDays($days: Int!) {
+    runDays(days: $days) {
+      days
+      totalDeaths
+    }
+  }
+`);
+
+const SetAdmissionFeeMutation = graphql(`
+  mutation SetAdmissionFee($fee: Int!) {
+    setAdmissionFee(fee: $fee) {
+      admissionFee
+    }
+  }
+`);
+
+const office = useQuery(OfficeQuery);
 const { critical } = useAlerts();
 
-const { busy, run } = useCommand();
-const lastDay = shallowRef<DayReport>();
+const { busy, mutate } = useMutation();
+const lastDay = shallowRef<OperateDayMutation["operateDay"]>();
 const fee = ref(1500);
 
-const today = computed(() => (operatings.data.value?.at(-1)?.day ?? 0) + 1);
-const yesterday = computed(() => operatings.data.value?.at(-1));
-const recentDays = computed(() => (operatings.data.value ?? []).slice(-7).reverse());
-const unfinished = computed(() =>
-  (checklist.data.value ?? []).filter((chore) => chore.done_count < chore.total),
+watch(
+  () => office.data.value?.zoo.admissionFee,
+  (current) => (fee.value = current ?? fee.value),
+  { once: true },
 );
 
-function refresh() {
-  void report.reload();
-  void checklist.reload();
-  void operatings.reload();
-  void threatened.reload();
-  void deceased.reload();
-}
+const zoo = computed(() => office.data.value?.zoo);
+const operatings = computed(() => office.data.value?.operatings ?? []);
+const today = computed(() => (operatings.value.at(-1)?.day ?? 0) + 1);
+const yesterday = computed(() => operatings.value.at(-1));
+const recentDays = computed(() => operatings.value.slice(-7).reverse());
+
+const inhabited = computed(() =>
+  (office.data.value?.enclosures ?? [])
+    .map((enclosure) => ({ ...enclosure, residents: enclosure.occupants.filter((a) => a.alive) }))
+    .filter((enclosure) => enclosure.residents.length > 0),
+);
+
+const chores = computed<Chore[]>(() => {
+  const residents = inhabited.value.flatMap((enclosure) => enclosure.residents);
+  const patients = (office.data.value?.animals ?? []).filter((a) => a.alive && a.sick);
+  const animal = (a: { id: string; name?: string | null }) =>
+    ({ type: "animal", id: a.id, name: a.name ?? "" }) as const;
+  const enclosure = (e: { id: string; name: string }) =>
+    ({ type: "enclosure", id: e.id, name: e.name }) as const;
+  return [
+    {
+      kind: "feeding",
+      label: "給餌",
+      items: residents.map((a) => ({ subject: animal(a), done: a.fedToday })),
+    },
+    {
+      kind: "treatment",
+      label: "治療",
+      items: patients.map((a) => ({ subject: animal(a), done: false })),
+    },
+    {
+      kind: "cleaning",
+      label: "清掃",
+      items: inhabited.value.map((e) => ({ subject: enclosure(e), done: !e.soiled })),
+    },
+    {
+      kind: "enrichment",
+      label: "遊具の補充",
+      items: inhabited.value.map((e) => ({ subject: enclosure(e), done: !e.dull })),
+    },
+  ];
+});
+const unfinished = computed(() =>
+  chores.value
+    .map((chore) => ({ ...chore, left: chore.items.filter((item) => !item.done).length }))
+    .filter((chore) => chore.left > 0),
+);
+
+const threatened = computed(() => {
+  const counts = new Map<string, { nameJa: string; code: string; label: string; count: number }>();
+  for (const { species } of inhabited.value.flatMap((enclosure) => enclosure.residents)) {
+    if (!species.threatened) continue;
+    const found = counts.get(species.nameJa);
+    if (found) found.count += 1;
+    else
+      counts.set(species.nameJa, {
+        nameJa: species.nameJa,
+        code: species.conservationCode,
+        label: species.conservationLabel,
+        count: 1,
+      });
+  }
+  return [...counts.values()];
+});
+const deceased = computed(() => (office.data.value?.animals ?? []).filter((a) => !a.alive));
 
 function confirmClosing(days: number) {
   const concerns = [
-    ...unfinished.value.map(
-      (chore) => `${chore.label}が ${chore.total - chore.done_count} 件残っています`,
-    ),
+    ...unfinished.value.map((chore) => `${chore.label}が ${chore.left} 件残っています`),
     critical.value.length > 0 && `緊急の対応が ${critical.value.length} 件残っています`,
   ].filter(Boolean);
   if (concerns.length === 0) return true;
@@ -49,29 +175,25 @@ function confirmClosing(days: number) {
 
 async function closeDay() {
   if (!confirmClosing(1)) return;
-  const day = await run(() => unwrap(api.POST("/operate")));
-  if (!day) return;
-  lastDay.value = day;
-  refresh();
+  const result = await mutate(OperateDayMutation, {});
+  if (result) lastDay.value = result.operateDay;
 }
 
 async function runWeek() {
   if (!confirmClosing(7)) return;
-  await run(
-    () => unwrap(api.POST("/run-days", { body: { days: 7 } })),
-    (summary) =>
-      summary.total_deaths === 0
-        ? `${summary.days}日間、無事に営業しました`
-        : `${summary.days}日間で ${summary.total_deaths} 頭が亡くなりました`,
+  await mutate(RunDaysMutation, { days: 7 }, ({ runDays }) =>
+    runDays.totalDeaths === 0
+      ? `${runDays.days}日間、無事に営業しました`
+      : `${runDays.days}日間で ${runDays.totalDeaths} 頭が亡くなりました`,
   );
   lastDay.value = undefined;
-  refresh();
 }
 
 async function changeFee() {
-  await run(
-    () => unwrap(api.PATCH("/admission-fee", { body: { fee: fee.value } })),
-    (result) => `入園料を ${yen(result.admission_fee)} にしました`,
+  await mutate(
+    SetAdmissionFeeMutation,
+    { fee: fee.value },
+    ({ setAdmissionFee }) => `入園料を ${yen(setAdmissionFee.admissionFee)} にしました`,
   );
 }
 </script>
@@ -82,23 +204,23 @@ async function changeFee() {
   <div class="board">
     <div>
       <QueryState
-        :loading="report.loading.value"
-        :error="report.error.value"
-        :empty="!report.data.value"
-        @retry="report.reload"
+        :loading="office.loading.value"
+        :error="office.error.value"
+        :empty="!zoo"
+        @retry="office.reload"
       >
-        <section v-if="report.data.value" class="kpis">
+        <section v-if="zoo" class="kpis">
           <div class="card kpi">
             <p class="muted">資金</p>
-            <p class="figure" :class="{ negative: report.data.value.balance < 0 }">
-              {{ yen(report.data.value.balance) }}
+            <p class="figure" :class="{ negative: zoo.balance < 0 }">
+              {{ yen(zoo.balance) }}
             </p>
-            <p v-if="yesterday" class="delta" :class="yesterday.net_income < 0 ? 'minus' : 'plus'">
-              前日 {{ yesterday.net_income < 0 ? "" : "+" }}{{ yen(yesterday.net_income) }}
+            <p v-if="yesterday" class="delta" :class="yesterday.netIncome < 0 ? 'minus' : 'plus'">
+              前日 {{ yesterday.netIncome < 0 ? "" : "+" }}{{ yen(yesterday.netIncome) }}
             </p>
           </div>
           <div class="card kpi">
-            <MeterBar label="評判" :value="report.data.value.reputation" :max="100" />
+            <MeterBar label="評判" :value="zoo.reputation" :max="100" />
             <p v-if="yesterday" class="muted">
               前日の来園 {{ yesterday.visitors.toLocaleString() }} 人
             </p>
@@ -108,12 +230,12 @@ async function changeFee() {
 
       <h2 class="section-title">今日の日課</h2>
       <QueryState
-        :loading="checklist.loading.value"
-        :error="checklist.error.value"
-        :empty="!checklist.data.value"
-        @retry="checklist.reload"
+        :loading="office.loading.value"
+        :error="office.error.value"
+        :empty="!office.data.value"
+        @retry="office.reload"
       >
-        <ChoreChecklist :chores="checklist.data.value ?? []" />
+        <ChoreChecklist :chores="chores" />
       </QueryState>
     </div>
 
@@ -129,7 +251,7 @@ async function changeFee() {
 
         <Transition name="pop">
           <div v-if="lastDay" class="day">
-            <p v-if="lastDay.bankrupt" class="badge badge-bad">資金が赤字です</p>
+            <p v-if="lastDay.balance < 0" class="badge badge-bad">資金が赤字です</p>
             <p v-if="lastDay.outbreak" class="badge badge-warn">🦠 {{ lastDay.outbreak }} が発病</p>
             <dl class="ledger">
               <dt>来園者</dt>
@@ -169,7 +291,7 @@ async function changeFee() {
             <tr v-for="day in recentDays" :key="day.day">
               <td>{{ day.day }}</td>
               <td>{{ day.visitors.toLocaleString() }}</td>
-              <td :class="day.net_income < 0 ? 'minus' : 'plus'">{{ yen(day.net_income) }}</td>
+              <td :class="day.netIncome < 0 ? 'minus' : 'plus'">{{ yen(day.netIncome) }}</td>
               <td :class="{ minus: day.deaths > 0 }">{{ day.deaths }}</td>
             </tr>
           </tbody>
@@ -182,17 +304,17 @@ async function changeFee() {
     <div>
       <h2 class="section-title">展示中の絶滅危惧種</h2>
       <QueryState
-        :loading="threatened.loading.value"
-        :error="threatened.error.value"
-        :empty="!threatened.data.value?.length"
+        :loading="office.loading.value"
+        :error="office.error.value"
+        :empty="threatened.length === 0"
         empty-text="絶滅危惧種はまだいません"
-        @retry="threatened.reload"
+        @retry="office.reload"
       >
         <ul class="card list">
-          <li v-for="species in threatened.data.value" :key="species.name_ja" class="row">
-            <span class="badge badge-warn">{{ species.status_code }}</span>
-            <span class="grow">{{ species.name_ja }}</span>
-            <span class="muted">{{ species.status_label }}・{{ species.count }}頭</span>
+          <li v-for="species in threatened" :key="species.nameJa" class="row">
+            <span class="badge badge-warn">{{ species.code }}</span>
+            <span class="grow">{{ species.nameJa }}</span>
+            <span class="muted">{{ species.label }}・{{ species.count }}頭</span>
           </li>
         </ul>
       </QueryState>
@@ -201,19 +323,19 @@ async function changeFee() {
     <div>
       <h2 class="section-title">慰霊碑</h2>
       <QueryState
-        :loading="deceased.loading.value"
-        :error="deceased.error.value"
-        :empty="!deceased.data.value?.length"
+        :loading="office.loading.value"
+        :error="office.error.value"
+        :empty="deceased.length === 0"
         empty-text="亡くなった動物はいません"
-        @retry="deceased.reload"
+        @retry="office.reload"
       >
         <ul class="card list">
-          <li v-for="(dead, index) in deceased.data.value" :key="index" class="row">
+          <li v-for="dead in deceased" :key="dead.id" class="row">
             <span>🪦</span>
             <span class="grow"
-              >{{ dead.name }}<span class="muted">（{{ dead.species }}）</span></span
+              >{{ dead.name }}<span class="muted">（{{ dead.species.nameJa }}）</span></span
             >
-            <span class="muted">{{ dead.cause }}</span>
+            <span class="muted">{{ dead.causeOfDeath }}</span>
           </li>
         </ul>
       </QueryState>

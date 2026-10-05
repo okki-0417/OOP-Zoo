@@ -3,8 +3,9 @@ import { defineConfig, lazyPlugins } from "vite-plus";
 
 // https://vite.dev/config/
 export default defineConfig({
-  fmt: {},
+  fmt: { ignorePatterns: ["src/api/generated/**"] },
   lint: {
+    ignorePatterns: ["src/api/generated/**"],
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: { "vite-plus/prefer-vite-plus-imports": "error" },
     options: { typeAware: true, typeCheck: true },

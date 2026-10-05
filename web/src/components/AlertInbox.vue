@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import type { Alert } from "../api/client";
+import type { AlertsQuery } from "../api/generated/graphql";
+
+type Alert = AlertsQuery["alerts"][number];
 
 const props = defineProps<{ alerts: Alert[] }>();
 
@@ -8,26 +10,31 @@ type Filter = "all" | Alert["severity"];
 
 const filter = ref<Filter>("all");
 const severities: { key: Alert["severity"]; label: string }[] = [
-  { key: "critical", label: "緊急" },
-  { key: "warning", label: "警告" },
-  { key: "notice", label: "注意" },
+  { key: "CRITICAL", label: "緊急" },
+  { key: "WARNING", label: "警告" },
+  { key: "NOTICE", label: "注意" },
 ];
 
 type Case = {
   key: string;
   severity: Alert["severity"];
-  subject: Alert["subject"];
+  subjectName: string;
   alerts: Alert[];
 };
 
 const cases = computed(() => {
   const grouped = new Map<string, Case>();
   for (const alert of props.alerts) {
-    const key = `${alert.subject.type}:${alert.subject.id ?? alert.kind}`;
+    const key = `${alert.subjectType}:${alert.subjectId ?? alert.kind}`;
     const found = grouped.get(key);
     if (found) found.alerts.push(alert);
     else
-      grouped.set(key, { key, severity: alert.severity, subject: alert.subject, alerts: [alert] });
+      grouped.set(key, {
+        key,
+        severity: alert.severity,
+        subjectName: alert.subjectName,
+        alerts: [alert],
+      });
   }
   return [...grouped.values()];
 });
@@ -41,29 +48,29 @@ const visible = computed(() =>
 );
 
 const kindIcons: Record<Alert["kind"], string> = {
-  insolvent: "💸",
-  no_keeper: "🧑‍🌾",
-  no_veterinarian: "🧑‍⚕️",
-  unassigned: "📋",
-  filthy: "🧹",
-  overcrowded: "📦",
-  barren: "🪵",
-  grave: "🚨",
-  guarded: "⚠️",
-  starving: "🍖",
-  hungry: "🍽️",
-  sick: "🦠",
-  malnourished: "🥗",
-  stressed: "😣",
-  climate: "🌡️",
-  due: "🍼",
-  unhoused: "🏚️",
+  INSOLVENT: "💸",
+  NO_KEEPER: "🧑‍🌾",
+  NO_VETERINARIAN: "🧑‍⚕️",
+  UNASSIGNED: "📋",
+  FILTHY: "🧹",
+  OVERCROWDED: "📦",
+  BARREN: "🪵",
+  GRAVE: "🚨",
+  GUARDED: "⚠️",
+  STARVING: "🍖",
+  HUNGRY: "🍽️",
+  SICK: "🦠",
+  MALNOURISHED: "🥗",
+  STRESSED: "😣",
+  CLIMATE: "🌡️",
+  DUE: "🍼",
+  UNHOUSED: "🏚️",
 };
 
 function linkOf(alert: Alert) {
-  if (alert.subject.type === "animal") return `/animals/${alert.subject.id}`;
-  if (alert.subject.type === "enclosure") return `/enclosures/${alert.subject.id}`;
-  if (alert.kind === "no_keeper" || alert.kind === "no_veterinarian") return "/staff";
+  if (alert.subjectType === "ANIMAL") return `/animals/${alert.subjectId}`;
+  if (alert.subjectType === "ENCLOSURE") return `/enclosures/${alert.subjectId}`;
+  if (alert.kind === "NO_KEEPER" || alert.kind === "NO_VETERINARIAN") return "/staff";
   return undefined;
 }
 </script>
@@ -96,7 +103,7 @@ function linkOf(alert: Alert) {
         >
           <span class="icon">{{ kindIcons[c.alerts[0]!.kind] }}</span>
           <span class="grow">
-            <strong>{{ c.subject.name }}</strong>
+            <strong>{{ c.subjectName }}</strong>
             <span v-for="alert in c.alerts" :key="alert.kind" class="message">
               {{ c.alerts.length > 1 ? kindIcons[alert.kind] : "" }} {{ alert.message }}
             </span>

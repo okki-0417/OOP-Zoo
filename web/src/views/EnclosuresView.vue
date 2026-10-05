@@ -1,40 +1,83 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
-import { api, unwrap } from "../api/client";
+import { graphql } from "../api/generated";
 import MeterBar from "../components/MeterBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
-import { useCommand } from "../composables/useCommand";
+import { useMutation } from "../composables/useMutation";
 import { useQuery } from "../composables/useQuery";
 
-const enclosures = useQuery(() => unwrap(api.GET("/enclosures")));
-const { busy, run } = useCommand();
+const EnclosuresQuery = graphql(`
+  query Enclosures {
+    enclosures {
+      id
+      name
+      celsius
+      climateControlled
+      capacity
+      cleanliness
+      enrichment
+      filthy
+      barren
+      occupants {
+        id
+      }
+      occupancy {
+        full
+      }
+      keepers {
+        id
+        name
+      }
+    }
+  }
+`);
 
-const residents = computed(() =>
-  (enclosures.data.value ?? []).reduce((sum, e) => sum + e.population, 0),
-);
-const seats = computed(() => (enclosures.data.value ?? []).reduce((sum, e) => sum + e.capacity, 0));
+const AddEnclosureMutation = graphql(`
+  mutation AddEnclosure(
+    $name: String!
+    $celsius: Int!
+    $capacity: Int!
+    $climateControlled: Boolean
+  ) {
+    addEnclosure(
+      name: $name
+      celsius: $celsius
+      capacity: $capacity
+      climateControlled: $climateControlled
+    ) {
+      name
+    }
+  }
+`);
+
+const query = useQuery(EnclosuresQuery);
+const enclosures = computed(() => query.data.value?.enclosures ?? []);
+const { busy, mutate } = useMutation();
+
+const residents = computed(() => enclosures.value.reduce((sum, e) => sum + e.occupants.length, 0));
+const seats = computed(() => enclosures.value.reduce((sum, e) => sum + e.capacity, 0));
 
 const building = ref(false);
-const draft = reactive({ name: "", celsius: 20, capacity: 4, climate_controlled: false });
+const draft = reactive({ name: "", celsius: 20, capacity: 4, climateControlled: false });
 
 async function build() {
-  const enclosure = await run(
-    () => unwrap(api.POST("/enclosures", { body: { ...draft } })),
-    (created) => `「${created.name}」を建設しました`,
+  const built = await mutate(
+    AddEnclosureMutation,
+    { ...draft },
+    ({ addEnclosure }) => `「${addEnclosure.name}」を建設しました`,
   );
-  if (!enclosure) return;
+  if (!built) return;
   draft.name = "";
-  draft.climate_controlled = false;
+  draft.climateControlled = false;
   building.value = false;
-  void enclosures.reload();
 }
 </script>
 
 <template>
   <PageHeader
     title="エリア"
-    :subtitle="`${enclosures.data.value?.length ?? 0} 区画・収容 ${residents} / ${seats} 頭`"
+    :subtitle="`${enclosures.length} 区画・収容 ${residents} / ${seats} 頭`"
   >
     <button class="btn btn-accent" @click="building = !building">
       {{ building ? "閉じる" : "＋ 建設" }}
@@ -56,7 +99,7 @@ async function build() {
         <input v-model.number="draft.capacity" type="number" min="1" required inputmode="numeric" />
       </label>
       <label class="row check">
-        <input v-model="draft.climate_controlled" type="checkbox" />
+        <input v-model="draft.climateControlled" type="checkbox" />
         空調を入れる
       </label>
       <button class="btn btn-primary" :disabled="busy">建てる</button>
@@ -64,11 +107,11 @@ async function build() {
   </Transition>
 
   <QueryState
-    :loading="enclosures.loading.value"
-    :error="enclosures.error.value"
-    :empty="!enclosures.data.value?.length"
+    :loading="query.loading.value"
+    :error="query.error.value"
+    :empty="enclosures.length === 0"
     empty-text="エリアがありません。まずは建設しましょう"
-    @retry="enclosures.reload"
+    @retry="query.reload"
   >
     <div class="card table-card">
       <table class="data-table">
@@ -84,7 +127,7 @@ async function build() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="enclosure in enclosures.data.value" :key="enclosure.id">
+          <tr v-for="enclosure in enclosures" :key="enclosure.id">
             <td>
               <RouterLink :to="`/enclosures/${enclosure.id}`" class="cell-link">
                 {{ enclosure.name }}
@@ -92,14 +135,14 @@ async function build() {
             </td>
             <td class="num">
               {{ enclosure.celsius }}℃
-              <span v-if="enclosure.climate_controlled" class="badge">空調</span>
+              <span v-if="enclosure.climateControlled" class="badge">空調</span>
             </td>
-            <td class="num">{{ enclosure.population }} / {{ enclosure.capacity }}</td>
+            <td class="num">{{ enclosure.occupants.length }} / {{ enclosure.capacity }}</td>
             <td>
               <span v-if="enclosure.keepers.length">{{
                 enclosure.keepers.map((k) => k.name).join("・")
               }}</span>
-              <span v-else-if="enclosure.population" class="badge badge-warn">担当なし</span>
+              <span v-else-if="enclosure.occupants.length" class="badge badge-warn">担当なし</span>
               <span v-else class="muted">—</span>
             </td>
             <td class="meter-cell">
@@ -112,8 +155,8 @@ async function build() {
               <div class="badges">
                 <span v-if="enclosure.filthy" class="badge badge-bad">不潔</span>
                 <span v-if="enclosure.barren" class="badge badge-warn">退屈</span>
-                <span v-if="enclosure.population >= enclosure.capacity" class="badge">満員</span>
-                <span v-if="enclosure.population === 0" class="badge">空き</span>
+                <span v-if="enclosure.occupancy.full" class="badge">満員</span>
+                <span v-if="enclosure.occupants.length === 0" class="badge">空き</span>
               </div>
             </td>
           </tr>

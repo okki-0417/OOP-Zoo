@@ -10,11 +10,11 @@ const root = ref<HTMLElement>();
 const route = useRoute();
 
 const subjectCount = computed(
-  () => new Set(alerts.value.map((a) => `${a.subject.type}:${a.subject.id ?? a.kind}`)).size,
+  () => new Set(alerts.value.map((a) => `${a.subjectType}:${a.subjectId ?? a.kind}`)).size,
 );
 const tone = computed(() => {
   if (critical.value.length > 0) return "critical";
-  if (alerts.value.some((alert) => alert.severity === "warning")) return "warning";
+  if (alerts.value.some((alert) => alert.severity === "WARNING")) return "warning";
   return "notice";
 });
 

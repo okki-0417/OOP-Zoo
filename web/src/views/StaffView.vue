@@ -1,53 +1,111 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef } from "vue";
-import { api, unwrap, type Keeper } from "../api/client";
+import { graphql } from "../api/generated";
+import type { MakeRoundsMutation, StaffQuery } from "../api/generated/graphql";
 import MeterBar from "../components/MeterBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
-import { useCommand } from "../composables/useCommand";
+import { useMutation } from "../composables/useMutation";
 import { useQuery } from "../composables/useQuery";
 
-type RoundsReport = Awaited<ReturnType<typeof makeRoundsOf>>;
+type Keeper = StaffQuery["keepers"][number];
+type Rounds = MakeRoundsMutation["makeRounds"];
 
 const SHIFT_MINUTES = 480;
 
-const keepers = useQuery(() => unwrap(api.GET("/keepers")));
-const veterinarians = useQuery(() => unwrap(api.GET("/veterinarians")));
-const enclosures = useQuery(() => unwrap(api.GET("/enclosures")));
-const taxonClasses = useQuery(() => unwrap(api.GET("/taxon-classes")));
-const reports = shallowRef<RoundsReport[]>([]);
-const { busy, run } = useCommand();
+const StaffQuery = graphql(`
+  query Staff {
+    keepers {
+      id
+      name
+      workedMinutes
+      specialties {
+        label
+      }
+      enclosures {
+        id
+        name
+        occupants {
+          alive
+          fedToday
+        }
+      }
+    }
+    veterinarians {
+      id
+      name
+    }
+    taxonClasses {
+      code
+      label
+    }
+  }
+`);
 
-const enclosureById = computed(
-  () => new Map((enclosures.data.value ?? []).map((enclosure) => [enclosure.id, enclosure])),
-);
-const staffed = computed(() => (keepers.data.value ?? []).filter((k) => k.enclosures.length > 0));
+const MakeRoundsMutation = graphql(`
+  mutation MakeRounds($keeperId: ID!) {
+    makeRounds(keeperId: $keeperId) {
+      keeper {
+        id
+        name
+        remainingMinutes
+      }
+      reports {
+        enclosure {
+          id
+          name
+        }
+        fed {
+          name
+        }
+        cleaned
+        enriched
+        skipped {
+          subject
+          reason
+        }
+      }
+    }
+  }
+`);
 
-function unfedIn(enclosureId: string) {
-  return (enclosureById.value.get(enclosureId)?.occupants ?? []).filter(
-    (a) => a.alive && !a.fed_today,
-  ).length;
-}
+const HireKeeperMutation = graphql(`
+  mutation HireKeeper($name: String!, $specialties: [String!]!) {
+    hireKeeper(name: $name, specialties: $specialties) {
+      name
+    }
+  }
+`);
+
+const HireVeterinarianMutation = graphql(`
+  mutation HireVeterinarian($name: String!) {
+    hireVeterinarian(name: $name) {
+      name
+    }
+  }
+`);
+
+const query = useQuery(StaffQuery);
+const keepers = computed(() => query.data.value?.keepers ?? []);
+const veterinarians = computed(() => query.data.value?.veterinarians ?? []);
+const reports = shallowRef<Rounds[]>([]);
+const { busy, mutate } = useMutation();
+
+const staffed = computed(() => keepers.value.filter((k) => k.enclosures.length > 0));
 
 function pendingOf(keeper: Keeper) {
-  return keeper.enclosures.reduce((sum, e) => sum + unfedIn(e.id), 0);
-}
-
-function makeRoundsOf(keeper: Keeper) {
-  return unwrap(
-    api.POST("/keepers/{keeper_id}/rounds", { params: { path: { keeper_id: keeper.id } } }),
-  );
+  return keeper.enclosures
+    .flatMap((enclosure) => enclosure.occupants)
+    .filter((a) => a.alive && !a.fedToday).length;
 }
 
 async function makeRounds(targets: Keeper[]) {
-  const done: RoundsReport[] = [];
+  const done: Rounds[] = [];
   for (const keeper of targets) {
-    const report = await run(() => makeRoundsOf(keeper));
-    if (report) done.push(report);
+    const result = await mutate(MakeRoundsMutation, { keeperId: keeper.id });
+    if (result) done.push(result.makeRounds);
   }
   reports.value = done;
-  void keepers.reload();
-  void enclosures.reload();
 }
 
 const hiring = ref(false);
@@ -55,38 +113,36 @@ const role = ref<"keeper" | "veterinarian">("keeper");
 const name = ref("");
 const specialties = ref<string[]>([]);
 
-function toggle(key: string) {
-  specialties.value = specialties.value.includes(key)
-    ? specialties.value.filter((k) => k !== key)
-    : [...specialties.value, key];
+function toggle(code: string) {
+  specialties.value = specialties.value.includes(code)
+    ? specialties.value.filter((c) => c !== code)
+    : [...specialties.value, code];
 }
 
 async function hire() {
   const hired =
     role.value === "keeper"
-      ? await run(
-          () =>
-            unwrap(
-              api.POST("/keepers", { body: { name: name.value, specialties: specialties.value } }),
-            ),
-          (k) => `飼育員の${k.name}さんを採用しました`,
+      ? await mutate(
+          HireKeeperMutation,
+          { name: name.value, specialties: specialties.value },
+          ({ hireKeeper }) => `飼育員の${hireKeeper.name}さんを採用しました`,
         )
-      : await run(
-          () => unwrap(api.POST("/veterinarians", { body: { name: name.value } })),
-          (v) => `獣医の${v.name}さんを採用しました`,
+      : await mutate(
+          HireVeterinarianMutation,
+          { name: name.value },
+          ({ hireVeterinarian }) => `獣医の${hireVeterinarian.name}さんを採用しました`,
         );
   if (!hired) return;
   name.value = "";
   specialties.value = [];
   hiring.value = false;
-  void (role.value === "keeper" ? keepers.reload() : veterinarians.reload());
 }
 </script>
 
 <template>
   <PageHeader
     title="スタッフ"
-    :subtitle="`飼育員 ${keepers.data.value?.length ?? 0} 人・獣医 ${veterinarians.data.value?.length ?? 0} 人`"
+    :subtitle="`飼育員 ${keepers.length} 人・獣医 ${veterinarians.length} 人`"
   >
     <button class="btn" @click="hiring = !hiring">{{ hiring ? "閉じる" : "＋ 採用" }}</button>
     <button
@@ -119,12 +175,12 @@ async function hire() {
       <fieldset v-if="role === 'keeper'" class="specialties">
         <legend class="muted">専門（複数可）</legend>
         <button
-          v-for="t in taxonClasses.data.value"
-          :key="t.key"
+          v-for="t in query.data.value?.taxonClasses"
+          :key="t.code"
           type="button"
           class="chip"
-          :aria-pressed="specialties.includes(t.key)"
-          @click="toggle(t.key)"
+          :aria-pressed="specialties.includes(t.code)"
+          @click="toggle(t.code)"
         >
           {{ t.label }}
         </button>
@@ -135,13 +191,13 @@ async function hire() {
 
   <section v-if="reports.length" class="card stack results">
     <h2 class="section-title">見回りの結果</h2>
-    <div v-for="report in reports" :key="report.keeper_id">
-      <strong>{{ report.keeper_name }}</strong>
-      <span class="muted">（残り {{ report.remaining_minutes }} 分）</span>
+    <div v-for="rounds in reports" :key="rounds.keeper.id">
+      <strong>{{ rounds.keeper.name }}</strong>
+      <span class="muted">（残り {{ rounds.keeper.remainingMinutes }} 分）</span>
       <ul>
-        <li v-for="round in report.rounds" :key="round.enclosure.id">
+        <li v-for="round in rounds.reports" :key="round.enclosure.id">
           {{ round.enclosure.name }}:
-          {{ round.fed.length ? `${round.fed.join("・")}に給餌` : "給餌なし" }}
+          {{ round.fed.length ? `${round.fed.map((a) => a.name).join("・")}に給餌` : "給餌なし" }}
           <span v-if="round.cleaned">・清掃</span>
           <span v-if="round.enriched">・遊具を補充</span>
           <span v-for="skip in round.skipped" :key="skip.subject + skip.reason" class="skip">
@@ -154,11 +210,11 @@ async function hire() {
 
   <h2 class="section-title">飼育員</h2>
   <QueryState
-    :loading="keepers.loading.value"
-    :error="keepers.error.value"
-    :empty="!keepers.data.value?.length"
+    :loading="query.loading.value"
+    :error="query.error.value"
+    :empty="keepers.length === 0"
     empty-text="飼育員がいません。採用しましょう"
-    @retry="keepers.reload"
+    @retry="query.reload"
   >
     <div class="card table-card">
       <table class="data-table">
@@ -173,11 +229,11 @@ async function hire() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="keeper in keepers.data.value" :key="keeper.id">
+          <tr v-for="keeper in keepers" :key="keeper.id">
             <td>
               <strong>🧑‍🌾 {{ keeper.name }}</strong>
             </td>
-            <td>{{ keeper.specialties || "—" }}</td>
+            <td>{{ keeper.specialties.map((s) => s.label).join("・") || "—" }}</td>
             <td>
               <span v-if="keeper.enclosures.length" class="areas">
                 <RouterLink
@@ -192,7 +248,7 @@ async function hire() {
               <span v-else class="badge badge-warn">未割り当て</span>
             </td>
             <td class="meter-cell">
-              <MeterBar label="" :value="keeper.worked_minutes" :max="SHIFT_MINUTES" invert />
+              <MeterBar label="" :value="keeper.workedMinutes" :max="SHIFT_MINUTES" invert />
             </td>
             <td>
               <template v-if="keeper.enclosures.length">
@@ -220,11 +276,11 @@ async function hire() {
 
   <h2 class="section-title">獣医</h2>
   <QueryState
-    :loading="veterinarians.loading.value"
-    :error="veterinarians.error.value"
-    :empty="!veterinarians.data.value?.length"
+    :loading="query.loading.value"
+    :error="query.error.value"
+    :empty="veterinarians.length === 0"
     empty-text="獣医がいません。病気の治療ができません"
-    @retry="veterinarians.reload"
+    @retry="query.reload"
   >
     <div class="card table-card">
       <table class="data-table">
@@ -234,7 +290,7 @@ async function hire() {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="v in veterinarians.data.value" :key="v.id">
+          <tr v-for="v in veterinarians" :key="v.id">
             <td>
               <strong>🧑‍⚕️ {{ v.name }}</strong>
             </td>

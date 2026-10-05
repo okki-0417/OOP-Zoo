@@ -1,14 +1,26 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { Chore } from "../api/client";
+export type Chore = {
+  kind: "feeding" | "treatment" | "cleaning" | "enrichment";
+  label: string;
+  items: { subject: { type: "animal" | "enclosure"; id: string; name: string }; done: boolean }[];
+};
 
 const props = defineProps<{ chores: Chore[] }>();
 
 const chores = computed(() =>
-  props.chores.map((chore) => ({ ...chore, pending: chore.items.filter((item) => !item.done) })),
+  props.chores.map((chore) => {
+    const pending = chore.items.filter((item) => !item.done);
+    return {
+      ...chore,
+      pending,
+      total: chore.items.length,
+      doneCount: chore.items.length - pending.length,
+    };
+  }),
 );
-const doneCount = computed(() => props.chores.reduce((sum, chore) => sum + chore.done_count, 0));
-const total = computed(() => props.chores.reduce((sum, chore) => sum + chore.total, 0));
+const doneCount = computed(() => chores.value.reduce((sum, chore) => sum + chore.doneCount, 0));
+const total = computed(() => chores.value.reduce((sum, chore) => sum + chore.total, 0));
 
 const icons: Record<Chore["kind"], string> = {
   feeding: "🍖",
@@ -67,10 +79,10 @@ function percent(done: number, all: number) {
           <span v-if="chore.kind === 'treatment'" class="tally">
             {{ chore.pending.length ? `残り ${chore.pending.length} 頭` : "なし" }}
           </span>
-          <span v-else class="tally">{{ chore.done_count }} / {{ chore.total }}</span>
+          <span v-else class="tally">{{ chore.doneCount }} / {{ chore.total }}</span>
         </div>
         <div v-if="chore.kind !== 'treatment' && chore.total" class="bar thin">
-          <span :style="{ width: `${percent(chore.done_count, chore.total)}%` }" />
+          <span :style="{ width: `${percent(chore.doneCount, chore.total)}%` }" />
         </div>
         <p v-if="chore.total === 0" class="muted note">{{ emptyTexts[chore.kind] }}</p>
         <p v-else-if="chore.pending.length" class="pending">

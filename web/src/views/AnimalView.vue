@@ -1,39 +1,152 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { api, unwrap, type Animal, type AnimalOutlook, type ExamineResult } from "../api/client";
+import { graphql } from "../api/generated";
+import type { Diagnosis, FoodCategory, Outlook } from "../api/generated/graphql";
 import MeterBar from "../components/MeterBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
-import { useCommand } from "../composables/useCommand";
+import { useMutation } from "../composables/useMutation";
 import { useQuery } from "../composables/useQuery";
 import { emojiOf } from "../lib/emoji";
 
 const props = defineProps<{ id: string }>();
 
-const path = computed(() => ({ path: { animal_id: props.id } }));
-const animal = useQuery(() => unwrap(api.GET("/animals/{animal_id}", { params: path.value })));
-const keepers = useQuery(() => unwrap(api.GET("/keepers")));
-const veterinarians = useQuery(() => unwrap(api.GET("/veterinarians")));
-const foods = useQuery(() => unwrap(api.GET("/foods")));
-const enclosures = useQuery(() => unwrap(api.GET("/enclosures")));
-const prognosis = useQuery(() =>
-  unwrap(api.GET("/animals/{animal_id}/prognosis", { params: path.value })),
-);
-const { busy, run } = useCommand();
+const AnimalQuery = graphql(`
+  query Animal($id: ID!) {
+    animal(id: $id) {
+      id
+      name
+      alive
+      sex
+      lifeStage
+      ageInDays
+      causeOfDeath
+      health
+      maxHealth
+      hunger
+      nutrition
+      stress
+      daysUntilStarving
+      mealsToday
+      dietCategories
+      expecting
+      gestationDays
+      gestationPeriodDays
+      readyToDeliver
+      starving
+      weak
+      illness
+      contagious
+      malnourished
+      stressed
+      severelyStressed
+      parents {
+        id
+      }
+      species {
+        nameJa
+        diet
+        conservationCode
+        conservationLabel
+        taxonClass {
+          label
+        }
+      }
+      enclosure {
+        id
+        name
+      }
+      prognosis {
+        outlook
+        daysToDeath
+        causeOfDeath
+      }
+    }
+    keepers {
+      id
+      name
+      remainingMinutes
+    }
+    veterinarians {
+      id
+      name
+    }
+    foods {
+      code
+      nameJa
+      category
+      satiety
+    }
+    enclosures {
+      id
+      name
+      capacity
+      occupants {
+        id
+      }
+    }
+  }
+`);
 
-const outlooks: Record<NonNullable<AnimalOutlook["outlook"]>, { label: string; tone: string }> = {
-  good: { label: "良好", tone: "badge-good" },
-  guarded: { label: "要注意", tone: "badge-warn" },
-  grave: { label: "危篤", tone: "badge-bad" },
+const FeedAnimalMutation = graphql(`
+  mutation FeedAnimal($animalId: ID!, $keeperId: ID!, $foodCode: String!) {
+    feedAnimal(animalId: $animalId, keeperId: $keeperId, foodCode: $foodCode) {
+      name
+    }
+  }
+`);
+
+const ExamineAnimalMutation = graphql(`
+  mutation ExamineAnimal($animalId: ID!, $veterinarianId: ID!) {
+    examineAnimal(animalId: $animalId, veterinarianId: $veterinarianId) {
+      diagnosis
+    }
+  }
+`);
+
+const TreatAnimalMutation = graphql(`
+  mutation TreatAnimal($animalId: ID!, $veterinarianId: ID!) {
+    treatAnimal(animalId: $animalId, veterinarianId: $veterinarianId) {
+      name
+    }
+  }
+`);
+
+const TransferAnimalMutation = graphql(`
+  mutation TransferAnimal($animalId: ID!, $enclosureId: ID!) {
+    transferAnimal(animalId: $animalId, enclosureId: $enclosureId) {
+      enclosure {
+        name
+      }
+    }
+  }
+`);
+
+const RenameAnimalMutation = graphql(`
+  mutation RenameAnimal($animalId: ID!, $newName: String!) {
+    renameAnimal(animalId: $animalId, newName: $newName) {
+      name
+    }
+  }
+`);
+
+const query = useQuery(AnimalQuery, () => ({ id: props.id }));
+const animal = computed(() => query.data.value?.animal ?? undefined);
+const { busy, mutate } = useMutation();
+
+const outlooks: Record<Outlook, { label: string; tone: string }> = {
+  GOOD: { label: "良好", tone: "badge-good" },
+  GUARDED: { label: "要注意", tone: "badge-warn" },
+  GRAVE: { label: "危篤", tone: "badge-bad" },
 };
 
-const foodCategories: Record<string, string> = {
-  meat: "肉",
-  fish: "魚",
-  insect: "昆虫",
-  plant: "植物",
-  fruit: "果実",
-  seed: "種子",
+const foodCategories: Record<FoodCategory, string> = {
+  MEAT: "肉",
+  FISH: "魚",
+  INSECT: "昆虫",
+  PLANT: "植物",
+  FRUIT: "果実",
+  SEED: "種子",
 };
 
 const keeperId = ref("");
@@ -42,224 +155,173 @@ const veterinarianId = ref("");
 const enclosureId = ref("");
 const newName = ref("");
 
-watch(keepers.data, (list) => (keeperId.value ||= list?.[0]?.id ?? ""));
+watch(
+  () => query.data.value?.keepers,
+  (list) => (keeperId.value ||= list?.[0]?.id ?? ""),
+);
 const edibleFoods = computed(() =>
-  (foods.data.value ?? []).filter((food) =>
-    animal.data.value?.diet_categories.includes(food.category as Animal["diet_categories"][number]),
+  (query.data.value?.foods ?? []).filter((food) =>
+    animal.value?.dietCategories.includes(food.category),
   ),
 );
 
 watch(edibleFoods, (list) => {
-  if (!list.some((food) => food.key === foodCode.value)) foodCode.value = list[0]?.key ?? "";
+  if (!list.some((food) => food.code === foodCode.value)) foodCode.value = list[0]?.code ?? "";
 });
-watch(veterinarians.data, (list) => (veterinarianId.value ||= list?.[0]?.id ?? ""));
-
-const transferTargets = computed(() =>
-  (enclosures.data.value ?? []).filter((e) => e.id !== animal.data.value?.enclosure_id),
+watch(
+  () => query.data.value?.veterinarians,
+  (list) => (veterinarianId.value ||= list?.[0]?.id ?? ""),
 );
 
-const diagnosis: Record<ExamineResult["result"], string> = {
-  healthy: "健康です",
-  sick: "病気にかかっています",
-  injured: "けがをしています",
-  dead: "すでに亡くなっています",
+const transferTargets = computed(() =>
+  (query.data.value?.enclosures ?? []).filter((e) => e.id !== animal.value?.enclosure?.id),
+);
+
+const diagnosis: Record<Diagnosis, string> = {
+  HEALTHY: "健康です",
+  SICK: "病気にかかっています",
+  INJURED: "けがをしています",
+  DEAD: "すでに亡くなっています",
 };
 
-function show(updated: Animal | undefined) {
-  if (!updated) return;
-  animal.data.value = updated;
-  void prognosis.reload();
-}
-
 async function feed() {
-  show(
-    await run(
-      () =>
-        unwrap(
-          api.POST("/animals/{animal_id}/feedings", {
-            params: path.value,
-            body: { keeper_id: keeperId.value, food_code: foodCode.value },
-          }),
-        ),
-      (a) => `${a.name}にごはんをあげました`,
-    ),
+  await mutate(
+    FeedAnimalMutation,
+    { animalId: props.id, keeperId: keeperId.value, foodCode: foodCode.value },
+    ({ feedAnimal }) => `${feedAnimal.name}にごはんをあげました`,
   );
 }
 
 async function examine() {
-  await run(
-    () =>
-      unwrap(
-        api.POST("/animals/{animal_id}/examinations", {
-          params: path.value,
-          body: { veterinarian_id: veterinarianId.value },
-        }),
-      ),
-    (r) => `診察結果: ${diagnosis[r.result]}`,
+  await mutate(
+    ExamineAnimalMutation,
+    { animalId: props.id, veterinarianId: veterinarianId.value },
+    ({ examineAnimal }) => `診察結果: ${diagnosis[examineAnimal.diagnosis]}`,
   );
 }
 
 async function treat() {
-  show(
-    await run(
-      () =>
-        unwrap(
-          api.POST("/animals/{animal_id}/treatments", {
-            params: path.value,
-            body: { veterinarian_id: veterinarianId.value },
-          }),
-        ),
-      (a) => `${a.name}を治療しました`,
-    ),
+  await mutate(
+    TreatAnimalMutation,
+    { animalId: props.id, veterinarianId: veterinarianId.value },
+    ({ treatAnimal }) => `${treatAnimal.name}を治療しました`,
   );
 }
 
 async function transfer() {
-  show(
-    await run(
-      () =>
-        unwrap(
-          api.POST("/animals/{animal_id}/transfer", {
-            params: path.value,
-            body: { enclosure_id: enclosureId.value },
-          }),
-        ),
-      (a) => `${a.enclosure_name ?? "新しいエリア"}へ移しました`,
-    ),
+  await mutate(
+    TransferAnimalMutation,
+    { animalId: props.id, enclosureId: enclosureId.value },
+    ({ transferAnimal }) => `${transferAnimal.enclosure?.name ?? "新しいエリア"}へ移しました`,
   );
-  void enclosures.reload();
 }
 
 async function rename() {
-  show(
-    await run(
-      () =>
-        unwrap(
-          api.PATCH("/animals/{animal_id}/name", {
-            params: path.value,
-            body: { new_name: newName.value },
-          }),
-        ),
-      (a) => `「${a.name}」に改名しました`,
-    ),
+  const renamed = await mutate(
+    RenameAnimalMutation,
+    { animalId: props.id, newName: newName.value },
+    ({ renameAnimal }) => `「${renameAnimal.name}」に改名しました`,
   );
-  newName.value = "";
+  if (renamed) newName.value = "";
 }
 </script>
 
 <template>
-  <PageHeader
-    :title="animal.data.value?.name ?? 'どうぶつ'"
-    :crumbs="[{ label: '動物', to: '/animals' }]"
-  />
+  <PageHeader :title="animal?.name ?? 'どうぶつ'" :crumbs="[{ label: '動物', to: '/animals' }]" />
 
   <QueryState
-    :loading="animal.loading.value"
-    :error="animal.error.value"
-    :empty="!animal.data.value"
-    @retry="animal.reload"
+    :loading="query.loading.value"
+    :error="query.error.value"
+    :empty="!animal"
+    @retry="query.reload"
   >
-    <div v-if="animal.data.value" class="columns">
+    <div v-if="animal" class="columns">
       <div>
         <h2 class="section-title">プロフィール</h2>
-        <section class="card profile" :class="{ dead: !animal.data.value.alive }">
+        <section class="card profile" :class="{ dead: !animal.alive }">
           <div class="portrait">
             {{
-              animal.data.value.alive
-                ? emojiOf(animal.data.value.species, animal.data.value.taxon_class)
-                : "🪦"
+              animal.alive ? emojiOf(animal.species.nameJa, animal.species.taxonClass.label) : "🪦"
             }}
           </div>
           <div class="stack">
-            <p class="species">{{ animal.data.value.species }}</p>
+            <p class="species">{{ animal.species.nameJa }}</p>
             <div class="tags">
-              <span class="badge">{{ animal.data.value.sex }}</span>
+              <span class="badge">{{ animal.sex }}</span>
+              <span class="badge">{{ animal.lifeStage }}・{{ animal.ageInDays }}日</span>
               <span class="badge"
-                >{{ animal.data.value.life_stage }}・{{ animal.data.value.age_in_days }}日</span
-              >
-              <span class="badge"
-                >{{ animal.data.value.taxon_class }}・{{ animal.data.value.diet }}</span
+                >{{ animal.species.taxonClass.label }}・{{ animal.species.diet }}</span
               >
               <span class="badge badge-warn">
-                {{ animal.data.value.conservation_code }} {{ animal.data.value.conservation_label }}
+                {{ animal.species.conservationCode }} {{ animal.species.conservationLabel }}
               </span>
             </div>
           </div>
         </section>
 
-        <section v-if="!animal.data.value.alive" class="card memorial">
-          <p>🕊️ {{ animal.data.value.cause ?? "不明" }}により亡くなりました</p>
+        <section v-if="!animal.alive" class="card memorial">
+          <p>🕊️ {{ animal.causeOfDeath ?? "不明" }}により亡くなりました</p>
         </section>
 
         <section v-else class="card stack">
-          <MeterBar
-            label="体力"
-            :value="animal.data.value.health"
-            :max="animal.data.value.max_health"
-          />
-          <MeterBar label="空腹" :value="animal.data.value.hunger" :max="100" invert />
-          <MeterBar label="栄養" :value="animal.data.value.nutrition" :max="100" />
-          <MeterBar label="ストレス" :value="animal.data.value.stress" :max="100" invert />
+          <MeterBar label="体力" :value="animal.health" :max="animal.maxHealth" />
+          <MeterBar label="空腹" :value="animal.hunger" :max="100" invert />
+          <MeterBar label="栄養" :value="animal.nutrition" :max="100" />
+          <MeterBar label="ストレス" :value="animal.stress" :max="100" invert />
           <dl class="facts">
             <dt>飢餓まで</dt>
-            <dd>給餌が途絶えると {{ animal.data.value.days_until_starving }} 日</dd>
+            <dd>給餌が途絶えると {{ animal.daysUntilStarving }} 日</dd>
             <dt>今日の食事</dt>
             <dd>
               {{
-                animal.data.value.meals_today.length
-                  ? animal.data.value.meals_today.map((c) => foodCategories[c] ?? c).join("・")
+                animal.mealsToday.length
+                  ? animal.mealsToday.map((c) => foodCategories[c]).join("・")
                   : "まだ食べていません"
               }}
             </dd>
-            <template v-if="animal.data.value.expecting">
+            <template v-if="animal.expecting">
               <dt>妊娠</dt>
               <dd>
-                {{ animal.data.value.gestation_days }} /
-                {{ animal.data.value.gestation_period_days }} 日
-                <span v-if="animal.data.value.ready_to_deliver" class="badge badge-good"
-                  >出産の時期</span
-                >
+                {{ animal.gestationDays }} / {{ animal.gestationPeriodDays }} 日
+                <span v-if="animal.readyToDeliver" class="badge badge-good">出産の時期</span>
               </dd>
             </template>
           </dl>
           <div class="tags">
-            <span v-if="animal.data.value.starving" class="badge badge-bad">飢えている</span>
-            <span v-if="animal.data.value.weak" class="badge badge-bad">衰弱</span>
-            <span v-if="animal.data.value.illness" class="badge badge-bad"
-              >🦠 {{ animal.data.value.illness
-              }}{{ animal.data.value.contagious ? "(感染性)" : "" }}</span
+            <span v-if="animal.starving" class="badge badge-bad">飢えている</span>
+            <span v-if="animal.weak" class="badge badge-bad">衰弱</span>
+            <span v-if="animal.illness" class="badge badge-bad"
+              >🦠 {{ animal.illness }}{{ animal.contagious ? "(感染性)" : "" }}</span
             >
-            <span v-if="animal.data.value.malnourished" class="badge badge-bad">栄養失調</span>
-            <span v-if="animal.data.value.severely_stressed" class="badge badge-bad"
-              >強いストレス</span
-            >
-            <span v-else-if="animal.data.value.stressed" class="badge badge-warn">ストレス</span>
-            <span v-if="animal.data.value.parents > 0" class="badge badge-good">園生まれ</span>
+            <span v-if="animal.malnourished" class="badge badge-bad">栄養失調</span>
+            <span v-if="animal.severelyStressed" class="badge badge-bad">強いストレス</span>
+            <span v-else-if="animal.stressed" class="badge badge-warn">ストレス</span>
+            <span v-if="animal.parents.length > 0" class="badge badge-good">園生まれ</span>
           </div>
           <RouterLink
-            v-if="animal.data.value.enclosure_id"
-            :to="`/enclosures/${animal.data.value.enclosure_id}`"
+            v-if="animal.enclosure"
+            :to="`/enclosures/${animal.enclosure.id}`"
             class="row home"
           >
             <span>🌳</span>
-            <span class="grow">{{ animal.data.value.enclosure_name }}</span>
+            <span class="grow">{{ animal.enclosure.name }}</span>
             <span class="muted">›</span>
           </RouterLink>
           <p v-else class="muted">どのエリアにも収容されていません</p>
         </section>
 
-        <template v-if="animal.data.value.alive">
+        <template v-if="animal.alive">
           <h2 class="section-title">予後</h2>
           <section class="card stack">
-            <template v-if="prognosis.data.value?.housed && prognosis.data.value.outlook">
+            <template v-if="animal.prognosis">
               <div class="row">
-                <span class="badge" :class="outlooks[prognosis.data.value.outlook].tone">
-                  {{ outlooks[prognosis.data.value.outlook].label }}
+                <span class="badge" :class="outlooks[animal.prognosis.outlook].tone">
+                  {{ outlooks[animal.prognosis.outlook].label }}
                 </span>
                 <span class="grow">
                   {{
-                    prognosis.data.value.days_to_death
-                      ? `このままだと ${prognosis.data.value.days_to_death} 日以内に${prognosis.data.value.cause_of_death}する見込み`
+                    animal.prognosis.daysToDeath
+                      ? `このままだと ${animal.prognosis.daysToDeath} 日以内に${animal.prognosis.causeOfDeath}する見込み`
                       : "30日以内に命に関わる見込みはありません"
                   }}
                 </span>
@@ -271,23 +333,23 @@ async function rename() {
         </template>
       </div>
 
-      <div v-if="animal.data.value.alive">
+      <div v-if="animal.alive">
         <h2 class="section-title">ごはん</h2>
         <form class="card stack" @submit.prevent="feed">
           <div class="row">
             <label class="field grow">
               飼育員
               <select v-model="keeperId" required>
-                <option v-for="k in keepers.data.value" :key="k.id" :value="k.id">
-                  {{ k.name }}（残り{{ k.remaining_minutes }}分）
+                <option v-for="k in query.data.value?.keepers" :key="k.id" :value="k.id">
+                  {{ k.name }}（残り{{ k.remainingMinutes }}分）
                 </option>
               </select>
             </label>
             <label class="field grow">
               餌
               <select v-model="foodCode" required>
-                <option v-for="f in edibleFoods" :key="f.key" :value="f.key">
-                  {{ f.name_ja }}（満腹+{{ f.satiety }}）
+                <option v-for="f in edibleFoods" :key="f.code" :value="f.code">
+                  {{ f.nameJa }}（満腹+{{ f.satiety }}）
                 </option>
               </select>
             </label>
@@ -300,7 +362,7 @@ async function rename() {
           <label class="field">
             獣医
             <select v-model="veterinarianId">
-              <option v-for="v in veterinarians.data.value" :key="v.id" :value="v.id">
+              <option v-for="v in query.data.value?.veterinarians" :key="v.id" :value="v.id">
                 {{ v.name }}
               </option>
             </select>
@@ -323,7 +385,7 @@ async function rename() {
               <select v-model="enclosureId" required>
                 <option value="" disabled>選んでください</option>
                 <option v-for="e in transferTargets" :key="e.id" :value="e.id">
-                  {{ e.name }}（{{ e.population }}/{{ e.capacity }}）
+                  {{ e.name }}（{{ e.occupants.length }}/{{ e.capacity }}）
                 </option>
               </select>
             </label>

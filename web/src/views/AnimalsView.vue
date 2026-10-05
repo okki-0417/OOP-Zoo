@@ -1,33 +1,89 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
-import { api, unwrap, type AnimalSummary } from "../api/client";
+import { graphql } from "../api/generated";
+import type { AnimalsQuery, Sex } from "../api/generated/graphql";
 import MeterBar from "../components/MeterBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
-import { useCommand } from "../composables/useCommand";
+import { useMutation } from "../composables/useMutation";
 import { useQuery } from "../composables/useQuery";
 import { emojiOf } from "../lib/emoji";
 
+type Animal = AnimalsQuery["animals"][number];
 type Filter = "alive" | "unhoused" | "ailing" | "dead";
 
-const animals = useQuery(() => unwrap(api.GET("/animals")));
-const enclosures = useQuery(() => unwrap(api.GET("/enclosures")));
-const species = useQuery(() => unwrap(api.GET("/species")));
-const { busy, run } = useCommand();
+const AnimalsQuery = graphql(`
+  query Animals {
+    animals {
+      id
+      name
+      alive
+      health
+      maxHealth
+      ailing
+      hungry
+      fedToday
+      species {
+        nameJa
+      }
+      enclosure {
+        id
+        name
+      }
+    }
+    enclosures {
+      id
+      name
+      celsius
+      capacity
+      occupants {
+        id
+      }
+      occupancy {
+        full
+      }
+    }
+    species {
+      code
+      nameJa
+      conservationLabel
+      taxonClass {
+        label
+      }
+    }
+  }
+`);
 
-const enclosureOf = computed(
-  () =>
-    new Map(
-      (enclosures.data.value ?? []).flatMap((e) => e.occupants.map((a) => [a.id, e] as const)),
-    ),
-);
+const HouseAnimalMutation = graphql(`
+  mutation HouseAnimal($enclosureId: ID!, $animalId: ID!) {
+    houseAnimal(enclosureId: $enclosureId, animalId: $animalId) {
+      name
+    }
+  }
+`);
+
+const AcquireAnimalMutation = graphql(`
+  mutation AcquireAnimal($speciesCode: String!, $name: String!, $sex: Sex!) {
+    acquireAnimal(speciesCode: $speciesCode, name: $name, sex: $sex) {
+      name
+      species {
+        nameJa
+      }
+    }
+  }
+`);
+
+const query = useQuery(AnimalsQuery);
+const { busy, mutate } = useMutation();
+
+const animals = computed(() => query.data.value?.animals ?? []);
 const vacancies = computed(() =>
-  (enclosures.data.value ?? []).filter((e) => e.population < e.capacity),
+  (query.data.value?.enclosures ?? []).filter((e) => !e.occupancy.full),
 );
 
-const matchers: Record<Filter, (animal: AnimalSummary) => boolean> = {
+const matchers: Record<Filter, (animal: Animal) => boolean> = {
   alive: (a) => a.alive,
-  unhoused: (a) => a.alive && !enclosureOf.value.has(a.id),
+  unhoused: (a) => a.alive && !a.enclosure,
   ailing: (a) => a.alive && (a.ailing || a.hungry),
   dead: (a) => !a.alive,
 };
@@ -41,48 +97,42 @@ const filter = ref<Filter>("alive");
 const keyword = ref("");
 
 function countOf(key: Filter) {
-  return (animals.data.value ?? []).filter(matchers[key]).length;
+  return animals.value.filter(matchers[key]).length;
 }
 
 const visible = computed(() =>
-  (animals.data.value ?? [])
+  animals.value
     .filter(matchers[filter.value])
-    .filter((a) => !keyword.value || `${a.name}${a.species}`.includes(keyword.value)),
+    .filter((a) => !keyword.value || `${a.name}${a.species.nameJa}`.includes(keyword.value)),
 );
 
 const destinations = reactive<Record<string, string>>({});
 
-async function house(animal: AnimalSummary) {
+async function house(animal: Animal) {
   const enclosureId = destinations[animal.id];
   if (!enclosureId) return;
-  const housed = await run(
-    () =>
-      unwrap(
-        api.POST("/enclosures/{enclosure_id}/occupants", {
-          params: { path: { enclosure_id: enclosureId } },
-          body: { animal_id: animal.id },
-        }),
-      ),
-    (enclosure) => `${animal.name}を${enclosure.name}に収容しました`,
+  const housed = await mutate(
+    HouseAnimalMutation,
+    { enclosureId, animalId: animal.id },
+    ({ houseAnimal }) => `${animal.name}を${houseAnimal.name}に収容しました`,
   );
-  if (!housed) return;
-  delete destinations[animal.id];
-  void enclosures.reload();
+  if (housed) delete destinations[animal.id];
 }
 
 const acquiring = ref(false);
-const draft = reactive({ species_code: "", name: "", sex: "female" as "female" | "male" });
+const draft = reactive({ speciesCode: "", name: "", sex: "FEMALE" as Sex });
 
 async function acquire() {
-  const animal = await run(
-    () => unwrap(api.POST("/animals", { body: { ...draft } })),
-    (created) => `${created.species}の「${created.name}」を導入しました`,
+  const acquired = await mutate(
+    AcquireAnimalMutation,
+    { ...draft },
+    ({ acquireAnimal }) =>
+      `${acquireAnimal.species.nameJa}の「${acquireAnimal.name}」を導入しました`,
   );
-  if (!animal) return;
+  if (!acquired) return;
   draft.name = "";
   acquiring.value = false;
   filter.value = "unhoused";
-  void animals.reload();
 }
 </script>
 
@@ -97,10 +147,10 @@ async function acquire() {
     <form v-if="acquiring" class="card acquire" @submit.prevent="acquire">
       <label class="field">
         種
-        <select v-model="draft.species_code" required>
+        <select v-model="draft.speciesCode" required>
           <option value="" disabled>選んでください</option>
-          <option v-for="s in species.data.value" :key="s.key" :value="s.key">
-            {{ emojiOf(s.name_ja, s.taxon_class) }} {{ s.name_ja }}（{{ s.conservation_label }}）
+          <option v-for="s in query.data.value?.species" :key="s.code" :value="s.code">
+            {{ emojiOf(s.nameJa, s.taxonClass.label) }} {{ s.nameJa }}（{{ s.conservationLabel }}）
           </option>
         </select>
       </label>
@@ -109,10 +159,10 @@ async function acquire() {
         <input v-model.trim="draft.name" required maxlength="20" placeholder="例: ハナコ" />
       </label>
       <div class="segmented" role="group" aria-label="性別">
-        <button type="button" :aria-pressed="draft.sex === 'female'" @click="draft.sex = 'female'">
+        <button type="button" :aria-pressed="draft.sex === 'FEMALE'" @click="draft.sex = 'FEMALE'">
           ♀ メス
         </button>
-        <button type="button" :aria-pressed="draft.sex === 'male'" @click="draft.sex = 'male'">
+        <button type="button" :aria-pressed="draft.sex === 'MALE'" @click="draft.sex = 'MALE'">
           ♂ オス
         </button>
       </div>
@@ -142,11 +192,11 @@ async function acquire() {
   </div>
 
   <QueryState
-    :loading="animals.loading.value"
-    :error="animals.error.value"
+    :loading="query.loading.value"
+    :error="query.error.value"
     :empty="visible.length === 0"
     empty-text="該当する動物はいません"
-    @retry="animals.reload"
+    @retry="query.reload"
   >
     <div class="card table-card">
       <table class="data-table">
@@ -163,18 +213,18 @@ async function acquire() {
           <tr v-for="animal in visible" :key="animal.id" :class="{ dead: !animal.alive }">
             <td>
               <RouterLink :to="`/animals/${animal.id}`" class="cell-link">
-                <span>{{ animal.alive ? emojiOf(animal.species) : "🪦" }}</span>
+                <span>{{ animal.alive ? emojiOf(animal.species.nameJa) : "🪦" }}</span>
                 {{ animal.name }}
               </RouterLink>
             </td>
-            <td>{{ animal.species }}</td>
+            <td>{{ animal.species.nameJa }}</td>
             <td>
               <RouterLink
-                v-if="enclosureOf.get(animal.id)"
-                :to="`/enclosures/${enclosureOf.get(animal.id)!.id}`"
+                v-if="animal.enclosure"
+                :to="`/enclosures/${animal.enclosure.id}`"
                 class="cell-link"
               >
-                {{ enclosureOf.get(animal.id)!.name }}
+                {{ animal.enclosure.name }}
               </RouterLink>
               <form v-else-if="animal.alive" class="row house" @submit.prevent="house(animal)">
                 <select
@@ -185,7 +235,7 @@ async function acquire() {
                 >
                   <option :value="undefined" disabled>未収容 — 収容先…</option>
                   <option v-for="e in vacancies" :key="e.id" :value="e.id">
-                    {{ e.name }}（{{ e.population }}/{{ e.capacity }}・{{ e.celsius }}℃）
+                    {{ e.name }}（{{ e.occupants.length }}/{{ e.capacity }}・{{ e.celsius }}℃）
                   </option>
                 </select>
                 <button
@@ -202,7 +252,7 @@ async function acquire() {
                 v-if="animal.alive"
                 label=""
                 :value="animal.health"
-                :max="animal.max_health"
+                :max="animal.maxHealth"
               />
             </td>
             <td>
@@ -210,8 +260,8 @@ async function acquire() {
                 <template v-if="animal.alive">
                   <span v-if="animal.ailing" class="badge badge-bad">不調</span>
                   <span v-if="animal.hungry" class="badge badge-bad">空腹</span>
-                  <span v-if="!animal.fed_today" class="badge badge-warn">未給餌</span>
-                  <span v-if="!enclosureOf.has(animal.id)" class="badge badge-warn">未収容</span>
+                  <span v-if="!animal.fedToday" class="badge badge-warn">未給餌</span>
+                  <span v-if="!animal.enclosure" class="badge badge-warn">未収容</span>
                 </template>
                 <span v-else class="badge">死亡</span>
               </div>

@@ -1,9 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { api, ApiError, unwrap } from "./client";
+import { ApiError, execute } from "./client";
+import { TypedDocumentString } from "./generated/graphql";
+
+const document = new TypedDocumentString<{ zoo: { day: number } }, { id: string }>(
+  "query Zoo { zoo { day } }",
+);
 
 function stubFetch(status: number, body: unknown) {
   const fetchMock = vi.fn(
-    async (_request: Request) =>
+    async (_url: string, _init: RequestInit) =>
       new Response(JSON.stringify(body), {
         status,
         statusText: "status text",
@@ -18,57 +23,54 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("unwrap", () => {
-  it("GET /species が 200 で [{key:'lion'}] を返すと、その配列をそのまま返すこと", async () => {
-    stubFetch(200, [{ key: "lion", name_ja: "ライオン" }]);
+describe("execute", () => {
+  it("POST localhost:4567/graphql に {query, variables} を JSON で送ること", async () => {
+    const fetchMock = stubFetch(200, { data: { zoo: { day: 1 } } });
 
-    const species = await unwrap(api.GET("/species"));
+    await execute(document, { id: "a1" });
 
-    expect(species[0]?.key).toBe("lion");
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe("http://localhost:4567/graphql");
+    expect(init.method).toBe("POST");
+    expect(new Headers(init.headers).get("Content-Type")).toBe("application/json");
+    expect(JSON.parse(init.body as string)).toEqual({
+      query: "query Zoo { zoo { day } }",
+      variables: { id: "a1" },
+    });
   });
 
-  it("GET /animals/{animal_id} が 404 {error:{code:'AnimalNotFound'}} を返すと、ApiError(code, message, status=404) を投げること", async () => {
-    stubFetch(404, { error: { code: "AnimalNotFound", message: "居ません" } });
+  it("200 で {data:{zoo:{day:3}}} が返ると、data をそのまま返すこと", async () => {
+    stubFetch(200, { data: { zoo: { day: 3 } } });
 
-    await expect(
-      unwrap(api.GET("/animals/{animal_id}", { params: { path: { animal_id: "x" } } })),
-    ).rejects.toMatchObject({
+    await expect(execute(document, { id: "a1" })).resolves.toEqual({ zoo: { day: 3 } });
+  });
+
+  it("errors[0] が {message:'居ません', extensions:{code:'AnimalNotFound'}} のとき、ApiError(code, message) を投げること", async () => {
+    stubFetch(200, {
+      data: null,
+      errors: [{ message: "居ません", extensions: { code: "AnimalNotFound" } }],
+    });
+
+    await expect(execute(document, { id: "a1" })).rejects.toMatchObject({
       name: "ApiError",
       code: "AnimalNotFound",
       message: "居ません",
-      status: 404,
     });
   });
 
-  it("エラー本文が契約外の形のとき、ApiError(code='Unknown', message=statusText) を投げること", async () => {
+  it("errors に code が無いとき、code='Unknown' の ApiError を投げること", async () => {
+    stubFetch(200, { errors: [{ message: "Field 'x' doesn't exist" }] });
+
+    await expect(execute(document, { id: "a1" })).rejects.toBeInstanceOf(ApiError);
+    await expect(execute(document, { id: "a1" })).rejects.toMatchObject({ code: "Unknown" });
+  });
+
+  it("500 で本文が契約外の形のとき、ApiError(code='Unknown', message=statusText) を投げること", async () => {
     stubFetch(500, { unexpected: true });
 
-    await expect(unwrap(api.GET("/report"))).rejects.toMatchObject({
+    await expect(execute(document, { id: "a1" })).rejects.toMatchObject({
       code: "Unknown",
       message: "status text",
-      status: 500,
     });
-  });
-
-  it("投げる例外は Error のサブクラスの ApiError であること", async () => {
-    stubFetch(422, { error: { code: "CapacityExceeded", message: "満員" } });
-
-    await expect(unwrap(api.POST("/run-days", { body: { days: 1 } }))).rejects.toBeInstanceOf(
-      ApiError,
-    );
-  });
-});
-
-describe("api", () => {
-  it("POST /animals は body を JSON 化し、Content-Type: application/json を付けて VITE_API_BASE 既定の localhost:4567 へ送ること", async () => {
-    const fetchMock = stubFetch(201, {});
-
-    await api.POST("/animals", { body: { species_code: "lion", name: "レオ", sex: "male" } });
-
-    const request = fetchMock.mock.calls[0]![0];
-    expect(request.url).toBe("http://localhost:4567/animals");
-    expect(request.method).toBe("POST");
-    expect(request.headers.get("Content-Type")).toBe("application/json");
-    expect(await request.json()).toEqual({ species_code: "lion", name: "レオ", sex: "male" });
   });
 });
