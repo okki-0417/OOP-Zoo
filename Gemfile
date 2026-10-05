@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 
 group :development, :test do
   gem 'rack-test'
+  gem 'rerun', require: false
   gem 'rspec', '~> 3.13'
   gem 'rubocop', require: false
   gem 'rubocop-rspec', require: false
