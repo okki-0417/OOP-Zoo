@@ -7,39 +7,6 @@ module Zoo
         module Serializer
           module_function
 
-          def animal_summary(summary)
-            {
-              id: summary.id, name: summary.name, species: summary.species, alive: summary.alive,
-              health: summary.health, max_health: summary.max_health, ailing: summary.ailing
-            }
-          end
-
-          def animal(profile)
-            {
-              id: profile.id, name: profile.name, species: profile.species,
-              taxon_class: profile.taxon_class, diet: profile.diet,
-              conservation_code: profile.conservation_code, conservation_label: profile.conservation_label,
-              sex: profile.sex, life_stage: profile.life_stage, age_in_days: profile.age_in_days,
-              health: profile.health, max_health: profile.max_health, weak: profile.weak,
-              hunger: profile.hunger, hungry: profile.hungry, starving: profile.starving,
-              days_until_starving: profile.days_until_starving, meals_today: profile.meals_today,
-              nutrition: profile.nutrition, malnourished: profile.malnourished,
-              stress: profile.stress, stressed: profile.stressed, severely_stressed: profile.severely_stressed,
-              illness: profile.illness, contagious: profile.contagious,
-              expecting: profile.expecting, gestation_days: profile.gestation_days,
-              gestation_period_days: profile.gestation_period_days, ready_to_deliver: profile.ready_to_deliver,
-              alive: profile.alive, cause: profile.cause, parents: profile.parents,
-              enclosure_id: profile.enclosure_id, enclosure_name: profile.enclosure_name
-            }
-          end
-
-          def animal_outlook(outlook)
-            {
-              animal_id: outlook.animal_id, housed: outlook.housed, outlook: outlook.outlook&.to_s,
-              days_to_death: outlook.days_to_death, cause_of_death: outlook.cause_of_death
-            }
-          end
-
           def alert(alert)
             {
               severity: alert.severity.to_s, kind: alert.kind.to_s,
@@ -59,7 +26,7 @@ module Zoo
             {
               id: profile.id, name: profile.name, capacity: profile.capacity, population: profile.population,
               cleanliness: profile.cleanliness, filthy: profile.filthy,
-              occupants: profile.occupants.map { |o| animal_summary(o) }
+              occupants: profile.occupants.map { |o| AnimalSerializer.animal_summary(o) }
             }
           end
 
@@ -87,6 +54,14 @@ module Zoo
               visitors: report.visitors, income: report.income.yen, cost: report.cost.yen,
               deaths: report.deaths, balance: report.balance.yen, reputation: report.reputation,
               bankrupt: report.balance.negative?, outbreak: report.outbreak
+            }
+          end
+
+          def operating_summary(summary)
+            {
+              day: summary.day, visitors: summary.visitors, income: summary.income.yen, cost: summary.cost.yen,
+              net_income: summary.net_income.yen, deaths: summary.deaths, balance: summary.balance.yen,
+              reputation: summary.reputation, outbreak: summary.outbreak
             }
           end
 

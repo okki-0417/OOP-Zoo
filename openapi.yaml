@@ -433,6 +433,18 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/Alert' }
+  /operatings:
+    get:
+      summary: 運営記録(日ごとの収支・来園者・死亡)
+      operationId: listOperatings
+      responses:
+        '200':
+          description: 古い順の運営記録
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/OperatingSummary' }
   /report:
     get:
       summary: 園の統計
@@ -563,7 +575,7 @@ components:
             message: { type: string }
     AnimalSummary:
       type: object
-      required: [id, name, species, alive, health, max_health, ailing]
+      required: [id, name, species, alive, health, max_health, ailing, hungry, fed_today]
       properties:
         id: { type: string }
         name: { type: string }
@@ -572,6 +584,8 @@ components:
         health: { type: integer }
         max_health: { type: integer }
         ailing: { type: boolean }
+        hungry: { type: boolean }
+        fed_today: { type: boolean, description: その日のうちに給餌されたか }
     Animal:
       type: object
       required:
@@ -617,6 +631,19 @@ components:
         parents: { type: integer }
         enclosure_id: { type: string, nullable: true }
         enclosure_name: { type: string, nullable: true }
+    OperatingSummary:
+      type: object
+      required: [day, visitors, income, cost, net_income, deaths, balance, reputation, outbreak]
+      properties:
+        day: { type: integer }
+        visitors: { type: integer }
+        income: { type: integer }
+        cost: { type: integer }
+        net_income: { type: integer }
+        deaths: { type: integer }
+        balance: { type: integer }
+        reputation: { type: integer }
+        outbreak: { type: string, nullable: true }
     AnimalOutlook:
       type: object
       required: [animal_id, housed, outlook, days_to_death, cause_of_death]

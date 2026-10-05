@@ -371,6 +371,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/operatings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 運営記録(日ごとの収支・来園者・死亡) */
+        get: operations["listOperatings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/report": {
         parameters: {
             query?: never;
@@ -508,6 +525,9 @@ export interface components {
             health: number;
             max_health: number;
             ailing: boolean;
+            hungry: boolean;
+            /** @description その日のうちに給餌されたか */
+            fed_today: boolean;
         };
         Animal: {
             id: string;
@@ -546,6 +566,17 @@ export interface components {
             parents: number;
             enclosure_id?: string | null;
             enclosure_name?: string | null;
+        };
+        OperatingSummary: {
+            day: number;
+            visitors: number;
+            income: number;
+            cost: number;
+            net_income: number;
+            deaths: number;
+            balance: number;
+            reputation: number;
+            outbreak: string | null;
         };
         AnimalOutlook: {
             animal_id: string;
@@ -1286,6 +1317,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Alert"][];
+                };
+            };
+        };
+    };
+    listOperatings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 古い順の運営記録 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatingSummary"][];
                 };
             };
         };

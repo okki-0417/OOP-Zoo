@@ -157,6 +157,33 @@ RSpec.describe Zoo::Presentation::Rest do
     end
   end
 
+  describe 'GET /operatings' do
+    it '1日運営すると day=1 の運営記録(収入・費用・純益)を1件返すこと' do
+      post '/operate'
+
+      get '/operatings'
+
+      expect(last_response.status).to eq(200)
+      expect(body.size).to eq(1)
+      expect(body.first).to include('day' => 1, 'deaths' => 0)
+      expect(body.first['net_income']).to eq(body.first['income'] - body.first['cost'])
+    end
+  end
+
+  describe 'GET /animals の給餌状況' do
+    it '給餌前は fed_today=false、給餌すると fed_today=true になること' do
+      id = acquire(name: 'レオ')
+      keeper_id = hire_keeper
+
+      get '/animals'
+      expect(body.first).to include('fed_today' => false, 'hungry' => false)
+
+      post_json "/animals/#{id}/feedings", keeper_id:, food_code: 'horse_meat'
+      get '/animals'
+      expect(body.first).to include('fed_today' => true)
+    end
+  end
+
   describe 'GET /alerts' do
     it '未収容の個体がいると kind="unhoused"・subject に個体を持つ警告を返すこと' do
       id = acquire(name: 'レオ')
