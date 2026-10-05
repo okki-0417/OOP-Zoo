@@ -11,18 +11,18 @@ RSpec.describe Zoo::Composition::Container do
   let(:container) { described_class.new }
 
   def run(use_case, command)
-    container.public_send(use_case, command, renderer: Zoo::Presentation::Renderers::Passthrough)
+    container.public_send(use_case, command)
   end
 
-  it 'acquire_animal→house_animal を同一コンテナで実行すると、共有リポジトリ越しに population.value が1になること' do
-    lion = run(:acquire_animal, commands::AcquireAnimalCommand.new(species_code: 'lion', name: 'レオ', sex: 'male')).value[:animal]
+  it 'acquire_animal→house_animal を同一コンテナで実行すると、共有リポジトリ越しに housings.all_occupants.size が1になること' do
+    lion = run(:acquire_animal, commands::AcquireAnimalCommand.new(species_code: 'lion', name: 'レオ', sex: 'male')).value
     enclosure = container.enclosures.save(
       husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
     )
 
     run(:house_animal, commands::HouseAnimalCommand.new(enclosure_id: enclosure.id, animal_id: lion.id))
 
-    expect(run(:population, commands::PopulationCommand.new).value).to eq(1)
+    expect(container.housings.all_occupants.size).to eq(1)
   end
 
   it 'conceive_animals(sire_id:, dam_id:) を実行すると、配線された dam が expecting? になること' do
@@ -52,7 +52,7 @@ RSpec.describe Zoo::Composition::Container do
     expect(container.animals.find(child.id)).to eq(child)
   end
 
-  it "失敗した use case(species_code: 'dragon')は renderer に failure の Result を渡すこと" do
+  it "失敗した use case(species_code: 'dragon')は failure の Result を返すこと" do
     result = run(:acquire_animal, commands::AcquireAnimalCommand.new(species_code: 'dragon', name: 'X', sex: 'male'))
 
     expect(result).to be_failure

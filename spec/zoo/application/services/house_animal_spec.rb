@@ -20,8 +20,7 @@ RSpec.describe Zoo::Application::Services::HouseAnimal do
 
   def call_with(enclosure_id:, animal_id:, enclosure_repo: enclosures)
     command = Zoo::Application::Commands::HouseAnimalCommand.new(enclosure_id:, animal_id:)
-                                                            .bind(enclosures: enclosure_repo, animals:, housings:, unit_of_work:,
-                                                                  assignments: Factory::AssignmentRepository.build)
+                                                            .bind(enclosures: enclosure_repo, animals:, housings:, unit_of_work:)
     described_class.new(command: command).call
   end
 
@@ -32,11 +31,11 @@ RSpec.describe Zoo::Application::Services::HouseAnimal do
       expect(occupants_of(housings, enclosure)).to include(lion)
     end
 
-    it '収容に成功すると result.value の occupants がレオ1頭になること' do
-      view = call_with(enclosure_id: enclosure.id, animal_id: lion.id).value
+    it '収容に成功すると result.value がそのエリアで、住人がレオ1頭になること' do
+      result = call_with(enclosure_id: enclosure.id, animal_id: lion.id)
 
-      expect(view[:enclosure]).to eq(enclosure)
-      expect(view[:occupants].map(&:name)).to eq(['レオ'])
+      expect(result.value).to eq(enclosure)
+      expect(housings.occupants_of(enclosure).map(&:name)).to eq(['レオ'])
     end
 
     it '存在しない enclosure_id=\'missing\' を渡すと result.error が Application::Errors::EnclosureNotFound になること' do

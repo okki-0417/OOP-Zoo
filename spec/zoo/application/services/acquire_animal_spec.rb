@@ -34,11 +34,10 @@ RSpec.describe Zoo::Application::Services::AcquireAnimal do
       context 'Animal の初期化に成功した時' do
         context '残高 100,000円の動物園が 20,550円のニホンザル「モンタ」を取得した時' do
           let(:rest_balance) { 79_450 }
-          it 'success になり、value の animal が name "モンタ" で未収容(enclosure=nil)であり、その id で「モンタ」が保存され、残高が 79,450円になること' do
+          it 'success になり、value が name "モンタ" の Animal であり、その id で「モンタ」が保存され、残高が 79,450円になること' do
             expect(result).to be_success
-            expect(result.value[:animal].name).to eq(name)
-            expect(result.value[:enclosure]).to be_nil
-            expect(command.animals.find(result.value[:animal].id).name).to eq(name)
+            expect(result.value.name).to eq(name)
+            expect(command.animals.find(result.value.id).name).to eq(name)
             expect(command.zoo.load.balance).to eq(Zoo::Domain::Shared::Balance.new(rest_balance))
           end
         end

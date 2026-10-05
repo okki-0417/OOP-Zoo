@@ -14,20 +14,19 @@ RSpec.describe Zoo::Application::Services::TreatAnimal do
 
   let(:veterinarians) { in_memory::InMemoryVeterinarianRepository.new([vet]) }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([penguin]) }
-  let(:housings) { in_memory::InMemoryHousingRepository.new }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
 
   def treat(veterinarian_id:, animal_id:)
     command = Zoo::Application::Commands::TreatAnimalCommand.new(veterinarian_id:, animal_id:)
-                                                            .bind(veterinarians:, animals:, housings:, unit_of_work:)
+                                                            .bind(veterinarians:, animals:, unit_of_work:)
     described_class.new(command: command).call
   end
 
   describe '#call' do
-    it '肺炎のペンギンを獣医が治療すると sick? が false になり、result.value の animal の illness_name が nil になること' do
+    it '肺炎のペンギンを獣医が治療すると sick? が false になり、result.value の illness_name が nil になること' do
       penguin.fall_ill(medical::IllnessCatalog.pneumonia)
 
-      animal = treat(veterinarian_id: vet.id, animal_id: penguin.id).value[:animal]
+      animal = treat(veterinarian_id: vet.id, animal_id: penguin.id).value
 
       expect(animals.find(penguin.id)).not_to be_sick
       expect(animal.illness_name).to be_nil

@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:hire_veterinarian) do
-            veterinarian = @command.unit_of_work.run do
+            @command.unit_of_work.run do
               veterinarian = Domain::Veterinarian.new(name: @command.name)
 
               zoo = @command.zoo.load
@@ -20,7 +20,6 @@ module Zoo
               @command.veterinarians.save(veterinarian)
               veterinarian
             end
-            veterinarian
           end
         end
       end

@@ -28,8 +28,8 @@ RSpec.describe Zoo::Application::Services::ReleaseAnimal do
       expect(occupants_of(housings, enclosure)).not_to include(lion)
     end
 
-    it '退去に成功すると result.value が { animal: レオ, enclosure: nil } になること' do
-      expect(release(lion.id).value).to eq(animal: lion, enclosure: nil)
+    it '退去に成功すると result.value がレオになること' do
+      expect(release(lion.id).value).to eq(lion)
     end
 
     it '存在しない animal_id=\'missing\' を渡すと result.error が AnimalNotFound になること' do

@@ -23,12 +23,11 @@ RSpec.describe Zoo::Application::Services::AddEnclosure do
   end
 
   describe '#call' do
-    it 'name "ライオンの丘" で建設すると、採番 id で find できるエリアが保存され、value が occupants・keepers とも空のそのエリアであること' do
-      view = add.value
+    it 'name "ライオンの丘" で建設すると、採番 id で find できるエリアが保存され、value がそのエリアであること' do
+      enclosure = add.value
 
-      expect(enclosures.find(view[:enclosure].id).name).to eq('ライオンの丘')
-      expect(view[:enclosure].capacity).to eq(4)
-      expect(view).to include(occupants: [], keepers: [])
+      expect(enclosures.find(enclosure.id).name).to eq('ライオンの丘')
+      expect(enclosure.capacity).to eq(4)
     end
 
     it '建設費(capacity 4 で 70,000円)ぶん残高が減ること' do
@@ -41,7 +40,7 @@ RSpec.describe Zoo::Application::Services::AddEnclosure do
       let(:funds) { 200_000 }
 
       it 'climate_controlled=true なら空調付きで建ち、建設費 70,000円 + 空調 50,000円 で残高 80,000円 になること' do
-        enclosure = add(climate_controlled: true).value[:enclosure]
+        enclosure = add(climate_controlled: true).value
 
         expect(enclosure).to be_climate_controlled
         expect(zoo_repo.load.balance).to eq(balance.new(80_000))

@@ -13,7 +13,7 @@ module Zoo
             species = @command.species.find(@command.species_code) or
               raise Errors::SpeciesNotFound, "未知の種です: #{@command.species_code}"
 
-            animal = @command.unit_of_work.run do
+            @command.unit_of_work.run do
               animal = Domain::Animal.new(
                 species: species,
                 name: @command.name,
@@ -31,7 +31,6 @@ module Zoo
 
               animal
             end
-            { animal:, enclosure: nil }
           end
         end
       end

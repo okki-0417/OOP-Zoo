@@ -25,11 +25,10 @@ RSpec.describe Zoo::Application::Services::HireKeeper do
 
   describe '#call' do
     it 'name=\'田中\' specialties=[\'mammal\'] で雇うと、result.value の id で find できる飼育員が保存されること' do
-      view = call_with.value
+      keeper = call_with.value
 
-      expect(keepers.find(view[:keeper].id).name).to eq('田中')
-      expect(view[:keeper].specialties_label).to eq('哺乳類')
-      expect(view[:enclosures]).to eq([])
+      expect(keepers.find(keeper.id).name).to eq('田中')
+      expect(keeper.specialties_label).to eq('哺乳類')
     end
 
     it '採用の一時金(20,000円)ぶん残高が減ること' do

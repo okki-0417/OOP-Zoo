@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:discharge_keeper) do
-            enclosure = @command.unit_of_work.run do
+            @command.unit_of_work.run do
               keeper = @command.keepers.find(@command.keeper_id)
               raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません" if keeper.nil?
 
@@ -23,11 +23,6 @@ module Zoo
               @command.assignments.save(relieving)
               enclosure
             end
-            {
-              enclosure:,
-              occupants: @command.housings.occupants_of(enclosure),
-              keepers: @command.assignments.keepers_of(enclosure)
-            }
           end
         end
 

@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:transfer_animal) do
-            animal, target = @command.unit_of_work.run do
+            @command.unit_of_work.run do
               target = @command.enclosures.find(@command.enclosure_id)
               raise Errors::EnclosureNotFound, "エリア #{@command.enclosure_id} は存在しません" if target.nil?
 
@@ -25,9 +25,8 @@ module Zoo
               current = @command.housings.current_housing_of(animal)
               @command.housings.save(Domain::Releasing.of(current)) if current
               @command.housings.save(housing)
-              [animal, target]
+              animal
             end
-            { animal:, enclosure: target }
           end
         end
       end

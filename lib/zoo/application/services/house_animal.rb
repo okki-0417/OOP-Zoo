@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:house_animal) do
-            enclosure = @command.unit_of_work.run do
+            @command.unit_of_work.run do
               enclosure = @command.enclosures.find(@command.enclosure_id)
               raise Errors::EnclosureNotFound, "エリア #{@command.enclosure_id} は存在しません" if enclosure.nil?
 
@@ -25,11 +25,6 @@ module Zoo
               @command.housings.save(housing)
               enclosure
             end
-            {
-              enclosure:,
-              occupants: @command.housings.occupants_of(enclosure),
-              keepers: @command.assignments.keepers_of(enclosure)
-            }
           end
         end
       end

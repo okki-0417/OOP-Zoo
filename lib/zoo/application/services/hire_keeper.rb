@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:hire_keeper) do
-            keeper = @command.unit_of_work.run do
+            @command.unit_of_work.run do
               specialties = @command.specialties.map { |key| Domain::TaxonClass.new(key) }
               keeper = Domain::Keeper.new(name: @command.name, specialties: specialties)
 
@@ -21,7 +21,6 @@ module Zoo
               @command.keepers.save(keeper)
               keeper
             end
-            { keeper:, enclosures: [] }
           end
         end
       end

@@ -14,13 +14,12 @@ RSpec.describe Zoo::Application::Services::FeedAnimal do
 
   let(:keepers) { in_memory::InMemoryKeeperRepository.new([mammal_keeper, bird_keeper]) }
   let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
-  let(:housings) { in_memory::InMemoryHousingRepository.new }
   let(:foods) { in_memory::InMemoryFoodRepository.new }
   let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
 
   def call_with(keeper_id:, animal_id:, food_code: 'horse_meat')
     command = Zoo::Application::Commands::FeedAnimalCommand.new(keeper_id:, animal_id:, food_code:)
-                                                           .bind(keepers:, animals:, housings:, foods:, unit_of_work:)
+                                                           .bind(keepers:, animals:, foods:, unit_of_work:)
     described_class.new(command: command).call
   end
 
@@ -33,13 +32,13 @@ RSpec.describe Zoo::Application::Services::FeedAnimal do
       expect(animals.find(lion.id).hunger_level).to eq(5)
     end
 
-    it '給餌に成功すると result.value の animal が給餌後の hunger_level 5 になること' do
+    it '給餌に成功すると result.value が給餌後の hunger_level 5 になること' do
       lion.get_hungrier(40)
 
       result = call_with(keeper_id: mammal_keeper.id, animal_id: lion.id)
 
-      expect(result.value[:animal]).to eq(lion)
-      expect(result.value[:animal].hunger_level).to eq(5)
+      expect(result.value).to eq(lion)
+      expect(result.value.hunger_level).to eq(5)
     end
 
     it '哺乳類のライオンに鳥類担当の飼育員が給餌しようとすると result.error が Domain::Errors::FeedingNotAllowed になること' do

@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:treat_animal) do
-            animal = @command.unit_of_work.run do
+            @command.unit_of_work.run do
               vet = @command.veterinarians.find(@command.veterinarian_id)
               raise Errors::VeterinarianNotFound, "獣医 #{@command.veterinarian_id} は存在しません" if vet.nil?
 
@@ -21,7 +21,6 @@ module Zoo
               @command.animals.save(animal)
               animal
             end
-            { animal:, enclosure: @command.housings.enclosure_of(animal) }
           end
         end
       end

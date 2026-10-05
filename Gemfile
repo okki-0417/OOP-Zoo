@@ -11,6 +11,7 @@ group :development, :test do
   gem 'simplecov', require: false
 end
 
+gem 'graphql', '~> 2.6'
 gem 'puma'
 gem 'rackup'
 gem 'sequel', '~> 5.0'

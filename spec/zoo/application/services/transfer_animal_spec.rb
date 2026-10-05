@@ -35,11 +35,11 @@ RSpec.describe Zoo::Application::Services::TransferAnimal do
       expect(occupants_of(housings, from)).not_to include(lion)
     end
 
-    it '移送に成功すると result.value の enclosure が丘Bになること' do
-      view = transfer(to.id).value
+    it '移送に成功すると result.value がライオンで、収容先が丘Bになること' do
+      result = transfer(to.id)
 
-      expect(view[:animal]).to eq(lion)
-      expect(view[:enclosure].name).to eq('丘B')
+      expect(result.value).to eq(lion)
+      expect(housings.enclosure_of(lion).name).to eq('丘B')
     end
 
     it '存在しない enclosure_id=\'missing\' を渡すと result.error が EnclosureNotFound になること' do

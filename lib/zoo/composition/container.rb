@@ -4,7 +4,7 @@ module Zoo
   module Composition
     class Container
       attr_reader :animals, :enclosures, :housings, :keepers, :veterinarians, :breedings, :births, :assignments,
-                  :operatings, :zoo
+                  :operatings, :zoo, :species, :foods
 
       def initialize(state: nil, database: nil)
         database ? setup_sqlite(database) : setup_in_memory(state)
@@ -50,37 +50,16 @@ module Zoo
         set_admission_fee: Application::Services::SetAdmissionFee,
         transfer_animal: Application::Services::TransferAnimal,
         treat_animal: Application::Services::TreatAnimal,
-        animal_detail: Application::Services::AnimalDetail,
-        alert_list: Application::Services::AlertList,
-        checklist: Application::Services::Checklist,
-        animal_list: Application::Services::AnimalList,
-        animal_prognosis: Application::Services::AnimalPrognosis,
-        deceased_list: Application::Services::DeceasedList,
-        enclosure_detail: Application::Services::EnclosureDetail,
-        enclosure_list: Application::Services::EnclosureList,
-        keeper_list: Application::Services::KeeperList,
-        operating_history: Application::Services::OperatingHistory,
-        population: Application::Services::Population,
-        revenue: Application::Services::Revenue,
-        threatened_species: Application::Services::ThreatenedSpecies,
-        veterinarian_list: Application::Services::VeterinarianList,
-        zoo_report: Application::Services::ZooReport,
-        species_list: Application::Services::SpeciesList,
-        food_list: Application::Services::FoodList,
-        taxon_class_list: Application::Services::TaxonClassList
+        alert_list: Application::Services::AlertList
       }.freeze
 
       SERVICES.each do |name, service_class|
-        define_method(name) do |command, renderer:|
-          renderer.render(call_application_service(service_class, command))
+        define_method(name) do |command|
+          service_class.new(command: command.bind(unit_of_work: @unit_of_work, **repositories)).call
         end
       end
 
       private
-
-      def call_application_service(service_class, command)
-        service_class.new(command: command.bind(unit_of_work: @unit_of_work, **repositories)).call
-      end
 
       def repositories
         {

@@ -14,7 +14,7 @@ module Zoo
               zoo = @command.zoo.load
               zoo.change_admission_fee(Domain::Shared::Money.yen(@command.fee))
               @command.zoo.save(zoo)
-              zoo.admission_fee
+              zoo
             end
           end
         end

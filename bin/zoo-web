@@ -10,5 +10,5 @@ require 'fileutils'
 db_path = ENV.fetch('ZOO_DB', File.expand_path('../tmp/zoo-web.db', __dir__))
 FileUtils.mkdir_p(File.dirname(db_path))
 
-Zoo::Presentation::Rest.set(:container, Zoo::Composition::Container.new(database: db_path))
-Zoo::Presentation::Rest.run!(host: '127.0.0.1', port: Integer(ENV.fetch('ZOO_PORT', '4567')))
+Zoo::Presentation::Web.set(:container, Zoo::Composition::Container.new(database: db_path))
+Zoo::Presentation::Web.run!(host: '127.0.0.1', port: Integer(ENV.fetch('ZOO_PORT', '4567')))

@@ -19,7 +19,7 @@ RSpec.describe Zoo::Application::Services::EnrichEnclosure do
     it '刺激度40のエリアを100に戻し、enrichment.level=100・barren?=false のエリアを返して飼育員の勤務時間30分を保存すること' do
       hill.deplete_enrichment(60)
 
-      enclosure = enrich.value[:enclosure]
+      enclosure = enrich.value
 
       expect(enclosure.enrichment.level).to eq(100)
       expect(enclosure).not_to be_barren

@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:add_enclosure) do
-            enclosure = @command.unit_of_work.run do
+            @command.unit_of_work.run do
               enclosure = Domain::Enclosure.new(
                 name: @command.name,
                 temperature: Domain::Shared::Temperature.celsius(@command.celsius),
@@ -26,7 +26,6 @@ module Zoo
               @command.enclosures.save(enclosure)
               enclosure
             end
-            { enclosure:, occupants: [], keepers: [] }
           end
         end
       end

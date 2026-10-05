@@ -13,7 +13,7 @@ module Zoo
             food = @command.foods.find(@command.food_code) or
               raise Errors::FoodNotFound, "未知の餌です: #{@command.food_code}"
 
-            animal = @command.unit_of_work.run do
+            @command.unit_of_work.run do
               keeper = @command.keepers.find(@command.keeper_id)
               raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません" if keeper.nil?
 
@@ -25,7 +25,6 @@ module Zoo
               @command.keepers.save(keeper)
               animal
             end
-            { animal:, enclosure: @command.housings.enclosure_of(animal) }
           end
         end
       end

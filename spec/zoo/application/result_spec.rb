@@ -22,15 +22,15 @@ RSpec.describe Zoo::Application::Result do
   end
 
   describe '.failure' do
-    it 'failure(:animal_detail, error) は value=nil・error=渡した例外 を持つこと' do
+    it 'failure(:feed_animal, error) は value=nil・error=渡した例外 を持つこと' do
       error = errors::AnimalNotFound.new('missing')
-      result = described_class.failure(:animal_detail, error)
+      result = described_class.failure(:feed_animal, error)
 
-      expect(result).to have_attributes(service: :animal_detail, value: nil, error: error)
+      expect(result).to have_attributes(service: :feed_animal, value: nil, error: error)
     end
 
     it 'failure(...) は success?=false・failure?=true になること' do
-      result = described_class.failure(:animal_detail, errors::AnimalNotFound.new('missing'))
+      result = described_class.failure(:feed_animal, errors::AnimalNotFound.new('missing'))
 
       expect(result).not_to be_success
       expect(result).to be_failure
@@ -39,14 +39,14 @@ RSpec.describe Zoo::Application::Result do
 
   describe '.capture' do
     it 'ブロックが :ok を返すと success(value: :ok) になること' do
-      result = described_class.capture(:revenue) { :ok }
+      result = described_class.capture(:admit_visitors) { :ok }
 
-      expect(result).to have_attributes(service: :revenue, value: :ok, error: nil)
+      expect(result).to have_attributes(service: :admit_visitors, value: :ok, error: nil)
     end
 
     it 'ブロックが ApplicationError(AnimalNotFound) を投げると failure(error: その例外) になること' do
       error = errors::AnimalNotFound.new('missing')
-      result = described_class.capture(:animal_detail) { raise error }
+      result = described_class.capture(:feed_animal) { raise error }
 
       expect(result).to be_failure
       expect(result.error).to be(error)

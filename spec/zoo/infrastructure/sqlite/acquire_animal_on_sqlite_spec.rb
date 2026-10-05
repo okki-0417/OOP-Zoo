@@ -20,7 +20,7 @@ RSpec.describe 'AcquireAnimal on SQLite' do
       unit_of_work: sqlite::UnitOfWork.new(database)
     )
 
-    animal = Zoo::Application::Services::AcquireAnimal.new(command: command).call.value[:animal]
+    animal = Zoo::Application::Services::AcquireAnimal.new(command: command).call.value
 
     expect(animals.find(animal.id).name.to_s).to eq('レオ')
     expect(animals.all.size).to eq(1)
