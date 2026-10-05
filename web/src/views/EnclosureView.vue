@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { api, unwrap } from "../api/client";
+import HabitatScene from "../components/HabitatScene.vue";
 import MeterBar from "../components/MeterBar.vue";
 import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
@@ -134,7 +135,15 @@ async function release(id: string, name: string) {
 </script>
 
 <template>
-  <PageHeader :title="enclosure.data.value?.name ?? 'エリア'" back="/enclosures" />
+  <PageHeader
+    :title="enclosure.data.value?.name ?? 'エリア'"
+    :crumbs="[{ label: '動物園', to: '/zoo' }]"
+    :subtitle="
+      enclosure.data.value
+        ? `設定 ${enclosure.data.value.celsius}℃${enclosure.data.value.climate_controlled ? '（空調）' : ''}・${enclosure.data.value.population} / ${enclosure.data.value.capacity} 頭`
+        : undefined
+    "
+  />
 
   <QueryState
     :loading="enclosure.loading.value"
@@ -142,20 +151,19 @@ async function release(id: string, name: string) {
     :empty="!enclosure.data.value"
     @retry="enclosure.reload"
   >
-    <div v-if="enclosure.data.value" class="columns">
-      <div>
-        <h2 class="section-title">状態</h2>
+    <div v-if="enclosure.data.value" class="inside">
+      <div class="habitat">
+        <HabitatScene :enclosure="enclosure.data.value" large />
+        <p class="muted hint">動物をクリックすると、その個体の様子を見られます</p>
+      </div>
+
+      <aside class="inspector">
         <section class="card stack">
-          <MeterBar
-            label="収容数"
-            :value="enclosure.data.value.population"
-            :max="enclosure.data.value.capacity"
-            invert
-          />
+          <h2 class="panel-title">環境</h2>
           <MeterBar label="清潔度" :value="enclosure.data.value.cleanliness" :max="100" />
           <MeterBar label="刺激" :value="enclosure.data.value.enrichment" :max="100" />
-          <form class="row bottom" @submit.prevent="clean">
-            <label class="field grow">
+          <form class="stack" @submit.prevent="clean">
+            <label class="field">
               作業する飼育員
               <select v-model="keeperId" required>
                 <option v-for="k in keepers.data.value" :key="k.id" :value="k.id">
@@ -163,16 +171,20 @@ async function release(id: string, name: string) {
                 </option>
               </select>
             </label>
-            <button class="btn btn-primary" :disabled="busy || !keeperId">🧹 清掃 60分</button>
-            <button type="button" class="btn" :disabled="busy || !keeperId" @click="enrich">
-              🧸 補充 30分
-            </button>
+            <div class="row">
+              <button class="btn btn-primary grow" :disabled="busy || !keeperId">
+                🧹 清掃 60分
+              </button>
+              <button type="button" class="btn grow" :disabled="busy || !keeperId" @click="enrich">
+                🪵 補充 30分
+              </button>
+            </div>
           </form>
         </section>
 
-        <h2 class="section-title">担当飼育員</h2>
         <section class="card stack">
-          <ul v-if="enclosure.data.value.keepers.length" class="list plain">
+          <h2 class="panel-title">担当飼育員</h2>
+          <ul v-if="enclosure.data.value.keepers.length" class="people">
             <li v-for="k in enclosure.data.value.keepers" :key="k.id" class="row">
               <span>🧑‍🌾</span>
               <strong class="grow">{{ k.name }}</strong>
@@ -184,90 +196,125 @@ async function release(id: string, name: string) {
           </ul>
           <p v-else class="muted">担当がいません。日々の見回りが行われません</p>
           <form class="row bottom" @submit.prevent="assign">
-            <label class="field grow">
-              担当に加える
-              <select v-model="assigneeId" required>
-                <option value="" disabled>選んでください</option>
-                <option v-for="k in unassigned" :key="k.id" :value="k.id">
-                  {{ k.name }}（{{ k.specialties }}）
-                </option>
-              </select>
-            </label>
+            <select v-model="assigneeId" class="grow" required aria-label="担当に加える飼育員">
+              <option value="" disabled>担当に加える…</option>
+              <option v-for="k in unassigned" :key="k.id" :value="k.id">
+                {{ k.name }}（{{ k.specialties }}）
+              </option>
+            </select>
             <button class="btn" :disabled="busy || !assigneeId">割り当て</button>
           </form>
         </section>
 
-        <h2 class="section-title">迎え入れる</h2>
-        <form class="card row bottom" @submit.prevent="house">
-          <label class="field grow">
-            動物
-            <select v-model="animalId" required>
-              <option value="" disabled>選んでください</option>
+        <section class="card stack">
+          <h2 class="panel-title">住人</h2>
+          <ul v-if="enclosure.data.value.occupants.length" class="people">
+            <li v-for="occupant in enclosure.data.value.occupants" :key="occupant.id" class="row">
+              <RouterLink :to="`/animals/${occupant.id}`" class="row grow">
+                <span>{{ emojiOf(occupant.species) }}</span>
+                <strong>{{ occupant.name }}</strong>
+                <span class="muted">{{ occupant.species }}</span>
+              </RouterLink>
+              <button
+                class="btn small-btn"
+                :disabled="busy"
+                @click="release(occupant.id, occupant.name)"
+              >
+                退去
+              </button>
+            </li>
+          </ul>
+          <form class="row bottom" @submit.prevent="house">
+            <select v-model="animalId" class="grow" required aria-label="迎え入れる動物">
+              <option value="" disabled>迎え入れる…</option>
               <option v-for="a in candidates" :key="a.id" :value="a.id">
                 {{ emojiOf(a.species) }} {{ a.name }}（{{ a.species }}）
               </option>
             </select>
-          </label>
-          <button class="btn btn-primary" :disabled="busy || !animalId || full">収容</button>
-        </form>
-        <p v-if="full" class="muted note">満員のため収容できません</p>
-      </div>
-
-      <div>
-        <h2 class="section-title">住んでいる動物</h2>
-        <ul v-if="enclosure.data.value.occupants.length" class="card list">
-          <li v-for="occupant in enclosure.data.value.occupants" :key="occupant.id" class="row">
-            <RouterLink :to="`/animals/${occupant.id}`" class="row grow">
-              <span class="avatar small">{{ emojiOf(occupant.species) }}</span>
-              <span class="grow occupant">
-                <strong>{{ occupant.name }}</strong>
-                <span class="muted">{{ occupant.species }}</span>
-              </span>
-              <span v-if="occupant.ailing" class="badge badge-bad">不調</span>
-            </RouterLink>
-            <button
-              class="btn small-btn"
-              :disabled="busy"
-              @click="release(occupant.id, occupant.name)"
-            >
-              退去
-            </button>
-          </li>
-        </ul>
-        <p v-else class="card empty">まだ誰も住んでいません</p>
-      </div>
+            <button class="btn btn-primary" :disabled="busy || !animalId || full">収容</button>
+          </form>
+          <p v-if="full" class="muted">満員のため収容できません</p>
+        </section>
+      </aside>
     </div>
   </QueryState>
 </template>
 
 <style scoped>
+.inside {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (width < 1100px) {
+  .inside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.habitat {
+  position: sticky;
+  top: 16px;
+  padding: 10px;
+  border-radius: 28px;
+  background: #b98d5e;
+  box-shadow:
+    0 0 0 4px #8a6239,
+    0 10px 24px rgb(40 30 10 / 25%);
+}
+
+.hint {
+  margin: 8px 6px 0;
+  font-size: 0.8rem;
+  color: #fff8e8;
+}
+
+.inspector {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.inspector > * {
+  min-width: 0;
+}
+
+.panel-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.people .row {
+  gap: 8px;
+}
+
 .bottom {
   align-items: end;
 }
 
-.avatar.small {
-  width: 36px;
-  height: 36px;
+select.grow {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  padding: 10px 12px;
   border-radius: 10px;
-  font-size: 1.2rem;
-}
-
-.occupant {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface-sunk);
 }
 
 .small-btn {
   padding: 6px 12px;
   font-size: 0.8rem;
-}
-
-.list.plain {
-  padding: 0;
-}
-
-.note {
-  margin: 8px 4px 0;
 }
 </style>

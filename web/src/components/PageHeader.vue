@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import AlertBell from "./AlertBell.vue";
 
-defineProps<{ title: string; back?: string; subtitle?: string }>();
+defineProps<{ title: string; crumbs?: { label: string; to: string }[]; subtitle?: string }>();
 </script>
 
 <template>
   <header class="page-header">
-    <RouterLink v-if="back" :to="back" class="back" aria-label="戻る">‹</RouterLink>
     <div class="titles">
+      <nav v-if="crumbs?.length" class="crumbs" aria-label="現在地">
+        <template v-for="crumb in crumbs" :key="crumb.to">
+          <RouterLink :to="crumb.to">{{ crumb.label }}</RouterLink>
+          <span aria-hidden="true">›</span>
+        </template>
+      </nav>
       <h1>{{ title }}</h1>
       <p v-if="subtitle" class="muted">{{ subtitle }}</p>
     </div>
@@ -24,17 +29,19 @@ defineProps<{ title: string; back?: string; subtitle?: string }>();
   padding: 20px 4px 8px;
 }
 
-.back {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  font-size: 1.6rem;
-  line-height: 1;
-  padding-bottom: 3px;
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 2px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.crumbs a:hover {
+  color: var(--brand);
+  text-decoration: underline;
 }
 
 .titles {

@@ -145,10 +145,18 @@ async function rename() {
   );
   newName.value = "";
 }
+
+const crumbs = computed(() => {
+  const here = animal.data.value;
+  const zoo = { label: "動物園", to: "/zoo" };
+  if (!here?.alive) return [zoo];
+  if (!here.enclosure_id) return [zoo, { label: "搬入口", to: "/zoo/gate" }];
+  return [zoo, { label: here.enclosure_name ?? "エリア", to: `/enclosures/${here.enclosure_id}` }];
+});
 </script>
 
 <template>
-  <PageHeader :title="animal.data.value?.name ?? 'どうぶつ'" back="/animals" />
+  <PageHeader :title="animal.data.value?.name ?? 'どうぶつ'" :crumbs="crumbs" />
 
   <QueryState
     :loading="animal.loading.value"

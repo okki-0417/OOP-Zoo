@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { useRoute } from "vue-router";
+
+const route = useRoute();
 const tabs = [
-  { to: "/", label: "園長室", icon: "🏛️" },
-  { to: "/work", label: "今日の業務", icon: "📋" },
-  { to: "/animals", label: "どうぶつ", icon: "🦒" },
-  { to: "/enclosures", label: "エリア", icon: "🌳" },
-  { to: "/staff", label: "スタッフ", icon: "🧑‍🌾" },
+  { to: "/", section: "office", label: "園長室", icon: "🏛️" },
+  { to: "/zoo", section: "zoo", label: "動物園", icon: "🗺️" },
 ];
 </script>
 
@@ -19,8 +19,7 @@ const tabs = [
       :key="tab.to"
       :to="tab.to"
       class="tab"
-      :exact-active-class="tab.to === '/' ? 'active' : ''"
-      :active-class="tab.to === '/' ? '' : 'active'"
+      :class="{ active: route.meta.section === tab.section }"
     >
       <span class="icon">{{ tab.icon }}</span>
       <span class="label">{{ tab.label }}</span>
