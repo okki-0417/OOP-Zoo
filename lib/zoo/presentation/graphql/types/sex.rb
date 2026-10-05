@@ -4,9 +4,8 @@ module Zoo
   module Presentation
     module Graphql
       module Types
-        class Examination < BaseObject
-          field :animal, Animal, null: false
-          field :diagnosis, Diagnosis, null: false
+        class Sex < GraphQL::Schema::Enum
+          Domain::Animal::Sex::VALUES.each_key { |sex| value sex.to_s.upcase, value: sex }
         end
       end
     end

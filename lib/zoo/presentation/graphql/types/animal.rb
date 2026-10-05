@@ -23,8 +23,8 @@ module Zoo
           field :starving, Boolean, null: false, method: :starving?
           field :days_until_starving, Integer, null: false
           field :fed_today, Boolean, null: false, method: :fed_today?
-          field :meals_today, [String], null: false
-          field :diet_categories, [String], null: false
+          field :meals_today, [FoodCategory], null: false
+          field :diet_categories, [FoodCategory], null: false, method: :acceptable_food_categories
           field :nutrition, Integer, null: false, method: :nutrition_level
           field :malnourished, Boolean, null: false, method: :malnourished?
           field :stress, Integer, null: false, method: :stress_level
@@ -44,11 +44,7 @@ module Zoo
           field :thermal_suitability, ThermalSuitability
 
           def meals_today
-            object.meals.categories.map(&:to_s)
-          end
-
-          def diet_categories
-            object.acceptable_food_categories.map(&:to_s)
+            object.meals.categories
           end
 
           def parents

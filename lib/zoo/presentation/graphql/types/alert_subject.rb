@@ -4,9 +4,8 @@ module Zoo
   module Presentation
     module Graphql
       module Types
-        class Examination < BaseObject
-          field :animal, Animal, null: false
-          field :diagnosis, Diagnosis, null: false
+        class AlertSubject < GraphQL::Schema::Enum
+          %i[zoo enclosure animal].each { |type| value type.to_s.upcase, value: type }
         end
       end
     end

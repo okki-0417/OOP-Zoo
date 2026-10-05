@@ -1,0 +1,267 @@
+type Alert {
+  kind: AlertKind!
+  message: String!
+  severity: AlertSeverity!
+  subjectId: ID
+  subjectName: String!
+  subjectType: AlertSubject!
+}
+
+enum AlertKind {
+  BARREN
+  CLIMATE
+  DUE
+  FILTHY
+  GRAVE
+  GUARDED
+  HUNGRY
+  INSOLVENT
+  MALNOURISHED
+  NO_KEEPER
+  NO_VETERINARIAN
+  OVERCROWDED
+  SICK
+  STARVING
+  STRESSED
+  UNASSIGNED
+  UNHOUSED
+}
+
+enum AlertSeverity {
+  CRITICAL
+  NOTICE
+  WARNING
+}
+
+enum AlertSubject {
+  ANIMAL
+  ENCLOSURE
+  ZOO
+}
+
+type Animal {
+  ageInDays: Int!
+  ailing: Boolean!
+  alive: Boolean!
+  causeOfDeath: String
+  companionship: Companionship
+  contagious: Boolean!
+  daysUntilStarving: Int!
+  dietCategories: [FoodCategory!]!
+  enclosure: Enclosure
+  expecting: Boolean!
+  fedToday: Boolean!
+  gestationDays: Int
+  gestationPeriodDays: Int
+  health: Int!
+  hunger: Int!
+  hungry: Boolean!
+  id: ID!
+  illness: String
+  lifeStage: String!
+  malnourished: Boolean!
+  maxHealth: Int!
+  mealsToday: [FoodCategory!]!
+  name: String
+  nutrition: Int!
+  parents: [Animal!]!
+  prognosis: Prognosis
+  readyToDeliver: Boolean!
+  severelyStressed: Boolean!
+  sex: String!
+  sick: Boolean!
+  species: Species!
+  starving: Boolean!
+  stress: Int!
+  stressed: Boolean!
+  thermalSuitability: ThermalSuitability
+  visibleCondition: Int!
+  weak: Boolean!
+}
+
+type Companionship {
+  lonely: Boolean!
+  separatedDependent: Boolean!
+  subordinateMale: Boolean!
+}
+
+enum Diagnosis {
+  DEAD
+  HEALTHY
+  INJURED
+  SICK
+}
+
+type Enclosure {
+  barren: Boolean!
+  capacity: Int!
+  celsius: Float!
+  cleanliness: Int!
+  climateControlled: Boolean!
+  dull: Boolean!
+  enrichment: Int!
+  filthy: Boolean!
+  id: ID!
+  keepers: [Keeper!]!
+  name: String!
+  occupancy: Occupancy!
+  occupants: [Animal!]!
+  soiled: Boolean!
+}
+
+type Examination {
+  animal: Animal!
+  diagnosis: Diagnosis!
+}
+
+type Food {
+  category: FoodCategory!
+  code: String!
+  nameJa: String!
+  satiety: Int!
+}
+
+enum FoodCategory {
+  FISH
+  FRUIT
+  INSECT
+  MEAT
+  PLANT
+  SEED
+}
+
+type Keeper {
+  enclosures: [Enclosure!]!
+  id: ID!
+  name: String!
+  remainingMinutes: Int!
+  specialties: [TaxonClass!]!
+  workedMinutes: Int!
+}
+
+type Mutation {
+  acquireAnimal(name: String!, sex: Sex!, speciesCode: String!): Animal!
+  addEnclosure(capacity: Int!, celsius: Int!, climateControlled: Boolean = false, name: String!): Enclosure!
+  assignKeeper(enclosureId: ID!, keeperId: ID!): Enclosure!
+  cleanEnclosure(enclosureId: ID!, keeperId: ID!): Enclosure!
+  dischargeKeeper(enclosureId: ID!, keeperId: ID!): Enclosure!
+  enrichEnclosure(enclosureId: ID!, keeperId: ID!): Enclosure!
+  examineAnimal(animalId: ID!, veterinarianId: ID!): Examination!
+  feedAnimal(animalId: ID!, foodCode: String!, keeperId: ID!): Animal!
+  hireKeeper(name: String!, specialties: [String!]!): Keeper!
+  hireVeterinarian(name: String!): Veterinarian!
+  houseAnimal(animalId: ID!, enclosureId: ID!): Enclosure!
+  makeRounds(keeperId: ID!): Rounds!
+  operateDay: Operating!
+  releaseAnimal(animalId: ID!): Animal!
+  renameAnimal(animalId: ID!, newName: String!): Animal!
+  runDays(days: Int!): RunDaysSummary!
+  setAdmissionFee(fee: Int!): Zoo!
+  transferAnimal(animalId: ID!, enclosureId: ID!): Animal!
+  treatAnimal(animalId: ID!, veterinarianId: ID!): Animal!
+}
+
+type Occupancy {
+  full: Boolean!
+  overcrowded: Boolean!
+}
+
+type Operating {
+  balance: Int!
+  cost: Int!
+  day: Int!
+  deaths: Int!
+  income: Int!
+  netIncome: Int!
+  outbreak: String
+  reputation: Int!
+  visitors: Int!
+}
+
+enum Outlook {
+  GOOD
+  GRAVE
+  GUARDED
+}
+
+type Prognosis {
+  causeOfDeath: String
+  daysToDeath: Int
+  outlook: Outlook!
+}
+
+type Query {
+  alerts: [Alert!]!
+  animal(id: ID!): Animal
+  animals: [Animal!]!
+  enclosure(id: ID!): Enclosure
+  enclosures: [Enclosure!]!
+  foods: [Food!]!
+  keepers: [Keeper!]!
+  operatings: [Operating!]!
+  species: [Species!]!
+  taxonClasses: [TaxonClass!]!
+  veterinarians: [Veterinarian!]!
+  zoo: Zoo!
+}
+
+type RoundReport {
+  cleaned: Boolean!
+  enclosure: Enclosure!
+  enriched: Boolean!
+  fed: [Animal!]!
+  skipped: [SkippedWork!]!
+}
+
+type Rounds {
+  keeper: Keeper!
+  reports: [RoundReport!]!
+}
+
+type RunDaysSummary {
+  days: Int!
+  totalDeaths: Int!
+}
+
+enum Sex {
+  FEMALE
+  MALE
+}
+
+type SkippedWork {
+  reason: String!
+  subject: String!
+}
+
+type Species {
+  code: String!
+  conservationCode: String!
+  conservationLabel: String!
+  diet: String!
+  nameJa: String!
+  taxonClass: TaxonClass!
+  threatened: Boolean!
+}
+
+type TaxonClass {
+  code: String!
+  label: String!
+}
+
+type ThermalSuitability {
+  comfortable: Boolean!
+  habitable: Boolean!
+}
+
+type Veterinarian {
+  id: ID!
+  name: String!
+}
+
+type Zoo {
+  admissionFee: Int!
+  balance: Int!
+  day: Int!
+  name: String!
+  reputation: Int!
+}

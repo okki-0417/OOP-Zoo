@@ -60,8 +60,8 @@ RSpec.describe Zoo::Presentation::Graphql::Mutations do
 
   describe '引数からコマンドへの受け渡し' do
     {
-      'acquireAnimal(speciesCode: "lion", name: "レオ", sex: "male")' =>
-        [:acquire_animal, commands::AcquireAnimalCommand, { species_code: 'lion', name: 'レオ', sex: 'male' }],
+      'acquireAnimal(speciesCode: "lion", name: "レオ", sex: MALE)' =>
+        [:acquire_animal, commands::AcquireAnimalCommand, { species_code: 'lion', name: 'レオ', sex: :male }],
       'renameAnimal(animalId: "a1", newName: "シンバ")' =>
         [:rename_animal, commands::RenameAnimalCommand, { animal_id: 'a1', new_name: 'シンバ' }],
       'feedAnimal(animalId: "a1", keeperId: "k1", foodCode: "horse_meat")' =>

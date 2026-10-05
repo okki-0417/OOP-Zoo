@@ -5,9 +5,9 @@ module Zoo
     module Graphql
       module Types
         class Alert < BaseObject
-          field :severity, String, null: false
-          field :kind, String, null: false
-          field :subject_type, String, null: false
+          field :severity, AlertSeverity, null: false
+          field :kind, AlertKind, null: false
+          field :subject_type, AlertSubject, null: false
           field :subject_id, ID
           field :subject_name, String, null: false
           field :message, String, null: false

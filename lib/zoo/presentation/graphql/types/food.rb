@@ -7,7 +7,7 @@ module Zoo
         class Food < BaseObject
           field :code, String, null: false
           field :name_ja, String, null: false
-          field :category, String, null: false
+          field :category, FoodCategory, null: false
           field :satiety, Integer, null: false
 
           def code

@@ -9,7 +9,7 @@ module Zoo
 
           argument :species_code, String
           argument :name, String
-          argument :sex, String
+          argument :sex, Types::Sex
 
           def resolve(**)
             perform(:acquire_animal, **)

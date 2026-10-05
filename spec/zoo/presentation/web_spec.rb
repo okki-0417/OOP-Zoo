@@ -21,7 +21,7 @@ RSpec.describe Zoo::Presentation::Web do
   end
 
   it 'acquireAnimal → addEnclosure → houseAnimal と送ると、houseAnimal の応答に occupants ["レオ"] と occupancy.full=false が返ること' do
-    animal_id = graphql('mutation { acquireAnimal(speciesCode: "lion", name: "レオ", sex: "male") { id } }')
+    animal_id = graphql('mutation { acquireAnimal(speciesCode: "lion", name: "レオ", sex: MALE) { id } }')
                 .dig('data', 'acquireAnimal', 'id')
     enclosure_id = graphql('mutation { addEnclosure(name: "ライオンの丘", celsius: 28, capacity: 4) { id } }')
                    .dig('data', 'addEnclosure', 'id')
@@ -41,7 +41,7 @@ RSpec.describe Zoo::Presentation::Web do
   end
 
   it "未知の種 dragon で acquireAnimal を送ると、200 で data が null・errors[0].extensions.code が 'SpeciesNotFound' になること" do
-    response = graphql('mutation { acquireAnimal(speciesCode: "dragon", name: "X", sex: "male") { id } }')
+    response = graphql('mutation { acquireAnimal(speciesCode: "dragon", name: "X", sex: MALE) { id } }')
 
     expect(last_response.status).to eq(200)
     expect(response['data']).to be_nil
