@@ -61,6 +61,18 @@ export type Sex =
   | 'FEMALE'
   | 'MALE';
 
+export type StressorCause =
+  | 'BOREDOM'
+  | 'CLIMATE_DISCOMFORT'
+  | 'CROWDING'
+  | 'FILTH'
+  | 'HUNGER'
+  | 'ILLNESS'
+  | 'LONELINESS'
+  | 'MALNUTRITION'
+  | 'MATERNAL_SEPARATION'
+  | 'SOCIAL_CONFLICT';
+
 export type AlertsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -71,7 +83,7 @@ export type AnimalQueryVariables = Exact<{
 }>;
 
 
-export type AnimalQuery = { animal: { id: string, name: string | null, alive: boolean, sex: string, lifeStage: string, ageInDays: number, causeOfDeath: string | null, health: number, maxHealth: number, hunger: number, nutrition: number, stress: number, daysUntilStarving: number, mealsToday: Array<FoodCategory>, dietCategories: Array<FoodCategory>, expecting: boolean, gestationDays: number | null, gestationPeriodDays: number | null, readyToDeliver: boolean, starving: boolean, weak: boolean, illness: string | null, contagious: boolean, malnourished: boolean, stressed: boolean, severelyStressed: boolean, parents: Array<{ id: string }>, species: { nameJa: string, diet: string, conservationCode: string, conservationLabel: string, taxonClass: { label: string } }, enclosure: { id: string, name: string } | null, prognosis: { outlook: Outlook, daysToDeath: number | null, causeOfDeath: string | null } | null } | null, keepers: Array<{ id: string, name: string, remainingMinutes: number }>, veterinarians: Array<{ id: string, name: string }>, foods: Array<{ code: string, nameJa: string, category: FoodCategory, satiety: number }>, enclosures: Array<{ id: string, name: string, capacity: number, occupants: Array<{ id: string }> }> };
+export type AnimalQuery = { animal: { id: string, name: string | null, alive: boolean, sex: string, lifeStage: string, ageInDays: number, causeOfDeath: string | null, health: number, maxHealth: number, hunger: number, nutrition: number, stress: number, daysUntilStarving: number, mealsToday: Array<FoodCategory>, dietCategories: Array<FoodCategory>, expecting: boolean, gestationDays: number | null, gestationPeriodDays: number | null, readyToDeliver: boolean, starving: boolean, weak: boolean, illness: string | null, contagious: boolean, malnourished: boolean, stressed: boolean, severelyStressed: boolean, stressors: Array<{ cause: StressorCause, amount: number }>, parents: Array<{ id: string }>, species: { nameJa: string, diet: string, conservationCode: string, conservationLabel: string, taxonClass: { label: string } }, enclosure: { id: string, name: string } | null, prognosis: { outlook: Outlook, daysToDeath: number | null, causeOfDeath: string | null } | null } | null, keepers: Array<{ id: string, name: string, remainingMinutes: number }>, veterinarians: Array<{ id: string, name: string }>, foods: Array<{ code: string, nameJa: string, category: FoodCategory, satiety: number }>, enclosures: Array<{ id: string, name: string, capacity: number, occupants: Array<{ id: string }> }> };
 
 export type FeedAnimalMutationVariables = Exact<{
   animalId: string | number;
@@ -232,7 +244,7 @@ export type SetAdmissionFeeMutation = { setAdmissionFee: { admissionFee: number 
 export type ReputationQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ReputationQuery = { zoo: { reputation: number, admissionFee: number, exhibitCondition: number, experience: number, expectedVisitors: number, reputationDrift: number, reputationDecay: number, reputationSwingLimit: number, visitorsForFullSwing: number }, animals: Array<{ id: string, name: string | null, alive: boolean, visibleCondition: number, blemishes: Array<{ cause: BlemishCause, penalty: number }>, species: { nameJa: string }, enclosure: { id: string, name: string } | null }>, operatings: Array<{ deaths: number, outbreak: string | null }> };
+export type ReputationQuery = { zoo: { reputation: number, admissionFee: number, exhibitCondition: number, experience: number, expectedVisitors: number, reputationDrift: number, reputationDecay: number, reputationSwingLimit: number, visitorsForFullSwing: number }, animals: Array<{ id: string, name: string | null, alive: boolean, visibleCondition: number, blemishes: Array<{ cause: BlemishCause, penalty: number }>, stressors: Array<{ cause: StressorCause, amount: number }>, species: { nameJa: string }, enclosure: { id: string, name: string } | null }>, operatings: Array<{ deaths: number, outbreak: string | null }> };
 
 export type StaffQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -321,6 +333,10 @@ export const AnimalDocument = new TypedDocumentString(`
     malnourished
     stressed
     severelyStressed
+    stressors {
+      cause
+      amount
+    }
     parents {
       id
     }
@@ -684,6 +700,10 @@ export const ReputationDocument = new TypedDocumentString(`
     blemishes {
       cause
       penalty
+    }
+    stressors {
+      cause
+      amount
     }
     species {
       nameJa

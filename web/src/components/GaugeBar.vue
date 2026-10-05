@@ -2,8 +2,8 @@
 import { computed } from "vue";
 
 const props = withDefaults(
-  defineProps<{ value: number; max: number; min?: number; marker?: number }>(),
-  { min: 0, marker: undefined },
+  defineProps<{ value: number; max: number; min?: number; marker?: number; invert?: boolean }>(),
+  { min: 0, marker: undefined, invert: false },
 );
 
 const position = (value: number) =>
@@ -18,8 +18,9 @@ const fill = computed(() => ({
 const signed = computed(() => props.min < 0);
 const tone = computed(() => {
   if (signed.value) return props.value < 0 ? "bad" : "good";
-  if (end.value >= 60) return "good";
-  if (end.value >= 30) return "warn";
+  const goodness = props.invert ? 100 - end.value : end.value;
+  if (goodness >= 60) return "good";
+  if (goodness >= 30) return "warn";
   return "bad";
 });
 </script>

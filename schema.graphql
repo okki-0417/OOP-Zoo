@@ -75,6 +75,7 @@ type Animal {
   starving: Boolean!
   stress: Int!
   stressed: Boolean!
+  stressors: [Stressor!]!
   thermalSuitability: ThermalSuitability
   visibleCondition: Int!
   weak: Boolean!
@@ -253,6 +254,24 @@ type Species {
   nameJa: String!
   taxonClass: TaxonClass!
   threatened: Boolean!
+}
+
+type Stressor {
+  amount: Int!
+  cause: StressorCause!
+}
+
+enum StressorCause {
+  BOREDOM
+  CLIMATE_DISCOMFORT
+  CROWDING
+  FILTH
+  HUNGER
+  ILLNESS
+  LONELINESS
+  MALNUTRITION
+  MATERNAL_SEPARATION
+  SOCIAL_CONFLICT
 }
 
 type TaxonClass {

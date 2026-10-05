@@ -19,6 +19,7 @@ module Zoo
           field :ailing, Boolean, null: false, method: :ailing?
           field :visible_condition, Integer, null: false
           field :blemishes, [Blemish], null: false
+          field :stressors, [Stressor], null: false
           field :hunger, Integer, null: false, method: :hunger_level
           field :hungry, Boolean, null: false, method: :hungry?
           field :starving, Boolean, null: false, method: :starving?
@@ -54,6 +55,26 @@ module Zoo
               sick: [object.sick?, Domain::Animal::VISIBLE_SICK_PENALTY],
               weak: [object.weak?, Domain::Animal::VISIBLE_WEAK_PENALTY]
             }.filter_map { |cause, (present, penalty)| { cause:, penalty: } if present }
+          end
+
+          def stressors
+            occupancy = housed_occupancy or return []
+
+            enclosure = occupancy.enclosure
+            fellowship = companionship
+            welfare = Domain::Welfare
+            {
+              filth: [enclosure.filthy?, welfare::FILTH],
+              boredom: [enclosure.barren?, welfare::BOREDOM],
+              crowding: [occupancy.overcrowded?, welfare::CROWDING],
+              loneliness: [fellowship.lonely?, welfare::LONELINESS],
+              maternal_separation: [fellowship.separated_dependent?, welfare::MATERNAL_SEPARATION],
+              social_conflict: [fellowship.subordinate_male?, welfare::SOCIAL_CONFLICT],
+              climate_discomfort: [!thermal_suitability.comfortable?, welfare::CLIMATE_DISCOMFORT],
+              hunger: [object.hungry?, welfare::HUNGER],
+              illness: [object.sick?, welfare::ILLNESS],
+              malnutrition: [object.malnourished?, welfare::MALNUTRITION]
+            }.filter_map { |cause, (present, amount)| { cause:, amount: } if present }
           end
 
           def parents

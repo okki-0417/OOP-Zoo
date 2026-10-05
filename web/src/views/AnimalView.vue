@@ -8,6 +8,7 @@ import QueryState from "../components/QueryState.vue";
 import { useMutation } from "../composables/useMutation";
 import { useQuery } from "../composables/useQuery";
 import { emojiOf } from "../lib/emoji";
+import { remedyOf, stressorLabel } from "../lib/stressors";
 
 const props = defineProps<{ id: string }>();
 
@@ -40,6 +41,10 @@ const AnimalQuery = graphql(`
       malnourished
       stressed
       severelyStressed
+      stressors {
+        cause
+        amount
+      }
       parents {
         id
       }
@@ -268,6 +273,24 @@ async function rename() {
           <MeterBar label="空腹" :value="animal.hunger" :max="100" invert />
           <MeterBar label="栄養" :value="animal.nutrition" :max="100" />
           <MeterBar label="ストレス" :value="animal.stress" :max="100" invert />
+          <ul v-if="animal.stressors.length > 0" class="stressors">
+            <li v-for="stressor in animal.stressors" :key="stressor.cause" class="row">
+              <span class="badge badge-warn">{{ stressorLabel(stressor.cause) }}</span>
+              <span class="muted">+{{ stressor.amount }}/日</span>
+              <span class="grow" />
+              <RouterLink
+                v-if="remedyOf(stressor.cause, animal).to !== `/animals/${animal.id}`"
+                :to="remedyOf(stressor.cause, animal).to"
+                class="remedy"
+              >
+                {{ remedyOf(stressor.cause, animal).label }} ›
+              </RouterLink>
+              <span v-else class="muted">{{ remedyOf(stressor.cause, animal).label }}</span>
+            </li>
+          </ul>
+          <p v-else-if="animal.stress > 0 && animal.enclosure" class="muted stressors">
+            ストレスの原因はありません。毎日少しずつ下がります
+          </p>
           <dl class="facts">
             <dt>飢餓まで</dt>
             <dd>給餌が途絶えると {{ animal.daysUntilStarving }} 日</dd>
@@ -405,6 +428,24 @@ async function rename() {
 </template>
 
 <style scoped>
+.stressors {
+  display: grid;
+  gap: 6px;
+  margin: -4px 0 4px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+.remedy {
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.remedy:hover {
+  text-decoration: underline;
+}
+
 .profile {
   display: flex;
   gap: 16px;

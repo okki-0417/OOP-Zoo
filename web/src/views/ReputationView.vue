@@ -8,6 +8,7 @@ import QueryState from "../components/QueryState.vue";
 import { useQuery } from "../composables/useQuery";
 import { yen } from "../lib/currency";
 import { emojiOf } from "../lib/emoji";
+import { remedyOf, stressorLabel } from "../lib/stressors";
 
 const ReputationQuery = graphql(`
   query Reputation {
@@ -31,6 +32,10 @@ const ReputationQuery = graphql(`
         cause
         penalty
       }
+      stressors {
+        cause
+        amount
+      }
       species {
         nameJa
       }
@@ -46,8 +51,8 @@ const ReputationQuery = graphql(`
   }
 `);
 
-const causes: Record<BlemishCause, { label: string; remedy: string }> = {
-  STRESSED: { label: "ストレス", remedy: "原因を確かめる" },
+const causes: Record<BlemishCause, { label: string; remedy?: string }> = {
+  STRESSED: { label: "ストレス" },
   SICK: { label: "病気", remedy: "治療する" },
   WEAK: { label: "衰弱", remedy: "給餌・治療する" },
 };
@@ -169,18 +174,45 @@ function signed(value: number, digits = 0) {
                         <span class="action" />
                       </div>
                       <ul v-if="animal.blemishes.length > 0">
-                        <li v-for="blemish in animal.blemishes" :key="blemish.cause" class="node">
-                          <span class="label">{{ causes[blemish.cause].label }}</span>
-                          <GaugeBar
-                            class="gauge"
-                            :value="-blemish.penalty"
-                            :min="-100"
-                            :max="100"
-                          />
-                          <span class="value">{{ signed(-blemish.penalty) }}</span>
-                          <RouterLink :to="`/animals/${animal.id}`" class="action">
-                            {{ causes[blemish.cause].remedy }} ›
-                          </RouterLink>
+                        <li v-for="blemish in animal.blemishes" :key="blemish.cause">
+                          <div class="node">
+                            <span class="label">{{ causes[blemish.cause].label }}</span>
+                            <GaugeBar
+                              class="gauge"
+                              :value="-blemish.penalty"
+                              :min="-100"
+                              :max="100"
+                            />
+                            <span class="value">{{ signed(-blemish.penalty) }}</span>
+                            <RouterLink
+                              v-if="causes[blemish.cause].remedy"
+                              :to="`/animals/${animal.id}`"
+                              class="action"
+                            >
+                              {{ causes[blemish.cause].remedy }} ›
+                            </RouterLink>
+                            <span v-else class="action" />
+                          </div>
+                          <ul v-if="blemish.cause === 'STRESSED'">
+                            <li
+                              v-for="stressor in animal.stressors"
+                              :key="stressor.cause"
+                              class="node"
+                            >
+                              <span class="label">{{ stressorLabel(stressor.cause) }}</span>
+                              <GaugeBar class="gauge" :value="stressor.amount" :max="20" invert />
+                              <span class="value">+{{ stressor.amount }}/日</span>
+                              <RouterLink :to="remedyOf(stressor.cause, animal).to" class="action">
+                                {{ remedyOf(stressor.cause, animal).label }} ›
+                              </RouterLink>
+                            </li>
+                            <li v-if="animal.stressors.length === 0" class="node">
+                              <span class="label muted">原因なし・回復中</span>
+                              <span class="gauge" />
+                              <span class="value" />
+                              <span class="action" />
+                            </li>
+                          </ul>
                         </li>
                       </ul>
                     </li>
