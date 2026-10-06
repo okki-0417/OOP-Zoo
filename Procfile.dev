@@ -1,2 +1,0 @@
-api: cd api && bin/zoo-web-dev
-web: cd web && pnpm dev

@@ -5,7 +5,8 @@
 - `api/` … Ruby(Sinatra + Sequel + graphql-ruby)。ドメイン・アプリケーション・GraphQL。`cd api` してから `bundle exec rspec` / `bundle exec rubocop`
 - `web/` … Vue + Vite の SPA。`schema.graphql` から `pnpm gen:types` で型を生成する
 - `schema.graphql` … api と web の契約。api 側を変えたら `api/bin/dump-graphql-schema` で更新する
-- `bin/dev` … api と web をまとめて起動(overmind / foreman + `Procfile.dev`)
+- ルートは pnpm ワークスペース。`pnpm dev:api` / `pnpm dev:web` で個別に、`pnpm dev` でまとめて起動する。
+  ほかに `pnpm test:api` / `pnpm lint:api` / `pnpm gen:schema`(スキーマ出力→型生成)
 - CI(`.github/workflows/ci.yml`)で rspec・rubocop・型検査・テストと、スキーマ/生成型のずれを検査する
 
 ## 開発ワークフロー上の注意
