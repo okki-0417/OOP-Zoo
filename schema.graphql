@@ -127,6 +127,19 @@ type Examination {
   diagnosis: Diagnosis!
 }
 
+type Expense {
+  amount: Int!
+  category: ExpenseCategory!
+  quantity: Int!
+  subject: String!
+}
+
+enum ExpenseCategory {
+  FEED
+  PAYROLL
+  UPKEEP
+}
+
 type Food {
   category: FoodCategory!
   code: String!
@@ -184,6 +197,7 @@ type Operating {
   cost: Int!
   day: Int!
   deaths: Int!
+  expenses: [Expense!]!
   income: Int!
   netIncome: Int!
   outbreak: String

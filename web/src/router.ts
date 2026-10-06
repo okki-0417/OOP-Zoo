@@ -16,6 +16,12 @@ export const router = createRouter({
       meta: { section: "office" },
     },
     {
+      path: "/finance",
+      name: "finance",
+      component: () => import("./views/FinanceView.vue"),
+      meta: { section: "office" },
+    },
+    {
       path: "/animals",
       name: "animals",
       component: () => import("./views/AnimalsView.vue"),

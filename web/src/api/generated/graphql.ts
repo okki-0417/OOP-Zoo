@@ -44,6 +44,11 @@ export type Diagnosis =
   | 'INJURED'
   | 'SICK';
 
+export type ExpenseCategory =
+  | 'FEED'
+  | 'PAYROLL'
+  | 'UPKEEP';
+
 export type FoodCategory =
   | 'FISH'
   | 'FRUIT'
@@ -216,6 +221,11 @@ export type AddEnclosureMutationVariables = Exact<{
 
 
 export type AddEnclosureMutation = { addEnclosure: { name: string } };
+
+export type FinanceQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type FinanceQuery = { operatings: Array<{ day: number, visitors: number, income: number, cost: number, netIncome: number, balance: number, expenses: Array<{ category: ExpenseCategory, subject: string, quantity: number, amount: number }> }> };
 
 export type OfficeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -609,6 +619,24 @@ export const AddEnclosureDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<AddEnclosureMutation, AddEnclosureMutationVariables>;
+export const FinanceDocument = new TypedDocumentString(`
+    query Finance {
+  operatings {
+    day
+    visitors
+    income
+    cost
+    netIncome
+    balance
+    expenses {
+      category
+      subject
+      quantity
+      amount
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<FinanceQuery, FinanceQueryVariables>;
 export const OfficeDocument = new TypedDocumentString(`
     query Office {
   zoo {

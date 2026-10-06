@@ -9,6 +9,7 @@ module Zoo
           field :visitors, Integer, null: false
           field :income, Integer, null: false
           field :cost, Integer, null: false
+          field :expenses, [Expense], null: false
           field :net_income, Integer, null: false
           field :deaths, Integer, null: false
           field :balance, Integer, null: false

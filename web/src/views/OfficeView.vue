@@ -210,7 +210,7 @@ async function changeFee() {
         @retry="office.reload"
       >
         <section v-if="zoo" class="kpis">
-          <div class="card kpi">
+          <RouterLink to="/finance" class="card kpi link-card">
             <p class="muted">資金</p>
             <p class="figure" :class="{ negative: zoo.balance < 0 }">
               {{ yen(zoo.balance) }}
@@ -218,7 +218,8 @@ async function changeFee() {
             <p v-if="yesterday" class="delta" :class="yesterday.netIncome < 0 ? 'minus' : 'plus'">
               前日 {{ yesterday.netIncome < 0 ? "" : "+" }}{{ yen(yesterday.netIncome) }}
             </p>
-          </div>
+            <p class="more">内訳を見る ›</p>
+          </RouterLink>
           <RouterLink to="/reputation" class="card kpi link-card">
             <MeterBar label="評判" :value="zoo.reputation" :max="100" />
             <p v-if="yesterday" class="muted">
@@ -276,7 +277,9 @@ async function changeFee() {
         </form>
       </section>
 
-      <h2 class="section-title">直近の収支</h2>
+      <h2 class="section-title">
+        直近の収支 <RouterLink to="/finance" class="more">内訳を見る ›</RouterLink>
+      </h2>
       <section class="card">
         <p v-if="recentDays.length === 0" class="muted">まだ営業記録がありません</p>
         <table v-else class="ledger-table">
