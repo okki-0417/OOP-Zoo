@@ -1,9 +1,10 @@
-/tmp/
+.DS_Store
+
+/api/tmp/
+/api/coverage/
+/api/.bundle/
 *.db
 *.save
-/coverage/
-/.bundle/
 
-# frontend (Node)
-/frontend/node_modules/
-/frontend/dist/
+/web/node_modules/
+/web/dist/

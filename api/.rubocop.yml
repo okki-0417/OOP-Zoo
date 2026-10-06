@@ -5,7 +5,6 @@ AllCops:
   NewCops: enable
   SuggestExtensions: false
   Exclude:
-    - "frontend/**/*"
     - "vendor/**/*"
     - "tmp/**/*"
     - "coverage/**/*"

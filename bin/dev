@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+set -e
+cd "$(dirname "$0")/.."
+if command -v overmind >/dev/null 2>&1; then
+  exec overmind start -f Procfile.dev "$@"
+fi
+exec foreman start -f Procfile.dev "$@"

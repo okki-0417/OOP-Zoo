@@ -4,4 +4,4 @@
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'zoo'
 
-File.write(File.expand_path('../schema.graphql', __dir__), Zoo::Presentation::Graphql::Schema.to_definition)
+File.write(File.expand_path('../../schema.graphql', __dir__), Zoo::Presentation::Graphql::Schema.to_definition)

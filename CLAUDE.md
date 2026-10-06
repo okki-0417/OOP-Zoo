@@ -1,5 +1,13 @@
 # 複雑な動物園シミュレーションドメインをDDDで開発する
 
+## リポジトリ構成
+
+- `api/` … Ruby(Sinatra + Sequel + graphql-ruby)。ドメイン・アプリケーション・GraphQL。`cd api` してから `bundle exec rspec` / `bundle exec rubocop`
+- `web/` … Vue + Vite の SPA。`schema.graphql` から `pnpm gen:types` で型を生成する
+- `schema.graphql` … api と web の契約。api 側を変えたら `api/bin/dump-graphql-schema` で更新する
+- `bin/dev` … api と web をまとめて起動(overmind / foreman + `Procfile.dev`)
+- CI(`.github/workflows/ci.yml`)で rspec・rubocop・型検査・テストと、スキーマ/生成型のずれを検査する
+
 ## 開発ワークフロー上の注意
 
 - 基本的にコミットのタイミングと粒度は Claude に任せます。
@@ -122,7 +130,7 @@
 - 複雑なドメイン知識を表現するため、ドメインエキスパート目線で、専門的な知識やルールを設計する
 - 対象はドメイン層のルール/振る舞い。横断する知識(福祉・同居適性など)も知識単位の
   ファイルに置く(クラス=ファイルにはしない)
-- `bundle exec rspec spec/knowledge --format doc` がそのまま設計書になる
+- `api/` で `bundle exec rspec spec/knowledge --format doc` がそのまま設計書になる
 
 ### describe / context / it の役割
 

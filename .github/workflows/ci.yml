@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          working-directory: api
+          bundler-cache: true
+      - run: bundle exec rspec --format progress
+      - run: bundle exec rubocop
+      - name: schema.graphql is up to date
+        run: |
+          bin/dump-graphql-schema
+          git diff --exit-code ../schema.graphql
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: generated GraphQL types are up to date
+        run: |
+          pnpm gen:types
+          git diff --exit-code src/api/generated
+      - run: pnpm exec vue-tsc -b
+      - run: pnpm exec vp test run
