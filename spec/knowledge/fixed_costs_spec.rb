@@ -29,6 +29,12 @@ RSpec.describe '固定費と休園' do
       expect(two.yen).to be > one.yen
     end
 
+    it '同じ種でも、飼料費は頭数分かかること(ライオン3頭はライオン1頭の3倍)' do
+      lions = Array.new(3) { catalog.lion }
+      feed = ->(species) { Zoo::Domain::OperatingCost.new(enclosures: [], staff: [], species:).amount }
+      expect(feed.call(lions)).to eq(feed.call([catalog.lion]) * 3)
+    end
+
     it '在園個体がいなくても、エリアと職員(飼育員・獣医)の維持費は発生すること' do
       staff = [build_keeper, Zoo::Domain::Veterinarian.new(name: '獣医')]
       daily = Zoo::Domain::OperatingCost.new(enclosures: [savanna], staff: staff, species: []).amount

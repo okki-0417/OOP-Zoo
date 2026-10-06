@@ -47,6 +47,17 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect(report.cost).to eq(shared::Money.yen(upkeep + zebra_food))
     end
 
+    it '同じ種(グレビーシマウマ)が2頭いれば、飼料費は2頭分を計上すること' do
+      second = build_adult(catalog.grevys_zebra, name: 'シマコ', sex: Zoo::Domain::Animal::Sex.female)
+      animals.save(second)
+      housings.save(housed(second, enclosure))
+
+      report = service.call.value
+
+      zebra_food = catalog.grevys_zebra.daily_food_cost.yen
+      expect(report.cost).to eq(shared::Money.yen(Zoo::Domain::Enclosure::UPKEEP_YEN + (zebra_food * 2)))
+    end
+
     it '1日運営すると園の経過日数が1進むこと' do
       expect { service.call }.to change { zoo.load.day }.by(1)
     end

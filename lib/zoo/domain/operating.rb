@@ -52,7 +52,7 @@ module Zoo
         @cost = OperatingCost.new(
           enclosures: @occupancies.map(&:enclosure),
           staff: @keepers + @veterinarians,
-          species: on_exhibit.map(&:species).uniq
+          species: on_exhibit.map(&:species)
         ).amount
         @zoo.spend(@cost)
 
