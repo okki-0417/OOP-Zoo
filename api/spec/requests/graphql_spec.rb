@@ -1,28 +1,24 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'rack/test'
-require 'json'
-require 'stringio'
 
-RSpec.describe Zoo::Presentation::Web do
-  include Rack::Test::Methods
-
-  let(:container) { Zoo::Composition::Container.new }
+RSpec.describe 'POST /graphql', type: :request do
   let(:log) { StringIO.new }
 
-  def app
-    described_class
-  end
-
-  before do
-    described_class.set(:container, container)
-    described_class.set(:operation_logger, Logger.new(log))
+  around do |example|
+    original_container = Rails.configuration.x.zoo_container
+    original_logger = Rails.logger
+    Rails.configuration.x.zoo_container = Zoo::Composition::Container.new
+    Rails.logger = Logger.new(log)
+    example.run
+  ensure
+    Rails.configuration.x.zoo_container = original_container
+    Rails.logger = original_logger
   end
 
   def graphql(query, variables = {})
-    post '/graphql', { query:, variables: }.to_json, 'CONTENT_TYPE' => 'application/json'
-    JSON.parse(last_response.body)
+    post '/graphql', params: { query:, variables: }.to_json, headers: { 'CONTENT_TYPE' => 'application/json' }
+    response.parsed_body
   end
 
   it 'acquireAnimal → addEnclosure → houseAnimal と送ると、houseAnimal の応答に occupants ["レオ"] と occupancy.full=false が返ること' do
@@ -31,14 +27,14 @@ RSpec.describe Zoo::Presentation::Web do
     enclosure_id = graphql('mutation { addEnclosure(name: "ライオンの丘", celsius: 28, capacity: 4) { id } }')
                    .dig('data', 'addEnclosure', 'id')
 
-    response = graphql(
+    body = graphql(
       'mutation($enclosureId: ID!, $animalId: ID!) { ' \
       'houseAnimal(enclosureId: $enclosureId, animalId: $animalId) { name occupants { name } occupancy { full } } }',
       { enclosureId: enclosure_id, animalId: animal_id }
     )
 
-    expect(last_response.status).to eq(200)
-    expect(response).to eq(
+    expect(response).to have_http_status(:ok)
+    expect(body).to eq(
       'data' => {
         'houseAnimal' => { 'name' => 'ライオンの丘', 'occupants' => [{ 'name' => 'レオ' }], 'occupancy' => { 'full' => false } }
       }
@@ -46,18 +42,22 @@ RSpec.describe Zoo::Presentation::Web do
   end
 
   it "未知の種 dragon で acquireAnimal を送ると、200 で data が null・errors[0].extensions.code が 'SpeciesNotFound' になること" do
-    response = graphql('mutation { acquireAnimal(speciesCode: "dragon", name: "X", sex: MALE) { id } }')
+    body = graphql('mutation { acquireAnimal(speciesCode: "dragon", name: "X", sex: MALE) { id } }')
 
-    expect(last_response.status).to eq(200)
-    expect(response['data']).to be_nil
-    expect(response['errors'].first['extensions']).to eq('code' => 'SpeciesNotFound')
+    expect(response).to have_http_status(:ok)
+    expect(body['data']).to be_nil
+    expect(body['errors'].first['extensions']).to eq('code' => 'SpeciesNotFound')
   end
 
-  it 'OPTIONS /graphql は 200 で Access-Control-Allow-Origin: * を返すこと' do
-    options '/graphql'
+  it 'Origin 付きの OPTIONS /graphql(プリフライト) は Access-Control-Allow-Origin: * を返すこと' do
+    process :options, '/graphql', headers: {
+      'Origin' => 'http://localhost:5173',
+      'Access-Control-Request-Method' => 'POST',
+      'Access-Control-Request-Headers' => 'Content-Type'
+    }
 
-    expect(last_response.status).to eq(200)
-    expect(last_response.headers['Access-Control-Allow-Origin']).to eq('*')
+    expect(response).to have_http_status(:ok)
+    expect(response.headers['Access-Control-Allow-Origin']).to eq('*')
   end
 
   it 'mutation AcquireAnimal($name) を送ると、操作の種類と名前・variables・1行に詰めたクエリ・エラーコードをログに出すこと' do
@@ -66,7 +66,7 @@ RSpec.describe Zoo::Presentation::Web do
       { name: 'X' }
     )
 
-    expect(log.string).to include('Processing mutation AcquireAnimal')
+    expect(log.string).to include('GraphQL mutation AcquireAnimal')
     expect(log.string).to include('Variables: {"name":"X"}')
     expect(log.string).to include(
       'Query: mutation AcquireAnimal($name: String!) { acquireAnimal(speciesCode: "dragon", name: $name, sex: MALE) { id } }'

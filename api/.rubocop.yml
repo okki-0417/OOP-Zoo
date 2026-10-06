@@ -1,5 +1,8 @@
 inherit_from: .rubocop_todo.yml
 
+plugins:
+  - rubocop-rails
+
 AllCops:
   TargetRubyVersion: 4.0
   NewCops: enable
@@ -8,6 +11,9 @@ AllCops:
     - "vendor/**/*"
     - "tmp/**/*"
     - "coverage/**/*"
+    - "log/**/*"
+    - "storage/**/*"
+    - "db/schema.rb"
 
 # コメントを書かない方針(CLAUDE.md)のため、ドキュメントコメントを要求しない
 Style/Documentation:
@@ -36,3 +42,8 @@ Layout/LineLength:
 
 Metrics/AbcSize:
   Enabled: false
+
+Rails:
+  Exclude:
+    - "lib/**/*"
+    - "spec/**/*"

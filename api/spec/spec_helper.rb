@@ -5,12 +5,13 @@ if ENV['COVERAGE']
   SimpleCov.start do
     enable_coverage :branch
     skip '/spec/'
-    cover 'lib/**/*.rb'
+    cover '{app,lib}/**/*.rb'
   end
 end
 
-$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
-require 'zoo'
+ENV['RAILS_ENV'] ||= 'test'
+require_relative '../config/environment'
+require 'rspec/rails'
 
 Dir[File.expand_path('support/**/*.rb', __dir__)].each { |f| require f }
 

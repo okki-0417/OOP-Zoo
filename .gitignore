@@ -3,6 +3,10 @@
 /api/tmp/
 /api/coverage/
 /api/.bundle/
+/api/log/*
+!/api/log/.keep
+/api/storage/*
+!/api/storage/.keep
 *.db
 *.save
 

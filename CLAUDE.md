@@ -2,7 +2,7 @@
 
 ## リポジトリ構成
 
-- `api/` … Ruby(Sinatra + Sequel + graphql-ruby)。ドメイン・アプリケーション・GraphQL。`cd api` してから `bundle exec rspec` / `bundle exec rubocop`
+- `api/` … Rails(API モード) + graphql-ruby。`POST /graphql` は `GraphqlController`。ドメイン・アプリケーション・GraphQL は `lib/zoo/`(Rails の autoload 対象)で、永続化は移行中のため Sequel。`cd api` してから `bundle exec rspec` / `bundle exec rubocop` / `bin/rails console`
 - `web/` … Vue + Vite の SPA。`schema.graphql` から `pnpm gen:types` で型を生成する
 - `schema.graphql` … api と web の契約。api 側を変えたら `api/bin/dump-graphql-schema` で更新する
 - ルートは pnpm ワークスペース。`pnpm dev:api` / `pnpm dev:web` で個別に、`pnpm dev` でまとめて起動する。
