@@ -22,7 +22,19 @@ module Zoo
           }
         end
 
-        def to_aggregate(row)
+        def to_expense_rows(operating)
+          operating.expenses.map do |expense|
+            {
+              operating_id: operating.id.to_s,
+              category: expense.category.value.to_s,
+              subject: expense.subject,
+              quantity: expense.quantity,
+              amount: expense.amount.yen
+            }
+          end
+        end
+
+        def to_aggregate(row, expense_rows = [])
           Domain::Operating.reconstitute(
             id: Domain::Shared::Identifier.new(row['id']),
             day: row['day'],
@@ -34,7 +46,19 @@ module Zoo
             reputation: row['reputation'],
             outbreak: row['outbreak'],
             total_visitors: row['total_visitors'],
-            total_revenue: Domain::Shared::Money.yen(row['total_revenue'])
+            total_revenue: Domain::Shared::Money.yen(row['total_revenue']),
+            expenses: expense_rows.map { |expense_row| to_expense(expense_row) }
+          )
+        end
+
+        private
+
+        def to_expense(row)
+          Domain::Operating::Expense.new(
+            category: Domain::Operating::Expense::Category.new(row['category']),
+            subject: row['subject'],
+            quantity: row['quantity'],
+            amount: Domain::Shared::Money.yen(row['amount'])
           )
         end
       end

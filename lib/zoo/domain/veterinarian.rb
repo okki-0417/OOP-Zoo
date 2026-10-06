@@ -18,6 +18,10 @@ module Zoo
         Shared::Money.yen(DAILY_SALARY_YEN)
       end
 
+      def job_title
+        '獣医'
+      end
+
       def initialize(name:, id: Shared::Identifier.new)
         raise ArgumentError, '獣医名は必須です' if name.to_s.empty?
 

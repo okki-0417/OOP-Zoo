@@ -10,7 +10,7 @@ module Zoo
         def total_revenue  = Shared::Money.zero
       end
 
-      attr_reader :id, :zoo, :day, :visitors, :income, :cost, :deaths, :balance,
+      attr_reader :id, :zoo, :day, :visitors, :income, :cost, :expenses, :deaths, :balance,
                   :reputation, :outbreak, :total_visitors, :total_revenue
 
       def initialize(zoo:, occupancies:, keepers:, veterinarians:,
@@ -28,13 +28,14 @@ module Zoo
       end
 
       def self.reconstitute(id:, day:, visitors:, income:, cost:, deaths:, balance:,
-                            reputation:, outbreak:, total_visitors:, total_revenue:)
+                            reputation:, outbreak:, total_visitors:, total_revenue:, expenses: [])
         allocate.tap do |op|
           op.instance_variable_set(:@id,             id)
           op.instance_variable_set(:@day,            day)
           op.instance_variable_set(:@visitors,       visitors)
           op.instance_variable_set(:@income,         income)
           op.instance_variable_set(:@cost,           cost)
+          op.instance_variable_set(:@expenses,       expenses)
           op.instance_variable_set(:@deaths,         deaths)
           op.instance_variable_set(:@balance,        balance)
           op.instance_variable_set(:@reputation,     reputation)
@@ -49,11 +50,10 @@ module Zoo
         today_visitors  = VisitorAttraction.new(on_exhibit:, zoo: @zoo).expected_visitors
         @zoo.admit_visitors(today_visitors)
 
-        @cost = OperatingCost.new(
-          enclosures: @occupancies.map(&:enclosure),
-          staff: @keepers + @veterinarians,
-          species: on_exhibit.map(&:species)
-        ).amount
+        operating_cost = OperatingCost.new(enclosures:, staff: @keepers + @veterinarians,
+                                           species: on_exhibit.map(&:species))
+        @expenses = operating_cost.expenses
+        @cost = operating_cost.amount
         @zoo.spend(@cost)
 
         @occupancies.each do |occupancy|

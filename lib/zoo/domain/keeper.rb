@@ -18,6 +18,10 @@ module Zoo
         Shared::Money.yen(DAILY_SALARY_YEN)
       end
 
+      def job_title
+        '飼育員'
+      end
+
       def initialize(name:, specialties:, id: Shared::Identifier.new)
         raise ArgumentError, '飼育員名は必須です' if name.to_s.empty?
         raise ArgumentError, '専門分野を1つ以上指定してください' if specialties.nil? || specialties.empty?

@@ -169,6 +169,16 @@ module Zoo
               total_visitors INTEGER NOT NULL DEFAULT 0,
               total_revenue  INTEGER NOT NULL DEFAULT 0
             );
+            CREATE TABLE IF NOT EXISTS operating_expenses (
+              seq          INTEGER PRIMARY KEY AUTOINCREMENT,
+              operating_id TEXT    NOT NULL,
+              category     TEXT    NOT NULL,
+              subject      TEXT    NOT NULL,
+              quantity     INTEGER NOT NULL,
+              amount       INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS index_operating_expenses_on_operating_id
+              ON operating_expenses (operating_id);
           SQL
         end
       end

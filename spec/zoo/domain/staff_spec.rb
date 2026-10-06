@@ -16,6 +16,10 @@ module Zoo
         expect(mammal_keeper.specialized_in?(penguin.taxon_class)).to be(false)
       end
 
+      it 'job_title は「飼育員」であること' do
+        expect(mammal_keeper.job_title).to eq('飼育員')
+      end
+
       it '専門を持たない飼育員は作れないこと' do
         expect { described_class.new(name: '空', specialties: []) }.to raise_error(ArgumentError)
       end
@@ -62,6 +66,10 @@ module Zoo
 
     RSpec.describe Veterinarian do
       let(:vet) { described_class.new(name: '佐藤') }
+
+      it 'job_title は「獣医」であること' do
+        expect(vet.job_title).to eq('獣医')
+      end
 
       it '#to_s は 獣医 名前 の形で表されること' do
         expect(vet.to_s).to eq('獣医 佐藤')

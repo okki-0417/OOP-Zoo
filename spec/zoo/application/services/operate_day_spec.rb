@@ -58,6 +58,15 @@ RSpec.describe Zoo::Application::Services::OperateDay do
       expect(report.cost).to eq(shared::Money.yen(Zoo::Domain::Enclosure::UPKEEP_YEN + (zebra_food * 2)))
     end
 
+    it '1日運営すると、施設維持費(サバンナ)と飼料費(グレビーシマウマ×1)の内訳が運営記録に残ること' do
+      service.call
+
+      expect(operatings.all.last.expenses.map(&:to_s)).to eq([
+                                                               "施設維持費 サバンナ #{Zoo::Domain::Shared::Money.yen(Zoo::Domain::Enclosure::UPKEEP_YEN)}",
+                                                               "飼料費 グレビーシマウマ #{catalog.grevys_zebra.daily_food_cost}"
+                                                             ])
+    end
+
     it '1日運営すると園の経過日数が1進むこと' do
       expect { service.call }.to change { zoo.load.day }.by(1)
     end
