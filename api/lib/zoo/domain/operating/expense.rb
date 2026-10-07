@@ -2,7 +2,7 @@
 
 module Zoo
   module Domain
-    class Operating
+    class Operating < ApplicationRecord
       class Expense
         include Shared::ValueObject
 
@@ -17,6 +17,17 @@ module Zoo
           @quantity = quantity
           @amount = amount
           freeze
+        end
+
+        def self.from_h(hash)
+          new(
+            category: Category.new(hash.fetch('category')), subject: hash.fetch('subject'),
+            quantity: hash.fetch('quantity'), amount: Shared::Money.yen(hash.fetch('amount'))
+          )
+        end
+
+        def to_h
+          { category: @category.value.to_s, subject: @subject, quantity: @quantity, amount: @amount.yen }
         end
 
         def to_s

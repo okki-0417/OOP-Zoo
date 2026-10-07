@@ -3,39 +3,28 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::HouseAnimal do
-  shared    = Zoo::Domain::Shared
-  husbandry = Zoo::Domain
-  catalog   = Zoo::Domain::SpeciesCatalog
-  in_memory = Zoo::Infrastructure::InMemory
+  catalog = Zoo::Domain::SpeciesCatalog
 
-  let(:lion) { build_adult(catalog.lion, name: 'レオ') }
-  let(:enclosure) do
-    husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 2)
-  end
+  let!(:lion) { build_adult(catalog.lion, name: 'レオ').tap(&:save!) }
+  let!(:enclosure) { create_enclosure(name: 'ライオンの丘', capacity: 2) }
 
-  let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
-  let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
-  let(:housings) { in_memory::InMemoryHousingRepository.new }
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
-
-  def call_with(enclosure_id:, animal_id:, enclosure_repo: enclosures)
+  def call_with(enclosure_id:, animal_id:)
     command = Zoo::Application::Commands::HouseAnimalCommand.new(enclosure_id:, animal_id:)
-                                                            .bind(enclosures: enclosure_repo, animals:, housings:, unit_of_work:)
-    described_class.new(command: command).call
+    described_class.new(command:).call
   end
 
   describe '#call' do
-    it 'エリアと動物の id を渡すと、そのエリアの occupants にその動物が含まれること' do
+    it 'エリアと動物の id を渡すと、保存されたその動物の enclosure がそのエリアになること' do
       call_with(enclosure_id: enclosure.id, animal_id: lion.id)
 
-      expect(occupants_of(housings, enclosure)).to include(lion)
+      expect(lion.reload.enclosure).to eq(enclosure)
     end
 
     it '収容に成功すると result.value がそのエリアで、住人がレオ1頭になること' do
       result = call_with(enclosure_id: enclosure.id, animal_id: lion.id)
 
       expect(result.value).to eq(enclosure)
-      expect(housings.occupants_of(enclosure).map(&:name)).to eq(['レオ'])
+      expect(enclosure.animals.reload.map(&:name)).to eq(['レオ'])
     end
 
     it '存在しない enclosure_id=\'missing\' を渡すと result.error が Application::Errors::EnclosureNotFound になること' do
@@ -50,16 +39,15 @@ RSpec.describe Zoo::Application::Services::HouseAnimal do
       expect(result.error).to be_a(Zoo::Application::Errors::AnimalNotFound)
     end
 
-    it '定員1の満員エリアに収容しようとすると result.error が定員を理由とする Domain::Errors::HousingNotAllowed になること' do
-      resident = build_adult(catalog.lion, name: '先住')
-      full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
-      housings.save(housed(resident, full))
+    it '定員1の満員エリアに収容しようとすると result.error が定員を理由とする Domain::Errors::HousingNotAllowed になり、未収容のままであること' do
+      full = create_enclosure(name: '小屋', capacity: 1)
+      build_adult(catalog.lion, name: '先住').move_to(full).save!
 
-      result = call_with(enclosure_id: full.id, animal_id: lion.id,
-                         enclosure_repo: Zoo::Infrastructure::InMemory::InMemoryEnclosureRepository.new([full]))
+      result = call_with(enclosure_id: full.id, animal_id: lion.id)
 
       expect(result.error).to be_a(Zoo::Domain::Errors::HousingNotAllowed)
       expect(result.error.message).to match(/定員/)
+      expect(lion.reload.enclosure).to be_nil
     end
   end
 end

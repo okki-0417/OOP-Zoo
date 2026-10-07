@@ -10,13 +10,12 @@ module Zoo
 
         def call
           Result.capture(:name_animal) do
-            @command.unit_of_work.run do
-              animal = @command.animals.find(@command.animal_id)
+            ApplicationRecord.transaction do
+              animal = Domain::Animal.find_by(id: @command.animal_id)
               raise Errors::AnimalNotFound, "動物 #{@command.animal_id} は存在しません" if animal.nil?
 
               animal.name_animal(name: @command.name)
-
-              @command.animals.save(animal)
+              animal.save!
             end
             nil
           end

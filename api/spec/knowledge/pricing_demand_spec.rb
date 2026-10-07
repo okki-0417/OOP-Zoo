@@ -57,15 +57,8 @@ RSpec.describe '入園料と需要' do
       pending('需要を上限とする入場の導入で対応予定。現状 admit_visitors は無制限に受け入れる')
       catalog = Zoo::Domain::SpeciesCatalog
       zoo = Zoo::Domain::Zoo.new(name: '園', admission_fee: Zoo::Domain::Shared::Money.yen(2_000))
-      enc = zoo.add_enclosure(
-        Zoo::Domain::Enclosure.new(
-          name: 'サバンナ', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 4
-        )
-      )
-      zoo.house(build_adult(catalog.lion, name: 'レオ'), enc)
-
       demand = Zoo::Domain::VisitorAttraction.new(
-        on_exhibit: zoo.animals, reputation_factor: zoo.reputation_factor, admission_fee: zoo.admission_fee
+        on_exhibit: [build_adult(catalog.lion, name: 'レオ')], zoo:
       ).expected_visitors
       zoo.admit_visitors(1_000_000)
 

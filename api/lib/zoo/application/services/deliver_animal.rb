@@ -12,39 +12,27 @@ module Zoo
 
         def call
           Result.capture(:deliver_animal) do
-            @command.unit_of_work.run do
-              dam = @command.animals.find(@command.dam_id)
+            ApplicationRecord.transaction do
+              dam = Domain::Animal.find_by(id: @command.dam_id)
               raise Errors::AnimalNotFound, "動物 #{@command.dam_id} は存在しません" if dam.nil?
 
-              enclosure = @command.enclosures.find(@command.enclosure_id)
+              enclosure = Domain::Enclosure.find_by(id: @command.enclosure_id)
               raise Errors::EnclosureNotFound, "エリア #{@command.enclosure_id} は存在しません" if enclosure.nil?
 
-              keeper = find_keeper
-
-              breeding = @command.breedings.for_dam(dam.id)
+              breeding = Domain::Breeding.latest_of(dam)
               raise Errors::BreedingNotFound, "動物 #{@command.dam_id} の受胎記録がありません" if breeding.nil?
 
-              zoo = @command.zoo.load
+              verify_keeper
+              zoo = Domain::Zoo.current
 
-              birth = Domain::Birth.new(
-                sire: breeding.sire, dam: dam, occurred_on: zoo.day, season: zoo.season, keeper_id: keeper&.id
-              ).deliver
-              child = birth.offspring
+              child = Domain::Birth.new(sire: breeding.sire, dam: dam).deliver.offspring
+              Domain::Housing.new(animal: child, enclosure:, occupancy: Domain::Occupancy.of(enclosure)).perform
 
-              occupancy = @command.housings.all_occupancies.find { |o| o.enclosure == enclosure } ||
-                          Domain::Occupancy.new(housings: [], enclosure: enclosure)
-              housing = Domain::Housing.new(
-                animal: child, enclosure: enclosure, occupancy: occupancy, occurred_on: zoo.day, keeper_id: keeper&.id
-              )
-              housing.admission_violation!
-
-              @command.animals.save(dam)
-              @command.animals.save(child)
-              @command.births.save(birth)
-              @command.housings.save(housing)
+              dam.save!
+              child.save!
 
               zoo.generate_buzz(BIRTH_BUZZ)
-              @command.zoo.save(zoo)
+              zoo.save!
 
               child
             end
@@ -53,13 +41,10 @@ module Zoo
 
         private
 
-        def find_keeper
-          return nil if @command.keeper_id.nil?
+        def verify_keeper
+          return if @command.keeper_id.nil? || Domain::Keeper.exists?(id: @command.keeper_id)
 
-          keeper = @command.keepers.find(@command.keeper_id)
-          raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません" if keeper.nil?
-
-          keeper
+          raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません"
         end
       end
     end

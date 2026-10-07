@@ -13,7 +13,7 @@ module Zoo
           field :enclosures, [Enclosure], null: false
 
           def enclosures
-            container.assignments.enclosures_of(object)
+            object.enclosures
           end
         end
       end

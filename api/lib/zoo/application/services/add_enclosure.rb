@@ -10,7 +10,7 @@ module Zoo
 
         def call
           Result.capture(:add_enclosure) do
-            @command.unit_of_work.run do
+            ApplicationRecord.transaction do
               enclosure = Domain::Enclosure.new(
                 name: @command.name,
                 temperature: Domain::Shared::Temperature.celsius(@command.celsius),
@@ -18,12 +18,12 @@ module Zoo
                 climate_controlled: @command.climate_controlled
               )
 
-              zoo = @command.zoo.load
+              zoo = Domain::Zoo.current
               zoo.purchase(Domain::Enclosure.construction_cost(capacity: @command.capacity,
                                                                climate_controlled: @command.climate_controlled))
-              @command.zoo.save(zoo)
+              zoo.save!
 
-              @command.enclosures.save(enclosure)
+              enclosure.save!
               enclosure
             end
           end

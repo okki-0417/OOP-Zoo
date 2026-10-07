@@ -14,6 +14,5 @@ module OopZoo
     config.load_defaults 8.1
     config.autoload_lib(ignore: %w[tasks])
     config.api_only = true
-    config.x.zoo_database = ENV.fetch('ZOO_DB', Rails.root.join('tmp/zoo-web.db').to_s)
   end
 end

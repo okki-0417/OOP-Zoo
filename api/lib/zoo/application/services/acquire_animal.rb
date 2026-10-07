@@ -10,10 +10,10 @@ module Zoo
 
         def call
           Result.capture(:acquire_animal) do
-            species = @command.species.find(@command.species_code) or
+            species = Domain::SpeciesCatalog.find(@command.species_code) or
               raise Errors::SpeciesNotFound, "未知の種です: #{@command.species_code}"
 
-            @command.unit_of_work.run do
+            ApplicationRecord.transaction do
               animal = Domain::Animal.new(
                 species: species,
                 name: @command.name,
@@ -22,12 +22,12 @@ module Zoo
                 age_in_days: @command.age_in_days
               )
 
-              zoo = @command.zoo.load
+              zoo = Domain::Zoo.current
 
               Domain::Acquiring.new(zoo:, animal:).settle
 
-              @command.zoo.save(zoo)
-              @command.animals.save(animal)
+              zoo.save!
+              animal.save!
 
               animal
             end

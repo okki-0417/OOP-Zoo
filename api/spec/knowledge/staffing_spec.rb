@@ -13,10 +13,9 @@ RSpec.describe '飼育員の担当割り当てに対するルール(専門一致
   end
 
   def assign!(keeper, enclosure, occupants = [], assignees = [])
+    assignees.each { |assignee| assignee.enclosures << enclosure }
     Zoo::Domain::Tending.new(
-      keeper: keeper, enclosure: enclosure,
-      occupancy: build_occupancy(enclosure, occupants),
-      assignment: Zoo::Domain::Assignment.new(enclosure, assignees)
+      keeper: keeper, enclosure: enclosure, occupancy: build_occupancy(enclosure, occupants)
     ).violation!
   end
 

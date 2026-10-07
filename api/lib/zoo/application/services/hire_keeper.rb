@@ -10,15 +10,15 @@ module Zoo
 
         def call
           Result.capture(:hire_keeper) do
-            @command.unit_of_work.run do
+            ApplicationRecord.transaction do
               specialties = @command.specialties.map { |key| Domain::TaxonClass.new(key) }
               keeper = Domain::Keeper.new(name: @command.name, specialties: specialties)
 
-              zoo = @command.zoo.load
+              zoo = Domain::Zoo.current
               zoo.purchase(Domain::Keeper.signing_fee)
-              @command.zoo.save(zoo)
+              zoo.save!
 
-              @command.keepers.save(keeper)
+              keeper.save!
               keeper
             end
           end

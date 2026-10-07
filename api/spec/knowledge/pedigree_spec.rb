@@ -6,12 +6,8 @@ RSpec.describe '血統と近親交配' do
   sex     = Zoo::Domain::Animal::Sex
   catalog = Zoo::Domain::SpeciesCatalog
 
-  def births
-    @births ||= []
-  end
-
   def pedigree
-    Zoo::Domain::Pedigree.new(births)
+    Zoo::Domain::Pedigree.new
   end
 
   def founder(name, sex)
@@ -22,15 +18,10 @@ RSpec.describe '血統と近親交配' do
   end
 
   def offspring(name, sex, sire:, dam:, age: 100)
-    child = Zoo::Domain::Animal.new(
+    Zoo::Domain::Animal.new(
       species: Zoo::Domain::SpeciesCatalog.lion,
-      name: name, sex: sex, max_health: 100, age_in_days: age
+      name: name, sex: sex, max_health: 100, age_in_days: age, sire: sire, dam: dam
     )
-    births << Zoo::Domain::Birth.reconstitute(
-      id: Zoo::Domain::Shared::Identifier.new, sire: sire, dam: dam,
-      offspring: child, occurred_on: 0, season: Zoo::Domain::Season.spring
-    )
-    child
   end
 
   describe '近縁度(coancestry)' do

@@ -3,25 +3,20 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::RenameAnimal do
-  catalog   = Zoo::Domain::SpeciesCatalog
-  in_memory = Zoo::Infrastructure::InMemory
+  catalog = Zoo::Domain::SpeciesCatalog
 
-  let(:lion) { build_adult(catalog.lion, name: 'レオ') }
-  let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals]) }
+  let!(:lion) { build_adult(catalog.lion, name: 'レオ').tap(&:save!) }
 
   def rename(animal_id, new_name)
-    command = Zoo::Application::Commands::RenameAnimalCommand.new(animal_id:, new_name:)
-                                                             .bind(animals:, unit_of_work:)
-    described_class.new(command: command).call
+    described_class.new(command: Zoo::Application::Commands::RenameAnimalCommand.new(animal_id:, new_name:)).call
   end
 
   describe '#call' do
-    it 'new_name=\'シンバ\' で改名すると名前が変わり、result.value の名前が \'シンバ\' になること' do
+    it 'new_name=\'シンバ\' で改名すると保存された名前が変わり、result.value の名前が \'シンバ\' になること' do
       animal = rename(lion.id, 'シンバ').value
 
-      expect(animals.find(lion.id).name.to_s).to eq('シンバ')
-      expect(animal.name.to_s).to eq('シンバ')
+      expect(lion.reload.name).to eq('シンバ')
+      expect(animal.name).to eq('シンバ')
     end
 
     it '存在しない animal_id=\'missing\' で result.error が Application::Errors::AnimalNotFound になること' do

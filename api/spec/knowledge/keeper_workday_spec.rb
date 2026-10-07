@@ -13,9 +13,9 @@ RSpec.describe '飼育員の勤務と日課' do
   end
 
   def rounding(keeper, enclosure, occupants, assignees: [keeper])
+    assignees.each { |assignee| assignee.enclosures << enclosure }
     Zoo::Domain::Rounding.new(
-      keeper:, occupancy: build_occupancy(enclosure, occupants),
-      assignment: Zoo::Domain::Assignment.new(enclosure, assignees), foods: Zoo::Domain::FoodCatalog.all
+      keeper:, occupancy: build_occupancy(enclosure, occupants), foods: Zoo::Domain::FoodCatalog.all
     )
   end
 

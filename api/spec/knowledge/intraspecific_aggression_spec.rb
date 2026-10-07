@@ -58,7 +58,7 @@ RSpec.describe '種内闘争と外傷' do
       junior = build_animal(catalog.lion, name: '若オス', sex: sex.male, age_in_days: 365 * 5, max_health: 10)
       occupants = [senior, junior]
 
-      occupancy = Zoo::Domain::Occupancy.new(housings: build_housings(cramped, occupants))
+      occupancy = build_occupancy(cramped, occupants)
       Zoo::Domain::Contagion.new(cramped, occupancy).spread
       occupants.each { |animal| Zoo::Domain::AnimalDay.new(animal:, enclosure: cramped, occupancy:, season: Zoo::Domain::Season.spring).run }
 

@@ -20,8 +20,14 @@ module Zoo
         expect(mammal_keeper.job_title).to eq('飼育員')
       end
 
-      it '専門を持たない飼育員は作れないこと' do
-        expect { described_class.new(name: '空', specialties: []) }.to raise_error(ArgumentError)
+      it '専門を持たない飼育員は無効で、専門分野のエラーが付くこと' do
+        keeper = described_class.new(name: '空', specialties: [])
+        expect(keeper).not_to be_valid
+        expect(keeper.errors[:specialties]).to eq(['専門分野を1つ以上指定してください'])
+      end
+
+      it '名前のない飼育員は無効であること' do
+        expect(described_class.new(name: '', specialties: [TaxonClass.mammal])).not_to be_valid
       end
 
       describe '#clock_in' do
@@ -47,14 +53,17 @@ module Zoo
         end
       end
 
-      describe '.reconstitute' do
-        it 'shift を渡さなければ勤務時間0、渡せばその勤務時間で復元すること' do
-          plain = described_class.reconstitute(id: Shared::Identifier.new, name: '田中', specialties: [TaxonClass.mammal])
-          worked = described_class.reconstitute(
-            id: Shared::Identifier.new, name: '田中', specialties: [TaxonClass.mammal], shift: Keeper::Shift.new(200)
-          )
-          expect(plain.worked_minutes).to eq(0)
-          expect(worked.worked_minutes).to eq(200)
+      describe '保存と再読込' do
+        it '専門[哺乳類・鳥類]・勤務200分で保存すると、再読込後も同じ専門と勤務時間であること' do
+          keeper = described_class.new(name: '田中', specialties: [TaxonClass.mammal, TaxonClass.bird]).clock_in(200)
+          keeper.save!
+          restored = described_class.find(keeper.id)
+          expect(restored.specialties).to eq([TaxonClass.mammal, TaxonClass.bird])
+          expect(restored.worked_minutes).to eq(200)
+        end
+
+        it '生成直後の勤務時間は0分であること' do
+          expect(described_class.new(name: '田中', specialties: [TaxonClass.mammal]).worked_minutes).to eq(0)
         end
       end
 

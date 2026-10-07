@@ -77,8 +77,10 @@ RSpec.describe Zoo::Application::Result do
   end
 
   describe '::SERVICES' do
-    it 'Container::SERVICES のキーと同じ集合であること' do
-      expect(described_class::SERVICES).to match_array(Zoo::Composition::Container::SERVICES.keys)
+    it 'Application::Services 配下のサービスクラス名(snake_case)と同じ集合であること' do
+      services = Zoo::Application::Services.constants.select { |name| Zoo::Application::Services.const_get(name).is_a?(Class) }
+
+      expect(described_class::SERVICES).to match_array(services.map { |name| name.to_s.underscore.to_sym })
     end
   end
 end

@@ -10,14 +10,13 @@ module Zoo
 
         def call
           Result.capture(:release_animal) do
-            @command.unit_of_work.run do
-              animal = @command.animals.find(@command.animal_id)
+            ApplicationRecord.transaction do
+              animal = Domain::Animal.find_by(id: @command.animal_id)
               raise Errors::AnimalNotFound, "動物 #{@command.animal_id} は存在しません" if animal.nil?
 
-              current = @command.housings.current_housing_of(animal)
-              raise ArgumentError, "#{animal.name}はどのエリアにも収容されていません" if current.nil?
+              raise ArgumentError, "#{animal.name}はどのエリアにも収容されていません" if animal.enclosure.nil?
 
-              @command.housings.save(Domain::Releasing.of(current))
+              animal.move_out.save!
               animal
             end
           end

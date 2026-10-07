@@ -10,10 +10,10 @@ module Zoo
 
         def call
           Result.capture(:set_admission_fee) do
-            @command.unit_of_work.run do
-              zoo = @command.zoo.load
+            ApplicationRecord.transaction do
+              zoo = Domain::Zoo.current
               zoo.change_admission_fee(Domain::Shared::Money.yen(@command.fee))
-              @command.zoo.save(zoo)
+              zoo.save!
               zoo
             end
           end

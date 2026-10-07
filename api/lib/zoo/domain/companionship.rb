@@ -20,9 +20,9 @@ module Zoo
       end
 
       def separated_dependent?
-        return false if @member.weaned? || @member.parent_ids.empty?
+        return false if @member.weaned? || @member.parents.empty?
 
-        @occupancy.none? { |other| other.alive? && @member.parent_ids.include?(other.id) }
+        @occupancy.none? { |other| other.alive? && @member.parents.include?(other) }
       end
 
       def subordinate_male?
@@ -31,7 +31,7 @@ module Zoo
         rivals = @occupancy.select { |other| other.contender? && other.species == @member.species }
         return false if rivals.size < 2
 
-        @member.id != rivals.max_by(&:age_in_days).id
+        @member != rivals.max_by(&:age_in_days)
       end
 
       def injury

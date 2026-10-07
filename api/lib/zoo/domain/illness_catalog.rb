@@ -31,6 +31,10 @@ module Zoo
         KEYS.map { |name| public_send(name) }
       end
 
+      def key_of(item)
+        KEYS.find { |key| public_send(key) == item }
+      end
+
       def find(key)
         symbol = key.to_s.to_sym
         return nil unless KEYS.include?(symbol)

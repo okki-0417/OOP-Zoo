@@ -10,16 +10,16 @@ module Zoo
 
         def call
           Result.capture(:clean_enclosure) do
-            @command.unit_of_work.run do
-              keeper = @command.keepers.find(@command.keeper_id)
+            ApplicationRecord.transaction do
+              keeper = Domain::Keeper.find_by(id: @command.keeper_id)
               raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません" if keeper.nil?
 
-              enclosure = @command.enclosures.find(@command.enclosure_id)
+              enclosure = Domain::Enclosure.find_by(id: @command.enclosure_id)
               raise Errors::EnclosureNotFound, "エリア #{@command.enclosure_id} は存在しません" if enclosure.nil?
 
               Domain::Cleaning.new(keeper: keeper, enclosure: enclosure, amount: @command.amount).perform
-              @command.enclosures.save(enclosure)
-              @command.keepers.save(keeper)
+              enclosure.save!
+              keeper.save!
               enclosure
             end
           end

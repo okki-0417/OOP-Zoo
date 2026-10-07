@@ -2,7 +2,7 @@
 
 ## リポジトリ構成
 
-- `api/` … Rails(API モード) + graphql-ruby。`POST /graphql` は `GraphqlController`。ドメイン・アプリケーション・GraphQL は `lib/zoo/`(Rails の autoload 対象)で、永続化は移行中のため Sequel。`cd api` してから `bundle exec rspec` / `bundle exec rubocop` / `bin/rails console`
+- `api/` … Rails(API モード) + graphql-ruby + SQLite。`POST /graphql` は `GraphqlController`。ドメイン(ActiveRecord のモデルと PORO)・アプリケーション・GraphQL は `lib/zoo/`(Rails の autoload 対象)。マイグレーションは `db/migrate/`。`cd api` してから `bundle exec rspec` / `bundle exec rubocop` / `bin/rails console` / `bin/rails db:migrate`
 - `web/` … Vue + Vite の SPA。`schema.graphql` から `pnpm gen:types` で型を生成する
 - `schema.graphql` … api と web の契約。api 側を変えたら `api/bin/dump-graphql-schema` で更新する
 - ルートは pnpm ワークスペース。`pnpm dev:api` / `pnpm dev:web` で個別に、`pnpm dev` でまとめて起動する。
@@ -17,55 +17,35 @@
 
 - 例: `app/domain/animal.rb` の VO は `app/domain/animal/` に置く
 
-### デメテルの法則を守る
+### Rails に乗る
 
-- アプリケーションサービスなどからドメインロジックを呼ぶ場合は、集約のルートを経由して呼ぶ（例: `Animal#sex_label` など）
+- リソースは ActiveRecord のモデル(`Zoo::Domain::*` で `ApplicationRecord` を継承)。データマッパーやリポジトリは作らない
+- 列と値オブジェクトは Attributes API で結ぶ(`attribute :hunger, Shared::ValueType.new(Hunger, dump: :level.to_proc)`)。
+  値オブジェクトそのものは PORO のまま
+- テーブルは Rails の規約(複数形・bigint の id・`xxx_id`)で、名前はドメインの言葉にする。`_events` のような技術都合の名前は付けない
+- 必要がない履歴は持たない(イベントソーシングしない)。今の状態は列と関連で表す
+  (例: 収容は `animals.enclosure_id`、親子は `animals.sire_id` / `dam_id`、担当は `assignments`)
+- 単一モデルに閉じたクエリはそのモデルの scope / クラスメソッドに、モデルをまたぐ読み出しは②の状態モデルのクラスメソッドに置く
+  (例: `Occupancy.of(enclosure)` / `Occupancy.all`)
+- 状態を変えるのはモデルのメソッド経由だけ(`animal.move_to(enclosure)` など)。保存(`save!`)とトランザクションはアプリケーション層が行う
 
-### リソースとしての集約モデルと、リソース間イベントとしての集約モデル
+### 関連付けとデメテルの法則
 
-#### リソースとしての集約モデルは、別の集約のことを知ってはいけない
+- モデル同士の `belongs_to` / `has_many` / `has_many :through` は使ってよい
+- ドメインモデルの中では、ドメインロジックは集約のルートを経由して呼ぶ(例: `Animal#sex_label`)
+- アプリケーション層(サービス・GraphQL の型)では、関連をたどって参照してよい(デメテルの法則で縛らない)
 
-- 例: `Enclosure` は `Animal` のことを知らない。自身に収容されている動物のことも知らない。
-
-#### リソース間イベントとしての集約モデルは、横断的に集約を保持する
-
-- id 参照で集約を持ってしまうと集約に対するメッセージが呼べないので、ルールや振る舞いがない貧血モデルにつながってしまう
-- リソース間イベントモデルをエンティティとして扱う時は、データマッパーが id への返還などを行う
-
-#### ドメインサービスは、貧血なリソース間イベントモデルの兆候
+#### ドメインサービスは、貧血な①イベントモデルの兆候
 
 - イベントに関するルールや状態をリソースモデルに実装してしまうと、貧血なドメインモデルとしてドメインサービスが生まれる
 - イベントに関するルールや状態をイベントモデルに持たせると、ドメインサービスを生まない
-
-### ActiveRecord化での実装ルール（Rails移行）
-
-#### リソース集約はActiveRecordの関連付けを使わない
-
-- `belongs_to` / `has_many` / `has_many :through` は、リソース集約同士では一切書かない
-- 他集約への参照が必要でも `xxx_id` カラム(ARが自動生成するアクセサを含む)までに留め、関連付けは書かない
-
-#### ①イベント/エンティティモデルは belongs_to を持ってよい
-
-- ①は本来複数集約を横断的に保持する役割なので、参照先リソース集約への `belongs_to` は許可する
-- ただし構築後の差し替えを防ぐため、`belongs_to` 宣言の直後で setter を private 化し(例: `private :animal=`)、
-  「初期化時に受け取ったものしか使えない」を保つ
-- 読み込み時の `.animal` アクセスや `includes` によるeager loadは、この許可の範囲内で自由に使ってよい
-
-#### ②状態・導出モデルは引き続きActiveRecordを継承しないPORO
-
-- 永続化しないため、ActiveRecordを継承する理由がない
-- 内部で複数のARモデルへの `.where` 等のクエリをラップし、クラスメソッドとして「リッチなリードモデル」を提供する
-
-#### リポジトリは独立クラスを作らず、ARモデル自身にクラスメソッドとして持たせる
-
-- 単一集約に閉じたクエリは、そのARモデルのクラスメソッド(scope含む)として実装する
-- 複数集約を横断するクエリは、②の状態・導出モデルのクラスメソッドとして実装し、内部で各ARモデルの `.where` をラップする
+- ①は id でなくオブジェクトで集約を受け取る(id だけだとメッセージを送れず貧血になる)
 
 ### モデルの3分類（リソース／イベント／状態モデル）
 
-- **リソース集約**: Animal/Enclosure/Keeper 等。自身の状態を所有し、他集約を知らない。
-- **リソース間イベント①**: 依存集約の状態を変更する「起きた事実・行為」。記録対象なので、
-  いずれ id・occurred_on を持つ永続化エンティティになる。
+- **リソース集約**: Animal/Enclosure/Keeper 等。ActiveRecord のモデルで、自身の状態を所有する。
+- **リソース間イベント①**: 依存集約の状態を変更する「起きた事実・行為」。基本は PORO で、
+  後から読む必要がある事実だけを ActiveRecord のモデルとして記録する(例: `Breeding` `Operating`)。
 - **リソース間の状態・導出モデル②**: 依存の組み合わせが作る関係/条件。状態を変更せず、
   判定・導出値を返すだけ(リードモデル、永続化しない)。
 
@@ -82,10 +62,10 @@
 
 #### 命名
 
-- ①(アクターの行為イベント)は進行形 -ing: `Feeding` `Housing` `Examining` `Releasing`
+- ①(アクターの行為イベント)は進行形 -ing: `Feeding` `Housing` `Examining` `Tending`
 - ②(状態・関係・導出)は名詞: `Occupancy` `Companionship` `ThermalSuitability` `Welfare`
-- 期間/オーケストレーター(複数イベントを駆動)は `XDay` 等の名詞: `EnclosureDay` `AnimalDay`。
-  永続化される“事実”は、それらが発行する粒度の細かいイベント(例: `AnimalDied`)の方。
+- 期間/オーケストレーター(複数イベントを駆動)は `XDay` 等の名詞: `ZooDay` `AnimalDay`。
+  永続化される“事実”は、それらが生む記録の方(例: `ZooDay#run` が返す `Operating`)。
 
 #### 切り出しの指針
 
@@ -145,7 +125,7 @@
 - Tier 1 を満たすために実装したコードに対して書く
 - `describe Class` ＋メソッド単位。技術的なラベルでよい
 - 対象は実装の保証・エッジ・技術契約: 値オブジェクトのバリデーション/クランプ/等価性、
-  reconstitute、マッパー、トランザクション、HTTP、配線、異常系。
+  モデルのバリデーション、保存と読み込みの往復(カスタム型)、トランザクション、HTTP、異常系。
   infrastructure / application / presentation はすべてここ
 
 ### どちらに書くか(litmus)

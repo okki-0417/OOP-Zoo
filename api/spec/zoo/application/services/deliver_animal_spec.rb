@@ -3,90 +3,67 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::DeliverAnimal do
-  shared    = Zoo::Domain::Shared
-  husbandry = Zoo::Domain
-  catalog   = Zoo::Domain::SpeciesCatalog
-  in_memory = Zoo::Infrastructure::InMemory
+  catalog = Zoo::Domain::SpeciesCatalog
 
-  let(:pair) { build_pair(catalog.lion) }
+  let!(:zoo) { create_zoo }
+  let!(:pair) { build_pair(catalog.lion).each(&:save!) }
   let(:sire) { pair[0] }
   let(:dam)  { pair[1] }
-  let(:enclosure) do
-    husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
-  end
+  let!(:enclosure) { create_enclosure }
 
-  let(:animals) { in_memory::InMemoryAnimalRepository.new([sire, dam]) }
-  let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
-  let(:keepers) { in_memory::InMemoryKeeperRepository.new }
-  let(:housings) { in_memory::InMemoryHousingRepository.new }
-  let(:breedings) { in_memory::InMemoryBreedingRepository.new }
-  let(:births) { in_memory::InMemoryBirthRepository.new }
-  let(:unit_of_work) do
-    in_memory::InMemoryUnitOfWork.new(repositories: [animals, enclosures, housings, breedings, births])
-  end
-  let(:zoo) do
-    in_memory::InMemoryZooRepository.new(
-      Zoo::Domain::Zoo.new(name: '園', admission_fee: shared::Money.yen(2000))
-    )
-  end
   def deliver(dam_id: dam.id, enclosure_id: enclosure.id, keeper_id: nil)
     command = Zoo::Application::Commands::DeliverAnimalCommand.new(dam_id:, enclosure_id:, keeper_id:)
-    described_class.new(
-      command: command.bind(animals:, enclosures:, housings:, keepers:, breedings:, births:, zoo:, unit_of_work:)
-    ).call
+    described_class.new(command:).call
   end
 
   def conceive_dam
-    breeding = Zoo::Domain::Breeding.new(sire: sire, dam: dam)
-    breeding.conceive
-    breedings.save(breeding)
+    Zoo::Domain::Breeding.new(sire:, dam:).conceive.save!
+    dam.save!
   end
 
   def prepare_dam_for_delivery
     conceive_dam
     Zoo::Domain::SpeciesCatalog.lion.gestation_period_days.times { dam.gestate }
-    animals.save(dam)
+    dam.save!
+  end
+
+  def full_enclosure
+    create_enclosure(name: '小屋', capacity: 1).tap do |full|
+      build_adult(Zoo::Domain::SpeciesCatalog.lion, name: '先住').move_to(full).save!
+    end
   end
 
   describe '#call' do
     before { prepare_dam_for_delivery }
 
-    it 'dam_id/enclosure_id を渡すと、value の生まれた子が両親を parent_ids に持ちエリアに収容されること' do
+    it 'dam_id/enclosure_id を渡すと、value の生まれた子が両親を parents に持ちエリアに収容されて保存されること' do
       child = deliver.value
 
-      expect(child.parent_ids).to contain_exactly(sire.id, dam.id)
-      expect(occupants_of(housings, enclosure)).to include(child)
-      expect(animals.find(child.id)).to eq(child)
+      expect(child.reload.parents).to contain_exactly(sire, dam)
+      expect(enclosure.animals.reload).to include(child)
+      expect(dam.reload).not_to be_expecting
     end
 
-    it '出産に成功すると Birth が births に1件永続化されること' do
+    it '出産に成功すると話題性(buzz)が 40 上がって保存されること' do
       deliver
 
-      expect(births.all.size).to eq(1)
-      expect(births.all.first).to be_a(Zoo::Domain::Birth)
+      expect(zoo.reload.buzz).to eq(40)
     end
 
     it '定員1の満員エリアに収容できず failure で error が HousingNotAllowed(定員) になると、子が保存されずロールバックされること' do
-      resident = build_adult(catalog.lion, name: '先住')
-      full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
-      enclosures.save(full)
-      housings.save(housed(resident, full))
+      full = full_enclosure
 
       error = deliver(enclosure_id: full.id).error
 
       expect(error).to be_a(Zoo::Domain::Errors::HousingNotAllowed)
       expect(error.message).to match(/定員/)
-      expect(animals.all.size).to eq(2)
+      expect(Zoo::Domain::Animal.count).to eq(3)
     end
 
-    it 'ロールバックされた出産の記録は births に残らないこと' do
-      resident = build_adult(catalog.lion, name: '先住')
-      full = husbandry::Enclosure.new(name: '小屋', temperature: shared::Temperature.celsius(28), capacity: 1)
-      enclosures.save(full)
-      housings.save(housed(resident, full))
-
-      expect(deliver(enclosure_id: full.id).error).to be_a(Zoo::Domain::Errors::HousingNotAllowed)
-      expect(births.all).to be_empty
+    it 'ロールバックされた出産では dam は妊娠したままで、buzz も 0 のままであること' do
+      expect(deliver(enclosure_id: full_enclosure.id).error).to be_a(Zoo::Domain::Errors::HousingNotAllowed)
+      expect(dam.reload).to be_expecting
+      expect(zoo.reload.buzz).to eq(0)
     end
 
     it '存在しない dam_id "missing" を渡すと failure で error が AnimalNotFound となること' do
@@ -105,7 +82,6 @@ RSpec.describe Zoo::Application::Services::DeliverAnimal do
   describe '出産準備前の dam' do
     it '受胎済みでも妊娠期間が満ちていない dam は failure で error が BreedingNotAllowed となること' do
       conceive_dam
-      animals.save(dam)
 
       expect(deliver.error).to be_a(Zoo::Domain::Errors::BreedingNotAllowed)
     end

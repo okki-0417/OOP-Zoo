@@ -10,22 +10,36 @@ module Zoo
         Enclosure.new(name: 'サバンナ', temperature: Shared::Temperature.celsius(28), capacity: 4)
       end
 
+      let(:empty) { build_occupancy(savanna, []) }
+
       describe '.new' do
-        it '個体と区画から入居イベントを作り、区画 id を導出すること' do
-          event = described_class.new(animal: lion, enclosure: savanna, occurred_on: 3)
-          expect(event.animal).to eq(lion)
-          expect(event.enclosure).to eq(savanna)
-          expect(event.enclosure_id).to eq(savanna.id)
-          expect(event.occurred_on).to eq(3)
+        it 'animal: レオ・enclosure: サバンナを渡すと #animal / #enclosure で読み出せること' do
+          housing = described_class.new(animal: lion, enclosure: savanna, occupancy: empty)
+          expect(housing.animal).to eq(lion)
+          expect(housing.enclosure).to eq(savanna)
         end
       end
 
       it 'イミュータブルであること' do
-        expect(described_class.new(animal: lion, enclosure: savanna)).to be_frozen
+        expect(described_class.new(animal: lion, enclosure: savanna, occupancy: empty)).to be_frozen
       end
 
       it '#to_s が収容を表すこと' do
-        expect(described_class.new(animal: lion, enclosure: savanna).to_s).to eq('レオを収容')
+        expect(described_class.new(animal: lion, enclosure: savanna, occupancy: empty).to_s).to eq('レオを収容')
+      end
+
+      describe '#perform' do
+        it '違反がなければレオの enclosure がサバンナになること' do
+          described_class.new(animal: lion, enclosure: savanna, occupancy: empty).perform
+          expect(lion.enclosure).to eq(savanna)
+        end
+
+        it '違反があれば HousingNotAllowed を投げ、レオの enclosure は nil のままであること' do
+          lion.die
+          expect { described_class.new(animal: lion, enclosure: savanna, occupancy: empty).perform }
+            .to raise_error(Errors::HousingNotAllowed)
+          expect(lion.enclosure).to be_nil
+        end
       end
 
       describe '#admission_violation!' do
@@ -83,31 +97,6 @@ module Zoo
           expect { candidate(dead, full, [build_adult(SpeciesCatalog.lion, name: '先住')]).admission_violation! }
             .to raise_error(Errors::HousingNotAllowed, /死亡.*定員/)
         end
-      end
-    end
-
-    RSpec.describe Releasing do
-      let(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ') }
-      let(:savanna) do
-        Enclosure.new(name: 'サバンナ', temperature: Shared::Temperature.celsius(28), capacity: 4)
-      end
-      let(:housing) { Housing.new(animal: lion, enclosure: savanna) }
-
-      describe '.of' do
-        it '閉じる入居イベントを持ち、個体はそこから導出されること' do
-          event = described_class.of(housing, occurred_on: 5)
-          expect(event.housing).to eq(housing)
-          expect(event.animal).to eq(lion)
-          expect(event.occurred_on).to eq(5)
-        end
-      end
-
-      it 'イミュータブルであること' do
-        expect(described_class.of(housing)).to be_frozen
-      end
-
-      it '#to_s が解放を表すこと' do
-        expect(described_class.of(housing).to_s).to eq('レオを解放')
       end
     end
   end

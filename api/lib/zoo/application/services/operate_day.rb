@@ -10,25 +10,23 @@ module Zoo
 
         def call
           Result.capture(:operate_day) do
-            @command.unit_of_work.run do
-              zoo = @command.zoo.load
-
-              operating = Domain::Operating.new(
-                zoo:,
-                occupancies: @command.housings.all_occupancies,
-                keepers: @command.keepers.all,
-                veterinarians: @command.veterinarians.all,
-                yesterday_operating: @command.operatings.latest,
+            ApplicationRecord.transaction do
+              zoo_day = Domain::ZooDay.new(
+                zoo: Domain::Zoo.current,
+                occupancies: Domain::Occupancy.all,
+                keepers: Domain::Keeper.order(:id).to_a,
+                veterinarians: Domain::Veterinarian.order(:id).to_a,
+                yesterday: Domain::Operating.latest,
                 random: @command.random
               )
 
-              operating.operate_day
+              operating = zoo_day.run
 
-              @command.operatings.save(operating)
-              @command.enclosures.save_all(operating.enclosures)
-              @command.animals.save_all(operating.on_exhibit)
-              operating.keepers.each { |keeper| @command.keepers.save(keeper) }
-              @command.zoo.save(operating.zoo)
+              operating.save!
+              zoo_day.enclosures.each(&:save!)
+              zoo_day.on_exhibit.each(&:save!)
+              zoo_day.keepers.each(&:save!)
+              zoo_day.zoo.save!
 
               operating
             end

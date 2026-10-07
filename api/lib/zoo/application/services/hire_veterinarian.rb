@@ -10,14 +10,14 @@ module Zoo
 
         def call
           Result.capture(:hire_veterinarian) do
-            @command.unit_of_work.run do
+            ApplicationRecord.transaction do
               veterinarian = Domain::Veterinarian.new(name: @command.name)
 
-              zoo = @command.zoo.load
+              zoo = Domain::Zoo.current
               zoo.purchase(Domain::Veterinarian.signing_fee)
-              @command.zoo.save(zoo)
+              zoo.save!
 
-              @command.veterinarians.save(veterinarian)
+              veterinarian.save!
               veterinarian
             end
           end

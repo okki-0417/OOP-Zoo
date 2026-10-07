@@ -56,7 +56,7 @@ RSpec.describe '産仔数' do
       dam.gestate(catalog.lion.gestation_period_days)
       litter = Zoo::Domain::Birth.new(sire: sire, dam: dam, name: '仔').deliver_litter.offspring
 
-      litter.each { |cub| expect(cub.parent_ids).to contain_exactly(sire.id, dam.id) }
+      litter.each { |cub| expect(cub.parents).to contain_exactly(sire, dam) }
     end
 
     it '近交係数は同腹の全個体に等しく適用されること' do

@@ -3,34 +3,16 @@
 module Zoo
   module Domain
     class Birth
-      include Shared::Entity
-
       NEWBORN_HEALTH = 50
 
-      attr_reader :id, :sire, :dam, :offspring, :occurred_on, :season
+      attr_reader :sire, :dam, :offspring
 
-      def initialize(sire:, dam:, occurred_on: 0, season: Season.spring, name: nil,
-                     max_health: NEWBORN_HEALTH, keeper_id: nil, id: Shared::Identifier.new)
-        @id = id
+      def initialize(sire:, dam:, name: nil, max_health: NEWBORN_HEALTH)
         @sire = sire
         @dam = dam
-        @occurred_on = occurred_on
-        @season = season
         @name = name
         @max_health = max_health
-        @keeper_id = keeper_id
         @offspring = nil
-      end
-
-      def self.reconstitute(id:, sire:, dam:, offspring:, occurred_on:, season:)
-        allocate.tap do |birth|
-          birth.instance_variable_set(:@id, id)
-          birth.instance_variable_set(:@sire, sire)
-          birth.instance_variable_set(:@dam, dam)
-          birth.instance_variable_set(:@offspring, offspring)
-          birth.instance_variable_set(:@occurred_on, occurred_on)
-          birth.instance_variable_set(:@season, season)
-        end
       end
 
       def parents
@@ -64,7 +46,7 @@ module Zoo
         Animal.new(
           species: @dam.species, name: name, sex: sex,
           max_health: newborn_vitality(@max_health, inbreeding),
-          age_in_days: 0, sire_id: @sire.id, dam_id: @dam.id
+          age_in_days: 0, sire: @sire, dam: @dam
         )
       end
 

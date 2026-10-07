@@ -3,37 +3,21 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::DischargeKeeper do
-  shared    = Zoo::Domain::Shared
-  taxonomy  = Zoo::Domain
-  husbandry = Zoo::Domain
-  staff     = Zoo::Domain
-  in_memory = Zoo::Infrastructure::InMemory
-
-  let(:keeper) { staff::Keeper.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal]) }
-  let(:enclosure) do
-    husbandry::Enclosure.new(name: 'サバンナ', temperature: shared::Temperature.celsius(28), capacity: 4)
-  end
-
-  let(:keepers) { in_memory::InMemoryKeeperRepository.new([keeper]) }
-  let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([enclosure]) }
-  let(:assignments) { in_memory::InMemoryAssignmentRepository.new }
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
+  let!(:keeper) { Zoo::Domain::Keeper.create!(name: '田中', specialties: [Zoo::Domain::TaxonClass.mammal]) }
+  let!(:enclosure) { create_enclosure(name: 'サバンナ') }
 
   def discharge(keeper_id: keeper.id, enclosure_id: enclosure.id)
     command = Zoo::Application::Commands::DischargeKeeperCommand.new(keeper_id:, enclosure_id:)
-    described_class.new(command: command.bind(keepers:, enclosures:, assignments:, unit_of_work:)).call
-  end
-
-  def assign
-    assignments.save(Zoo::Domain::Tending.new(keeper: keeper, enclosure: enclosure))
+    described_class.new(command:).call
   end
 
   describe '#call' do
     it '担当中のエリアを退任すると success になり現在の担当から外れること' do
-      assign
+      keeper.enclosures << enclosure
 
       expect(discharge.success?).to be(true)
-      expect(assignments.enclosures_of(keeper)).to be_empty
+      expect(keeper.reload.enclosures).to be_empty
+      expect(Zoo::Domain::Assignment.count).to eq(0)
     end
 
     it '担当していないエリアの退任は failure で error が AssignmentNotFound となること' do

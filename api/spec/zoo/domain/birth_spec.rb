@@ -16,10 +16,10 @@ module Zoo
       end
 
       describe '#deliver' do
-        it '子を1頭生成し、両親を parent_ids に持つこと' do
+        it '子を1頭生成し、両親を parents に持つこと' do
           ready_dam
           offspring = described_class.new(sire:, dam:, name: 'シンバ').deliver.offspring
-          expect(offspring.parent_ids).to contain_exactly(sire.id, dam.id)
+          expect(offspring.parents).to contain_exactly(sire, dam)
           expect(offspring.age_in_days).to eq(0)
         end
 
@@ -61,7 +61,7 @@ module Zoo
           ready_dam
           litter = described_class.new(sire:, dam:, name: '仔').deliver_litter.offspring
           expect(litter.size).to eq(lion.litter_size)
-          litter.each { |cub| expect(cub.parent_ids).to contain_exactly(sire.id, dam.id) }
+          litter.each { |cub| expect(cub.parents).to contain_exactly(sire, dam) }
         end
       end
     end

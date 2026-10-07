@@ -3,22 +3,18 @@
 module Zoo
   module Domain
     class Housing
-      include Shared::Entity
+      attr_reader :animal, :enclosure
 
-      attr_reader :id, :animal, :enclosure, :occurred_on, :keeper_id
-
-      def initialize(animal:, enclosure:, occupancy: nil, occurred_on: 0, keeper_id: nil, id: Shared::Identifier.new)
-        @id = id
+      def initialize(animal:, enclosure:, occupancy:)
         @animal = animal
         @enclosure = enclosure
         @occupancy = occupancy
-        @occurred_on = occurred_on
-        @keeper_id = keeper_id
         freeze
       end
 
-      def enclosure_id
-        @enclosure.id
+      def perform
+        admission_violation!
+        @animal.move_to(@enclosure)
       end
 
       def admission_violation!

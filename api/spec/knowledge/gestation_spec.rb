@@ -59,7 +59,7 @@ RSpec.describe '妊娠と出産' do
 
       expect(cub.age_in_days).to eq(0)
       expect(cub.life_stage).to be_baby
-      expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
+      expect(cub.parents).to contain_exactly(sire, dam)
     end
 
     it '出産すると妊娠が解け、再び交尾できること' do

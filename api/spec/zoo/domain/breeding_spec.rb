@@ -73,7 +73,7 @@ module Zoo
           cub = Birth.new(sire: sire, dam: dam, name: 'シンバ').deliver.offspring
           expect(cub.species).to eq(lion)
           expect(cub.age_in_days).to eq(0)
-          expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
+          expect(cub.parents).to contain_exactly(sire, dam)
           expect(cub.life_stage).to be_baby
         end
 

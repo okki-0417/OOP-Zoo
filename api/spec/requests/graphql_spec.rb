@@ -6,13 +6,10 @@ RSpec.describe 'POST /graphql', type: :request do
   let(:log) { StringIO.new }
 
   around do |example|
-    original_container = Rails.configuration.x.zoo_container
     original_logger = Rails.logger
-    Rails.configuration.x.zoo_container = Zoo::Composition::Container.new
     Rails.logger = Logger.new(log)
     example.run
   ensure
-    Rails.configuration.x.zoo_container = original_container
     Rails.logger = original_logger
   end
 

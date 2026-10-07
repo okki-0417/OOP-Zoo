@@ -13,22 +13,26 @@ RSpec.describe Zoo::Application::Services::AlertList do
   let(:keepers) { [build_keeper(Zoo::Domain::TaxonClass.mammal)] }
   let(:veterinarians) { [Zoo::Domain::Veterinarian.new(name: '山田')] }
 
+  let(:zoo) { create_zoo }
+
   def enclosure_at(celsius, name: '丘', capacity: 4)
     Zoo::Domain::Enclosure.new(name:, temperature: Zoo::Domain::Shared::Temperature.celsius(celsius), capacity:)
   end
 
-  def alerts(animals: [lion, mate], housed_in: hill, zoo: Factory::ZooRepository.build, keepers: self.keepers,
+  def alerts(animals: [lion, mate], housed_in: hill, keepers: self.keepers,
              veterinarians: self.veterinarians, unhoused: [], tended: true)
-    tendings = tended ? keepers.map { |keeper| Zoo::Domain::Tending.new(keeper:, enclosure: housed_in) } : []
-    command = Factory::AlertListCommand.with_bind(
-      assignments: Factory::AssignmentRepository.build(tendings),
-      animals: Factory::AnimalRepository.build(animals + unhoused),
-      housings: Factory::HousingRepository.build(animals.map { |animal| housed(animal, housed_in) }),
-      keepers: Factory::KeeperRepository.build(keepers),
-      veterinarians: Factory::VeterinarianRepository.build(veterinarians),
-      zoo:
-    )
-    described_class.new(command:).call.value
+    zoo.save!
+    housed_in.save!
+    animals.each { |animal| animal.move_to(housed_in).save! }
+    unhoused.each(&:save!)
+    keepers.each(&:save!)
+    keepers.each { |keeper| keeper.enclosures << housed_in } if tended
+    veterinarians.each(&:save!)
+    described_class.new(command: Zoo::Application::Commands::AlertListCommand.new).call.value
+  end
+
+  def insolvent_by(yen)
+    zoo.spend(Zoo::Domain::Shared::Money.yen(zoo.balance.yen + yen))
   end
 
   def kinds(list)
@@ -41,22 +45,25 @@ RSpec.describe Zoo::Application::Services::AlertList do
     end
 
     it '残高が負なら kind=:insolvent・severity=:critical の園への警告を先頭に返すこと' do
-      zoo = Factory::ZooRepository.build(funds: 0)
-      zoo.save(zoo.load.tap { |z| z.spend(Zoo::Domain::Shared::Money.yen(5_000)) })
+      insolvent_by(5_000)
 
-      first = alerts(zoo:).first
+      first = alerts.first
       expect(first).to include(kind: :insolvent, severity: :critical, subject_type: :zoo,
                                message: '資金が赤字です(残高 -¥5,000)')
     end
 
     it '収容中の綱(哺乳類)を専門とする飼育員がいなければ kind=:no_keeper を返すこと' do
-      expect(alerts(keepers: [build_keeper(Zoo::Domain::TaxonClass.bird)]).map { |alert| alert[:message] })
+      expect(alerts(keepers: [build_keeper(Zoo::Domain::TaxonClass.bird)]).pluck(:message))
         .to include('哺乳類を世話できる飼育員がいません')
     end
 
-    it '病気の個体がいて獣医が0人なら kind=:no_veterinarian を返し、獣医がいれば返さないこと' do
+    it '病気の個体がいて獣医が0人なら kind=:no_veterinarian を返すこと' do
       lion.fall_ill(illnesses.cold)
       expect(kinds(alerts(veterinarians: []))).to include([:no_veterinarian, 'テスト動物園'])
+    end
+
+    it '病気の個体がいても獣医がいれば kind=:no_veterinarian を返さないこと' do
+      lion.fall_ill(illnesses.cold)
       expect(kinds(alerts)).not_to include([:no_veterinarian, 'テスト動物園'])
     end
 
@@ -79,7 +86,7 @@ RSpec.describe Zoo::Application::Services::AlertList do
       lion.fall_ill(illnesses.pneumonia)
       list = alerts.select { |alert| alert[:subject].name == 'レオ' }
 
-      expect(list.map { |alert| alert[:kind] }).to include(:guarded, :sick)
+      expect(list.pluck(:kind)).to include(:guarded, :sick)
       expect(list.find { |alert| alert[:kind] == :guarded }[:message]).to eq('このままだと12日以内に病死する見込みです')
       expect(list.find { |alert| alert[:kind] == :sick }[:message])
         .to eq('肺炎にかかっています。同居個体にうつるおそれがあります')
@@ -130,18 +137,18 @@ RSpec.describe Zoo::Application::Services::AlertList do
       stray = build_adult(catalog.lion, name: '迷子')
       dead = build_adult(catalog.lion, name: '故').die
 
-      expect(kinds(alerts(unhoused: [stray, dead]))).to include([:unhoused, '迷子'])
-      expect(kinds(alerts(unhoused: [stray, dead]))).not_to include([:unhoused, '故'])
+      list = kinds(alerts(unhoused: [stray, dead]))
+      expect(list).to include([:unhoused, '迷子'])
+      expect(list).not_to include([:unhoused, '故'])
     end
 
     it 'critical → warning → notice の順、同じ重大度では園への警告を先に並べること' do
-      zoo = Factory::ZooRepository.build(funds: 0)
-      zoo.save(zoo.load.tap { |z| z.spend(Zoo::Domain::Shared::Money.yen(1)) })
+      insolvent_by(1)
       lion.add_stress(60)
       lion.get_hungrier(85)
 
-      list = alerts(zoo:, keepers: [])
-      expect(list.map { |alert| alert[:severity] }).to eq(%i[critical warning warning warning notice])
+      list = alerts(keepers: [])
+      expect(list.pluck(:severity)).to eq(%i[critical warning warning warning notice])
       expect(list[1]).to include(kind: :no_keeper)
     end
   end

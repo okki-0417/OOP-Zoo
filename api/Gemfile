@@ -7,7 +7,6 @@ gem 'graphql', '~> 2.6'
 gem 'puma'
 gem 'rack-cors'
 gem 'rails', '~> 8.1.4'
-gem 'sequel', '~> 5.0'
 gem 'sqlite3', '~> 2.9'
 
 group :development, :test do

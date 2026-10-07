@@ -15,7 +15,7 @@ module Zoo
           field :charisma, Integer, null: false
 
           def code
-            Domain::SpeciesCatalog.keys.find { |key| Domain::SpeciesCatalog.find(key) == object }.to_s
+            Domain::SpeciesCatalog.key_of(object).to_s
           end
         end
       end

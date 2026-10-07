@@ -10,11 +10,11 @@ module Zoo
 
         def call
           Result.capture(:make_rounds) do
-            @command.unit_of_work.run do
-              keeper = @command.keepers.find(@command.keeper_id)
+            ApplicationRecord.transaction do
+              keeper = Domain::Keeper.find_by(id: @command.keeper_id)
               raise Errors::KeeperNotFound, "飼育員 #{@command.keeper_id} は存在しません" if keeper.nil?
 
-              reports = @command.assignments.enclosures_of(keeper).map { |enclosure| round(keeper, enclosure) }
+              reports = keeper.enclosures.map { |enclosure| round(keeper, enclosure) }
               persist(keeper, reports)
               { keeper:, reports: }
             end
@@ -24,21 +24,15 @@ module Zoo
         private
 
         def round(keeper, enclosure)
-          occupancy = @command.housings.all_occupancies.find { |candidate| candidate.enclosure == enclosure } ||
-                      Domain::Occupancy.new(housings: [], enclosure:)
-          Domain::Rounding.new(
-            keeper:, occupancy:,
-            assignment: Domain::Assignment.new(enclosure, @command.assignments.keepers_of(enclosure)),
-            foods: @command.foods.all_by_code.values
-          ).perform
+          Domain::Rounding.new(keeper:, occupancy: Domain::Occupancy.of(enclosure), foods: Domain::FoodCatalog.all).perform
         end
 
         def persist(keeper, reports)
           reports.each do |report|
-            @command.enclosures.save(report.enclosure)
-            report.fed.each { |animal| @command.animals.save(animal) }
+            report.enclosure.save!
+            report.fed.each(&:save!)
           end
-          @command.keepers.save(keeper)
+          keeper.save!
         end
       end
     end

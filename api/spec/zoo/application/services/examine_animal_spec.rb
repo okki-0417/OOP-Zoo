@@ -3,21 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::ExamineAnimal do
-  taxonomy  = Zoo::Domain
-  staff     = Zoo::Domain
-  medical   = Zoo::Domain
-  in_memory = Zoo::Infrastructure::InMemory
-
-  let(:penguin) { build_adult(taxonomy::SpeciesCatalog.emperor_penguin, name: 'ペン') }
-  let(:vet) { staff::Veterinarian.new(name: '山田') }
-
-  let(:veterinarians) { in_memory::InMemoryVeterinarianRepository.new([vet]) }
-  let(:animals) { in_memory::InMemoryAnimalRepository.new([penguin]) }
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
+  let!(:penguin) { build_adult(Zoo::Domain::SpeciesCatalog.emperor_penguin, name: 'ペン').tap(&:save!) }
+  let!(:vet) { Zoo::Domain::Veterinarian.create!(name: '山田') }
 
   def examine(veterinarian_id: vet.id, animal_id: penguin.id)
     command = Zoo::Application::Commands::ExamineAnimalCommand.new(veterinarian_id:, animal_id:)
-    described_class.new(command: command.bind(veterinarians:, animals:, unit_of_work:)).call
+    described_class.new(command:).call
   end
 
   describe '#call' do
@@ -26,13 +17,17 @@ RSpec.describe Zoo::Application::Services::ExamineAnimal do
     end
 
     it '肺炎の個体を診ると value.diagnosis が :sick になること' do
-      penguin.fall_ill(medical::IllnessCatalog.pneumonia)
+      penguin.fall_ill(Zoo::Domain::IllnessCatalog.pneumonia).save!
 
       expect(examine.value[:diagnosis]).to eq(:sick)
     end
 
     it "存在しない veterinarian_id='missing' で failure になり error が Application::Errors::VeterinarianNotFound となること" do
       expect(examine(veterinarian_id: 'missing').error).to be_a(Zoo::Application::Errors::VeterinarianNotFound)
+    end
+
+    it "存在しない animal_id='missing' で failure になり error が Application::Errors::AnimalNotFound となること" do
+      expect(examine(animal_id: 'missing').error).to be_a(Zoo::Application::Errors::AnimalNotFound)
     end
   end
 end

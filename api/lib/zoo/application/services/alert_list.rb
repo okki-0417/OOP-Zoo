@@ -12,20 +12,20 @@ module Zoo
 
         def call
           Result.capture(:alert_list) do
-            zoo = @command.zoo.load
-            occupancies = @command.housings.all_occupancies
+            zoo = Domain::Zoo.current
+            occupancies = Domain::Occupancy.all
             occupants = occupancies.flat_map(&:to_a).select(&:alive?)
 
             [
               *zoo_alerts(zoo),
               *StaffingAlerts.new(
-                zoo:, occupants:, keepers: @command.keepers.all, veterinarians: @command.veterinarians.all
+                zoo:, occupants:, keepers: Domain::Keeper.all.to_a, veterinarians: Domain::Veterinarian.all.to_a
               ).to_a,
               *occupancies.flat_map do |occupancy|
-                EnclosureAlerts.new(occupancy:, keepers: @command.assignments.keepers_of(occupancy.enclosure)).to_a
+                EnclosureAlerts.new(occupancy:, keepers: occupancy.enclosure.keepers.to_a).to_a
               end,
               *occupancies.flat_map { |occupancy| housed_animal_alerts(occupancy, zoo.season) },
-              *unhoused_alerts(occupants)
+              *unhoused_alerts
             ].sort_by { |alert| rank(alert) }
           end
         end
@@ -47,8 +47,8 @@ module Zoo
           occupancy.select(&:alive?).flat_map { |animal| AnimalAlerts.new(animal:, occupancy:, season:).to_a }
         end
 
-        def unhoused_alerts(occupants)
-          @command.animals.all.select(&:alive?).reject { |animal| occupants.include?(animal) }.map do |animal|
+        def unhoused_alerts
+          Domain::Animal.alive.where(enclosure: nil).map do |animal|
             { severity: :warning, kind: :unhoused, subject_type: :animal, subject: animal,
               message: 'どのエリアにも収容されていません' }
           end

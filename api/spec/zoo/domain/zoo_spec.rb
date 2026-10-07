@@ -4,12 +4,6 @@ require 'spec_helper'
 
 RSpec.describe Zoo::Domain::Zoo do
   S = Zoo::Domain::Shared
-  T = Zoo::Domain
-  H = Zoo::Domain
-
-  def savanna
-    H::Enclosure.new(name: 'サバンナ', temperature: S::Temperature.celsius(30), capacity: 5)
-  end
 
   let(:zoo) do
     described_class.new(name: 'おうきの動物園', admission_fee: S::Money.yen(2000))
@@ -83,31 +77,40 @@ RSpec.describe Zoo::Domain::Zoo do
     end
   end
 
-  describe '構成要素の参照' do
-    it 'enclosures / keepers / veterinarians は登録したものを返し、複製であること' do
-      area = zoo.add_enclosure(savanna)
-      keeper = zoo.hire_keeper(Zoo::Domain::Keeper.new(name: '田中', specialties: [T::TaxonClass.mammal]))
-      vet = zoo.hire_veterinarian(Zoo::Domain::Veterinarian.new(name: '佐藤'))
+  describe '妥当性' do
+    it '園名が空の動物園は無効であること' do
+      expect(described_class.new(name: '', admission_fee: S::Money.yen(2000))).not_to be_valid
+    end
+  end
 
-      expect(zoo.enclosures).to contain_exactly(area)
-      expect(zoo.keepers).to contain_exactly(keeper)
-      expect(zoo.veterinarians).to contain_exactly(vet)
-
-      zoo.enclosures.clear
-      expect(zoo.enclosures).to contain_exactly(area)
+  describe '.current' do
+    it '動物園がまだ無ければ既定(OOP動物園・入園料¥2,000・資金¥1,000,000)で作ること' do
+      zoo = described_class.current
+      expect(zoo).to be_persisted
+      expect(zoo).to have_attributes(name: 'OOP動物園', admission_fee: S::Money.yen(2000))
+      expect(zoo.balance).to eq(S::Balance.new(1_000_000))
     end
 
-    it 'find_enclosure は名前でエリアを引き、未知の名前には nil を返すこと' do
-      area = zoo.add_enclosure(savanna)
-      expect(zoo.find_enclosure('サバンナ')).to eq(area)
-      expect(zoo.find_enclosure('存在しない')).to be_nil
+    it '既にあればその動物園を返すこと' do
+      existing = described_class.create!(name: '既存園', admission_fee: S::Money.yen(500))
+      expect(described_class.current).to eq(existing)
+    end
+  end
+
+  describe '保存と再読込' do
+    it '評判を+10・来園者50人を入れて保存すると、再読込後も評判60・収入¥100,000であること' do
+      zoo.gain_reputation(10).admit_visitors(50)
+      zoo.save!
+      restored = described_class.find(zoo.id)
+      expect(restored.reputation_score).to eq(60)
+      expect(restored.revenue).to eq(S::Money.yen(100_000))
+      expect(restored.visitor_count).to eq(50)
     end
   end
 
   describe '#to_s' do
-    it '園名(エリア数)の形で表されること' do
-      zoo.add_enclosure(savanna)
-      expect(zoo.to_s).to eq('おうきの動物園(1エリア)')
+    it '園名で表されること' do
+      expect(zoo.to_s).to eq('おうきの動物園')
     end
   end
 end

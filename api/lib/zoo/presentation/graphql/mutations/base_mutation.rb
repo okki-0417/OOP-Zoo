@@ -10,8 +10,9 @@ module Zoo
           private
 
           def perform(use_case, **attributes)
-            command = Application::Commands.const_get("#{use_case.to_s.split('_').map(&:capitalize).join}Command")
-            result = context[:container].public_send(use_case, command.new(**attributes))
+            name = use_case.to_s.camelize
+            command = Application::Commands.const_get("#{name}Command").new(**attributes)
+            result = Application::Services.const_get(name).new(command:).call
             raise failure(result.error) if result.failure?
 
             result.value

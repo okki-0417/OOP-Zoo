@@ -3,7 +3,6 @@
 module Factories
   A = Zoo::Domain::Animal
   T = Zoo::Domain
-  H = Zoo::Domain
 
   def build_adult(species, name: 'X', sex: A::Sex.male, max_health: 100)
     age = (species.maturity_age_years + 1) * A::LifeStage::DAYS_PER_YEAR
@@ -23,6 +22,17 @@ module Factories
     Zoo::Domain::Keeper.new(name: '飼育員', specialties: taxon_classes)
   end
 
+  def create_enclosure(name: 'ライオンの丘', celsius: 28, capacity: 4, **)
+    Zoo::Domain::Enclosure.create!(
+      name:, temperature: Zoo::Domain::Shared::Temperature.celsius(celsius), capacity:, **
+    )
+  end
+
+  def create_zoo(funds: 100_000, admission_fee: 2_000, **)
+    money = Zoo::Domain::Shared::Money
+    Zoo::Domain::Zoo.create!(name: 'テスト動物園', admission_fee: money.yen(admission_fee), funds: money.yen(funds), **)
+  end
+
   def build_pair(species, max_health: 100)
     [
       build_adult(species, name: "#{species.name_ja}♂", sex: A::Sex.male, max_health: max_health),
@@ -30,24 +40,8 @@ module Factories
     ]
   end
 
-  def housed(animal, enclosure, day: 0)
-    Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occurred_on: day)
-  end
-
-  def released(housing, day: 0)
-    Zoo::Domain::Releasing.of(housing, occurred_on: day)
-  end
-
-  def occupants_of(housings, enclosure)
-    housings.occupants_of(enclosure)
-  end
-
-  def build_housings(enclosure, animals)
-    animals.map { |animal| housed(animal, enclosure) }
-  end
-
   def build_occupancy(enclosure, animals)
-    Zoo::Domain::Occupancy.new(housings: build_housings(enclosure, animals), enclosure: enclosure)
+    Zoo::Domain::Occupancy.new(enclosure:, occupants: animals)
   end
 
   def welfare_of(animal, enclosure, occupants, season: Zoo::Domain::Season.spring)

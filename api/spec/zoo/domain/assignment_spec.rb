@@ -6,23 +6,21 @@ module Zoo
   module Domain
     RSpec.describe Assignment do
       let(:enclosure) do
-        Enclosure.new(name: 'サバンナ', temperature: Shared::Temperature.celsius(28), capacity: 4)
+        Enclosure.create!(name: 'サバンナ', temperature: Shared::Temperature.celsius(28), capacity: 4)
       end
-      let(:tanaka) { Keeper.new(name: '田中', specialties: [TaxonClass.mammal]) }
-      let(:suzuki) { Keeper.new(name: '鈴木', specialties: [TaxonClass.mammal]) }
+      let(:tanaka) { Keeper.create!(name: '田中', specialties: [TaxonClass.mammal]) }
 
-      describe '#assigned?' do
-        it '担当陣に同じ id の飼育員がいれば真を返すこと' do
-          expect(described_class.new(enclosure, [tanaka]).assigned?(tanaka.id)).to be(true)
-        end
+      it '田中をサバンナに割り当てて保存すると、田中の enclosures と サバンナの keepers から互いに引けること' do
+        described_class.create!(keeper: tanaka, enclosure:)
 
-        it '担当陣にいない飼育員には偽を返すこと' do
-          expect(described_class.new(enclosure, [tanaka]).assigned?(suzuki.id)).to be(false)
-        end
+        expect(tanaka.reload.enclosures).to eq([enclosure])
+        expect(enclosure.reload.keepers).to eq([tanaka])
+      end
 
-        it '担当陣を省略すると誰も担当していないこと' do
-          expect(described_class.new(enclosure).assigned?(tanaka.id)).to be(false)
-        end
+      it '同じ飼育員とエリアの組を二重に保存すると一意制約違反になること' do
+        described_class.create!(keeper: tanaka, enclosure:)
+
+        expect { described_class.create!(keeper: tanaka, enclosure:) }.to raise_error(ActiveRecord::RecordNotUnique)
       end
     end
   end

@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm run \"/^dev:/\"",
-    "dev:api": "cd api && bin/rails server",
+    "dev:api": "cd api && bin/rails db:prepare && bin/rails server",
     "dev:web": "pnpm --filter web dev",
     "test:api": "cd api && bundle exec rspec",
     "lint:api": "cd api && bundle exec rubocop",

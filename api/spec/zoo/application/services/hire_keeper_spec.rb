@@ -3,42 +3,36 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::HireKeeper do
-  domain    = Zoo::Domain
-  money     = Zoo::Domain::Shared::Money
-  balance   = Zoo::Domain::Shared::Balance
-  in_memory = Zoo::Infrastructure::InMemory
+  balance = Zoo::Domain::Shared::Balance
 
-  let(:keepers) { in_memory::InMemoryKeeperRepository.new }
   let(:funds) { 100_000 }
-  let(:zoo_repo) do
-    in_memory::InMemoryZooRepository.new(
-      domain::Zoo.new(name: '動物園', admission_fee: money.yen(2_000), funds: money.yen(funds))
-    )
-  end
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [keepers]) }
+  let!(:zoo) { create_zoo(funds:) }
 
   def call_with(specialties: %w[mammal])
     command = Zoo::Application::Commands::HireKeeperCommand.new(name: '田中', specialties:)
-                                                           .bind(keepers:, zoo: zoo_repo, unit_of_work:)
-    described_class.new(command: command).call
+    described_class.new(command:).call
   end
 
   describe '#call' do
     it 'name=\'田中\' specialties=[\'mammal\'] で雇うと、result.value の id で find できる飼育員が保存されること' do
       keeper = call_with.value
 
-      expect(keepers.find(keeper.id).name).to eq('田中')
-      expect(keeper.specialties_label).to eq('哺乳類')
+      expect(Zoo::Domain::Keeper.find(keeper.id).name).to eq('田中')
+      expect(keeper.reload.specialties_label).to eq('哺乳類')
     end
 
     it '採用の一時金(20,000円)ぶん残高が減ること' do
       call_with
 
-      expect(zoo_repo.load.balance).to eq(balance.new(80_000))
+      expect(zoo.reload.balance).to eq(balance.new(80_000))
     end
 
-    it '空の specialties を渡すと Keeper の不変条件で ArgumentError が発生すること' do
-      expect { call_with(specialties: []) }.to raise_error(ArgumentError)
+    it '空の specialties を渡すと result.error が RecordInvalid になり、飼育員は保存されず残高も変わらないこと' do
+      result = call_with(specialties: [])
+
+      expect(result.error).to be_a(ActiveRecord::RecordInvalid)
+      expect(Zoo::Domain::Keeper.count).to eq(0)
+      expect(zoo.reload.balance).to eq(balance.new(100_000))
     end
 
     it '未知の綱 specialties=[\'dragon\'] を渡すと TaxonClass の検証で ArgumentError が発生すること' do
@@ -52,8 +46,8 @@ RSpec.describe Zoo::Application::Services::HireKeeper do
         result = call_with
 
         expect(result.error).to be_a(Zoo::Domain::Errors::InsufficientFunds)
-        expect(keepers.all).to be_empty
-        expect(zoo_repo.load.balance).to eq(balance.new(10_000))
+        expect(Zoo::Domain::Keeper.count).to eq(0)
+        expect(zoo.reload.balance).to eq(balance.new(10_000))
       end
     end
   end

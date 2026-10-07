@@ -29,15 +29,15 @@ module Zoo
           end
 
           def occupants
-            container.housings.occupants_of(object)
+            object.animals.select(&:alive?)
           end
 
           def keepers
-            container.assignments.keepers_of(object)
+            object.keepers
           end
 
           def occupancy
-            occupancy_of(object)
+            Domain::Occupancy.of(object)
           end
         end
       end

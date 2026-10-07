@@ -8,8 +8,7 @@ class GraphqlController < ApplicationController
     result = Zoo::Presentation::Graphql::Schema.execute(
       params[:query],
       variables:,
-      operation_name: params[:operationName],
-      context: { container: Rails.configuration.x.zoo_container }
+      operation_name: params[:operationName]
     )
     log(result, started)
     render json: result

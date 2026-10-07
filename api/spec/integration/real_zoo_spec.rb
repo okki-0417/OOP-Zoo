@@ -6,7 +6,6 @@ RSpec.describe '現実の動物園の再現' do
   shared    = Zoo::Domain::Shared
   animal    = Zoo::Domain::Animal
   taxonomy  = Zoo::Domain
-  husbandry = Zoo::Domain
   staff     = Zoo::Domain
   feeding   = Zoo::Domain
   breeding  = Zoo::Domain
@@ -17,53 +16,63 @@ RSpec.describe '現実の動物園の再現' do
     Zoo::Domain::Shared::Temperature.celsius(value)
   end
 
-  def house(animal, enclosure)
-    occupancy = build_occupancy(enclosure, @housings.occupants_of(enclosure))
-    housing = Zoo::Domain::Housing.new(animal: animal, enclosure: enclosure, occupancy: occupancy)
-    housing.admission_violation!
+  def occupancy_of(enclosure)
+    Zoo::Domain::Occupancy.of(Zoo::Domain::Enclosure.find(enclosure.id))
+  end
 
-    @housings.save(housing)
+  def occupants_of(enclosure)
+    occupancy_of(enclosure).to_a
+  end
+
+  def all_occupants
+    Zoo::Domain::Occupancy.all.flat_map(&:to_a)
+  end
+
+  def house(animal, enclosure)
+    Zoo::Domain::Housing.new(animal:, enclosure:, occupancy: occupancy_of(enclosure)).perform
+    animal.save!
     animal
   end
 
   def assign(keeper, enclosure)
-    tending = Zoo::Domain::Tending.new(
-      keeper: keeper, enclosure: enclosure,
-      occupancy: build_occupancy(enclosure, @housings.occupants_of(enclosure)),
-      assignment: Zoo::Domain::Assignment.new(enclosure, @assignments.keepers_of(enclosure))
-    )
-    tending.violation!
-
-    @assignments.save(tending)
-    keeper
+    Zoo::Domain::Tending.new(keeper:, enclosure:, occupancy: occupancy_of(enclosure)).perform
   end
 
   def pass_a_day
-    zoo.enclosures.each do |e|
-      occupancy = build_occupancy(e, @housings.occupants_of(e))
+    occupancies = Zoo::Domain::Occupancy.all
+    occupancies.each do |occupancy|
+      e = occupancy.enclosure
       Zoo::Domain::Infestation.new(e, occupancy).spread
       Zoo::Domain::Contagion.new(e, occupancy).spread
       occupancy.each { |animal| Zoo::Domain::AnimalDay.new(animal:, enclosure: e, occupancy:, season: Zoo::Domain::Season.spring).run }
       e.soil(occupancy.count)
       e.deplete_enrichment
+      e.save!
+      occupancy.each(&:save!)
     end
   end
 
-  let(:zoo) { Zoo::Domain::Zoo.new(name: 'おうきの動物園', admission_fee: shared::Money.yen(2000)) }
-
-  let(:savanna) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'アフリカサバンナ', temperature: deg(30), capacity: 6)) }
-  let(:lion_hill) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'ライオンの丘', temperature: deg(28), capacity: 4)) }
-  let(:polar_sea) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'ホッキョクの海', temperature: deg(-5), capacity: 2)) }
-  let(:penguin_pool) { zoo.add_enclosure(husbandry::Enclosure.new(name: 'ペンギンプール', temperature: deg(0), capacity: 10)) }
-  let(:reptile_house) { zoo.add_enclosure(husbandry::Enclosure.new(name: '爬虫類館', temperature: deg(28), capacity: 2)) }
-  let(:monkey_mountain) do
-    zoo.add_enclosure(husbandry::Enclosure.new(name: 'モンキーマウンテン', temperature: deg(20), capacity: 8))
+  def build_enclosure(name, celsius, capacity)
+    Zoo::Domain::Enclosure.create!(name:, temperature: deg(celsius), capacity:)
   end
 
-  let(:mammal_keeper) { zoo.hire_keeper(staff::Keeper.new(name: '田中', specialties: [taxonomy::TaxonClass.mammal])) }
-  let(:bird_keeper) { zoo.hire_keeper(staff::Keeper.new(name: '鈴木', specialties: [taxonomy::TaxonClass.bird])) }
-  let(:reptile_keeper) { zoo.hire_keeper(staff::Keeper.new(name: '佐藤', specialties: [taxonomy::TaxonClass.reptile])) }
-  let(:vet) { zoo.hire_veterinarian(staff::Veterinarian.new(name: '山田')) }
+  def hire(name, taxon_class)
+    Zoo::Domain::Keeper.create!(name:, specialties: [taxon_class])
+  end
+
+  let(:zoo) { Zoo::Domain::Zoo.create!(name: 'おうきの動物園', admission_fee: shared::Money.yen(2000)) }
+
+  let(:savanna) { build_enclosure('アフリカサバンナ', 30, 6) }
+  let(:lion_hill) { build_enclosure('ライオンの丘', 28, 4) }
+  let(:polar_sea) { build_enclosure('ホッキョクの海', -5, 2) }
+  let(:penguin_pool) { build_enclosure('ペンギンプール', 0, 10) }
+  let(:reptile_house) { build_enclosure('爬虫類館', 28, 2) }
+  let(:monkey_mountain) { build_enclosure('モンキーマウンテン', 20, 8) }
+
+  let(:mammal_keeper) { hire('田中', taxonomy::TaxonClass.mammal) }
+  let(:bird_keeper) { hire('鈴木', taxonomy::TaxonClass.bird) }
+  let(:reptile_keeper) { hire('佐藤', taxonomy::TaxonClass.reptile) }
+  let(:vet) { staff::Veterinarian.create!(name: '山田') }
 
   let(:lions) { build_pair(catalog.lion) }
   let(:zebras) { build_pair(catalog.grevys_zebra) }
@@ -74,8 +83,6 @@ RSpec.describe '現実の動物園の再現' do
   let(:macaques) { build_pair(catalog.japanese_macaque) }
 
   before do
-    @housings = Zoo::Infrastructure::InMemory::InMemoryHousingRepository.new
-    @assignments = Zoo::Infrastructure::InMemory::InMemoryAssignmentRepository.new
     zebras.each { |z| house(z, savanna) }
     house(giraffe, savanna)
 
@@ -91,15 +98,15 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   it '多様な動物が適切な環境に収容され、混合展示が成立すること' do
-    expect(@housings.all_occupants.size).to eq(12)
-    expect(@housings.occupants_of(savanna).map(&:species).uniq.size).to eq(2)
-    expect(@housings.all_occupants.map(&:species).uniq.size).to eq(7)
+    expect(all_occupants.size).to eq(12)
+    expect(occupants_of(savanna).map(&:species).uniq.size).to eq(2)
+    expect(all_occupants.map(&:species).uniq.size).to eq(7)
   end
 
   it '飼育員が専門の綱の動物がいるエリアに担当割り当てされること' do
-    expect(@assignments.enclosures_of(mammal_keeper))
+    expect(mammal_keeper.enclosures.reload)
       .to contain_exactly(savanna, lion_hill, polar_sea, monkey_mountain)
-    expect(@assignments.enclosures_of(bird_keeper)).to contain_exactly(penguin_pool)
+    expect(bird_keeper.enclosures.reload).to contain_exactly(penguin_pool)
   end
 
   it '専門外の綱の動物がいるエリアには担当割り当てできないこと' do
@@ -152,9 +159,9 @@ RSpec.describe '現実の動物園の再現' do
     cub = Zoo::Domain::Birth.new(sire: sire, dam: dam, name: 'シンバ').deliver.offspring
 
     house(cub, lion_hill)
-    expect(@housings.occupants_of(lion_hill).size).to eq(3)
-    expect(@housings.all_occupants.size).to eq(13)
-    expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
+    expect(occupants_of(lion_hill).size).to eq(3)
+    expect(all_occupants.size).to eq(13)
+    expect(cub.parents).to contain_exactly(sire, dam)
   end
 
   it '来園者を受け入れて収益を計上できること' do
@@ -163,15 +170,15 @@ RSpec.describe '現実の動物園の再現' do
   end
 
   it '展示中の絶滅危惧種を把握できること' do
-    names = @housings.all_occupants.select(&:threatened?).map(&:species).uniq.map(&:name_ja)
+    names = all_occupants.select(&:threatened?).map(&:species).uniq.map(&:name_ja)
     expect(names).to include('グレビーシマウマ', 'アミメキリン', 'ライオン', 'ホッキョクグマ', 'ビルマニシキヘビ')
     expect(names).not_to include('ニホンザル')
   end
 
   it '一日を開園すると全個体が歳をとり、エリアが汚れること' do
     expect { pass_a_day }
-      .to change { zebras.first.age_in_days }.by(1)
-    expect(savanna.cleanliness.level).to be < 100
-    expect(@housings.all_occupants.size).to eq(12)
+      .to change { zebras.first.reload.age_in_days }.by(1)
+    expect(savanna.reload.cleanliness.level).to be < 100
+    expect(all_occupants.size).to eq(12)
   end
 end

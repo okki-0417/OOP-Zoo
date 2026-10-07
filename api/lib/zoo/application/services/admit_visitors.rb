@@ -10,10 +10,10 @@ module Zoo
 
         def call
           Result.capture(:admit_visitors) do
-            @command.unit_of_work.run do
-              zoo = @command.zoo.load
+            ApplicationRecord.transaction do
+              zoo = Domain::Zoo.current
               zoo.admit_visitors(@command.count)
-              @command.zoo.save(zoo)
+              zoo.save!
               zoo.revenue
             end
           end

@@ -3,43 +3,30 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::TransferAnimal do
-  catalog   = Zoo::Domain::SpeciesCatalog
-  in_memory = Zoo::Infrastructure::InMemory
+  catalog = Zoo::Domain::SpeciesCatalog
 
-  def enclosure(name, capacity)
-    Zoo::Domain::Enclosure.new(
-      name: name, temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: capacity
-    )
-  end
-
-  let(:lion) { build_adult(catalog.lion, name: 'レオ') }
-  let(:from) { enclosure('丘A', 4) }
-  let(:to) { enclosure('丘B', 4) }
-
-  let(:enclosures) { in_memory::InMemoryEnclosureRepository.new([from, to]) }
-  let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
-  let(:housings) { in_memory::InMemoryHousingRepository.new([housed(lion, from)]) }
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [enclosures, animals, housings]) }
+  let!(:from) { create_enclosure(name: '丘A', capacity: 4) }
+  let!(:to) { create_enclosure(name: '丘B', capacity: 4) }
+  let!(:lion) { build_adult(catalog.lion, name: 'レオ').move_to(from).tap(&:save!) }
 
   def transfer(enclosure_id)
     command = Zoo::Application::Commands::TransferAnimalCommand.new(animal_id: lion.id, enclosure_id:)
-                                                               .bind(enclosures:, animals:, housings:, unit_of_work:)
-    described_class.new(command: command).call
+    described_class.new(command:).call
   end
 
   describe '#call' do
     it '個体を別エリアへ移すと、移送先に収容され移送元から外れること' do
       transfer(to.id)
 
-      expect(occupants_of(housings, to)).to include(lion)
-      expect(occupants_of(housings, from)).not_to include(lion)
+      expect(to.animals.reload).to include(lion)
+      expect(from.animals.reload).not_to include(lion)
     end
 
     it '移送に成功すると result.value がライオンで、収容先が丘Bになること' do
       result = transfer(to.id)
 
       expect(result.value).to eq(lion)
-      expect(housings.enclosure_of(lion).name).to eq('丘B')
+      expect(lion.reload.enclosure.name).to eq('丘B')
     end
 
     it '存在しない enclosure_id=\'missing\' を渡すと result.error が EnclosureNotFound になること' do
@@ -47,15 +34,14 @@ RSpec.describe Zoo::Application::Services::TransferAnimal do
     end
 
     it '移送先が満員だと result.error が定員を理由とする HousingNotAllowed になり、個体は移送元に残ること' do
-      full = enclosure('満室', 1)
-      enclosures.save(full)
-      housings.save(housed(build_adult(catalog.lion, name: '先住'), full))
+      full = create_enclosure(name: '満室', capacity: 1)
+      build_adult(catalog.lion, name: '先住').move_to(full).save!
 
       result = transfer(full.id)
 
       expect(result.error).to be_a(Zoo::Domain::Errors::HousingNotAllowed)
       expect(result.error.message).to match(/定員/)
-      expect(occupants_of(housings, from)).to include(lion)
+      expect(lion.reload.enclosure).to eq(from)
     end
   end
 end

@@ -11,9 +11,9 @@ RSpec.describe Zoo::Domain::Rounding do
   end
 
   def rounding(occupants)
+    keeper.enclosures << enclosure unless keeper.in_charge_of?(enclosure)
     described_class.new(
-      keeper:, occupancy: build_occupancy(enclosure, occupants),
-      assignment: Zoo::Domain::Assignment.new(enclosure, [keeper]), foods: Zoo::Domain::FoodCatalog.all
+      keeper:, occupancy: build_occupancy(enclosure, occupants), foods: Zoo::Domain::FoodCatalog.all
     )
   end
 
@@ -47,8 +47,7 @@ RSpec.describe Zoo::Domain::Rounding do
     it '担当でない飼育員は WorkNotAllowed になり、何も変えないこと' do
       lion = build_adult(catalog.lion).get_hungrier(50)
       unassigned = described_class.new(
-        keeper:, occupancy: build_occupancy(enclosure, [lion]),
-        assignment: Zoo::Domain::Assignment.new(enclosure, []), foods: Zoo::Domain::FoodCatalog.all
+        keeper:, occupancy: build_occupancy(enclosure, [lion]), foods: Zoo::Domain::FoodCatalog.all
       )
 
       expect { unassigned.perform }.to raise_error(Zoo::Domain::Errors::WorkNotAllowed, '飼育員飼育員は丘の担当ではありません')

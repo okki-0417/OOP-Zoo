@@ -2,7 +2,7 @@
 
 module Zoo
   module Domain
-    class Operating
+    class Operating < ApplicationRecord
       class Expense
         class Category
           include Shared::ValueObject

@@ -8,17 +8,23 @@ RSpec.describe Zoo::Presentation::Graphql::Mutations do
   errors   = Zoo::Application::Errors
   catalog  = Zoo::Domain::SpeciesCatalog
 
-  let(:container) { instance_double(Zoo::Composition::Container) }
+  services = Zoo::Application::Services
 
   def execute(query)
-    Zoo::Presentation::Graphql::Schema.execute(query, context: { container: }).to_h
+    Zoo::Presentation::Graphql::Schema.execute(query).to_h
+  end
+
+  def stub_service(use_case, result)
+    service_class = Zoo::Application::Services.const_get(use_case.to_s.camelize)
+    allow(service_class).to receive(:new).and_return(instance_double(service_class, call: result))
+    service_class
   end
 
   describe 'BaseMutation の応答' do
     let(:lion) { build_adult(catalog.lion, name: 'レオ') }
 
     it 'サービスが success(value: レオ) を返すと、data.renameAnimal にその動物の name "レオ" が出ること' do
-      allow(container).to receive(:rename_animal).and_return(result.success(:rename_animal, lion))
+      stub_service(:rename_animal, result.success(:rename_animal, lion))
 
       response = execute('mutation { renameAnimal(animalId: "a1", newName: "レオ") { name } }')
 
@@ -27,7 +33,7 @@ RSpec.describe Zoo::Presentation::Graphql::Mutations do
 
     it "サービスが failure(AnimalNotFound '動物 a1 は存在しません') を返すと、data が null で errors[0] に message と extensions.code 'AnimalNotFound' が出ること" do
       error = errors::AnimalNotFound.new('動物 a1 は存在しません')
-      allow(container).to receive(:rename_animal).and_return(result.failure(:rename_animal, error))
+      stub_service(:rename_animal, result.failure(:rename_animal, error))
 
       response = execute('mutation { renameAnimal(animalId: "a1", newName: "レオ") { name } }')
 
@@ -39,7 +45,7 @@ RSpec.describe Zoo::Presentation::Graphql::Mutations do
 
     it "サービスが failure(DomainError の CapacityExceeded) を返すと、extensions.code が 'CapacityExceeded' になること" do
       error = Zoo::Domain::Errors::CapacityExceeded.new('満員です')
-      allow(container).to receive(:house_animal).and_return(result.failure(:house_animal, error))
+      stub_service(:house_animal, result.failure(:house_animal, error))
 
       response = execute('mutation { houseAnimal(enclosureId: "e1", animalId: "a1") { name } }')
 
@@ -47,11 +53,11 @@ RSpec.describe Zoo::Presentation::Graphql::Mutations do
     end
 
     it "Command が ArgumentError を投げる runDays(days: 0) は、サービスを呼ばずに extensions.code 'InvalidArgument' になること" do
-      allow(container).to receive(:run_days)
+      allow(services::RunDays).to receive(:new)
 
       response = execute('mutation { runDays(days: 0) { days } }')
 
-      expect(container).not_to have_received(:run_days)
+      expect(services::RunDays).not_to have_received(:new)
       expect(response['errors'].first).to include(
         'message' => 'days は1以上でなければなりません', 'extensions' => { 'code' => 'InvalidArgument' }
       )
@@ -103,12 +109,13 @@ RSpec.describe Zoo::Presentation::Graphql::Mutations do
       'setAdmissionFee(fee: 1800)' =>
         [:set_admission_fee, commands::SetAdmissionFeeCommand, { fee: 1800 }]
     }.each do |call, (use_case, command_class, attributes)|
-      it "#{call} は Container##{use_case} に #{attributes} を持つ #{command_class.name.split('::').last} を渡すこと" do
-        allow(container).to receive(use_case).and_return(result.success(use_case, Object.new))
+      it "#{call} は Services::#{use_case.to_s.camelize} に #{attributes} を持つ #{command_class.name.split('::').last} を渡すこと" do
+        service_class = stub_service(use_case, result.success(use_case, Object.new))
 
         execute("mutation { #{call} { __typename } }")
 
-        expect(container).to have_received(use_case).with(an_instance_of(command_class).and(having_attributes(attributes)))
+        expect(service_class).to have_received(:new)
+          .with(command: an_instance_of(command_class).and(having_attributes(attributes)))
       end
     end
   end

@@ -3,25 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::SetAdmissionFee do
-  shared    = Zoo::Domain::Shared
-  commands  = Zoo::Application::Commands
-  in_memory = Zoo::Infrastructure::InMemory
+  shared = Zoo::Domain::Shared
 
-  let(:zoo) do
-    in_memory::InMemoryZooRepository.new(
-      Zoo::Domain::Zoo.new(name: 'テスト動物園', admission_fee: shared::Money.yen(2_000))
-    )
-  end
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new }
-  let(:service) do
-    described_class.new(command: commands::SetAdmissionFeeCommand.new(fee: 3_500).bind(zoo:, unit_of_work:))
-  end
+  let!(:zoo) { create_zoo(admission_fee: 2_000) }
 
   describe '#call' do
-    it 'fee=3500 で入園料を改定すると Zoo の admission_fee が更新され、result.value がその Zoo になること' do
-      result = service.call
+    it 'fee=3500 で入園料を改定すると保存された Zoo の admission_fee が更新され、result.value がその Zoo になること' do
+      result = described_class.new(command: Zoo::Application::Commands::SetAdmissionFeeCommand.new(fee: 3_500)).call
 
-      expect(zoo.load.admission_fee).to eq(shared::Money.yen(3_500))
+      expect(zoo.reload.admission_fee).to eq(shared::Money.yen(3_500))
       expect(result.value.admission_fee).to eq(shared::Money.yen(3_500))
     end
   end

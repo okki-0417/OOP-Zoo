@@ -8,10 +8,9 @@ module Zoo
         def enriched? = enriched
       end
 
-      def initialize(keeper:, occupancy:, assignment:, foods:)
+      def initialize(keeper:, occupancy:, foods:)
         @keeper = keeper
         @occupancy = occupancy
-        @assignment = assignment
         @foods = foods
       end
 
@@ -31,7 +30,7 @@ module Zoo
       end
 
       def reject_unassigned!
-        return if @assignment.assigned?(@keeper.id)
+        return if @keeper.in_charge_of?(enclosure)
 
         raise Errors::WorkNotAllowed, "飼育員#{@keeper.name}は#{enclosure.name}の担当ではありません"
       end

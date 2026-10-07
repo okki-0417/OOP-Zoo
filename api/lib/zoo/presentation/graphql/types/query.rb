@@ -23,47 +23,47 @@ module Zoo
           field :taxon_classes, [TaxonClass], null: false
 
           def animals
-            container.animals.all
+            Domain::Animal.order(:id)
           end
 
           def animal(id:)
-            container.animals.find(id)
+            Domain::Animal.find_by(id:)
           end
 
           def enclosures
-            container.enclosures.all
+            Domain::Enclosure.order(:id)
           end
 
           def enclosure(id:)
-            container.enclosures.find(id)
+            Domain::Enclosure.find_by(id:)
           end
 
           def keepers
-            container.keepers.all
+            Domain::Keeper.order(:id)
           end
 
           def veterinarians
-            container.veterinarians.all
+            Domain::Veterinarian.order(:id)
           end
 
           def zoo
-            container.zoo.load
+            Domain::Zoo.current
           end
 
           def operatings
-            container.operatings.all
+            Domain::Operating.order(:day, :id)
           end
 
           def alerts
-            container.alert_list(Application::Commands::AlertListCommand.new).value
+            Application::Services::AlertList.new(command: Application::Commands::AlertListCommand.new).call.value
           end
 
           def species
-            container.species.all_by_code.values
+            Domain::SpeciesCatalog.all
           end
 
           def foods
-            container.foods.all_by_code.values
+            Domain::FoodCatalog.all
           end
 
           def taxon_classes

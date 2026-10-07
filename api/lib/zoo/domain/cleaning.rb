@@ -3,27 +3,15 @@
 module Zoo
   module Domain
     class Cleaning
-      include Shared::Entity
-
       WORK_MINUTES = 60
 
-      attr_reader :id, :keeper, :enclosure, :occurred_on
+      attr_reader :keeper, :enclosure
 
-      def initialize(keeper:, enclosure:, amount: 100, occurred_on: 0, id: Shared::Identifier.new)
-        @id = id
+      def initialize(keeper:, enclosure:, amount: 100)
         @keeper = keeper
         @enclosure = enclosure
         @amount = amount
-        @occurred_on = occurred_on
         freeze
-      end
-
-      def keeper_id
-        @keeper.id
-      end
-
-      def enclosure_id
-        @enclosure.id
       end
 
       def perform

@@ -11,19 +11,19 @@ module Zoo
       def build(name: 'Jack', sex: Animal::Sex.male, max_health: 100, age_in_days: 0, sire: nil, dam: nil)
         Animal.new(
           species: SpeciesCatalog.lion, name: name, sex: sex,
-          max_health: max_health, age_in_days: age_in_days, sire_id: sire&.id, dam_id: dam&.id
+          max_health: max_health, age_in_days: age_in_days, sire: sire, dam: dam
         )
       end
 
       describe '#initialize' do
-        it '親を渡さなければ parent_ids は空であること' do
-          expect(build.parent_ids).to eq([])
+        it '親を渡さなければ parents は空であること' do
+          expect(build.parents).to eq([])
         end
 
-        it '片親のみ渡すと nil は除かれ、その親だけが記録されること' do
+        it '片親のみ渡すと nil は除かれ、その親だけが parents に記録されること' do
           sire = build(name: '父')
           cub = build(name: '仔', sire: sire, dam: nil)
-          expect(cub.parent_ids).to eq([sire.id])
+          expect(cub.parents).to eq([sire])
         end
       end
 
@@ -141,9 +141,11 @@ module Zoo
           expect(copy.immunities).to eq([illnesses.cold])
         end
 
-        it '複製は同じ id を持ち、元の個体と等価であること' do
-          animal = build
-          expect(animal.dup).to eq(animal)
+        it '保存済みの個体を複製すると id を持たない新規の個体になり、元の個体とは等価でないこと' do
+          animal = build.tap(&:save!)
+          copy = animal.dup
+          expect(copy).to be_new_record
+          expect(copy).not_to eq(animal)
         end
       end
 
@@ -195,12 +197,7 @@ module Zoo
 
       describe '#settle_nutrition' do
         it 'ライオン(必要1カテゴリ)が [:meat] を食べた日は nutrition_level が 50 から 70 に上がり、meals が空に戻ること' do
-          animal = Animal.reconstitute(
-            id: Shared::Identifier.new, species: SpeciesCatalog.lion, name: Animal::Name.new('レオ'),
-            sex: Animal::Sex.male, health: Animal::Health.full(100), hunger: Animal::Hunger.satisfied,
-            age_in_days: Animal::AgeInDays.new(365 * 5), illness: nil, death: nil, parent_ids: [],
-            nutrition: Animal::Nutrition.new(50)
-          )
+          animal = build(age_in_days: 365 * 5).tap { |a| a.nutrition = Animal::Nutrition.new(50) }
           animal.take_meal([:meat])
           expect { animal.settle_nutrition }.to change { animal.nutrition_level }.from(50).to(70)
           expect(animal.meals).to eq(Animal::Meals.none)
@@ -217,73 +214,59 @@ module Zoo
         end
       end
 
-      describe '.reconstitute' do
-        def reconstitute(health:, hunger:, stress:, illness:, death:, immunities: [], parent_ids: [])
-          Animal.reconstitute(
-            id: Shared::Identifier.new, species: SpeciesCatalog.lion,
-            name: Animal::Name.new('レオ'), sex: Animal::Sex.male,
-            health: health, hunger: hunger, age_in_days: Animal::AgeInDays.new(365 * 5),
-            illness: illness, death: death, parent_ids: parent_ids,
-            stress: stress, immunities: immunities
-          )
+      describe '保存と再読込' do
+        def reloaded(animal)
+          animal.save!
+          Animal.find(animal.id)
         end
 
-        it '体力・空腹・ストレスを保存値そのままに復元すること' do
-          animal = reconstitute(
-            health: Animal::Health.full(100).decreased_by(40),
-            hunger: Animal::Hunger.new(35), stress: Animal::Stress.new(50),
-            illness: nil, death: nil
-          )
-          expect(animal.current_health).to eq(60)
-          expect(animal.hunger_level).to eq(35)
-          expect(animal.stress_level).to eq(50)
+        it '体力60/100・空腹度35・ストレス50で保存すると、再読込後も同じ値であること' do
+          animal = build(age_in_days: 365 * 5)
+          animal.injure(40).get_hungrier(35).add_stress(50)
+          restored = reloaded(animal)
+          expect(restored.current_health).to eq(60)
+          expect(restored.max_health).to eq(100)
+          expect(restored.hunger_level).to eq(35)
+          expect(restored.stress_level).to eq(50)
         end
 
-        it '病気と免疫を復元すること' do
-          animal = reconstitute(
-            health: Animal::Health.full(100), hunger: Animal::Hunger.satisfied,
-            stress: Animal::Stress.calm, illness: illnesses.pneumonia, death: nil,
-            immunities: [illnesses.cold]
-          )
-          expect(animal).to be_sick
-          expect(animal.illness).to eq(illnesses.pneumonia)
-          expect(animal.immune_to?(illnesses.cold)).to be(true)
+        it '肺炎にかかり風邪の免疫を持つ個体は、再読込後も肺炎で風邪に免疫があること' do
+          animal = build.fall_ill(illnesses.cold).recover.fall_ill(illnesses.pneumonia)
+          restored = reloaded(animal)
+          expect(restored.illness).to eq(illnesses.pneumonia)
+          expect(restored.immune_to?(illnesses.cold)).to be(true)
         end
 
-        it '死亡状態を復元すること' do
-          animal = reconstitute(
-            health: Animal::Health.full(100), hunger: Animal::Hunger.satisfied,
-            stress: Animal::Stress.calm, illness: nil, death: Animal::Death.new(cause: :old_age)
-          )
-          expect(animal).to be_dead
-          expect(animal.cause_of_death).to eq(:old_age)
+        it '老衰で死亡した個体は、再読込後も死亡していて死因が :old_age であること' do
+          restored = reloaded(build.die(cause: :old_age))
+          expect(restored).to be_dead
+          expect(restored.cause_of_death).to eq(:old_age)
         end
 
-        it '栄養状態とその日の食事を復元すること' do
-          animal = Animal.reconstitute(
-            id: Shared::Identifier.new, species: SpeciesCatalog.lion, name: Animal::Name.new('レオ'),
-            sex: Animal::Sex.male, health: Animal::Health.full(100), hunger: Animal::Hunger.satisfied,
-            age_in_days: Animal::AgeInDays.new(365 * 5), illness: nil, death: nil, parent_ids: [],
-            nutrition: Animal::Nutrition.new(40), meals: Animal::Meals.new([:meat])
-          )
-          expect(animal.nutrition_level).to eq(40)
-          expect(animal.meals.categories).to eq([:meat])
+        it '[:meat] を食べた日の食事は、再読込後も meals.categories が [:meat] であること' do
+          restored = reloaded(build.take_meal([:meat]))
+          expect(restored.meals.categories).to eq([:meat])
+          expect(restored.nutrition_level).to eq(100)
         end
 
-        it '鳴き声は保存せず、種の既定の声に戻ること(ライオンはガオー)' do
-          animal = reconstitute(
-            health: Animal::Health.full(100), hunger: Animal::Hunger.satisfied,
-            stress: Animal::Stress.calm, illness: nil, death: nil
-          )
-          expect(animal.cry_out).to eq('ガオー')
+        it '妊娠中のメスは、再読込後も妊娠中で妊娠日数と近交係数が保たれること' do
+          dam = build(sex: Animal::Sex.female, age_in_days: 365 * 5).conceive(inbreeding: 0.25).gestate(3)
+          restored = reloaded(dam)
+          expect(restored).to be_expecting
+          expect(restored.gestation_days).to eq(3)
+          expect(restored.expected_offspring_inbreeding).to eq(0.25)
         end
 
-        it '復元直後の状態が正しいこと' do
-          animal = reconstitute(
-            health: Animal::Health.full(100), hunger: Animal::Hunger.satisfied,
-            stress: Animal::Stress.calm, illness: nil, death: nil
-          )
-          expect(animal).to be_alive
+        it '鳴き声は保存されず、再読込後は種の既定の声(ライオンはガオー)に戻ること' do
+          animal = build(age_in_days: 365 * 5)
+          animal.change_voice('ニャー')
+          expect(reloaded(animal).cry_out).to eq('ガオー')
+        end
+
+        it '両親を持つ個体は、再読込後も parents が両親であること' do
+          sire = build(name: '父').tap(&:save!)
+          dam = build(name: '母', sex: Animal::Sex.female).tap(&:save!)
+          expect(reloaded(build(name: '仔', sire:, dam:)).parents).to contain_exactly(sire, dam)
         end
       end
     end

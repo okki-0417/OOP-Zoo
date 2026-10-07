@@ -2,143 +2,105 @@
 
 module Zoo
   module Domain
-    class Zoo
-      def initialize(name:, admission_fee:, funds: Shared::Money.zero, reputation: Reputation.default)
-        raise ArgumentError, '動物園名は必須です' if name.to_s.empty?
+    class Zoo < ApplicationRecord
+      DEFAULT_NAME = 'OOP動物園'
+      DEFAULT_ADMISSION_FEE_YEN = 2_000
+      DEFAULT_FUNDS_YEN = 1_000_000
 
-        @name = name
-        @admission_fee = admission_fee
-        @enclosures = []
-        @keepers = []
-        @veterinarians = []
-        @revenue = Shared::Money.zero
-        @visitor_count = 0
-        @deceased = []
-        @balance = Shared::Balance.new(funds.yen)
-        @reputation = reputation
-        @day = 0
-        @buzz = 0
+      attribute :admission_fee, Shared::ValueType.new(Shared::Money, load: Shared::Money.method(:yen), dump: :yen.to_proc)
+      attribute :revenue, Shared::ValueType.new(Shared::Money, load: Shared::Money.method(:yen), dump: :yen.to_proc),
+                default: -> { Shared::Money.zero }
+      attribute :balance, Shared::ValueType.new(Shared::Balance, dump: :yen.to_proc),
+                default: -> { Shared::Balance.zero }
+      attribute :reputation, Shared::ValueType.new(Reputation, dump: :value.to_proc),
+                default: -> { Reputation.default }
+
+      validates :name, presence: { message: '動物園名は必須です' }
+
+      def self.current
+        first || create!(
+          name: DEFAULT_NAME,
+          admission_fee: Shared::Money.yen(DEFAULT_ADMISSION_FEE_YEN),
+          funds: Shared::Money.yen(DEFAULT_FUNDS_YEN)
+        )
       end
 
-      attr_reader :name, :admission_fee, :revenue, :visitor_count, :balance, :reputation, :day, :buzz
+      def funds=(money)
+        self.balance = Shared::Balance.new(money.yen)
+      end
 
       def reputation_factor
-        @reputation.factor
+        reputation.factor
       end
 
       def reputation_score
-        @reputation.score
+        reputation.score
       end
 
       BUZZ_DECAY_PER_DAY = 10
 
       def generate_buzz(amount)
-        @buzz += amount
+        self.buzz += amount
         self
-      end
-
-      def self.reconstitute(name:, admission_fee:, revenue:, visitor_count:, balance:, reputation:, day: 0, buzz: 0)
-        new(name: name, admission_fee: admission_fee, reputation: reputation).tap do |zoo|
-          zoo.instance_variable_set(:@revenue, revenue)
-          zoo.instance_variable_set(:@visitor_count, visitor_count)
-          zoo.instance_variable_set(:@balance, balance)
-          zoo.instance_variable_set(:@day, day)
-          zoo.instance_variable_set(:@buzz, buzz)
-        end
       end
 
       def season
-        Season.on_day(@day)
+        Season.on_day(day)
       end
 
       def advance_day
-        @day += 1
-        @buzz = [@buzz - BUZZ_DECAY_PER_DAY, 0].max
+        self.day += 1
+        self.buzz = [buzz - BUZZ_DECAY_PER_DAY, 0].max
         self
-      end
-
-      def add_enclosure(enclosure)
-        @enclosures << enclosure unless @enclosures.include?(enclosure)
-        enclosure
-      end
-
-      def hire_keeper(keeper)
-        @keepers << keeper unless @keepers.include?(keeper)
-        keeper
-      end
-
-      def hire_veterinarian(veterinarian)
-        @veterinarians << veterinarian unless @veterinarians.include?(veterinarian)
-        veterinarian
-      end
-
-      def enclosures
-        @enclosures.dup
-      end
-
-      def keepers
-        @keepers.dup
-      end
-
-      def veterinarians
-        @veterinarians.dup
-      end
-
-      def find_enclosure(name)
-        @enclosures.find { |e| e.name == name }
-      end
-
-      def deceased
-        @deceased.dup
       end
 
       def admit_visitors(count)
         raise ArgumentError, '来園者数は0以上でなければなりません' if count.negative?
 
-        @visitor_count += count
-        earned = @admission_fee * count
-        @revenue += earned
-        @balance += earned
+        self.visitor_count += count
+        earned = admission_fee * count
+        self.revenue += earned
+        self.balance += earned
         earned
       end
 
       def spend(money)
-        @balance -= money
-        @balance
+        self.balance -= money
+        balance
       end
 
       def afford?(money)
-        @balance.yen >= money.yen
+        balance.yen >= money.yen
       end
 
       def purchase(money)
-        raise Errors::InsufficientFunds, "残高#{@balance}では#{money}を支払えません" unless afford?(money)
+        raise Errors::InsufficientFunds, "残高#{balance}では#{money}を支払えません" unless afford?(money)
 
-        @balance -= money
-        @balance
+        self.balance -= money
+        balance
       end
 
       def bankrupt?
-        @balance.negative?
+        balance.negative?
       end
 
       def gain_reputation(amount)
-        @reputation = @reputation.gain(amount)
+        self.reputation = reputation.gain(amount)
         self
       end
 
       def update_reputation(reputation)
-        @reputation = reputation
+        self.reputation = reputation
         self
       end
 
       def change_admission_fee(fee)
-        @admission_fee = fee
+        self.admission_fee = fee
         self
       end
 
       def to_s
-        "#{@name}(#{@enclosures.size}エリア)"
+        name
       end
     end
   end

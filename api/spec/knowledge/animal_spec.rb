@@ -25,7 +25,7 @@ RSpec.describe '動物' do
   def build_cub(name, sire:, dam:)
     Zoo::Domain::Animal.new(
       species: Zoo::Domain::SpeciesCatalog.lion,
-      name: name, sex: Zoo::Domain::Animal::Sex.male, max_health: 10, sire_id: sire&.id, dam_id: dam&.id
+      name: name, sex: Zoo::Domain::Animal::Sex.male, max_health: 10, sire: sire, dam: dam
     )
   end
 
@@ -382,7 +382,7 @@ RSpec.describe '動物' do
 
     it '親を指定して生まれると両親が血統として記録されること' do
       cub = build_cub('Cub', sire: sire, dam: dam)
-      expect(cub.parent_ids).to contain_exactly(sire.id, dam.id)
+      expect(cub.parents).to contain_exactly(sire, dam)
     end
   end
 

@@ -78,18 +78,18 @@ module Zoo
           end
 
           def parents
-            object.parent_ids.filter_map { |id| container.animals.find(id) }
+            object.parents
           end
 
           def enclosure
-            container.housings.enclosure_of(object)
+            object.enclosure if object.alive?
           end
 
           def prognosis
             occupancy = housed_occupancy or return
 
             Domain::Prognosis.new(
-              animal: object, enclosure: occupancy.enclosure, occupancy:, season: container.zoo.load.season
+              animal: object, enclosure: occupancy.enclosure, occupancy:, season: Domain::Zoo.current.season
             )
           end
 
@@ -103,14 +103,16 @@ module Zoo
             occupancy = housed_occupancy or return
 
             Domain::ThermalSuitability.new(
-              object, occupancy.enclosure.effective_temperature(container.zoo.load.season)
+              object, occupancy.enclosure.effective_temperature(Domain::Zoo.current.season)
             )
           end
 
           private
 
           def housed_occupancy
-            container.housings.all_occupancies.find { |occupancy| occupancy.include?(object) }
+            return nil unless object.alive? && object.enclosure
+
+            Domain::Occupancy.of(object.enclosure)
           end
         end
       end

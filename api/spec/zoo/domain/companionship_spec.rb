@@ -70,8 +70,9 @@ module Zoo
 
       describe '#separated_dependent?' do
         it '未離乳で親が同居していないと分離されていること' do
+          mother = build_adult(lion, name: '母', sex: Animal::Sex.female)
           cub = Animal.new(species: lion, name: '仔', sex: Animal::Sex.male, max_health: 100,
-                           age_in_days: 0, dam_id: Shared::Identifier.new)
+                           age_in_days: 0, dam: mother)
           expect(companionship(pen, [cub], cub).separated_dependent?).to be(true)
         end
 

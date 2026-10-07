@@ -3,29 +3,21 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Application::Services::ReleaseAnimal do
-  shared    = Zoo::Domain::Shared
-  husbandry = Zoo::Domain
-  catalog   = Zoo::Domain::SpeciesCatalog
-  in_memory = Zoo::Infrastructure::InMemory
+  catalog = Zoo::Domain::SpeciesCatalog
 
-  let(:lion) { build_adult(catalog.lion, name: 'レオ') }
-  let(:enclosure) do
-    husbandry::Enclosure.new(name: 'ライオンの丘', temperature: shared::Temperature.celsius(28), capacity: 4)
-  end
-  let(:animals) { in_memory::InMemoryAnimalRepository.new([lion]) }
-  let(:housings) { in_memory::InMemoryHousingRepository.new([housed(lion, enclosure)]) }
-  let(:unit_of_work) { in_memory::InMemoryUnitOfWork.new(repositories: [animals, housings]) }
+  let!(:enclosure) { create_enclosure }
+  let!(:lion) { build_adult(catalog.lion, name: 'レオ').move_to(enclosure).tap(&:save!) }
 
   def release(animal_id)
-    command = Zoo::Application::Commands::ReleaseAnimalCommand.new(animal_id:).bind(animals:, housings:, unit_of_work:)
-    described_class.new(command: command).call
+    described_class.new(command: Zoo::Application::Commands::ReleaseAnimalCommand.new(animal_id:)).call
   end
 
   describe '#call' do
-    it '収容中の個体を退去させるとエリアの occupants から外れること' do
+    it '収容中の個体を退去させるとエリアの animals から外れ、enclosure が nil になること' do
       release(lion.id)
 
-      expect(occupants_of(housings, enclosure)).not_to include(lion)
+      expect(enclosure.animals.reload).not_to include(lion)
+      expect(lion.reload.enclosure).to be_nil
     end
 
     it '退去に成功すると result.value がレオになること' do
@@ -37,8 +29,7 @@ RSpec.describe Zoo::Application::Services::ReleaseAnimal do
     end
 
     it 'どのエリアにも収容されていない個体だと ArgumentError になること' do
-      loose = build_adult(catalog.lion, name: '野良')
-      animals.save(loose)
+      loose = build_adult(catalog.lion, name: '野良').tap(&:save!)
 
       expect { release(loose.id) }
         .to raise_error(ArgumentError, /収容されていません/)

@@ -77,7 +77,7 @@ module Zoo
           private
 
           def on_exhibit
-            @on_exhibit ||= container.housings.all_occupancies.flat_map(&:to_a)
+            @on_exhibit ||= Domain::Occupancy.all.flat_map(&:to_a)
           end
         end
       end

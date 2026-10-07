@@ -3,21 +3,13 @@
 module Zoo
   module Application
     module Commands
-      FeedAnimalCommand = Data.define(
-        :keeper_id, :animal_id, :food_code,
-        :keepers, :animals, :foods, :unit_of_work
-      ) do
-        def initialize(keeper_id:, animal_id:, food_code:, keepers: nil, animals: nil, foods: nil,
-                       unit_of_work: nil)
+      FeedAnimalCommand = Data.define(:keeper_id, :animal_id, :food_code) do
+        def initialize(keeper_id:, animal_id:, food_code:)
           raise ArgumentError, 'keeper_id は必須です' if keeper_id.nil?
           raise ArgumentError, 'animal_id は必須です' if animal_id.nil?
           raise ArgumentError, 'food_code は必須です' if food_code.nil?
 
           super
-        end
-
-        def bind(keepers:, animals:, foods:, unit_of_work:, **)
-          with(keepers:, animals:, foods:, unit_of_work:)
         end
       end
     end

@@ -7,18 +7,17 @@ module Zoo
 
       attr_reader :enclosure
 
-      def initialize(housings:, enclosure: nil)
-        if housings.empty?
-          raise ArgumentError, 'enclosure: required when no housings are given' unless enclosure
+      def self.of(enclosure)
+        new(enclosure:, occupants: enclosure.animals.select(&:alive?))
+      end
 
-          @enclosure = enclosure
-        else
-          enclosures = housings.map(&:enclosure).uniq
-          raise ArgumentError, '全 housing が同一エンクロージャに属する必要があります' if enclosures.size != 1
+      def self.all
+        Enclosure.includes(animals: %i[sire dam]).order(:id).map { |enclosure| of(enclosure) }.select(&:any?)
+      end
 
-          @enclosure = enclosures.first
-        end
-        @occupants = housings.map(&:animal)
+      def initialize(enclosure:, occupants: [])
+        @enclosure = enclosure
+        @occupants = occupants
       end
 
       def each(&)

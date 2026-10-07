@@ -12,7 +12,7 @@ module Zoo
 
       def self.capture(service)
         success(service, yield)
-      rescue Errors::ApplicationError, Domain::Errors::DomainError => e
+      rescue Errors::ApplicationError, Domain::Errors::DomainError, ActiveRecord::RecordInvalid => e
         failure(service, e)
       end
 
