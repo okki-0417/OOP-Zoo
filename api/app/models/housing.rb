@@ -3,7 +3,7 @@
 class Housing
   attr_reader :animal, :enclosure
 
-  def initialize(animal:, enclosure:, occupancy:)
+  def initialize(animal:, enclosure:, occupancy: Occupancy.of(enclosure))
     @animal = animal
     @enclosure = enclosure
     @occupancy = occupancy
@@ -12,7 +12,8 @@ class Housing
 
   def perform
     admission_violation!
-    @animal.move_to(@enclosure)
+    @animal.move_to(@enclosure).save!
+    @animal
   end
 
   def admission_violation!

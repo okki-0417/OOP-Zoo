@@ -27,7 +27,10 @@
   (例: 収容は `animals.enclosure_id`、親子は `animals.sire_id` / `dam_id`、担当は `assignments`)
 - 単一モデルに閉じたクエリはそのモデルの scope / クラスメソッドに、モデルをまたぐ読み出しは②の状態モデルのクラスメソッドに置く
   (例: `Occupancy.of(enclosure)` / `Occupancy.all`)
-- 状態を変えるのはモデルのメソッド経由だけ(`animal.move_to(enclosure)` など)。保存(`save!`)とトランザクションはアプリケーション層が行う
+- 状態を変えるのはモデルのメソッド経由だけ(`animal.move_to(enclosure)` など)。PORO の中でもクエリや `save!` は自由に使ってよい
+- mutation(アプリケーション層)はレコードを探してモデル/PORO を呼ぶだけ(例: `Housing.new(animal: Animal.find(id), enclosure:).perform`)。
+  トランザクションと、`RecordNotFound`・ドメインのエラーから GraphQL のエラーへの変換は `BaseMutation` が一括で行う。
+  `lib/services` のアプリケーションサービスは移行中の残りで、順にこの形へ移す
 
 ### 関連付けとデメテルの法則
 

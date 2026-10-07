@@ -1,0 +1,7 @@
+ja:
+  activerecord:
+    models:
+      animal: 動物
+      enclosure: エリア
+      keeper: 飼育員
+      veterinarian: 獣医

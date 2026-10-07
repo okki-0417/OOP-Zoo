@@ -14,5 +14,7 @@ module OopZoo
     config.load_defaults 8.1
     config.autoload_lib(ignore: %w[tasks])
     config.api_only = true
+    config.i18n.default_locale = :ja
+    config.i18n.fallbacks = [:en]
   end
 end

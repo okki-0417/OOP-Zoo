@@ -60,6 +60,8 @@ class Animal < ApplicationRecord
   end
 
   def move_out
+    raise ArgumentError, "#{name}はどのエリアにも収容されていません" if enclosure.nil?
+
     self.enclosure = nil
     self
   end

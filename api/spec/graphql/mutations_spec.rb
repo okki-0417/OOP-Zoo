@@ -38,9 +38,9 @@ RSpec.describe Mutations do
 
     it "サービスが failure(DomainError の CapacityExceeded) を返すと、extensions.code が 'CapacityExceeded' になること" do
       error = Errors::CapacityExceeded.new('満員です')
-      stub_service(:house_animal, Services::Result.failure(:house_animal, error))
+      stub_service(:rename_animal, Services::Result.failure(:rename_animal, error))
 
-      response = execute('mutation { houseAnimal(enclosureId: "e1", animalId: "a1") { name } }')
+      response = execute('mutation { renameAnimal(animalId: "a1", newName: "レオ") { name } }')
 
       expect(response['errors'].first['extensions']).to eq('code' => 'CapacityExceeded')
     end
@@ -57,6 +57,59 @@ RSpec.describe Mutations do
     end
   end
 
+  describe 'モデルを直接呼ぶ mutation' do
+    let(:hill) { create_enclosure(name: 'ライオンの丘') }
+    let(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ').tap(&:save!) }
+
+    it 'houseAnimal(enclosureId: 丘, animalId: レオ) は丘を返し、レオが丘に収容されること' do
+      response = execute(%(mutation { houseAnimal(enclosureId: "#{hill.id}", animalId: "#{lion.id}") { name } }))
+
+      expect(response).to eq('data' => { 'houseAnimal' => { 'name' => 'ライオンの丘' } })
+      expect(lion.reload.enclosure).to eq(hill)
+    end
+
+    it 'transferAnimal(animalId: レオ, enclosureId: 草原) はレオを返し、レオが草原に移ること' do
+      lion.move_to(hill).save!
+      meadow = create_enclosure(name: '草原')
+
+      response = execute(%(mutation { transferAnimal(animalId: "#{lion.id}", enclosureId: "#{meadow.id}") { name } }))
+
+      expect(response).to eq('data' => { 'transferAnimal' => { 'name' => 'レオ' } })
+      expect(lion.reload.enclosure).to eq(meadow)
+    end
+
+    it 'releaseAnimal(animalId: 丘にいるレオ) はレオを返し、レオがどのエリアにもいなくなること' do
+      lion.move_to(hill).save!
+
+      response = execute(%(mutation { releaseAnimal(animalId: "#{lion.id}") { name } }))
+
+      expect(response).to eq('data' => { 'releaseAnimal' => { 'name' => 'レオ' } })
+      expect(lion.reload.enclosure).to be_nil
+    end
+  end
+
+  describe 'BaseMutation のエラー変換' do
+    it "存在しない animalId: \"0\" を渡すと、errors[0] が message '動物 0 は存在しません'・extensions.code 'AnimalNotFound' になること" do
+      response = execute('mutation { releaseAnimal(animalId: "0") { name } }')
+
+      expect(response['data']).to be_nil
+      expect(response['errors'].first).to include(
+        'message' => '動物 0 は存在しません', 'extensions' => { 'code' => 'AnimalNotFound' }
+      )
+    end
+
+    it "ドメインのルール違反(定員1の満員エリアへの収容)は extensions.code 'HousingNotAllowed' になり、収容は保存されないこと" do
+      full = create_enclosure(name: '小屋', capacity: 1)
+      build_adult(SpeciesCatalog.lion, name: '先住').move_to(full).save!
+      lion = build_adult(SpeciesCatalog.lion, name: 'レオ').tap(&:save!)
+
+      response = execute(%(mutation { houseAnimal(enclosureId: "#{full.id}", animalId: "#{lion.id}") { name } }))
+
+      expect(response['errors'].first['extensions']).to eq('code' => 'HousingNotAllowed')
+      expect(lion.reload.enclosure).to be_nil
+    end
+  end
+
   describe '引数からコマンドへの受け渡し' do
     {
       'acquireAnimal(speciesCode: "lion", name: "レオ", sex: MALE)' =>
@@ -69,12 +122,6 @@ RSpec.describe Mutations do
         [:treat_animal, Services::Commands::TreatAnimalCommand, { animal_id: 'a1', veterinarian_id: 'v1' }],
       'examineAnimal(animalId: "a1", veterinarianId: "v1")' =>
         [:examine_animal, Services::Commands::ExamineAnimalCommand, { animal_id: 'a1', veterinarian_id: 'v1' }],
-      'transferAnimal(animalId: "a1", enclosureId: "e1")' =>
-        [:transfer_animal, Services::Commands::TransferAnimalCommand, { animal_id: 'a1', enclosure_id: 'e1' }],
-      'houseAnimal(enclosureId: "e1", animalId: "a1")' =>
-        [:house_animal, Services::Commands::HouseAnimalCommand, { enclosure_id: 'e1', animal_id: 'a1' }],
-      'releaseAnimal(animalId: "a1")' =>
-        [:release_animal, Services::Commands::ReleaseAnimalCommand, { animal_id: 'a1' }],
       'addEnclosure(name: "丘", celsius: 28, capacity: 4)' =>
         [:add_enclosure, Services::Commands::AddEnclosureCommand,
          { name: '丘', celsius: 28, capacity: 4, climate_controlled: false }],

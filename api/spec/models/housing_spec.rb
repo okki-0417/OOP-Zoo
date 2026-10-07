@@ -27,16 +27,27 @@ RSpec.describe Housing do
   end
 
   describe '#perform' do
-    it '違反がなければレオの enclosure がサバンナになること' do
+    it '違反がなければレオの enclosure がサバンナになり、保存されること' do
       described_class.new(animal: lion, enclosure: savanna, occupancy: empty).perform
-      expect(lion.enclosure).to eq(savanna)
+
+      expect(lion.reload.enclosure).to eq(savanna)
     end
 
-    it '違反があれば HousingNotAllowed を投げ、レオの enclosure は nil のままであること' do
+    it '違反があれば HousingNotAllowed を投げ、レオは保存されず enclosure も nil のままであること' do
       lion.die
+
       expect { described_class.new(animal: lion, enclosure: savanna, occupancy: empty).perform }
         .to raise_error(Errors::HousingNotAllowed)
+      expect(lion).to be_new_record
       expect(lion.enclosure).to be_nil
+    end
+
+    it 'occupancy を省略すると保存済みの住人から占有を組み立て、定員1のエリアに先住がいれば HousingNotAllowed(定員) になること' do
+      hut = Enclosure.create!(name: '小屋', temperature: Temperature.celsius(28), capacity: 1)
+      build_adult(SpeciesCatalog.lion, name: '先住').move_to(hut).save!
+
+      expect { described_class.new(animal: lion, enclosure: hut).perform }
+        .to raise_error(Errors::HousingNotAllowed, /定員/)
     end
   end
 

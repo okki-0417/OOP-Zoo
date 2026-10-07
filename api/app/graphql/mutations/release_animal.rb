@@ -6,8 +6,8 @@ module Mutations
 
     argument :animal_id, ID
 
-    def resolve(**)
-      perform(:release_animal, **)
+    def resolve(animal_id:)
+      Animal.find(animal_id).move_out.tap(&:save!)
     end
   end
 end

@@ -50,7 +50,7 @@ RSpec.describe Services::Result do
     end
 
     it 'ブロックが DomainError(CapacityExceeded) を投げると failure(error: その例外) になること' do
-      result = described_class.capture(:house_animal) { raise Errors::CapacityExceeded, 'full' }
+      result = described_class.capture(:feed_animal) { raise Errors::CapacityExceeded, 'full' }
 
       expect(result).to be_failure
       expect(result.error).to be_a(Errors::CapacityExceeded)

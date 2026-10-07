@@ -5,8 +5,8 @@ module Services
     const_set(:SERVICES, %i[
       acquire_animal add_enclosure admit_visitors assign_keeper clean_enclosure conceive_animals
       deliver_animal discharge_keeper enrich_enclosure examine_animal feed_animal hire_keeper hire_veterinarian
-      house_animal make_rounds name_animal operate_day release_animal rename_animal run_days
-      set_admission_fee transfer_animal treat_animal alert_list
+      make_rounds name_animal operate_day rename_animal run_days
+      set_admission_fee treat_animal alert_list
     ].freeze)
 
     def self.capture(service)

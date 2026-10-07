@@ -23,6 +23,23 @@ RSpec.describe Animal do
     end
   end
 
+  describe '#move_to / #move_out' do
+    let(:hill) { Enclosure.new(name: '丘', temperature: Temperature.celsius(28), capacity: 4) }
+    let(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ') }
+
+    it 'move_to(丘) で enclosure が丘になり、move_out で nil に戻ること' do
+      lion.move_to(hill)
+      expect(lion.enclosure).to eq(hill)
+
+      lion.move_out
+      expect(lion.enclosure).to be_nil
+    end
+
+    it 'どのエリアにもいないレオを move_out すると「レオはどのエリアにも収容されていません」の ArgumentError になること' do
+      expect { lion.move_out }.to raise_error(ArgumentError, 'レオはどのエリアにも収容されていません')
+    end
+  end
+
   describe '#threatened?' do
     it '種の保全状況が危急(VU)のライオンでは true を返すこと' do
       expect(build.threatened?).to be(true)
