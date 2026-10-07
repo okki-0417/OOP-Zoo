@@ -3,62 +3,90 @@
 require 'spec_helper'
 
 RSpec.describe Prognosis do
-  let(:enclosure) do
-    build(:enclosure, name: '丘', celsius: 25)
-  end
-  let(:lion) { build(:animal, name: 'レオ') }
-  let(:mate) { build(:animal, :female, name: 'ナラ') }
+  subject(:prognosis) { described_class.new(animal:, enclosure:, occupancy:, season: Season.spring) }
 
-  def prognosis_of(animal, occupants = [animal, mate])
-    described_class.new(
-      animal:, enclosure:, occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants), season: Season.spring
-    )
-  end
+  let(:enclosure) { build(:enclosure, name: '丘', celsius: 25) }
+  let(:animal) { build(:animal, name: 'レオ') }
+  let(:occupants) { [animal, build(:animal, :female, name: 'ナラ')] }
+  let(:occupancy) { Occupancy.new(enclosure:, occupants:) }
 
-  describe '#days_to_death / #cause_of_death' do
-    it '死亡済みの個体は days_to_death も cause_of_death も nil を返すこと' do
-      lion.die(cause: :old_age)
-      expect(prognosis_of(lion).days_to_death).to be_nil
-      expect(prognosis_of(lion).cause_of_death).to be_nil
+  describe '#days_to_death' do
+    context '死亡済みのとき' do
+      let(:animal) { build(:animal).die(cause: :old_age) }
+
+      it 'nil を返すこと' do
+        expect(prognosis.days_to_death).to be_nil
+      end
     end
 
-    it 'ライオンが肺炎のとき days_to_death=12・cause_of_death=:illness を返すこと' do
-      lion.fall_ill(IllnessCatalog.pneumonia)
-      expect(prognosis_of(lion).days_to_death).to eq(12)
-      expect(prognosis_of(lion).cause_of_death).to eq(:illness)
+    context 'ライオンが肺炎のとき' do
+      before { animal.fall_ill(IllnessCatalog.pneumonia) }
+
+      it '12 を返すこと' do
+        expect(prognosis.days_to_death).to eq(12)
+      end
     end
 
-    it 'HORIZON_DAYS(30日)を超えて生きる見込みなら nil を返すこと' do
-      lone = build(:animal, name: '孤独')
-      expect(prognosis_of(lone, [lone]).days_to_death).to be_nil
+    context 'HORIZON_DAYS(30日)を超えて生きる見込みのとき' do
+      let(:occupants) { [animal] }
+
+      it 'nil を返すこと' do
+        expect(prognosis.days_to_death).to be_nil
+      end
     end
 
-    it '見積もりは一度だけ行い、2回目の呼び出しでは AnimalDay を再実行しないこと' do
-      prognosis = prognosis_of(lion)
-      prognosis.days_to_death
-      allow(AnimalDay).to receive(:new).and_call_original
-      prognosis.cause_of_death
-      expect(AnimalDay).not_to have_received(:new)
-    end
-  end
+    context '不潔なエリアのとき' do
+      before { enclosure.soil(80) }
 
-  describe '#outlook' do
-    {
-      nil => :good, 1 => :grave, 3 => :grave, 4 => :guarded, 14 => :guarded, 15 => :good
-    }.each do |days, expected|
-      it "days_to_death が #{days.inspect} のとき :#{expected} を返すこと" do
-        prognosis = prognosis_of(lion)
-        allow(prognosis).to receive(:days_to_death).and_return(days)
-        expect(prognosis.outlook).to eq(expected)
+      it '元の個体の病気・免疫・食事と、エリアの清潔度・刺激度を変えないこと' do
+        expect { prognosis.days_to_death }
+          .not_to(change { [animal.illness, animal.immunities, animal.meals, enclosure.cleanliness_level, enclosure.enrichment] })
       end
     end
   end
 
-  describe '元の集約を変えないこと' do
-    it '不潔なエリアで見積もっても、元の個体は発病せず免疫も増えず、エリアの清潔度・刺激度も変わらないこと' do
-      enclosure.soil(80)
-      expect { prognosis_of(lion).days_to_death }
-        .not_to(change { [lion.illness, lion.immunities, lion.meals, enclosure.cleanliness_level, enclosure.enrichment] })
+  describe '#cause_of_death' do
+    context '死亡済みのとき' do
+      let(:animal) { build(:animal).die(cause: :old_age) }
+
+      it 'nil を返すこと' do
+        expect(prognosis.cause_of_death).to be_nil
+      end
+    end
+
+    context 'ライオンが肺炎のとき' do
+      before { animal.fall_ill(IllnessCatalog.pneumonia) }
+
+      it ':illness を返すこと' do
+        expect(prognosis.cause_of_death).to eq(:illness)
+      end
+    end
+
+    context '#days_to_death で見積もり済みのとき' do
+      before do
+        prognosis.days_to_death
+        allow(AnimalDay).to receive(:new).and_call_original
+      end
+
+      it 'AnimalDay を再実行しないこと' do
+        prognosis.cause_of_death
+
+        expect(AnimalDay).not_to have_received(:new)
+      end
+    end
+  end
+
+  describe '#outlook' do
+    before { allow(prognosis).to receive(:days_to_death).and_return(days_to_death) }
+
+    { nil => :good, 1 => :grave, 3 => :grave, 4 => :guarded, 14 => :guarded, 15 => :good }.each do |days, expected|
+      context "days_to_death が #{days.inspect} のとき" do
+        let(:days_to_death) { days }
+
+        it ":#{expected} を返すこと" do
+          expect(prognosis.outlook).to eq(expected)
+        end
+      end
     end
   end
 end

@@ -3,272 +3,547 @@
 require 'spec_helper'
 
 RSpec.describe Animal do
-  describe '#initialize' do
-    it '親を渡さなければ parents は空であること' do
-      expect(build(:animal).parents).to eq([])
+  subject(:animal) { build(:animal, name: 'レオ') }
+
+  describe '#parents' do
+    context '親を渡さないとき' do
+      it '空配列を返すこと' do
+        expect(animal.parents).to eq([])
+      end
     end
 
-    it '片親のみ渡すと nil は除かれ、その親だけが parents に記録されること' do
-      sire = build(:animal, name: '父')
-      cub = build(:animal, name: '仔', sire: sire, dam: nil)
-      expect(cub.parents).to eq([sire])
+    context 'sire: 父・dam: nil を渡したとき' do
+      subject(:animal) { build(:animal, sire:, dam: nil) }
+
+      let(:sire) { build(:animal, name: '父') }
+
+      it 'nil を除いた [父] を返すこと' do
+        expect(animal.parents).to eq([sire])
+      end
     end
   end
 
-  describe '#move_to / #move_out' do
+  describe '#move_to' do
     let(:hill) { build(:enclosure, name: '丘') }
-    let(:lion) { build(:animal, name: 'レオ') }
 
-    it 'move_to(丘) で enclosure が丘になり、move_out で nil に戻ること' do
-      lion.move_to(hill)
-      expect(lion.enclosure).to eq(hill)
+    it 'enclosure を丘にすること' do
+      expect(animal.move_to(hill).enclosure).to eq(hill)
+    end
+  end
 
-      lion.move_out
-      expect(lion.enclosure).to be_nil
+  describe '#move_out' do
+    context '丘に収容されているとき' do
+      before { animal.move_to(build(:enclosure, name: '丘')) }
+
+      it 'enclosure を nil に戻すこと' do
+        expect(animal.move_out.enclosure).to be_nil
+      end
     end
 
-    it 'どのエリアにもいないレオを move_out すると「レオはどのエリアにも収容されていません」の ArgumentError になること' do
-      expect { lion.move_out }.to raise_error(ArgumentError, 'レオはどのエリアにも収容されていません')
+    context 'どのエリアにも収容されていないとき' do
+      it '「レオはどのエリアにも収容されていません」の ArgumentError を投げること' do
+        expect { animal.move_out }.to raise_error(ArgumentError, 'レオはどのエリアにも収容されていません')
+      end
     end
   end
 
   describe '#threatened?' do
-    it '種の保全状況が危急(VU)のライオンでは true を返すこと' do
-      expect(build(:animal).threatened?).to be(true)
+    context '保全状況が危急(VU)のライオンのとき' do
+      it 'true を返すこと' do
+        expect(animal.threatened?).to be(true)
+      end
     end
 
-    it '種の保全状況が低危険(LC)のニホンザルでは false を返すこと' do
-      macaque = build(:animal, :newborn, species: SpeciesCatalog.japanese_macaque, name: 'Saru')
-      expect(macaque.threatened?).to be(false)
+    context '保全状況が低危険(LC)のニホンザルのとき' do
+      subject(:animal) { build(:animal, species: SpeciesCatalog.japanese_macaque) }
+
+      it 'false を返すこと' do
+        expect(animal.threatened?).to be(false)
+      end
     end
   end
 
   describe '#age_in_years' do
-    it '日齢を365で割った端数切り捨ての歳を返すこと' do
-      expect(build(:animal, age_in_days: (365 * 4) + 200).age_in_years).to eq(4)
+    subject(:animal) { build(:animal, age_in_days: (365 * 4) + 200) }
+
+    it '日齢 1660 を365で割って端数を切り捨てた 4 を返すこと' do
+      expect(animal.age_in_years).to eq(4)
     end
   end
 
   describe '#to_s' do
-    it '名前(種/性別/ライフステージ)の形で表されること' do
-      expect(build(:animal, name: 'Jack', age_in_days: 0).to_s).to eq('Jack(ライオン/オス/幼体)')
+    subject(:animal) { build(:animal, :newborn, name: 'Jack') }
+
+    it '"Jack(ライオン/オス/幼体)" を返すこと' do
+      expect(animal.to_s).to eq('Jack(ライオン/オス/幼体)')
     end
   end
 
   describe '#visible_condition' do
-    it '健康で落ち着いた個体は満点(100)であること' do
-      expect(build(:animal).visible_condition).to eq(100)
-    end
-
-    it 'ストレス個体は VISIBLE_STRESSED_PENALTY(40)引かれること' do
-      expect(build(:animal).tap { |a| a.add_stress(70) }.visible_condition).to eq(60)
-    end
-
-    it '病気の個体は VISIBLE_SICK_PENALTY(40)引かれること' do
-      expect(build(:animal).tap { |a| a.fall_ill(IllnessCatalog.parasite) }.visible_condition).to eq(60)
-    end
-
-    it '衰弱した個体は VISIBLE_WEAK_PENALTY(20)引かれること' do
-      expect(build(:animal).tap { |a| a.injure(85) }.visible_condition).to eq(80)
-    end
-
-    it '複数要因が重なっても0未満にはならないこと' do
-      animal = build(:animal).tap do |a|
-        a.add_stress(70)
-        a.fall_ill(IllnessCatalog.parasite)
-        a.injure(85)
+    context '健康で落ち着いているとき' do
+      it '満点の 100 を返すこと' do
+        expect(animal.visible_condition).to eq(100)
       end
-      expect(animal.visible_condition).to eq(0)
+    end
+
+    context 'ストレス70を受けているとき' do
+      before { animal.add_stress(70) }
+
+      it 'VISIBLE_STRESSED_PENALTY(40) を引いた 60 を返すこと' do
+        expect(animal.visible_condition).to eq(60)
+      end
+    end
+
+    context '寄生虫症にかかっているとき' do
+      before { animal.fall_ill(IllnessCatalog.parasite) }
+
+      it 'VISIBLE_SICK_PENALTY(40) を引いた 60 を返すこと' do
+        expect(animal.visible_condition).to eq(60)
+      end
+    end
+
+    context '体力が15/100に衰弱しているとき' do
+      before { animal.injure(85) }
+
+      it 'VISIBLE_WEAK_PENALTY(20) を引いた 80 を返すこと' do
+        expect(animal.visible_condition).to eq(80)
+      end
+    end
+
+    context 'ストレス・病気・衰弱が重なっているとき' do
+      before do
+        animal.add_stress(70)
+        animal.fall_ill(IllnessCatalog.parasite)
+        animal.injure(85)
+      end
+
+      it '0未満にならず 0 を返すこと' do
+        expect(animal.visible_condition).to eq(0)
+      end
     end
   end
 
   describe '#susceptible?' do
-    it '生きていて健康なら true を返すこと' do
-      expect(build(:animal).susceptible?).to be(true)
+    context '生きていて健康なとき' do
+      it 'true を返すこと' do
+        expect(animal.susceptible?).to be(true)
+      end
     end
 
-    it '発病済みなら false を返すこと' do
-      expect(build(:animal).tap { |a| a.fall_ill(IllnessCatalog.cold) }.susceptible?).to be(false)
+    context '風邪を発病しているとき' do
+      before { animal.fall_ill(IllnessCatalog.cold) }
+
+      it 'false を返すこと' do
+        expect(animal.susceptible?).to be(false)
+      end
     end
 
-    it '死亡していれば false を返すこと' do
-      expect(build(:animal).tap(&:die).susceptible?).to be(false)
+    context '死亡しているとき' do
+      before { animal.die }
+
+      it 'false を返すこと' do
+        expect(animal.susceptible?).to be(false)
+      end
     end
   end
 
   describe '#contagious?' do
-    it '感染性の病気(風邪)にかかっていれば true を返すこと' do
-      expect(build(:animal).tap { |a| a.fall_ill(IllnessCatalog.cold) }.contagious?).to be(true)
+    context '健康なとき' do
+      it 'false を返すこと' do
+        expect(animal.contagious?).to be(false)
+      end
     end
 
-    it '非感染性の病気(骨折)では false を返すこと' do
-      expect(build(:animal).tap { |a| a.fall_ill(IllnessCatalog.fracture) }.contagious?).to be(false)
+    context '感染性の風邪にかかっているとき' do
+      before { animal.fall_ill(IllnessCatalog.cold) }
+
+      it 'true を返すこと' do
+        expect(animal.contagious?).to be(true)
+      end
+
+      context 'さらに死亡したとき' do
+        before { animal.die }
+
+        it 'false を返すこと' do
+          expect(animal.contagious?).to be(false)
+        end
+      end
     end
 
-    it '健康なら false を返すこと' do
-      expect(build(:animal).contagious?).to be(false)
-    end
+    context '非感染性の骨折をしているとき' do
+      before { animal.fall_ill(IllnessCatalog.fracture) }
 
-    it '感染性の病気を持っていても死亡していれば false を返すこと' do
-      animal = build(:animal)
-      animal.fall_ill(IllnessCatalog.cold)
-      animal.die
-      expect(animal.contagious?).to be(false)
+      it 'false を返すこと' do
+        expect(animal.contagious?).to be(false)
+      end
     end
   end
 
   describe '#contractible_illness' do
-    it '免疫のない病気のうち最初のものを返すこと' do
-      expect(build(:animal).contractible_illness([IllnessCatalog.cold, IllnessCatalog.pneumonia])).to eq(IllnessCatalog.cold)
+    let(:illnesses) { [IllnessCatalog.cold, IllnessCatalog.pneumonia] }
+
+    context '免疫を持たないとき' do
+      it '[風邪, 肺炎] のうち最初の風邪を返すこと' do
+        expect(animal.contractible_illness(illnesses)).to eq(IllnessCatalog.cold)
+      end
     end
 
-    it '免疫を持つ病気は飛ばし、罹りうる病気を返すこと' do
-      animal = build(:animal).tap { |a| a.vaccinate(IllnessCatalog.cold) }
-      expect(animal.contractible_illness([IllnessCatalog.cold, IllnessCatalog.pneumonia])).to eq(IllnessCatalog.pneumonia)
-    end
+    context '風邪に免疫を持つとき' do
+      before { animal.vaccinate(IllnessCatalog.cold) }
 
-    it 'すべての病気に免疫があれば nil を返すこと' do
-      animal = build(:animal).tap { |a| a.vaccinate(IllnessCatalog.cold) }
-      expect(animal.contractible_illness([IllnessCatalog.cold])).to be_nil
+      it '[風邪, 肺炎] のうち風邪を飛ばして肺炎を返すこと' do
+        expect(animal.contractible_illness(illnesses)).to eq(IllnessCatalog.pneumonia)
+      end
+
+      context '候補が [風邪] だけのとき' do
+        let(:illnesses) { [IllnessCatalog.cold] }
+
+        it 'nil を返すこと' do
+          expect(animal.contractible_illness(illnesses)).to be_nil
+        end
+      end
     end
   end
 
   describe '#dup' do
-    it '複製の免疫を増やしても元の個体の免疫は増えないこと' do
-      animal = build(:animal)
-      copy = animal.dup
-      copy.fall_ill(IllnessCatalog.cold)
-      copy.recover
-      expect(animal.immunities).to eq([])
-      expect(copy.immunities).to eq([IllnessCatalog.cold])
+    let(:copy) { animal.dup }
+
+    context '複製が風邪にかかって治ったとき' do
+      before do
+        copy.fall_ill(IllnessCatalog.cold)
+        copy.recover
+      end
+
+      it '複製の免疫は [風邪] になり、元の個体の免疫は [] のままであること' do
+        expect(copy.immunities).to eq([IllnessCatalog.cold])
+        expect(animal.immunities).to eq([])
+      end
     end
 
-    it '保存済みの個体を複製すると id を持たない新規の個体になり、元の個体とは等価でないこと' do
-      animal = create(:animal)
-      copy = animal.dup
-      expect(copy).to be_new_record
-      expect(copy).not_to eq(animal)
+    context '保存済みの個体のとき' do
+      subject(:animal) { create(:animal) }
+
+      it 'id を持たない新規の個体を返し、元の個体とは等価でないこと' do
+        expect(copy).to be_new_record
+        expect(copy).not_to eq(animal)
+      end
     end
   end
 
   describe '#days_until_starving' do
-    it 'ライオン(1日+10)の空腹度95は1日、空腹度0は10日を返すこと' do
-      expect(build(:animal).get_hungrier(95).days_until_starving).to eq(1)
-      expect(build(:animal).days_until_starving).to eq(10)
+    context '空腹度0のライオン(1日+10)のとき' do
+      it '10 を返すこと' do
+        expect(animal.days_until_starving).to eq(10)
+      end
+    end
+
+    context '空腹度95のライオン(1日+10)のとき' do
+      before { animal.get_hungrier(95) }
+
+      it '1 を返すこと' do
+        expect(animal.days_until_starving).to eq(1)
+      end
     end
   end
 
-  describe '#cause_of_death_label / #acceptable_food_categories' do
-    it '老衰で死んだライオンは "老衰"、生きていれば nil を返すこと' do
-      expect(build(:animal).die(cause: :old_age).cause_of_death_label).to eq('老衰')
-      expect(build(:animal).cause_of_death_label).to be_nil
+  describe '#cause_of_death_label' do
+    context '生きているとき' do
+      it 'nil を返すこと' do
+        expect(animal.cause_of_death_label).to be_nil
+      end
     end
 
-    it 'ライオン(肉食)が食べられる餌の分類は [:meat] であること' do
-      expect(build(:animal).acceptable_food_categories).to eq([:meat])
+    context '老衰で死んだとき' do
+      before { animal.die(cause: :old_age) }
+
+      it '"老衰" を返すこと' do
+        expect(animal.cause_of_death_label).to eq('老衰')
+      end
+    end
+  end
+
+  describe '#acceptable_food_categories' do
+    it '肉食のライオンでは [:meat] を返すこと' do
+      expect(animal.acceptable_food_categories).to eq([:meat])
     end
   end
 
   describe '#take_meal' do
-    it '[:meat] を2回 take_meal しても meals.categories は [:meat] のままであること' do
-      animal = build(:animal)
+    it '[:meat] を2回食べても meals.categories は [:meat] のままであること' do
       animal.take_meal([:meat]).take_meal([:meat])
+
       expect(animal.meals.categories).to eq([:meat])
     end
   end
 
   describe '#ailing?' do
-    it '健康なら false、肺炎(sick?)・空腹度100(starving?)・体力15/100(weak?)のいずれかなら true を返すこと' do
-      expect(build(:animal).ailing?).to be(false)
-      expect(build(:animal).tap { |a| a.fall_ill(IllnessCatalog.pneumonia) }.ailing?).to be(true)
-      expect(build(:animal).get_hungrier(100).ailing?).to be(true)
-      expect(build(:animal).tap { |a| a.injure(85) }.ailing?).to be(true)
+    context '健康なとき' do
+      it 'false を返すこと' do
+        expect(animal.ailing?).to be(false)
+      end
     end
 
-    it '肺炎のまま死亡した個体は false を返すこと' do
-      expect(build(:animal).tap { |a| a.fall_ill(IllnessCatalog.pneumonia) }.die.ailing?).to be(false)
+    context '肺炎(sick?)にかかっているとき' do
+      before { animal.fall_ill(IllnessCatalog.pneumonia) }
+
+      it 'true を返すこと' do
+        expect(animal.ailing?).to be(true)
+      end
+
+      context 'さらに死亡したとき' do
+        before { animal.die }
+
+        it 'false を返すこと' do
+          expect(animal.ailing?).to be(false)
+        end
+      end
+    end
+
+    context '空腹度100(starving?)のとき' do
+      before { animal.get_hungrier(100) }
+
+      it 'true を返すこと' do
+        expect(animal.ailing?).to be(true)
+      end
+    end
+
+    context '体力15/100(weak?)のとき' do
+      before { animal.injure(85) }
+
+      it 'true を返すこと' do
+        expect(animal.ailing?).to be(true)
+      end
     end
   end
 
   describe '#fed_today?' do
-    it 'take_meal([:meat]) 前は false、後は true を返すこと' do
-      animal = build(:animal)
+    it 'take_meal([:meat]) で false から true に変わること' do
       expect { animal.take_meal([:meat]) }.to change(animal, :fed_today?).from(false).to(true)
     end
   end
 
   describe '#settle_nutrition' do
-    it 'ライオン(必要1カテゴリ)が [:meat] を食べた日は nutrition_level が 50 から 70 に上がり、meals が空に戻ること' do
-      animal = build(:animal).tap { |a| a.nutrition = Animal::Nutrition.new(50) }
-      animal.take_meal([:meat])
-      expect { animal.settle_nutrition }.to change { animal.nutrition_level }.from(50).to(70)
-      expect(animal.meals).to eq(Animal::Meals.none)
+    context '栄養50のライオン(必要1カテゴリ)が [:meat] を食べた日のとき' do
+      before do
+        animal.nutrition = Animal::Nutrition.new(50)
+        animal.take_meal([:meat])
+      end
+
+      it 'nutrition_level を 50 から 70 に上げること' do
+        expect { animal.settle_nutrition }.to change(animal, :nutrition_level).from(50).to(70)
+      end
+
+      it 'meals を Meals.none に戻すこと' do
+        animal.settle_nutrition
+
+        expect(animal.meals).to eq(Animal::Meals.none)
+      end
     end
 
-    it '何も食べなかった日は nutrition_level が 100 から 75 に下がること' do
-      animal = build(:animal)
-      expect { animal.settle_nutrition }.to change { animal.nutrition_level }.from(100).to(75)
+    context '何も食べなかった日のとき' do
+      it 'nutrition_level を 100 から 75 に下げること' do
+        expect { animal.settle_nutrition }.to change(animal, :nutrition_level).from(100).to(75)
+      end
     end
 
-    it '死亡個体は nutrition_level が変わらないこと' do
-      animal = build(:animal).die
-      expect { animal.settle_nutrition }.not_to(change { animal.nutrition_level })
+    context '死亡しているとき' do
+      before { animal.die }
+
+      it 'nutrition_level を変えないこと' do
+        expect { animal.settle_nutrition }.not_to change(animal, :nutrition_level)
+      end
+    end
+  end
+
+  describe '#conceive' do
+    subject(:animal) { build(:animal, :female) }
+
+    context 'オスのとき' do
+      subject(:animal) { build(:animal) }
+
+      it 'BreedingNotAllowed を投げること' do
+        expect { animal.conceive }.to raise_error(Errors::BreedingNotAllowed)
+      end
+    end
+
+    context '既に妊娠しているとき' do
+      before { animal.conceive }
+
+      it 'BreedingNotAllowed を投げること' do
+        expect { animal.conceive }.to raise_error(Errors::BreedingNotAllowed)
+      end
+    end
+
+    context '飢餓で流産した後、空腹が満たされたとき' do
+      before do
+        animal.conceive.get_hungrier(100).gestate(1)
+        animal.satisfy_hunger(100)
+      end
+
+      it '再び受胎でき、miscarried? が false に戻り妊娠すること' do
+        animal.conceive
+
+        expect(animal).not_to be_miscarried
+        expect(animal).to be_expecting
+      end
+    end
+  end
+
+  describe '#ready_to_deliver?' do
+    subject(:animal) { build(:animal, :female) }
+
+    before { animal.conceive.gestate(days) }
+
+    context '受胎後、妊娠期間(ライオン)に1日足りないとき' do
+      let(:days) { SpeciesCatalog.lion.gestation_period_days - 1 }
+
+      it 'false を返すこと' do
+        expect(animal).not_to be_ready_to_deliver
+      end
+    end
+
+    context '受胎後、妊娠期間(ライオン)を満たしたとき' do
+      let(:days) { SpeciesCatalog.lion.gestation_period_days }
+
+      it 'true を返すこと' do
+        expect(animal).to be_ready_to_deliver
+      end
+    end
+  end
+
+  describe '#gestate' do
+    subject(:animal) { build(:animal, :female) }
+
+    let(:hunger) { 0 }
+    let(:stress) { 0 }
+
+    before { animal.get_hungrier(hunger).add_stress(stress) }
+
+    context '妊娠しておらず、空腹度100のとき' do
+      let(:hunger) { 100 }
+
+      it 'gestate(10) で流産しないこと' do
+        animal.gestate(10)
+
+        expect(animal).not_to be_miscarried
+      end
+    end
+
+    context '妊娠中のとき' do
+      before { animal.conceive }
+
+      context '空腹度100(飢餓)のとき' do
+        let(:hunger) { 100 }
+
+        it 'gestate(1) で流産し、妊娠が解けること' do
+          animal.gestate(1)
+
+          expect(animal).to be_miscarried
+          expect(animal).not_to be_expecting
+        end
+      end
+
+      context 'ストレスが過度(SEVERE_THRESHOLD=90)のとき' do
+        let(:stress) { Animal::Stress::SEVERE_THRESHOLD }
+
+        it 'gestate(1) で流産すること' do
+          animal.gestate(1)
+
+          expect(animal).to be_miscarried
+        end
+      end
+
+      context 'ストレスが過度の一歩手前(89)のとき' do
+        let(:stress) { Animal::Stress::SEVERE_THRESHOLD - 1 }
+
+        it 'gestate(1) で流産せず、妊娠が続くこと' do
+          animal.gestate(1)
+
+          expect(animal).not_to be_miscarried
+          expect(animal).to be_expecting
+        end
+      end
+    end
+  end
+
+  describe '#name_animal' do
+    subject(:animal) { build(:animal, :female) }
+
+    subject(:animal) { build(:animal, name: 'ライオンの赤ちゃん') }
+
+    it "name_animal(name: 'ナラ') で name が 'ナラ' になること" do
+      animal.name_animal(name: 'ナラ')
+
+      expect(animal.name).to eq('ナラ')
     end
   end
 
   describe '保存と再読込' do
-    def reloaded(animal)
-      animal.save!
-      Animal.find(animal.id)
+    let(:restored) { animal.tap(&:save!).then { |saved| described_class.find(saved.id) } }
+
+    context '体力60/100・空腹度35・ストレス50のとき' do
+      before { animal.injure(40).get_hungrier(35).add_stress(50) }
+
+      it '再読込後も current_health 60・max_health 100・hunger_level 35・stress_level 50 であること' do
+        expect(restored).to have_attributes(current_health: 60, max_health: 100, hunger_level: 35, stress_level: 50)
+      end
     end
 
-    it '体力60/100・空腹度35・ストレス50で保存すると、再読込後も同じ値であること' do
-      animal = build(:animal)
-      animal.injure(40).get_hungrier(35).add_stress(50)
-      restored = reloaded(animal)
-      expect(restored.current_health).to eq(60)
-      expect(restored.max_health).to eq(100)
-      expect(restored.hunger_level).to eq(35)
-      expect(restored.stress_level).to eq(50)
+    context '風邪の免疫を持ち、肺炎にかかっているとき' do
+      before { animal.fall_ill(IllnessCatalog.cold).recover.fall_ill(IllnessCatalog.pneumonia) }
+
+      it '再読込後も illness が肺炎で、風邪に免疫があること' do
+        expect(restored.illness).to eq(IllnessCatalog.pneumonia)
+        expect(restored.immune_to?(IllnessCatalog.cold)).to be(true)
+      end
     end
 
-    it '肺炎にかかり風邪の免疫を持つ個体は、再読込後も肺炎で風邪に免疫があること' do
-      animal = build(:animal).fall_ill(IllnessCatalog.cold).recover.fall_ill(IllnessCatalog.pneumonia)
-      restored = reloaded(animal)
-      expect(restored.illness).to eq(IllnessCatalog.pneumonia)
-      expect(restored.immune_to?(IllnessCatalog.cold)).to be(true)
+    context '老衰で死亡しているとき' do
+      before { animal.die(cause: :old_age) }
+
+      it '再読込後も死亡していて cause_of_death が :old_age であること' do
+        expect(restored).to be_dead
+        expect(restored.cause_of_death).to eq(:old_age)
+      end
     end
 
-    it '老衰で死亡した個体は、再読込後も死亡していて死因が :old_age であること' do
-      restored = reloaded(build(:animal).die(cause: :old_age))
-      expect(restored).to be_dead
-      expect(restored.cause_of_death).to eq(:old_age)
+    context '[:meat] を食べた日のとき' do
+      before { animal.take_meal([:meat]) }
+
+      it '再読込後も meals.categories が [:meat]・nutrition_level が 100 であること' do
+        expect(restored.meals.categories).to eq([:meat])
+        expect(restored.nutrition_level).to eq(100)
+      end
     end
 
-    it '[:meat] を食べた日の食事は、再読込後も meals.categories が [:meat] であること' do
-      restored = reloaded(build(:animal).take_meal([:meat]))
-      expect(restored.meals.categories).to eq([:meat])
-      expect(restored.nutrition_level).to eq(100)
+    context '近交係数0.25で受胎し妊娠3日目のメスのとき' do
+      subject(:animal) { build(:animal, :female) }
+
+      before { animal.conceive(inbreeding: 0.25).gestate(3) }
+
+      it '再読込後も妊娠中で gestation_days 3・expected_offspring_inbreeding 0.25 であること' do
+        expect(restored).to be_expecting
+        expect(restored).to have_attributes(gestation_days: 3, expected_offspring_inbreeding: 0.25)
+      end
     end
 
-    it '妊娠中のメスは、再読込後も妊娠中で妊娠日数と近交係数が保たれること' do
-      dam = build(:animal, :female).conceive(inbreeding: 0.25).gestate(3)
-      restored = reloaded(dam)
-      expect(restored).to be_expecting
-      expect(restored.gestation_days).to eq(3)
-      expect(restored.expected_offspring_inbreeding).to eq(0.25)
+    context '鳴き声を "ニャー" に変えたとき' do
+      before { animal.change_voice('ニャー') }
+
+      it '鳴き声は保存されず、再読込後はライオンの既定の "ガオー" に戻ること' do
+        expect(restored.cry_out).to eq('ガオー')
+      end
     end
 
-    it '鳴き声は保存されず、再読込後は種の既定の声(ライオンはガオー)に戻ること' do
-      animal = build(:animal)
-      animal.change_voice('ニャー')
-      expect(reloaded(animal).cry_out).to eq('ガオー')
-    end
+    context '両親を持つとき' do
+      subject(:animal) { build(:animal, sire:, dam:) }
 
-    it '両親を持つ個体は、再読込後も parents が両親であること' do
-      sire = create(:animal, name: '父')
-      dam = create(:animal, :female, name: '母')
-      expect(reloaded(build(:animal, name: '仔', sire:, dam:)).parents).to contain_exactly(sire, dam)
+      let(:sire) { create(:animal, name: '父') }
+      let(:dam) { create(:animal, :female, name: '母') }
+
+      it '再読込後も parents が [父, 母] であること' do
+        expect(restored.parents).to contain_exactly(sire, dam)
+      end
     end
   end
 end

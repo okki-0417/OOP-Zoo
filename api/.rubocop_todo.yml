@@ -1,6 +1,6 @@
 Lint/BinaryOperatorWithIdenticalOperands:
   Exclude:
-    - 'spec/models/value_objects_spec.rb'
+    - 'spec/models/value_object_spec.rb'
 
 Lint/ConstantDefinitionInBlock:
   Exclude:

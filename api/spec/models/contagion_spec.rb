@@ -3,27 +3,27 @@
 require 'spec_helper'
 
 RSpec.describe Contagion do
-  let(:pride) do
-    build(:enclosure, name: '丘', capacity: 6)
-  end
+  subject(:contagion) { described_class.new(enclosure, Occupancy.new(enclosure:, occupants:)) }
 
-  def occupancy(occupants)
-    Occupancy.new(enclosure: pride, occupants: occupants)
-  end
+  let(:enclosure) { build(:enclosure, capacity: 6) }
 
   describe '#spread' do
-    it '感染源がいなければ誰も発病せず、空配列を返すこと' do
-      occupants = [build(:animal, name: 'A'), build(:animal, name: 'B')]
+    context '感染源がいないとき' do
+      let(:occupants) { [build(:animal), build(:animal)] }
 
-      expect(described_class.new(pride, occupancy(occupants)).spread).to eq([])
+      it '誰も発病させず [] を返すこと' do
+        expect(contagion.spread).to eq([])
+      end
     end
 
-    it '新たに発病した個体だけを返すこと' do
-      carrier = build(:animal, name: '感染源')
-      carrier.fall_ill(IllnessCatalog.cold)
-      healthy = build(:animal, name: '健康')
+    context '風邪の感染源と健康な個体が同居しているとき' do
+      let(:carrier) { build(:animal).tap { |animal| animal.fall_ill(IllnessCatalog.cold) } }
+      let(:healthy) { build(:animal) }
+      let(:occupants) { [carrier, healthy] }
 
-      expect(described_class.new(pride, occupancy([carrier, healthy])).spread).to contain_exactly(healthy)
+      it '新たに発病した健康な個体だけを返すこと' do
+        expect(contagion.spread).to contain_exactly(healthy)
+      end
     end
   end
 end

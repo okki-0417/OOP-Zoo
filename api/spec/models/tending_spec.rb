@@ -3,67 +3,92 @@
 require 'spec_helper'
 
 RSpec.describe Tending do
+  subject(:tending) { described_class.new(keeper:, enclosure:, occupancy: Occupancy.new(enclosure:, occupants:)) }
+
   let(:keeper) { build(:keeper, name: '田中') }
-  let(:enclosure) do
-    build(:enclosure, name: 'サバンナ')
-  end
+  let(:enclosure) { build(:enclosure, name: 'サバンナ') }
+  let(:occupants) { [] }
   let(:lion) { build(:animal) }
   let(:penguin) { build(:animal, species: SpeciesCatalog.emperor_penguin) }
 
-  def tending(*occupants)
-    described_class.new(keeper:, enclosure:, occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants))
+  describe '.new' do
+    it 'frozen であること' do
+      expect(tending).to be_frozen
+    end
   end
 
   describe '#violation!' do
-    it '空のエリアで未担当なら例外を出さないこと' do
-      expect { tending.violation! }.not_to raise_error
+    context '空のエリアで、田中が未担当のとき' do
+      it '例外を投げないこと' do
+        expect { tending.violation! }.not_to raise_error
+      end
     end
 
-    it '専門外の綱が混ざると AssignmentNotAllowed を綱ラベル付きで出すこと' do
-      expect { tending(lion, penguin).violation! }
-        .to raise_error(Errors::AssignmentNotAllowed, /田中.*サバンナ.*鳥類/)
+    context '哺乳類専門の田中のエリアに、哺乳類のライオンだけがいるとき' do
+      let(:occupants) { [lion] }
+
+      it '例外を投げないこと' do
+        expect { tending.violation! }.not_to raise_error
+      end
     end
 
-    it '専門の綱だけなら例外を出さないこと' do
-      expect { tending(lion).violation! }.not_to raise_error
+    context '哺乳類専門の田中のエリアに、鳥類のペンギンが混ざっているとき' do
+      let(:occupants) { [lion, penguin] }
+
+      it '田中・サバンナ・鳥類を含む AssignmentNotAllowed を投げること' do
+        expect { tending.violation! }.to raise_error(Errors::AssignmentNotAllowed, /田中.*サバンナ.*鳥類/)
+      end
     end
 
-    it '田中がすでにサバンナを担当していれば二重配属として AssignmentNotAllowed を出すこと' do
-      keeper.enclosures << enclosure
-      expect { tending.violation! }
-        .to raise_error(Errors::AssignmentNotAllowed, /田中.*すでに.*サバンナ/)
+    context '田中がすでにサバンナを担当しているとき' do
+      before { keeper.enclosures << enclosure }
+
+      it '二重配属として「田中はすでにサバンナを担当」の AssignmentNotAllowed を投げること' do
+        expect { tending.violation! }.to raise_error(Errors::AssignmentNotAllowed, /田中.*すでに.*サバンナ/)
+      end
     end
 
-    it '他の飼育員だけが担当しているなら例外を出さないこと' do
-      build(:keeper, name: '鈴木').enclosures << enclosure
-      expect { tending.violation! }.not_to raise_error
+    context '別の飼育員の鈴木だけがサバンナを担当しているとき' do
+      before { build(:keeper, name: '鈴木').enclosures << enclosure }
+
+      it '例外を投げないこと' do
+        expect { tending.violation! }.not_to raise_error
+      end
     end
   end
 
   describe '#perform' do
-    it '違反がなければ田中がサバンナを担当する(in_charge_of? が true)こと' do
-      tending(lion).perform
-      expect(keeper.in_charge_of?(enclosure)).to be(true)
+    context '違反がないとき' do
+      let(:occupants) { [lion] }
+
+      it '田中がサバンナの担当になる(in_charge_of? が true)こと' do
+        tending.perform
+
+        expect(keeper.in_charge_of?(enclosure)).to be(true)
+      end
+
+      context '飼育員とエリアが保存済みのとき' do
+        let(:keeper) { create(:keeper, name: '田中') }
+        let(:enclosure) { create(:enclosure, name: 'サバンナ') }
+
+        it 'assignments を 0 行から 1 行に増やすこと' do
+          expect { tending.perform }.to change(Assignment, :count).from(0).to(1)
+        end
+      end
     end
 
-    it '保存済みの飼育員とエリアなら assignments に1行保存されること' do
-      keeper.save!
-      enclosure.save!
-      expect { tending(lion).perform }.to change(Assignment, :count).from(0).to(1)
-    end
+    context '違反があるとき' do
+      let(:occupants) { [penguin] }
 
-    it '違反があれば AssignmentNotAllowed を出し、担当にならないこと' do
-      expect { tending(penguin).perform }.to raise_error(Errors::AssignmentNotAllowed)
-      expect(keeper.in_charge_of?(enclosure)).to be(false)
+      it 'AssignmentNotAllowed を投げ、田中を担当にしないこと' do
+        expect { tending.perform }.to raise_error(Errors::AssignmentNotAllowed)
+        expect(keeper.in_charge_of?(enclosure)).to be(false)
+      end
     end
-  end
-
-  it '生成後は frozen であること' do
-    expect(tending).to be_frozen
   end
 
   describe '#to_s' do
-    it '名前を配属 の形で表されること' do
+    it '"田中をサバンナに配属" を返すこと' do
       expect(tending.to_s).to eq('田中をサバンナに配属')
     end
   end

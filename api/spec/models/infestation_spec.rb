@@ -3,41 +3,34 @@
 require 'spec_helper'
 
 RSpec.describe Infestation do
-  def pen
-    build(:enclosure, name: '丘', capacity: 6)
-  end
+  subject(:infestation) { described_class.new(enclosure, Occupancy.new(enclosure:, occupants: [animal])) }
 
-  def occupancy(enclosure, occupants)
-    Occupancy.new(enclosure: enclosure, occupants: occupants)
-  end
+  let(:enclosure) { build(:enclosure, capacity: 6) }
+  let(:animal) { build(:animal) }
 
   describe '#spread' do
-    it '清潔なエリアでは誰も発病せず [] を返すこと' do
-      enclosure = pen
-      lion = build(:animal)
-
-      expect(described_class.new(enclosure, occupancy(enclosure, [lion])).spread).to eq([])
-      expect(lion).not_to be_sick
+    context '清潔なエリアのとき' do
+      it '誰も発病させず [] を返すこと' do
+        expect(infestation.spread).to eq([])
+        expect(animal).not_to be_sick
+      end
     end
 
-    it 'soil(80)で不潔だと感受性個体が寄生虫に発病し、発病個体を返すこと' do
-      enclosure = pen
-      enclosure.soil(80)
-      healthy = build(:animal)
+    context 'soil(80) で不潔なエリアのとき' do
+      before { enclosure.soil(80) }
 
-      result = described_class.new(enclosure, occupancy(enclosure, [healthy])).spread
+      it '健康な個体を寄生虫で発病させ、その個体を返すこと' do
+        expect(infestation.spread).to contain_exactly(animal)
+        expect(animal.illness).to eq(IllnessCatalog.parasite)
+      end
 
-      expect(result).to contain_exactly(healthy)
-      expect(healthy).to be_sick
-    end
+      context '個体が既に風邪をひいているとき' do
+        let(:animal) { build(:animal).fall_ill(IllnessCatalog.cold) }
 
-    it '既に病気の個体(感受性なし)は不潔でも発病対象にならず [] を返すこと' do
-      enclosure = pen
-      enclosure.soil(80)
-      already = build(:animal)
-      already.fall_ill(IllnessCatalog.cold)
-
-      expect(described_class.new(enclosure, occupancy(enclosure, [already])).spread).to eq([])
+        it '感受性がないので発病させず [] を返すこと' do
+          expect(infestation.spread).to eq([])
+        end
+      end
     end
   end
 end

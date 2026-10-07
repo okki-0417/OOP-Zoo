@@ -3,75 +3,71 @@
 require 'spec_helper'
 
 RSpec.describe AnimalDay do
-  def savanna(temp = 28)
-    build(:enclosure, name: 'サバンナ', temperature: Temperature.celsius(temp))
+  subject(:animal_day) do
+    described_class.new(animal:, enclosure:, occupancy: Occupancy.new(enclosure:, occupants:), season: Season.spring)
   end
 
-  def animal_day(animal, enclosure, occupants)
-    described_class.new(
-      animal: animal, enclosure: enclosure,
-      occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants), season: Season.spring
-    )
-  end
+  let(:enclosure) { build(:enclosure, name: 'サバンナ') }
+  let(:animal) { build(:animal) }
+  let(:companion) { build(:animal, :female) }
+  let(:occupants) { [animal, companion] }
 
   describe '#run' do
-    it '個体が1日ぶん歳をとること' do
-      enclosure = savanna
-      a = build(:animal, name: 'A')
-      occupants = [a, build(:animal, :female, name: 'B')]
-
-      expect { animal_day(a, enclosure, occupants).run }.to change { a.age_in_days }.by(1)
+    context 'オスとメスのライオンが同居しているとき' do
+      it '個体の日齢が1増えること' do
+        expect { animal_day.run }.to change(animal, :age_in_days).by(1)
+      end
     end
 
-    it '群れ性が一頭きりで孤独だと福祉が下がりストレスが増すこと' do
-      enclosure = savanna
-      lone = build(:animal)
+    context '群れ性のライオンが一頭きりのとき' do
+      let(:occupants) { [animal] }
 
-      expect { animal_day(lone, enclosure, [lone]).run }.to change { lone.stress_level }.by_at_least(1)
+      it '孤独で福祉が下がり、ストレスが1以上増えること' do
+        expect { animal_day.run }.to change(animal, :stress_level).by_at_least(1)
+      end
+
+      it '給餌されていないので、settle_nutrition で nutrition_level が 100 から 75 になること' do
+        expect { animal_day.run }.to change(animal, :nutrition_level).from(100).to(75)
+      end
     end
 
-    it '序列下位のオスは闘争で負傷し体力が減ること' do
-      enclosure = savanna
-      senior = build(:animal, name: '長老', age_in_days: 4000)
-      junior = build(:animal, name: '若')
+    context '日齢4000の長老オスと同居する若いオスのとき' do
+      let(:companion) { build(:animal, name: '長老', age_in_days: 4000) }
 
-      expect { animal_day(junior, enclosure, [senior, junior]).run }
-        .to change { junior.current_health }.by_at_most(-1)
+      it '序列闘争で負傷し、体力が1以上減ること' do
+        expect { animal_day.run }.to change(animal, :current_health).by_at_most(-1)
+      end
     end
 
-    it '給餌されなかった個体は settle_nutrition により nutrition_level が 100 から 75 になること' do
-      enclosure = savanna
-      lion = build(:animal)
+    context '日齢4000の長老オスと同居する体力1の若いオスのとき' do
+      let(:animal) { build(:animal, max_health: 1) }
+      let(:companion) { build(:animal, name: '長老', age_in_days: 4000) }
 
-      expect { animal_day(lion, enclosure, [lion]).run }.to change { lion.nutrition_level }.from(100).to(75)
+      it '外傷(:injury)で死亡し、同じ日には加齢しないこと' do
+        expect { animal_day.run }.not_to change(animal, :age_in_days)
+        expect(animal.cause_of_death).to eq(:injury)
+      end
     end
 
-    it '妊娠中のメスは gestate(1) され、gestation_days が 0 から 1 になること' do
-      enclosure = savanna
-      sire = build(:animal)
-      dam = build(:animal, :female)
-      dam.conceive
+    context '妊娠中のメスのとき' do
+      let(:animal) { build(:animal, :female).conceive }
+      let(:companion) { build(:animal) }
 
-      animal_day(dam, enclosure, [sire, dam]).run
-      dam.gestate(SpeciesCatalog.lion.gestation_period_days - 1)
-      expect(dam).to be_ready_to_deliver
+      it '1日 gestate され、残り(妊娠期間 - 1)日で出産できるようになること' do
+        animal_day.run
+        animal.gestate(SpeciesCatalog.lion.gestation_period_days - 1)
+
+        expect(animal).to be_ready_to_deliver
+      end
     end
 
-    it '外傷で死亡した個体は同じ日に加齢しないこと' do
-      enclosure = savanna
-      senior = build(:animal, name: '長老', age_in_days: 4000)
-      junior = build(:animal, name: '若', max_health: 1)
+    context '死亡している個体のとき' do
+      let(:animal) { build(:animal).die }
+      let(:occupants) { [animal] }
 
-      expect { animal_day(junior, enclosure, [senior, junior]).run }.not_to(change { junior.age_in_days })
-      expect(junior.cause_of_death).to eq(:injury)
-    end
-
-    it '死亡している個体は加齢もストレスも受けないこと' do
-      enclosure = savanna
-      dead = build(:animal)
-      dead.die
-
-      expect { animal_day(dead, enclosure, [dead]).run }.not_to(change { dead.age_in_days })
+      it '加齢しないこと' do
+        expect { animal_day.run }.not_to change(animal, :age_in_days)
+      end
     end
   end
 end

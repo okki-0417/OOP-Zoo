@@ -15,14 +15,33 @@ RSpec.describe Types::Operating do
     )
   end
 
-  it 'income・cost・netIncome・balance は ¥24,000・¥4,500・¥19,500・¥119,500 を円の整数で返すこと' do
-    expect(run_graphql_field('Operating.income', operating)).to eq(24_000)
-    expect(run_graphql_field('Operating.cost', operating)).to eq(4_500)
-    expect(run_graphql_field('Operating.netIncome', operating)).to eq(19_500)
-    expect(run_graphql_field('Operating.balance', operating)).to eq(119_500)
+  describe 'income' do
+    it '¥24,000 を円の整数 24000 で返すこと' do
+      expect(run_graphql_field('Operating.income', operating)).to eq(24_000)
+    end
   end
 
-  it 'expenses は保存した内訳(飼料費 ライオン×3 ¥4,500)を再読込後も返すこと' do
-    expect(run_graphql_field('Operating.expenses', Operating.find(operating.id))).to eq([feed])
+  describe 'cost' do
+    it '¥4,500 を円の整数 4500 で返すこと' do
+      expect(run_graphql_field('Operating.cost', operating)).to eq(4_500)
+    end
+  end
+
+  describe 'netIncome' do
+    it '収入 ¥24,000 − 費用 ¥4,500 を円の整数 19500 で返すこと' do
+      expect(run_graphql_field('Operating.netIncome', operating)).to eq(19_500)
+    end
+  end
+
+  describe 'balance' do
+    it '¥119,500 を円の整数 119500 で返すこと' do
+      expect(run_graphql_field('Operating.balance', operating)).to eq(119_500)
+    end
+  end
+
+  describe 'expenses' do
+    it '保存した内訳(飼料費 ライオン×3 ¥4,500)を再読込後も返すこと' do
+      expect(run_graphql_field('Operating.expenses', Operating.find(operating.id))).to eq([feed])
+    end
   end
 end

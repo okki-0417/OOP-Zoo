@@ -3,10 +3,17 @@
 require 'spec_helper'
 
 RSpec.describe Types::Veterinarian do
-  it 'id・name は保存した獣医 "山田" の id と名前を返すこと' do
-    vet = create(:veterinarian, name: '山田')
+  let(:vet) { create(:veterinarian, name: '山田') }
 
-    expect(run_graphql_field('Veterinarian.id', vet)).to eq(vet.id)
-    expect(run_graphql_field('Veterinarian.name', vet)).to eq('山田')
+  describe 'id' do
+    it '保存した獣医の id を返すこと' do
+      expect(run_graphql_field('Veterinarian.id', vet)).to eq(vet.id)
+    end
+  end
+
+  describe 'name' do
+    it '"山田" を返すこと' do
+      expect(run_graphql_field('Veterinarian.name', vet)).to eq('山田')
+    end
   end
 end

@@ -3,79 +3,130 @@
 require 'spec_helper'
 
 RSpec.describe Companionship do
-  let(:lion) { SpeciesCatalog.lion }
-  let(:zebra) { SpeciesCatalog.grevys_zebra }
-
-  def pen(name = '丘', capacity: 6, area_sqm: nil)
-    build(:enclosure, name:, capacity:, area_sqm:)
+  subject(:companionship) do
+    described_class.new(enclosure:, occupancy: Occupancy.new(enclosure:, occupants:), member:)
   end
 
-  def companionship(enclosure, occupants, member)
-    described_class.new(enclosure: enclosure, occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants), member: member)
-  end
+  let(:enclosure) { build(:enclosure, capacity: 6) }
 
   describe '#subordinate_male?' do
-    it '成熟オスが複数いると、年長でない方が序列下位であること' do
-      senior = build(:animal, species: lion, name: '長老', age_in_days: 4000)
-      junior = build(:animal, species: lion, name: '若')
-      occupants = [senior, junior]
-      expect(companionship(pen, occupants, junior).subordinate_male?).to be(true)
-      expect(companionship(pen, occupants, senior).subordinate_male?).to be(false)
+    context '成熟オスの長老(4000日齢)と若が同居しているとき' do
+      let(:senior) { build(:animal, name: '長老', age_in_days: 4000) }
+      let(:junior) { build(:animal, name: '若') }
+      let(:occupants) { [senior, junior] }
+
+      context 'member が若のとき' do
+        let(:member) { junior }
+
+        it 'true を返すこと' do
+          expect(companionship.subordinate_male?).to be(true)
+        end
+      end
+
+      context 'member が長老のとき' do
+        let(:member) { senior }
+
+        it 'false を返すこと' do
+          expect(companionship.subordinate_male?).to be(false)
+        end
+      end
     end
 
-    it 'オス1頭・メス・未成熟は序列下位でないこと' do
-      male = build(:animal, species: lion)
-      female = build(:animal, :female, species: lion)
-      cub = build(:animal, :newborn, species: lion, name: '仔')
-      occupants = [male, female, cub]
-      expect(companionship(pen, occupants, male).subordinate_male?).to be(false)
-      expect(companionship(pen, occupants, female).subordinate_male?).to be(false)
-      expect(companionship(pen, occupants, cub).subordinate_male?).to be(false)
+    context 'オス1頭・メス・仔が同居しているとき' do
+      let(:male) { build(:animal) }
+      let(:female) { build(:animal, :female) }
+      let(:cub) { build(:animal, :newborn) }
+      let(:occupants) { [male, female, cub] }
+
+      context 'member がオスのとき' do
+        let(:member) { male }
+
+        it 'false を返すこと' do
+          expect(companionship.subordinate_male?).to be(false)
+        end
+      end
+
+      context 'member がメスのとき' do
+        let(:member) { female }
+
+        it 'false を返すこと' do
+          expect(companionship.subordinate_male?).to be(false)
+        end
+      end
+
+      context 'member が未成熟の仔のとき' do
+        let(:member) { cub }
+
+        it 'false を返すこと' do
+          expect(companionship.subordinate_male?).to be(false)
+        end
+      end
     end
   end
 
   describe '#injury' do
-    it '序列下位でなければ0であること' do
-      z = build(:animal, species: zebra)
-      expect(companionship(pen, [z], z).injury).to eq(0)
+    context '序列下位でないグレビーシマウマ1頭のとき' do
+      let(:member) { build(:animal, species: SpeciesCatalog.grevys_zebra) }
+      let(:occupants) { [member] }
+
+      it '0 を返すこと' do
+        expect(companionship.injury).to eq(0)
+      end
     end
 
-    it '過密や逃げ場のなさは序列下位の外傷を加重すること' do
-      senior = build(:animal, species: lion, name: '長老', age_in_days: 4000)
-      junior = build(:animal, species: lion, name: '若')
-      occupants = [senior, junior]
-      cramped = pen('狭い丘', capacity: 4, area_sqm: 1)
-      cramped.deplete_enrichment(100)
-      spacious = pen('広い丘', capacity: 6)
+    context '序列下位の若が、長老(4000日齢)と同居しているとき' do
+      let(:member) { build(:animal, name: '若') }
+      let(:occupants) { [build(:animal, name: '長老', age_in_days: 4000), member] }
+      let(:roomy) { build(:enclosure, capacity: 6) }
+      let(:spacious) { described_class.new(enclosure: roomy, occupancy: Occupancy.new(enclosure: roomy, occupants:), member:) }
 
-      expect(companionship(cramped, occupants, junior).injury)
-        .to be > companionship(spacious, occupants, junior).injury
+      context '定員4・1m²で遊具が枯れた狭いエリアのとき' do
+        let(:enclosure) { build(:enclosure, capacity: 4, area_sqm: 1).tap { |e| e.deplete_enrichment(100) } }
+
+        it '定員6の広いエリアより大きい外傷を返すこと' do
+          expect(companionship.injury).to be > spacious.injury
+        end
+      end
     end
   end
 
   describe '#lonely?' do
-    it '群れ性なのに同種の仲間がいないと孤独であること' do
-      lone = build(:animal, species: lion)
-      expect(companionship(pen, [lone], lone).lonely?).to be(true)
+    let(:member) { build(:animal) }
+
+    context '群れ性のライオンが1頭だけのとき' do
+      let(:occupants) { [member] }
+
+      it 'true を返すこと' do
+        expect(companionship.lonely?).to be(true)
+      end
     end
 
-    it '同種の仲間がいれば孤独でないこと' do
-      a = build(:animal, species: lion, name: 'A')
-      b = build(:animal, :female, species: lion, name: 'B')
-      expect(companionship(pen, [a, b], a).lonely?).to be(false)
+    context '同種のメスと同居しているとき' do
+      let(:occupants) { [member, build(:animal, :female)] }
+
+      it 'false を返すこと' do
+        expect(companionship.lonely?).to be(false)
+      end
     end
   end
 
   describe '#separated_dependent?' do
-    it '未離乳で親が同居していないと分離されていること' do
-      mother = build(:animal, :female, species: lion, name: '母')
-      cub = build(:animal, :newborn, species: lion, name: '仔', dam: mother)
-      expect(companionship(pen, [cub], cub).separated_dependent?).to be(true)
+    let(:occupants) { [member] }
+
+    context '未離乳の仔が、母と同居していないとき' do
+      let(:member) { build(:animal, :newborn, dam: build(:animal, :female, name: '母')) }
+
+      it 'true を返すこと' do
+        expect(companionship.separated_dependent?).to be(true)
+      end
     end
 
-    it '離乳済みなら分離とみなされないこと' do
-      weaned = build(:animal, species: lion)
-      expect(companionship(pen, [weaned], weaned).separated_dependent?).to be(false)
+    context '離乳済みの成獣のとき' do
+      let(:member) { build(:animal) }
+
+      it 'false を返すこと' do
+        expect(companionship.separated_dependent?).to be(false)
+      end
     end
   end
 end

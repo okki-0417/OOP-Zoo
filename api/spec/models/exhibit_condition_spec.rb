@@ -3,26 +3,31 @@
 require 'spec_helper'
 
 RSpec.describe ExhibitCondition do
+  subject(:exhibit_condition) { described_class.new(animals) }
+
   describe '#score' do
-    it '生存個体がいなければ中立値(NEUTRAL=50)を返すこと' do
-      expect(described_class.new([]).score).to eq(described_class::NEUTRAL)
+    context '生存個体がいないとき' do
+      let(:animals) { [] }
+
+      it '中立値 NEUTRAL(50) を返すこと' do
+        expect(exhibit_condition.score).to eq(described_class::NEUTRAL)
+      end
     end
 
-    it '生存個体の visible_condition の平均を返すこと' do
-      healthy = build(:animal)
-      stressed = build(:animal)
-      stressed.add_stress(70)
+    context '健康な個体(100)とストレス70の個体(60)がいるとき' do
+      let(:animals) { [build(:animal), build(:animal).tap { |animal| animal.add_stress(70) }] }
 
-      average = (healthy.visible_condition + stressed.visible_condition) / 2
-      expect(described_class.new([healthy, stressed]).score).to eq(average)
+      it 'visible_condition の平均 80 を返すこと' do
+        expect(exhibit_condition.score).to eq(80)
+      end
     end
 
-    it '死亡個体は平均から除外されること' do
-      alive = build(:animal)
-      dead = build(:animal)
-      dead.die
+    context '健康な個体(100)と死亡個体がいるとき' do
+      let(:animals) { [build(:animal), build(:animal).tap(&:die)] }
 
-      expect(described_class.new([alive, dead]).score).to eq(alive.visible_condition)
+      it '死亡個体を除いた 100 を返すこと' do
+        expect(exhibit_condition.score).to eq(100)
+      end
     end
   end
 end

@@ -3,12 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe Animal::Sex do
-  it 'オス・メスを生成できること' do
-    expect(described_class.male).to be_male
-    expect(described_class.female).to be_female
+  describe '.male / .female' do
+    it '.male は male?、.female は female? が true であること' do
+      expect(described_class.male).to be_male
+      expect(described_class.female).to be_female
+    end
   end
 
-  it '未知の性別 :unknown は Errors::InvalidValue になること' do
-    expect { described_class.new(:unknown) }.to raise_error(Errors::InvalidValue)
+  describe '.new' do
+    context '未知の性別 :unknown のとき' do
+      it 'Errors::InvalidValue を投げること' do
+        expect { described_class.new(:unknown) }.to raise_error(Errors::InvalidValue)
+      end
+    end
   end
 end

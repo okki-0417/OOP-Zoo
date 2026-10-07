@@ -3,46 +3,85 @@
 require 'spec_helper'
 
 RSpec.describe Enclosure::Enrichment do
-  it '.stimulating は満点(100)であること' do
-    expect(described_class.stimulating.level).to eq(100)
+  describe '.stimulating' do
+    it 'level 100 を返すこと' do
+      expect(described_class.stimulating.level).to eq(100)
+    end
   end
 
-  it '整数以外はエラーになること' do
-    expect { described_class.new(1.5) }.to raise_error(ArgumentError)
-  end
+  describe '.new' do
+    subject(:enrichment) { described_class.new(level) }
 
-  it '0未満・100超はクランプされること' do
-    expect(described_class.new(-10).level).to eq(0)
-    expect(described_class.new(150).level).to eq(100)
-  end
+    context '整数でない 1.5 のとき' do
+      let(:level) { 1.5 }
 
-  describe '#depleted_by / #enriched_by' do
-    it '減衰・補充で値が増減すること' do
-      expect(described_class.new(50).depleted_by(20).level).to eq(30)
-      expect(described_class.new(50).enriched_by(20).level).to eq(70)
+      it 'ArgumentError を投げること' do
+        expect { enrichment }.to raise_error(ArgumentError)
+      end
     end
 
-    it '負の量はエラーになること' do
-      expect { described_class.new(50).depleted_by(-1) }.to raise_error(ArgumentError)
-      expect { described_class.new(50).enriched_by(-1) }.to raise_error(ArgumentError)
+    context '0 未満の -10 のとき' do
+      let(:level) { -10 }
+
+      it 'level を 0 にクランプすること' do
+        expect(enrichment.level).to eq(0)
+      end
+    end
+
+    context '100 超の 150 のとき' do
+      let(:level) { 150 }
+
+      it 'level を 100 にクランプすること' do
+        expect(enrichment.level).to eq(100)
+      end
+    end
+  end
+
+  describe '#depleted_by' do
+    subject(:enrichment) { described_class.new(50) }
+
+    it 'level 50 を 20 減らして 30 にすること' do
+      expect(enrichment.depleted_by(20).level).to eq(30)
+    end
+
+    context '負の量 -1 のとき' do
+      it 'ArgumentError を投げること' do
+        expect { enrichment.depleted_by(-1) }.to raise_error(ArgumentError)
+      end
+    end
+  end
+
+  describe '#enriched_by' do
+    subject(:enrichment) { described_class.new(50) }
+
+    it 'level 50 を 20 増やして 70 にすること' do
+      expect(enrichment.enriched_by(20).level).to eq(70)
+    end
+
+    context '負の量 -1 のとき' do
+      it 'ArgumentError を投げること' do
+        expect { enrichment.enriched_by(-1) }.to raise_error(ArgumentError)
+      end
     end
   end
 
   describe '#barren?' do
-    it 'しきい値(30)以下で殺風景とみなすこと' do
+    it 'しきい値の level 30 は true、31 は false を返すこと' do
       expect(described_class.new(30).barren?).to be(true)
       expect(described_class.new(31).barren?).to be(false)
     end
   end
 
   describe '#dull?' do
-    it 'level=50(DULL_THRESHOLD)は true、51 は false を返すこと' do
+    it 'DULL_THRESHOLD の level 50 は true、51 は false を返すこと' do
       expect(described_class.new(50).dull?).to be(true)
       expect(described_class.new(51).dull?).to be(false)
     end
   end
 
-  it '同じ値どうしは等価であること' do
-    expect(described_class.new(40)).to eq(described_class.new(40))
+  describe '#==' do
+    it '同じ level 40 どうしは等しいこと' do
+      expect(described_class.new(40)).to eq(described_class.new(40))
+    end
   end
 end

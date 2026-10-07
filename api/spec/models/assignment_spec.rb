@@ -3,21 +3,25 @@
 require 'spec_helper'
 
 RSpec.describe Assignment do
-  let(:enclosure) do
-    create(:enclosure, name: 'サバンナ')
-  end
+  subject(:assign) { described_class.create!(keeper: tanaka, enclosure:) }
+
+  let(:enclosure) { create(:enclosure, name: 'サバンナ') }
   let(:tanaka) { create(:keeper, name: '田中') }
 
-  it '田中をサバンナに割り当てて保存すると、田中の enclosures と サバンナの keepers から互いに引けること' do
-    described_class.create!(keeper: tanaka, enclosure:)
+  describe '.create!' do
+    it '田中の enclosures と サバンナの keepers から互いに引けるようになること' do
+      assign
 
-    expect(tanaka.reload.enclosures).to eq([enclosure])
-    expect(enclosure.reload.keepers).to eq([tanaka])
-  end
+      expect(tanaka.reload.enclosures).to eq([enclosure])
+      expect(enclosure.reload.keepers).to eq([tanaka])
+    end
 
-  it '同じ飼育員とエリアの組を二重に保存すると一意制約違反になること' do
-    described_class.create!(keeper: tanaka, enclosure:)
+    context '同じ田中とサバンナの組が保存済みのとき' do
+      before { described_class.create!(keeper: tanaka, enclosure:) }
 
-    expect { described_class.create!(keeper: tanaka, enclosure:) }.to raise_error(ActiveRecord::RecordNotUnique)
+      it 'ActiveRecord::RecordNotUnique を投げること' do
+        expect { assign }.to raise_error(ActiveRecord::RecordNotUnique)
+      end
+    end
   end
 end

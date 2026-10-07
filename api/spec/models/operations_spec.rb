@@ -3,164 +3,229 @@
 require 'spec_helper'
 
 RSpec.describe Zoo::Reputation do
-  it 'gain は上限100を超えないこと' do
-    expect(Zoo::Reputation.new(95).gain(10).score).to eq(100)
+  describe '#gain' do
+    it '評判95に10を足しても上限の100で止まること' do
+      expect(described_class.new(95).gain(10).score).to eq(100)
+    end
   end
 
-  it 'lose は下限0を下回らないこと' do
-    expect(Zoo::Reputation.new(3).lose(10).score).to eq(0)
+  describe '#lose' do
+    it '評判3から10を引いても下限の0で止まること' do
+      expect(described_class.new(3).lose(10).score).to eq(0)
+    end
+  end
+
+  describe '#after_day' do
+    subject(:after) { described_class.new(value).after_day(experience:, exposure:, events:) }
+
+    let(:value) { 50 }
+    let(:experience) { 100 }
+    let(:exposure) { Zoo::Reputation::EXPOSURE_REFERENCE }
+    let(:events) { [] }
+
+    context '評判0・体験100で露出が満杯のとき' do
+      let(:value) { 0 }
+
+      it '上げ幅が DRIFT_CAP でクランプされ score が3になること' do
+        expect(after.score).to eq(3)
+      end
+    end
+
+    context '評判50・体験0で露出が満杯のとき' do
+      let(:experience) { 0 }
+
+      it '下げは上げの倍速で -6 され score が44になること' do
+        expect(after.score).to eq(44)
+      end
+    end
+
+    context '評判50・体験100で露出が来場5のとき' do
+      let(:exposure) { 5 }
+
+      it 'score が50のまま動かないこと' do
+        expect(after.score).to eq(50)
+      end
+    end
+
+    context '評判50・体験96で露出が来場10のとき' do
+      let(:experience) { 96 }
+      let(:exposure) { 10 }
+
+      it '1日では score が50のままであること' do
+        expect(after.score).to eq(50)
+      end
+
+      it '60日続けると端数が累積して score が50を超えること' do
+        many = described_class.new(value)
+        60.times { many = many.after_day(experience:, exposure:) }
+
+        expect(many.score).to be > 50
+      end
+    end
+
+    context '露出ゼロ' do
+      let(:exposure) { 0 }
+
+      context '評判が中立を超える70のとき' do
+        let(:value) { 70 }
+
+        it '中立へ DECAY_RATE 分だけ減衰した値になること' do
+          expected = 70 - (Zoo::Reputation::DECAY_RATE * (70 - Zoo::Reputation::DECAY_ANCHOR))
+
+          expect(after.value).to be_within(1e-9).of(expected)
+        end
+      end
+
+      context '評判が中立以下の40で体験0のとき' do
+        let(:value) { 40 }
+        let(:experience) { 0 }
+
+        it '減衰せず value が40のままであること' do
+          expect(after.value).to eq(40)
+        end
+      end
+
+      context '評判50に死亡(charisma 50)のニュースが2件あるとき' do
+        let(:events) { Array.new(2) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) } }
+
+        it 'reputation_delta の和だけ下がり score が40になること' do
+          expect(after.score).to eq(40)
+        end
+      end
+    end
+
+    context '評判50・体験50・露出100で疫病(Outbreak)のニュースがあるとき' do
+      let(:experience) { 50 }
+      let(:exposure) { 100 }
+      let(:events) { [ReputationEvent::Outbreak.new] }
+
+      it 'PENALTY(8)だけ下がり score が42になること' do
+        expect(after.score).to eq(42)
+      end
+    end
+
+    context '評判0・体験0・露出100で死亡のニュースが5件あるとき' do
+      let(:value) { 0 }
+      let(:experience) { 0 }
+      let(:exposure) { 100 }
+      let(:events) { Array.new(5) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) } }
+
+      it '負にならず score が0でクランプされること' do
+        expect(after.score).to eq(0)
+      end
+    end
   end
 end
 
 RSpec.describe OperatingCost do
-  it 'エリア維持費・職員給与・在園個体の飼料費(種ごと)の合計を返すこと' do
-    enclosures = Array.new(2) do
-      build(:enclosure, name: 'A', celsius: 20)
+  describe '#amount' do
+    subject(:amount) { described_class.new(enclosures:, staff:, species:).amount }
+
+    let(:enclosures) { build_list(:enclosure, 2, celsius: 20) }
+    let(:staff) { build_list(:keeper, 3) }
+    let(:species) { Array.new(5) { SpeciesCatalog.grevys_zebra } }
+
+    it 'エリア2つの維持費・飼育員3人の給与・グレビーシマウマ5頭の飼料費の合計を返すこと' do
+      upkeep = 2 * Enclosure::UPKEEP_YEN
+      salaries = 3 * Keeper::DAILY_SALARY_YEN
+      food = 5 * SpeciesCatalog.grevys_zebra.daily_food_cost.yen
+
+      expect(amount).to eq(Money.yen(upkeep + salaries + food))
     end
-    staff = Array.new(3) { build(:keeper) }
-    zebras = Array.new(5) { SpeciesCatalog.grevys_zebra }
-    food = zebras.sum { |s| s.daily_food_cost.yen }
 
-    cost = described_class.new(enclosures: enclosures, staff: staff, species: zebras).amount
+    context '空調付きのエリアが1つだけのとき' do
+      let(:enclosures) { [build(:enclosure, celsius: 20, climate_controlled: true)] }
+      let(:staff) { [] }
+      let(:species) { [] }
 
-    upkeep = 2 * Enclosure::UPKEEP_YEN
-    salaries = 3 * Keeper::DAILY_SALARY_YEN
-    expect(cost).to eq(Money.yen(upkeep + salaries + food))
-  end
+      it '空調なしのエリア1つより高くなること' do
+        plain = described_class.new(enclosures: [build(:enclosure, celsius: 20)], staff: [], species: []).amount
 
-  it '空調付きエリアは稼働費が上乗せされること' do
-    plain = build(:enclosure, name: '平', celsius: 20)
-    controlled = build(:enclosure, name: '空調', celsius: 20, climate_controlled: true)
-
-    plain_cost = described_class.new(enclosures: [plain], staff: [], species: []).amount
-    controlled_cost = described_class.new(enclosures: [controlled], staff: [], species: []).amount
-
-    expect(controlled_cost).to be > plain_cost
+        expect(amount).to be > plain
+      end
+    end
   end
 end
 
 RSpec.describe VisitorAttraction do
-  fee = Money.yen(2_000)
+  describe '#expected_visitors' do
+    subject(:visitors) { described_class.new(on_exhibit:, zoo:).expected_visitors }
 
-  def zebra
-    build(:animal, :newborn, species: SpeciesCatalog.grevys_zebra, name: 'シマオ')
-  end
+    let(:zoo) { instance_double(Zoo, reputation_factor: Zoo::Reputation.new(reputation).factor, admission_fee:, buzz: 0) }
+    let(:reputation) { 100 }
+    let(:admission_fee) { Money.yen(2_000) }
+    let(:on_exhibit) { [build(:animal, :newborn, species: SpeciesCatalog.grevys_zebra)] }
 
-  def mock_zoo(reputation_factor:, admission_fee:)
-    double('zoo', reputation_factor: reputation_factor, admission_fee: admission_fee, buzz: 0)
-  end
+    context '展示が空のとき' do
+      let(:on_exhibit) { [] }
+      let(:reputation) { Zoo::Reputation.default.score }
 
-  def visitors(on_exhibit, reputation_factor, admission_fee)
-    described_class.new(
-      on_exhibit: on_exhibit, zoo: mock_zoo(reputation_factor: reputation_factor, admission_fee: admission_fee)
-    ).expected_visitors
-  end
+      it '0を返すこと' do
+        expect(visitors).to eq(0)
+      end
+    end
 
-  it '展示が空なら来園者は0であること' do
-    expect(visitors([], Zoo::Reputation.default.factor, fee)).to eq(0)
-  end
+    context '評判100・料金¥2,000でシマウマ1頭を展示しているとき' do
+      it '線形需要で28を返すこと' do
+        expect(visitors).to eq(28)
+      end
+    end
 
-  it '線形需要: 評判100・料金¥2,000・見応え≈59(シマウマ60を飽和)で28人を期待すること' do
-    expect(visitors([zebra], Zoo::Reputation.new(100).factor, fee)).to eq(28)
-  end
+    context '評判が50のとき' do
+      let(:reputation) { 50 }
 
-  it '評判が下がると来園が減ること(100→50)' do
-    high = visitors([zebra], Zoo::Reputation.new(100).factor, fee)
-    low  = visitors([zebra], Zoo::Reputation.new(50).factor, fee)
-    expect(low).to be < high
-  end
+      it '評判100での28人より少ないこと' do
+        expect(visitors).to be < 28
+      end
+    end
 
-  it '料金を上げると来園が減ること(単位弾力ではなく、収益には最適点がある)' do
-    cheap  = visitors([zebra], Zoo::Reputation.new(100).factor, Money.yen(2_000))
-    pricey = visitors([zebra], Zoo::Reputation.new(100).factor, Money.yen(4_000))
-    expect(pricey).to be < cheap
-  end
+    context '料金が¥4,000のとき' do
+      let(:admission_fee) { Money.yen(4_000) }
 
-  it '支払意思(Pmax)以上の料金では来園が0になること(choke price)' do
-    expect(visitors([zebra], Zoo::Reputation.new(100).factor, Money.yen(100_000))).to eq(0)
+      it '料金¥2,000での28人より少ないこと' do
+        expect(visitors).to be < 28
+      end
+    end
+
+    context '料金が支払意思を超える¥100,000のとき' do
+      let(:admission_fee) { Money.yen(100_000) }
+
+      it '0を返すこと' do
+        expect(visitors).to eq(0)
+      end
+    end
   end
 end
 
 RSpec.describe SpontaneousInfection do
-  def animal(name = 'シマオ')
-    build(:animal, :newborn, species: SpeciesCatalog.grevys_zebra, name:)
-  end
+  describe '#strike' do
+    subject(:strike) { described_class.new(animals, random).strike }
 
-  it '発生する乱数(rand<20)では対象個体を発病させて返すこと' do
-    random = instance_double(Random)
-    allow(random).to receive(:rand).and_return(0)
-    target = animal
+    let(:animal) { build(:animal, :newborn, species: SpeciesCatalog.grevys_zebra) }
+    let(:animals) { [animal] }
+    let(:random) { instance_double(Random, rand: 0) }
 
-    result = described_class.new([target], random).strike
+    context '発生する乱数(rand=0 < 20)のとき' do
+      it '対象個体を発病させて返すこと' do
+        expect(strike).to eq(animal)
+        expect(animal).to be_sick
+      end
+    end
 
-    expect(result).to eq(target)
-    expect(target).to be_sick
-  end
+    context '発生しない乱数(rand=50 >= 20)のとき' do
+      let(:random) { instance_double(Random, rand: 50) }
 
-  it '発生しない乱数(rand>=20)では nil を返すこと' do
-    random = instance_double(Random, rand: 50)
+      it 'nil を返すこと' do
+        expect(strike).to be_nil
+      end
+    end
 
-    expect(described_class.new([animal], random).strike).to be_nil
-  end
+    context '健康な個体がいないとき' do
+      let(:animal) { build(:animal, :newborn, species: SpeciesCatalog.grevys_zebra).fall_ill(IllnessCatalog.parasite) }
 
-  it '健康な個体がいなければ nil を返すこと' do
-    sick = animal.fall_ill(IllnessCatalog.parasite)
-    random = instance_double(Random, rand: 0)
-
-    expect(described_class.new([sick], random).strike).to be_nil
-  end
-end
-
-RSpec.describe Zoo::Reputation do
-  it '体験経路: 露出満杯・体験100・評判0なら、上げ幅は DRIFT_CAP(3)でクランプされること' do
-    expect(Zoo::Reputation.new(0).after_day(experience: 100,
-                                            exposure: Zoo::Reputation::EXPOSURE_REFERENCE).score).to eq(3)
-  end
-
-  it '非対称: 下げは上げの倍速(体験0・評判50・露出満杯で -6 の 44)であること' do
-    expect(Zoo::Reputation.new(50).after_day(experience: 0,
-                                             exposure: Zoo::Reputation::EXPOSURE_REFERENCE).score).to eq(44)
-  end
-
-  it '露出が小さい(来場5)と、同じ体験でも評判はほとんど動かないこと' do
-    expect(Zoo::Reputation.new(50).after_day(experience: 100, exposure: 5).score).to eq(50)
-  end
-
-  it '露出が小さく1日では1点未満の前進でも、続ければ端数が累積して評判が動くこと' do
-    one = Zoo::Reputation.new(50).after_day(experience: 96, exposure: 10)
-    expect(one.score).to eq(50)
-
-    many = Zoo::Reputation.new(50)
-    60.times { many = many.after_day(experience: 96, exposure: 10) }
-    expect(many.score).to be > 50
-  end
-
-  it '中立超えの評判は、露出ゼロでも中立へ DECAY_RATE 分だけ減衰すること' do
-    after = Zoo::Reputation.new(70).after_day(experience: 100, exposure: 0)
-    expected = 70 - (Zoo::Reputation::DECAY_RATE * (70 - Zoo::Reputation::DECAY_ANCHOR))
-    expect(after.value).to be_within(1e-9).of(expected)
-  end
-
-  it '中立以下の評判は自然減衰しないこと' do
-    after = Zoo::Reputation.new(40).after_day(experience: 0, exposure: 0)
-    expect(after.value).to eq(40)
-  end
-
-  it '来場ゼロでもニュース経路(死亡)は効き、events の reputation_delta の和だけ下げること' do
-    deaths = Array.new(2) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) }
-    expect(Zoo::Reputation.new(50).after_day(experience: 100, exposure: 0,
-                                             events: deaths).score).to eq(40)
-  end
-
-  it '疫病(Outbreak)が出ると PENALTY(8)だけ下げること' do
-    events = [ReputationEvent::Outbreak.new]
-    expect(Zoo::Reputation.new(50).after_day(experience: 50, exposure: 100,
-                                             events: events).score).to eq(42)
-  end
-
-  it '評判は 0..100 にクランプされること(過大なイベントでも負にならない)' do
-    deaths = Array.new(5) { ReputationEvent::Death.new(cause: :unknown, charisma: 50) }
-    expect(Zoo::Reputation.new(0).after_day(experience: 0, exposure: 100,
-                                            events: deaths).score).to eq(0)
+      it 'nil を返すこと' do
+        expect(strike).to be_nil
+      end
+    end
   end
 end

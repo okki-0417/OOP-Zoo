@@ -3,62 +3,75 @@
 require 'spec_helper'
 
 RSpec.describe ZooDay do
-  let(:zoo) { build(:zoo, name: '園', admission_fee: Money.yen(2_000), funds: Money.yen(100_000)) }
-  let(:hill) { build(:enclosure, name: '丘') }
-  let(:lion) { build(:animal, name: 'レオ') }
-  let(:keeper) { build(:keeper) }
-
-  def zoo_day(occupants: [lion], yesterday: nil)
+  subject(:zoo_day) do
     described_class.new(
-      zoo:, occupancies: [Occupancy.new(enclosure: hill, occupants: occupants)], keepers: [keeper], veterinarians: [],
+      zoo:, occupancies: [Occupancy.new(enclosure: hill, occupants:)], keepers: [keeper], veterinarians: [],
       yesterday:, random: Random.new(0)
     )
   end
 
+  let(:zoo) { build(:zoo) }
+  let(:hill) { build(:enclosure, name: '丘') }
+  let(:lion) { build(:animal, name: 'レオ') }
+  let(:occupants) { [lion] }
+  let(:keeper) { build(:keeper) }
+  let(:yesterday) { nil }
+
   describe '#run' do
-    it '1日進めると zoo.day が1になり、その日付の Operating を返すこと' do
-      operating = zoo_day.run
-      expect(zoo.day).to eq(1)
+    subject(:operating) { zoo_day.run }
+
+    it 'zoo.day を1にし、day=1 の Operating を返すこと' do
       expect(operating).to be_a(Operating).and have_attributes(day: 1)
+      expect(zoo.day).to eq(1)
     end
 
-    it '費用は人件費・施設維持費・飼料費の合計で、expenses に内訳が並ぶこと' do
-      operating = zoo_day.run
+    it 'expenses に payroll・upkeep・feed が並び、cost がその合計であること' do
       expect(operating.expenses.map { |expense| expense.category.value }).to contain_exactly(:payroll, :upkeep, :feed)
       expect(operating.cost).to eq(Money.yen(operating.expenses.sum { |expense| expense.amount.yen }))
     end
 
-    it '来園者と収入は前日の累計との差分になること' do
-      yesterday = Operating.new(total_visitors: zoo.visitor_count, total_revenue: zoo.revenue)
-      operating = zoo_day(yesterday:).run
-      expect(operating.visitors).to eq(zoo.visitor_count)
-      expect(operating.income).to eq(zoo.revenue)
-    end
+    it '丘はレオ1頭ぶん汚れて cleanliness_level=99、刺激が2減って enrichment=98 になること' do
+      operating
 
-    it '飼育員の勤務は1日の終わりにリセットされること' do
-      keeper.clock_in(100)
-      zoo_day.run
-      expect(keeper.worked_minutes).to eq(0)
-    end
-
-    it 'エリアは住人の数だけ汚れ、刺激が2減ること' do
-      zoo_day.run
       expect(hill.cleanliness_level).to eq(99)
       expect(hill.enrichment.level).to eq(98)
     end
 
-    it '死んだ動物は casualties と deaths に数えられること' do
-      dying = build(:animal, name: '老', max_health: 1).tap { |animal| animal.get_hungrier(100) }
-      operating = zoo_day(occupants: [dying]).run
-      expect(operating.casualties).to eq([dying])
-      expect(operating.deaths).to eq(1)
+    context '前日の累計(visitor_count・revenue が実行前の園と同じ)があるとき' do
+      let(:yesterday) { Operating.new(total_visitors: zoo.visitor_count, total_revenue: zoo.revenue) }
+
+      it 'visitors・income が前日の累計との差分(実行後の園の値)になること' do
+        expect(operating.visitors).to eq(zoo.visitor_count)
+        expect(operating.income).to eq(zoo.revenue)
+      end
+    end
+
+    context '飼育員が100分働いているとき' do
+      before { keeper.clock_in(100) }
+
+      it '1日の終わりに worked_minutes を0にリセットすること' do
+        operating
+
+        expect(keeper.worked_minutes).to eq(0)
+      end
+    end
+
+    context '体力1で空腹度100の個体がいるとき' do
+      let(:dying) { build(:animal, max_health: 1).get_hungrier(100) }
+      let(:occupants) { [dying] }
+
+      it 'casualties にその個体を入れ、deaths=1 にすること' do
+        expect(operating.casualties).to eq([dying])
+        expect(operating.deaths).to eq(1)
+      end
     end
   end
 
-  it '#enclosures / #on_exhibit / #keepers で当日の対象を返すこと' do
-    day = zoo_day
-    expect(day.enclosures).to eq([hill])
-    expect(day.on_exhibit).to eq([lion])
-    expect(day.keepers).to eq([keeper])
+  describe '#enclosures / #on_exhibit / #keepers' do
+    it '[丘]・[レオ]・[飼育員] を返すこと' do
+      expect(zoo_day.enclosures).to eq([hill])
+      expect(zoo_day.on_exhibit).to eq([lion])
+      expect(zoo_day.keepers).to eq([keeper])
+    end
   end
 end

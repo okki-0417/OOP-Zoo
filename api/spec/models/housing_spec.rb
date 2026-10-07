@@ -3,108 +3,129 @@
 require 'spec_helper'
 
 RSpec.describe Housing do
-  let(:lion) { build(:animal, name: 'レオ') }
-  let(:savanna) do
-    build(:enclosure, name: 'サバンナ')
-  end
+  subject(:housing) { described_class.new(animal:, enclosure:, occupancy:) }
 
-  let(:empty) { Occupancy.new(enclosure: savanna, occupants: []) }
+  let(:animal) { build(:animal, name: 'レオ') }
+  let(:enclosure) { build(:enclosure, name: 'サバンナ') }
+  let(:occupants) { [] }
+  let(:occupancy) { Occupancy.new(enclosure:, occupants:) }
 
   describe '.new' do
-    it 'animal: レオ・enclosure: サバンナを渡すと #animal / #enclosure で読み出せること' do
-      housing = described_class.new(animal: lion, enclosure: savanna, occupancy: empty)
-      expect(housing.animal).to eq(lion)
-      expect(housing.enclosure).to eq(savanna)
+    it '渡した animal・enclosure を #animal・#enclosure で返すこと' do
+      expect(housing).to have_attributes(animal:, enclosure:)
+    end
+
+    it 'frozen であること' do
+      expect(housing).to be_frozen
+    end
+
+    context 'occupancy を省略したとき' do
+      subject(:housing) { described_class.new(animal:, enclosure:) }
+
+      let(:enclosure) { create(:enclosure, capacity: 1) }
+
+      before { create(:animal, enclosure:) }
+
+      it '保存済みの住人から占有を組み立て、定員1に先住がいるので #perform が HousingNotAllowed(定員) を投げること' do
+        expect { housing.perform }.to raise_error(Errors::HousingNotAllowed, /定員/)
+      end
     end
   end
 
-  it 'イミュータブルであること' do
-    expect(described_class.new(animal: lion, enclosure: savanna, occupancy: empty)).to be_frozen
-  end
-
-  it '#to_s が収容を表すこと' do
-    expect(described_class.new(animal: lion, enclosure: savanna, occupancy: empty).to_s).to eq('レオを収容')
+  describe '#to_s' do
+    it '"レオを収容" を返すこと' do
+      expect(housing.to_s).to eq('レオを収容')
+    end
   end
 
   describe '#perform' do
-    it '違反がなければレオの enclosure がサバンナになり、保存されること' do
-      described_class.new(animal: lion, enclosure: savanna, occupancy: empty).perform
+    context '収容の違反がないとき' do
+      it 'レオの enclosure をサバンナにして保存すること' do
+        housing.perform
 
-      expect(lion.reload.enclosure).to eq(savanna)
+        expect(animal.reload.enclosure).to eq(enclosure)
+      end
     end
 
-    it '違反があれば HousingNotAllowed を投げ、レオは保存されず enclosure も nil のままであること' do
-      lion.die
+    context '収容の違反があるとき' do
+      let(:animal) { build(:animal).die }
 
-      expect { described_class.new(animal: lion, enclosure: savanna, occupancy: empty).perform }
-        .to raise_error(Errors::HousingNotAllowed)
-      expect(lion).to be_new_record
-      expect(lion.enclosure).to be_nil
-    end
-
-    it 'occupancy を省略すると保存済みの住人から占有を組み立て、定員1のエリアに先住がいれば HousingNotAllowed(定員) になること' do
-      hut = create(:enclosure, name: '小屋', capacity: 1)
-      build(:animal, name: '先住').move_to(hut).save!
-
-      expect { described_class.new(animal: lion, enclosure: hut).perform }
-        .to raise_error(Errors::HousingNotAllowed, /定員/)
+      it 'HousingNotAllowed を投げ、動物を保存せず enclosure も nil のままにすること' do
+        expect { housing.perform }.to raise_error(Errors::HousingNotAllowed)
+        expect(animal).to be_new_record
+        expect(animal.enclosure).to be_nil
+      end
     end
   end
 
   describe '#admission_violation!' do
-    let(:zebra) { build(:animal, species: SpeciesCatalog.grevys_zebra) }
-
-    def candidate(animal, enclosure, occupants = [])
-      occupancy = Occupancy.new(enclosure: enclosure, occupants: occupants)
-      described_class.new(animal: animal, enclosure: enclosure, occupancy: occupancy)
+    context '違反がないとき' do
+      it '例外を投げないこと' do
+        expect { housing.admission_violation! }.not_to raise_error
+      end
     end
 
-    it '違反がなければ例外を投げないこと' do
-      expect { candidate(lion, savanna).admission_violation! }.not_to raise_error
+    context '動物が死亡しているとき' do
+      let(:animal) { build(:animal).die }
+
+      it 'HousingNotAllowed(死亡) を投げること' do
+        expect { housing.admission_violation! }.to raise_error(Errors::HousingNotAllowed, /死亡/)
+      end
     end
 
-    it '死亡個体は HousingNotAllowed(死亡) であること' do
-      dead = build(:animal).tap(&:die)
-      expect { candidate(dead, savanna).admission_violation! }
-        .to raise_error(Errors::HousingNotAllowed, /死亡/)
+    context '定員1のエリアに先住がいるとき' do
+      let(:enclosure) { build(:enclosure, capacity: 1) }
+      let(:occupants) { [build(:animal)] }
+
+      it 'HousingNotAllowed(定員) を投げること' do
+        expect { housing.admission_violation! }.to raise_error(Errors::HousingNotAllowed, /定員/)
+      end
     end
 
-    it '満員だと HousingNotAllowed(定員) であること' do
-      full = build(:enclosure, name: '小屋', capacity: 1)
-      expect { candidate(lion, full, [build(:animal, name: '先住')]).admission_violation! }
-        .to raise_error(Errors::HousingNotAllowed, /定員/)
+    context '-10℃のエリアにグレビーシマウマを入れるとき' do
+      let(:animal) { build(:animal, species: SpeciesCatalog.grevys_zebra) }
+      let(:enclosure) { build(:enclosure, celsius: -10) }
+
+      it 'HousingNotAllowed(適応) を投げること' do
+        expect { housing.admission_violation! }.to raise_error(Errors::HousingNotAllowed, /適応/)
+      end
     end
 
-    it '適温に合わない個体は HousingNotAllowed(適応) であること' do
-      cold = build(:enclosure, name: '極地', celsius: -10)
-      expect { candidate(zebra, cold).admission_violation! }
-        .to raise_error(Errors::HousingNotAllowed, /適応/)
+    context 'グレビーシマウマのいるエリアにライオンを入れるとき' do
+      let(:occupants) { [build(:animal, species: SpeciesCatalog.grevys_zebra)] }
+
+      it 'HousingNotAllowed(捕食) を投げること' do
+        expect { housing.admission_violation! }.to raise_error(Errors::HousingNotAllowed, /捕食/)
+      end
     end
 
-    it '捕食関係の異種との同居は HousingNotAllowed(捕食) であること' do
-      expect { candidate(lion, savanna, [zebra]).admission_violation! }
-        .to raise_error(Errors::HousingNotAllowed, /捕食/)
+    context 'ホッキョクグマのいるエリアにホッキョクグマを入れるとき' do
+      let(:animal) { build(:animal, species: SpeciesCatalog.polar_bear) }
+      let(:enclosure) { build(:enclosure, celsius: -10) }
+      let(:occupants) { [build(:animal, species: SpeciesCatalog.polar_bear)] }
+
+      it 'HousingNotAllowed(単独性) を投げること' do
+        expect { housing.admission_violation! }.to raise_error(Errors::HousingNotAllowed, /単独性/)
+      end
     end
 
-    it '単独性の同種との同居は HousingNotAllowed(単独性) であること' do
-      cold = build(:enclosure, name: '極地', celsius: -10)
-      bear = build(:animal, species: SpeciesCatalog.polar_bear, name: '白')
-      expect { candidate(bear, cold, [build(:animal, species: SpeciesCatalog.polar_bear, name: '先住')]).admission_violation! }
-        .to raise_error(Errors::HousingNotAllowed, /単独性/)
+    context 'コウテイペンギンのいるエリアにガラパゴスゾウガメを入れるとき' do
+      let(:animal) { build(:animal, species: SpeciesCatalog.galapagos_tortoise) }
+      let(:occupants) { [build(:animal, species: SpeciesCatalog.emperor_penguin)] }
+
+      it 'HousingNotAllowed(適温域) を投げること' do
+        expect { housing.admission_violation! }.to raise_error(Errors::HousingNotAllowed, /適温域/)
+      end
     end
 
-    it '適温域が両立しない種との同居は HousingNotAllowed(適温域) であること' do
-      tortoise = build(:animal, species: SpeciesCatalog.galapagos_tortoise, name: 'カメ')
-      penguin = build(:animal, species: SpeciesCatalog.emperor_penguin, name: '先住')
-      expect { candidate(tortoise, savanna, [penguin]).admission_violation! }
-        .to raise_error(Errors::HousingNotAllowed, /適温域/)
-    end
+    context '死亡した動物を、先住のいる定員1のエリアに入れるとき' do
+      let(:animal) { build(:animal).die }
+      let(:enclosure) { build(:enclosure, capacity: 1) }
+      let(:occupants) { [build(:animal)] }
 
-    it '複数の違反を一度にまとめて報告すること' do
-      full = build(:enclosure, name: '小屋', capacity: 1)
-      dead = build(:animal).tap(&:die)
-      expect { candidate(dead, full, [build(:animal, name: '先住')]).admission_violation! }
-        .to raise_error(Errors::HousingNotAllowed, /死亡.*定員/)
+      it '死亡と定員の違反をまとめて1つの HousingNotAllowed で投げること' do
+        expect { housing.admission_violation! }.to raise_error(Errors::HousingNotAllowed, /死亡.*定員/)
+      end
     end
   end
 end

@@ -10,15 +10,34 @@ RSpec.describe Types::RoundReport do
                          cleaned: true, enriched: false)
   end
 
-  it 'skipped は [名前, 理由] の組を [{ subject: "ペン", reason: "専門外のため給餌できません" }] にして返すこと' do
-    expect(run_graphql_field('RoundReport.skipped', report))
-      .to eq([{ subject: 'ペン', reason: '専門外のため給餌できません' }])
+  describe 'skipped' do
+    it '[名前, 理由] の組を [{ subject: "ペン", reason: "専門外のため給餌できません" }] にして返すこと' do
+      expect(run_graphql_field('RoundReport.skipped', report))
+        .to eq([{ subject: 'ペン', reason: '専門外のため給餌できません' }])
+    end
   end
 
-  it 'enclosure・fed・cleaned・enriched はライオンの丘・[レオ]・true・false を返すこと' do
-    expect(run_graphql_field('RoundReport.enclosure', report)).to eq(hill)
-    expect(run_graphql_field('RoundReport.fed', report)).to eq([leo])
-    expect(run_graphql_field('RoundReport.cleaned', report)).to be(true)
-    expect(run_graphql_field('RoundReport.enriched', report)).to be(false)
+  describe 'enclosure' do
+    it 'ライオンの丘を返すこと' do
+      expect(run_graphql_field('RoundReport.enclosure', report)).to eq(hill)
+    end
+  end
+
+  describe 'fed' do
+    it '[レオ] を返すこと' do
+      expect(run_graphql_field('RoundReport.fed', report)).to eq([leo])
+    end
+  end
+
+  describe 'cleaned' do
+    it 'true を返すこと' do
+      expect(run_graphql_field('RoundReport.cleaned', report)).to be(true)
+    end
+  end
+
+  describe 'enriched' do
+    it 'false を返すこと' do
+      expect(run_graphql_field('RoundReport.enriched', report)).to be(false)
+    end
   end
 end

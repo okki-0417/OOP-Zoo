@@ -3,13 +3,24 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::TransferAnimal do
-  it 'transferAnimal(animalId: 丘にいるレオ, enclosureId: 草原) はレオを返し、レオが草原に移ること' do
-    lion = create(:animal, name: 'レオ', enclosure: create(:enclosure))
-    meadow = create(:enclosure)
+  describe 'transferAnimal(animalId:, enclosureId:)' do
+    subject(:response) do
+      OopZooSchema.execute(
+        %(mutation { transferAnimal(animalId: "#{lion.id}", enclosureId: "#{meadow.id}") { name } })
+      ).to_h
+    end
 
-    response = OopZooSchema.execute(%(mutation { transferAnimal(animalId: "#{lion.id}", enclosureId: "#{meadow.id}") { name } })).to_h
+    let(:lion) { create(:animal, name: 'レオ', enclosure: create(:enclosure)) }
+    let(:meadow) { create(:enclosure) }
 
-    expect(response).to eq('data' => { 'transferAnimal' => { 'name' => 'レオ' } })
-    expect(lion.reload.enclosure).to eq(meadow)
+    it 'レオを返すこと' do
+      expect(response).to eq('data' => { 'transferAnimal' => { 'name' => 'レオ' } })
+    end
+
+    it 'レオを草原に移すこと' do
+      response
+
+      expect(lion.reload.enclosure).to eq(meadow)
+    end
   end
 end

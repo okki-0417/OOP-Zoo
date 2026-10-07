@@ -3,56 +3,68 @@
 require 'spec_helper'
 
 RSpec.describe Enclosure do
-  let(:savanna) do
-    described_class.new(name: 'アフリカサバンナ', temperature: Temperature.celsius(30), capacity: 3)
-  end
+  subject(:enclosure) { build(:enclosure, capacity: 3) }
 
-  it '広さを指定しなければ定員×100m²になること' do
-    expect(savanna.area_sqm).to eq(300)
+  describe '#area_sqm' do
+    it '広さを指定しない定員3のエリアでは 定員×100 の 300 を返すこと' do
+      expect(enclosure.area_sqm).to eq(300)
+    end
   end
 
   describe '.construction_cost' do
-    it '基本建設費＋定員×1枠単価で算出すること(定員5=80,000円)' do
-      expect(described_class.construction_cost(capacity: 5)).to eq(Money.yen(80_000))
+    context '空調なしのとき' do
+      it '定員5 で 基本建設費＋定員×1枠単価 の 80,000円 を返すこと' do
+        expect(described_class.construction_cost(capacity: 5)).to eq(Money.yen(80_000))
+      end
     end
 
-    it '空調設備は建設費を上乗せすること' do
-      expect(described_class.construction_cost(capacity: 5, climate_controlled: true))
-        .to be > described_class.construction_cost(capacity: 5)
-    end
-  end
-
-  describe '清潔さ' do
-    it 'soil で汚れ filthy? になり、clean で清掃できること' do
-      savanna.soil(100)
-      expect(savanna).to be_filthy
-      savanna.clean(100)
-      expect(savanna).not_to be_filthy
-    end
-
-    it 'soil(30) で清潔度70になると soiled? が true になること' do
-      expect(savanna.soil(30)).to be_soiled
+    context '空調ありのとき' do
+      it '定員5 で空調なしより高い額を返すこと' do
+        expect(described_class.construction_cost(capacity: 5, climate_controlled: true))
+          .to be > described_class.construction_cost(capacity: 5)
+      end
     end
   end
 
-  describe '環境エンリッチメント' do
-    it '新設エリアは刺激が満ちており殺風景でないこと' do
-      expect(savanna).not_to be_barren
+  describe '#soil' do
+    it 'soil(100) で filthy? を true にすること' do
+      expect(enclosure.soil(100)).to be_filthy
     end
 
-    it 'deplete_enrichment で刺激が枯れると barren? になること' do
-      savanna.deplete_enrichment(100)
-      expect(savanna).to be_barren
+    it 'soil(30) で清潔度70にし soiled? を true にすること' do
+      expect(enclosure.soil(30)).to be_soiled
+    end
+  end
+
+  describe '#clean' do
+    before { enclosure.soil(100) }
+
+    it 'soil(100) の後に clean(100) すると filthy? を false にすること' do
+      expect(enclosure.clean(100)).not_to be_filthy
+    end
+  end
+
+  describe '#barren?' do
+    it '新設のエリアでは false を返すこと' do
+      expect(enclosure).not_to be_barren
+    end
+  end
+
+  describe '#deplete_enrichment' do
+    it 'deplete_enrichment(100) で barren? を true にすること' do
+      expect(enclosure.deplete_enrichment(100)).to be_barren
     end
 
-    it 'deplete_enrichment(50) で刺激度50になると dull? が true になること' do
-      expect(savanna.deplete_enrichment(50)).to be_dull
+    it 'deplete_enrichment(50) で刺激度50にし dull? を true にすること' do
+      expect(enclosure.deplete_enrichment(50)).to be_dull
     end
+  end
 
-    it 'enrich で刺激を補充すると barren? が解けること' do
-      savanna.deplete_enrichment(100)
-      savanna.enrich(100)
-      expect(savanna).not_to be_barren
+  describe '#enrich' do
+    before { enclosure.deplete_enrichment(100) }
+
+    it 'deplete_enrichment(100) の後に enrich(100) すると barren? を false にすること' do
+      expect(enclosure.enrich(100)).not_to be_barren
     end
   end
 end

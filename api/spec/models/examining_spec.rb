@@ -3,38 +3,45 @@
 require 'spec_helper'
 
 RSpec.describe Examining do
-  let(:vet) { build(:veterinarian, name: '佐藤') }
-  let(:animal) { build(:animal) }
+  subject(:examining) { described_class.new(veterinarian: build(:veterinarian, name: '佐藤'), animal:) }
 
-  def diagnose
-    described_class.new(veterinarian: vet, animal: animal).diagnosis
-  end
+  let(:animal) { build(:animal, name: 'レオ') }
 
   describe '#diagnosis' do
-    it '異常のない個体は :healthy と診断すること' do
-      expect(diagnose).to eq(:healthy)
+    context '異常がないとき' do
+      it ':healthy を返すこと' do
+        expect(examining.diagnosis).to eq(:healthy)
+      end
     end
 
-    it '病気の個体は :sick と診断すること' do
-      animal.fall_ill(IllnessCatalog.pneumonia)
-      expect(diagnose).to eq(:sick)
+    context '肺炎にかかっているとき' do
+      before { animal.fall_ill(IllnessCatalog.pneumonia) }
+
+      it ':sick を返すこと' do
+        expect(examining.diagnosis).to eq(:sick)
+      end
     end
 
-    it '衰弱した個体は :injured と診断すること' do
-      90.times { animal.cry_out }
-      expect(diagnose).to eq(:injured)
+    context '90回鳴いて衰弱しているとき' do
+      before { 90.times { animal.cry_out } }
+
+      it ':injured を返すこと' do
+        expect(examining.diagnosis).to eq(:injured)
+      end
     end
 
-    it '死亡個体は :dead と診断すること' do
-      animal.die
-      expect(diagnose).to eq(:dead)
+    context '死亡しているとき' do
+      before { animal.die }
+
+      it ':dead を返すこと' do
+        expect(examining.diagnosis).to eq(:dead)
+      end
     end
   end
 
   describe '#to_s' do
-    it '獣医が動物を診察 の形で表されること' do
-      expect(described_class.new(veterinarian: vet, animal: animal).to_s)
-        .to eq("佐藤が#{animal.name}を診察")
+    it '"佐藤がレオを診察" を返すこと' do
+      expect(examining.to_s).to eq('佐藤がレオを診察')
     end
   end
 end

@@ -3,36 +3,43 @@
 require 'spec_helper'
 
 RSpec.describe Treating do
-  let(:vet) { build(:veterinarian, name: '佐藤') }
-  let(:animal) { build(:animal) }
+  subject(:treating) { described_class.new(veterinarian: build(:veterinarian, name: '佐藤'), animal:) }
 
-  def treat
-    described_class.new(veterinarian: vet, animal: animal).perform
-  end
+  let(:animal) { build(:animal, name: 'レオ') }
 
   describe '#perform' do
-    it '病気の個体を治療すると病気が治ること' do
-      animal.fall_ill(IllnessCatalog.pneumonia)
-      treat
-      expect(animal).not_to be_sick
+    context '肺炎にかかっているとき' do
+      before { animal.fall_ill(IllnessCatalog.pneumonia) }
+
+      it '病気を治し sick? を false にすること' do
+        treating.perform
+
+        expect(animal).not_to be_sick
+      end
     end
 
-    it '衰弱した個体を治療すると回復すること' do
-      90.times { animal.cry_out }
-      treat
-      expect(animal.weak?).to be(false)
+    context '90回鳴いて衰弱しているとき' do
+      before { 90.times { animal.cry_out } }
+
+      it '体力を回復させ weak? を false にすること' do
+        treating.perform
+
+        expect(animal.weak?).to be(false)
+      end
     end
 
-    it '死亡個体は治療できず DeadAnimal を出すこと' do
-      animal.die
-      expect { treat }.to raise_error(Errors::DeadAnimal)
+    context '死亡しているとき' do
+      before { animal.die }
+
+      it 'DeadAnimal を投げること' do
+        expect { treating.perform }.to raise_error(Errors::DeadAnimal)
+      end
     end
   end
 
   describe '#to_s' do
-    it '獣医が動物を治療 の形で表されること' do
-      expect(described_class.new(veterinarian: vet, animal: animal).to_s)
-        .to eq("佐藤が#{animal.name}を治療")
+    it '"佐藤がレオを治療" を返すこと' do
+      expect(treating.to_s).to eq('佐藤がレオを治療')
     end
   end
 end

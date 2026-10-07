@@ -8,16 +8,30 @@ RSpec.describe Types::Expense do
                            amount: Money.yen(4_500))
   end
 
-  it 'category は飼料費で :feed(ExpenseCategory の FEED)を返すこと' do
-    category = run_graphql_field('Expense.category', expense)
+  describe 'category' do
+    it '飼料費で :feed(ExpenseCategory の FEED)を返すこと' do
+      category = run_graphql_field('Expense.category', expense)
 
-    expect(category).to eq(:feed)
-    expect(Types::ExpenseCategory.coerce_isolated_result(category)).to eq('FEED')
+      expect(category).to eq(:feed)
+      expect(Types::ExpenseCategory.coerce_isolated_result(category)).to eq('FEED')
+    end
   end
 
-  it 'subject・quantity・amount は "ライオン"・3・円の整数 4500 を返すこと' do
-    expect(run_graphql_field('Expense.subject', expense)).to eq('ライオン')
-    expect(run_graphql_field('Expense.quantity', expense)).to eq(3)
-    expect(run_graphql_field('Expense.amount', expense)).to eq(4_500)
+  describe 'subject' do
+    it '"ライオン" を返すこと' do
+      expect(run_graphql_field('Expense.subject', expense)).to eq('ライオン')
+    end
+  end
+
+  describe 'quantity' do
+    it '3 を返すこと' do
+      expect(run_graphql_field('Expense.quantity', expense)).to eq(3)
+    end
+  end
+
+  describe 'amount' do
+    it '¥4,500 を円の整数 4500 で返すこと' do
+      expect(run_graphql_field('Expense.amount', expense)).to eq(4_500)
+    end
   end
 end

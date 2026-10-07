@@ -3,39 +3,48 @@
 require 'spec_helper'
 
 RSpec.describe Cleaning do
+  subject(:cleaning) { described_class.new(keeper:, enclosure:) }
+
   let(:keeper) { build(:keeper, name: '田中') }
-  let(:enclosure) do
-    build(:enclosure, name: 'サバンナ')
+  let(:enclosure) { build(:enclosure, name: 'サバンナ') }
+
+  describe '.new' do
+    it '渡した keeper・enclosure を #keeper・#enclosure で返すこと' do
+      expect(cleaning).to have_attributes(keeper:, enclosure:)
+    end
+
+    it 'frozen であること' do
+      expect(cleaning).to be_frozen
+    end
   end
 
   describe '#perform' do
-    it '保持するエリアの清潔さを amount=100 で満タンに戻し、勤務時間を60分使うこと' do
-      enclosure.soil(40)
-      described_class.new(keeper: keeper, enclosure: enclosure).perform
-      expect(enclosure.cleanliness.level).to eq(100)
-      expect(keeper.worked_minutes).to eq(60)
+    context 'amount を省略したとき' do
+      before { enclosure.soil(40) }
+
+      it '清潔度 60 のエリアを 100 に戻し、田中の勤務時間を 60 分使うこと' do
+        cleaning.perform
+
+        expect(enclosure.cleanliness.level).to eq(100)
+        expect(keeper.worked_minutes).to eq(60)
+      end
     end
 
-    it 'amount を指定するとその分だけ清潔さを回復すること' do
-      enclosure.soil(100)
-      described_class.new(keeper: keeper, enclosure: enclosure, amount: 30).perform
-      expect(enclosure.cleanliness.level).to eq(30)
+    context 'amount: 30 を渡したとき' do
+      subject(:cleaning) { described_class.new(keeper:, enclosure:, amount: 30) }
+
+      before { enclosure.soil(100) }
+
+      it '清潔度 0 のエリアを 30 だけ回復すること' do
+        cleaning.perform
+
+        expect(enclosure.cleanliness.level).to eq(30)
+      end
     end
-  end
-
-  it '#keeper / #enclosure で保持する飼育員とエリアを返すこと' do
-    cleaning = described_class.new(keeper: keeper, enclosure: enclosure)
-    expect(cleaning.keeper).to eq(keeper)
-    expect(cleaning.enclosure).to eq(enclosure)
-  end
-
-  it '生成後は frozen であること' do
-    expect(described_class.new(keeper: keeper, enclosure: enclosure)).to be_frozen
   end
 
   describe '#to_s' do
-    it '飼育員がエリアを清掃 の形で表されること' do
-      cleaning = described_class.new(keeper: keeper, enclosure: enclosure)
+    it '"田中がサバンナを清掃" を返すこと' do
       expect(cleaning.to_s).to eq('田中がサバンナを清掃')
     end
   end

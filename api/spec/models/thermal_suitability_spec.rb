@@ -3,34 +3,50 @@
 require 'spec_helper'
 
 RSpec.describe ThermalSuitability do
-  let(:lion) { build(:animal, name: '主') }
-  let(:polar_bear) { build(:animal, species: SpeciesCatalog.polar_bear, name: '白') }
+  subject(:suitability) { described_class.new(animal, Temperature.celsius(celsius)) }
 
-  def temp(celsius)
-    Temperature.celsius(celsius)
-  end
+  let(:animal) { build(:animal) }
+  let(:celsius) { 30 }
 
   describe '#habitable?' do
-    it 'ライオン×30℃ で適温域に入り true を返すこと' do
-      expect(described_class.new(lion, temp(30)).habitable?).to be(true)
+    context 'ライオンが30℃のとき' do
+      it '適温域に入り true を返すこと' do
+        expect(suitability.habitable?).to be(true)
+      end
     end
 
-    it 'ホッキョクグマ×30℃ で適温域を外れ false を返すこと' do
-      expect(described_class.new(polar_bear, temp(30)).habitable?).to be(false)
+    context 'ホッキョクグマが30℃のとき' do
+      let(:animal) { build(:animal, species: SpeciesCatalog.polar_bear) }
+
+      it '適温域を外れ false を返すこと' do
+        expect(suitability.habitable?).to be(false)
+      end
     end
   end
 
   describe '#comfortable?' do
-    it 'ライオン×25℃ で適温域の内側として true を返すこと' do
-      expect(described_class.new(lion, temp(25)).comfortable?).to be(true)
+    context 'ライオンが適温域の内側の25℃のとき' do
+      let(:celsius) { 25 }
+
+      it 'true を返すこと' do
+        expect(suitability.comfortable?).to be(true)
+      end
     end
 
-    it 'ライオン×12℃ で適温域の下端付近として false を返すこと' do
-      expect(described_class.new(lion, temp(12)).comfortable?).to be(false)
+    context 'ライオンが適温域の下端付近の12℃のとき' do
+      let(:celsius) { 12 }
+
+      it 'false を返すこと' do
+        expect(suitability.comfortable?).to be(false)
+      end
     end
 
-    it 'ライオン×50℃ で適温域を外れ false を返すこと' do
-      expect(described_class.new(lion, temp(50)).comfortable?).to be(false)
+    context 'ライオンが適温域を外れる50℃のとき' do
+      let(:celsius) { 50 }
+
+      it 'false を返すこと' do
+        expect(suitability.comfortable?).to be(false)
+      end
     end
   end
 end

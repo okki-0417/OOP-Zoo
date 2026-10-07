@@ -2,21 +2,29 @@
 
 require 'spec_helper'
 
-module Shared
-  RSpec.describe Balance do
-    it '収益を足すと残高が増えること' do
-      expect((Balance.zero + Money.yen(5_000)).yen).to eq(5_000)
+RSpec.describe Balance do
+  describe '#+' do
+    it 'Balance.zero + ¥5,000 は yen 5,000 を返すこと' do
+      expect((described_class.zero + Money.yen(5_000)).yen).to eq(5_000)
     end
+  end
 
-    it '残高を超えて支出すると赤字(負)になり negative? が true を返すこと' do
-      balance = Balance.new(1_000) - Money.yen(3_000)
+  describe '#-' do
+    subject(:balance) { described_class.new(1_000) - Money.yen(3_000) }
 
-      expect(balance.yen).to eq(-2_000)
-      expect(balance).to be_negative
+    context '残高 ¥1,000 を超える ¥3,000 を引いたとき' do
+      it 'yen -2,000 の赤字になり、negative? が true を返すこと' do
+        expect(balance.yen).to eq(-2_000)
+        expect(balance).to be_negative
+      end
     end
+  end
 
-    it '赤字残高は符号付きで整形されること(-¥2,000)' do
-      expect((Balance.zero - Money.yen(2_000)).to_s).to eq('-¥2,000')
+  describe '#to_s' do
+    context '赤字のとき' do
+      it "符号付きの '-¥2,000' を返すこと" do
+        expect((described_class.zero - Money.yen(2_000)).to_s).to eq('-¥2,000')
+      end
     end
   end
 end

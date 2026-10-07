@@ -3,86 +3,84 @@
 require 'spec_helper'
 
 RSpec.describe Pedigree do
-  def founder(name, sex)
-    build(:animal, name:, sex:, age_in_days: 3000)
-  end
+  subject(:pedigree) { described_class.new }
 
-  def offspring(name, sex, sire:, dam:, age: 100)
-    build(:animal, name:, sex:, age_in_days: age, sire:, dam:)
-  end
+  let(:father) { build(:animal, name: '父') }
+  let(:mother) { build(:animal, :female, name: '母') }
+  let(:son) { build(:animal, :newborn, name: '兄', sire: father, dam: mother) }
+  let(:daughter) { build(:animal, :newborn, :female, name: '妹', sire: father, dam: mother) }
 
   describe '#coancestry' do
-    it 'いずれかが nil なら 0.0 を返すこと' do
-      a = founder('A', Animal::Sex.male)
-      expect(described_class.new.coancestry(a, nil)).to eq(0.0)
-      expect(described_class.new.coancestry(nil, a)).to eq(0.0)
+    context 'どちらかが nil のとき' do
+      it '(父, nil)・(nil, 父) のどちらも 0.0 を返すこと' do
+        expect(pedigree.coancestry(father, nil)).to eq(0.0)
+        expect(pedigree.coancestry(nil, father)).to eq(0.0)
+      end
     end
 
-    it '親の分からない個体同士は 0.0 を返すこと' do
-      a = founder('A', Animal::Sex.male)
-      b = founder('B', Animal::Sex.female)
-      expect(described_class.new.coancestry(a, b)).to eq(0.0)
+    context '親の分からない個体同士のとき' do
+      it '(父, 母) は 0.0 を返すこと' do
+        expect(pedigree.coancestry(father, mother)).to eq(0.0)
+      end
     end
 
-    it '自分自身との近縁度は 0.5(近交が無ければ)であること' do
-      a = founder('A', Animal::Sex.male)
-      expect(described_class.new.coancestry(a, a)).to eq(0.5)
+    context '同じ個体同士のとき' do
+      it '近交がない父と父は 0.5 を返すこと' do
+        expect(pedigree.coancestry(father, father)).to eq(0.5)
+      end
     end
 
-    it '引数の順序によらず同じ値を返すこと' do
-      father = founder('父', Animal::Sex.male)
-      mother = founder('母', Animal::Sex.female)
-      child = offspring('子', Animal::Sex.male, sire: father, dam: mother)
-      pedigree = described_class.new
-      expect(pedigree.coancestry(father, child)).to eq(pedigree.coancestry(child, father))
+    context '親子のとき' do
+      it '(父, 兄) と (兄, 父) が同じ値を返すこと' do
+        expect(pedigree.coancestry(father, son)).to eq(pedigree.coancestry(son, father))
+      end
     end
   end
 
   describe '#inbreeding_of' do
-    it '親が1頭しか分からない個体は 0.0 であること' do
-      mother = founder('母', Animal::Sex.female)
-      child = offspring('子', Animal::Sex.male, sire: nil, dam: mother)
-      expect(described_class.new.inbreeding_of(child)).to eq(0.0)
+    context '親が1頭しか分からないとき' do
+      let(:child) { build(:animal, :newborn, name: '子', sire: nil, dam: mother) }
+
+      it '0.0 を返すこと' do
+        expect(pedigree.inbreeding_of(child)).to eq(0.0)
+      end
     end
 
-    it '全きょうだいを両親に持つ子の近交係数は 1/4 であること' do
-      gf = founder('祖父', Animal::Sex.male)
-      gm = founder('祖母', Animal::Sex.female)
-      brother = offspring('兄', Animal::Sex.male, sire: gf, dam: gm)
-      sister  = offspring('姉', Animal::Sex.female, sire: gf, dam: gm)
-      child   = offspring('子', Animal::Sex.male, sire: brother, dam: sister)
-      expect(described_class.new.inbreeding_of(child)).to eq(0.25)
+    context '両親が全きょうだい(兄と妹)のとき' do
+      let(:child) { build(:animal, :newborn, name: '子', sire: son, dam: daughter) }
+
+      it '1/4 の 0.25 を返すこと' do
+        expect(pedigree.inbreeding_of(child)).to eq(0.25)
+      end
     end
   end
 
   describe '#related?' do
-    it '親の分からない創始個体同士は偽であること' do
-      a = founder('A', Animal::Sex.male)
-      b = founder('B', Animal::Sex.female)
-      expect(described_class.new.related?(a, b)).to be(false)
+    context '親の分からない創始個体同士のとき' do
+      it '(父, 母) は false を返すこと' do
+        expect(pedigree.related?(father, mother)).to be(false)
+      end
     end
 
-    it '親子は真であること' do
-      father = founder('父', Animal::Sex.male)
-      mother = founder('母', Animal::Sex.female)
-      daughter = offspring('娘', Animal::Sex.female, sire: father, dam: mother)
-      expect(described_class.new.related?(father, daughter)).to be(true)
+    context '親子のとき' do
+      it '(父, 妹) は true を返すこと' do
+        expect(pedigree.related?(father, daughter)).to be(true)
+      end
     end
 
-    it 'きょうだいは真であること' do
-      father = founder('父', Animal::Sex.male)
-      mother = founder('母', Animal::Sex.female)
-      brother = offspring('兄', Animal::Sex.male, sire: father, dam: mother)
-      sister  = offspring('妹', Animal::Sex.female, sire: father, dam: mother)
-      expect(described_class.new.related?(brother, sister)).to be(true)
+    context 'きょうだいのとき' do
+      it '(兄, 妹) は true を返すこと' do
+        expect(pedigree.related?(son, daughter)).to be(true)
+      end
     end
   end
 
   describe '#mean_kinship' do
-    it '個体が1頭以下なら 0.0 であること' do
-      a = founder('A', Animal::Sex.male)
-      expect(described_class.new.mean_kinship([a])).to eq(0.0)
-      expect(described_class.new.mean_kinship([])).to eq(0.0)
+    context '個体が1頭以下のとき' do
+      it '[父]・[] のどちらも 0.0 を返すこと' do
+        expect(pedigree.mean_kinship([father])).to eq(0.0)
+        expect(pedigree.mean_kinship([])).to eq(0.0)
+      end
     end
   end
 end

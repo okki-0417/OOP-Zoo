@@ -3,109 +3,149 @@
 require 'spec_helper'
 
 RSpec.describe DietType do
-  it '肉食は肉を受け入れ草を受け入れないこと' do
-    expect(described_class.carnivore.accepts?(:meat)).to be(true)
-    expect(described_class.carnivore.accepts?(:plant)).to be(false)
+  describe '#accepts?' do
+    context '肉食(.carnivore)のとき' do
+      subject(:diet) { described_class.carnivore }
+
+      it ':meat に true、:plant に false を返すこと' do
+        expect(diet.accepts?(:meat)).to be(true)
+        expect(diet.accepts?(:plant)).to be(false)
+      end
+    end
+
+    context '雑食(.omnivore)のとき' do
+      subject(:diet) { described_class.omnivore }
+
+      it ':meat にも :plant にも true を返すこと' do
+        expect(diet.accepts?(:meat)).to be(true)
+        expect(diet.accepts?(:plant)).to be(true)
+      end
+    end
   end
 
-  it '雑食は肉も植物も受け入れること' do
-    expect(described_class.omnivore.accepts?(:meat)).to be(true)
-    expect(described_class.omnivore.accepts?(:plant)).to be(true)
-  end
+  describe '#predatory?' do
+    it '肉食(.carnivore)・魚食(.piscivore)は true を返すこと' do
+      expect(described_class.carnivore).to be_predatory
+      expect(described_class.piscivore).to be_predatory
+    end
 
-  it '肉食・魚食は捕食性とみなされ、草食はそうでないこと' do
-    expect(described_class.carnivore).to be_predatory
-    expect(described_class.piscivore).to be_predatory
-    expect(described_class.herbivore).not_to be_predatory
-    expect(described_class.insectivore).not_to be_predatory
+    it '草食(.herbivore)・昆虫食(.insectivore)は false を返すこと' do
+      expect(described_class.herbivore).not_to be_predatory
+      expect(described_class.insectivore).not_to be_predatory
+    end
   end
 end
 
 RSpec.describe ConservationStatus do
-  it '深刻度で比較できること' do
-    expect(described_class.critically_endangered).to be > described_class.least_concern
-    expect(described_class.endangered).to be > described_class.vulnerable
+  describe '#<=>' do
+    it '深刻度で比較し、CR > LC・EN > VU となること' do
+      expect(described_class.critically_endangered).to be > described_class.least_concern
+      expect(described_class.endangered).to be > described_class.vulnerable
+    end
   end
 
-  it '絶滅危惧・絶滅を判定できること' do
-    expect(described_class.endangered).to be_threatened
-    expect(described_class.least_concern).not_to be_threatened
-    expect(described_class.extinct).to be_extinct
+  describe '#threatened?' do
+    it 'EN は true、LC は false を返すこと' do
+      expect(described_class.endangered).to be_threatened
+      expect(described_class.least_concern).not_to be_threatened
+    end
+  end
+
+  describe '#extinct?' do
+    it 'EX は true を返すこと' do
+      expect(described_class.extinct).to be_extinct
+    end
   end
 end
 
 RSpec.describe TaxonClass do
-  it '哺乳類は恒温・胎生であること' do
-    expect(described_class.mammal).to be_warm_blooded
-    expect(described_class.mammal).to be_viviparous
+  describe '#warm_blooded? / #viviparous?' do
+    it '哺乳類(.mammal)は true を返すこと' do
+      expect(described_class.mammal).to be_warm_blooded
+      expect(described_class.mammal).to be_viviparous
+    end
   end
 
-  it '鳥類・爬虫類は卵生であること' do
-    expect(described_class.bird).to be_oviparous
-    expect(described_class.reptile).to be_oviparous
+  describe '#oviparous?' do
+    it '鳥類(.bird)・爬虫類(.reptile)は true を返すこと' do
+      expect(described_class.bird).to be_oviparous
+      expect(described_class.reptile).to be_oviparous
+    end
   end
 
-  it '魚類は変温であること' do
-    expect(described_class.fish).to be_cold_blooded
+  describe '#cold_blooded?' do
+    it '魚類(.fish)は true を返すこと' do
+      expect(described_class.fish).to be_cold_blooded
+    end
   end
 end
 
 RSpec.describe Species do
   let(:lion) { SpeciesCatalog.lion }
   let(:zebra) { SpeciesCatalog.grevys_zebra }
-  let(:polar_bear) { SpeciesCatalog.polar_bear }
 
-  it '学名で同一性が決まること' do
-    expect(SpeciesCatalog.lion).to eq(SpeciesCatalog.lion)
-    expect(lion).not_to eq(zebra)
+  describe '#==' do
+    it '同じ学名のライオンどうしは等しく、ライオンとグレビーシマウマは等しくないこと' do
+      expect(SpeciesCatalog.lion).to eq(SpeciesCatalog.lion)
+      expect(lion).not_to eq(zebra)
+    end
   end
 
-  it '捕食性・群れ性を判定できること' do
-    expect(lion).to be_predatory
-    expect(lion).to be_group_living
-    expect(zebra).not_to be_predatory
-    expect(polar_bear).to be_solitary
+  describe '#predatory? / #group_living? / #solitary?' do
+    it 'ライオンは捕食性で群れ性、グレビーシマウマは非捕食性、ホッキョクグマは単独性であること' do
+      expect(lion).to be_predatory
+      expect(lion).to be_group_living
+      expect(zebra).not_to be_predatory
+      expect(SpeciesCatalog.polar_bear).to be_solitary
+    end
   end
 
-  it '体格と行動様式に応じた必要面積を返すこと(最小5m²)' do
-    expect(lion.space_requirement_sqm).to eq(95)
-    expect(SpeciesCatalog.hercules_beetle.space_requirement_sqm).to eq(5)
+  describe '#space_requirement_sqm' do
+    it 'ライオンは 95、ヘラクレスオオカブトは下限の 5 を返すこと' do
+      expect(lion.space_requirement_sqm).to eq(95)
+      expect(SpeciesCatalog.hercules_beetle.space_requirement_sqm).to eq(5)
+    end
   end
 
   describe '#required_food_variety' do
-    it '受け入れカテゴリが1つの肉食は1であること' do
-      expect(lion.required_food_variety).to eq(1)
+    context '受け入れカテゴリが1つの肉食(ライオン)のとき' do
+      it '1 を返すこと' do
+        expect(lion.required_food_variety).to eq(1)
+      end
     end
 
-    it '受け入れカテゴリが多い雑食でも上限2であること' do
-      expect(SpeciesCatalog.japanese_macaque.required_food_variety).to eq(2)
+    context '受け入れカテゴリが多い雑食(ニホンザル)のとき' do
+      it '上限の 2 を返すこと' do
+        expect(SpeciesCatalog.japanese_macaque.required_food_variety).to eq(2)
+      end
     end
   end
 
   describe '#accepts?' do
-    it '食性が受け入れるカテゴリに true、それ以外に false を返すこと' do
+    it 'ライオンは :meat に true、:plant に false を返すこと' do
       expect(lion.accepts?(:meat)).to be(true)
       expect(lion.accepts?(:plant)).to be(false)
     end
   end
 
   describe '#daily_hunger' do
-    it 'HUNGER_MIN..HUNGER_MAX にクランプされること' do
+    it 'アフリカゾウでも HUNGER_MIN..HUNGER_MAX に収まること' do
       expect(SpeciesCatalog.african_elephant.daily_hunger)
         .to be_between(described_class::HUNGER_MIN, described_class::HUNGER_MAX)
     end
   end
 
   describe '#metabolic_factor' do
-    it '小型種ほど大きく、大型種ほど小さいこと' do
+    it '小型のニホンザルは大型のアフリカゾウより大きいこと' do
       expect(SpeciesCatalog.japanese_macaque.metabolic_factor)
         .to be > SpeciesCatalog.african_elephant.metabolic_factor
     end
   end
 
   describe '#daily_food_cost' do
-    it 'FOOD_COST_MIN_YEN を下回らない Money を返すこと' do
-      cost = SpeciesCatalog.hercules_beetle.daily_food_cost
+    subject(:cost) { SpeciesCatalog.hercules_beetle.daily_food_cost }
+
+    it 'ヘラクレスオオカブトでも FOOD_COST_MIN_YEN 以上の Money を返すこと' do
       expect(cost).to be_a(Money)
       expect(cost.yen).to be >= described_class::FOOD_COST_MIN_YEN
     end
@@ -113,28 +153,41 @@ RSpec.describe Species do
 end
 
 RSpec.describe SpeciesCatalog do
-  it '全種が生成できること' do
-    expect(described_class.all.size).to eq(15)
-    expect(described_class.all).to all(be_a(Species))
-  end
+  describe '.all' do
+    subject(:species) { described_class.all }
 
-  it '6つの綱すべてを網羅していること' do
-    classes = described_class.all.map { |s| s.taxon_class.value }.uniq
-    expect(classes).to contain_exactly(:mammal, :bird, :reptile, :amphibian, :fish, :invertebrate)
-  end
+    it '15種の Species を返すこと' do
+      expect(species.size).to eq(15)
+      expect(species).to all(be_a(Species))
+    end
 
-  it '6つの食性すべてを網羅していること' do
-    diets = described_class.all.map(&:diet_label).uniq
-    expect(diets).to contain_exactly('肉食', '魚食', '昆虫食', '草食', '果実食', '雑食')
+    it '6つの綱すべてを含むこと' do
+      expect(species.map { |s| s.taxon_class.value }.uniq)
+        .to contain_exactly(:mammal, :bird, :reptile, :amphibian, :fish, :invertebrate)
+    end
+
+    it '6つの食性すべてを含むこと' do
+      expect(species.map(&:diet_label).uniq).to contain_exactly('肉食', '魚食', '昆虫食', '草食', '果実食', '雑食')
+    end
   end
 
   describe '.find' do
-    it "既知のキー 'lion' を渡すと対応する Species を返すこと" do
-      expect(described_class.find('lion')).to eq(described_class.lion)
+    subject(:found) { described_class.find(key) }
+
+    context "既知のキー 'lion' のとき" do
+      let(:key) { 'lion' }
+
+      it 'ライオンの Species を返すこと' do
+        expect(found).to eq(described_class.lion)
+      end
     end
 
-    it "未知のキー 'dragon' を渡すと nil を返すこと" do
-      expect(described_class.find('dragon')).to be_nil
+    context "未知のキー 'dragon' のとき" do
+      let(:key) { 'dragon' }
+
+      it 'nil を返すこと' do
+        expect(found).to be_nil
+      end
     end
   end
 end

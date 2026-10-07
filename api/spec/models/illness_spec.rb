@@ -3,78 +3,122 @@
 require 'spec_helper'
 
 RSpec.describe Animal::Illness do
+  subject(:illness) { described_class.new(name_ja:, daily_damage:, **options) }
+
+  let(:name_ja) { '風邪' }
+  let(:daily_damage) { 2 }
+  let(:options) { {} }
+
   describe '.new' do
-    it "name_ja='風邪'、daily_damage=2 で生成できること" do
-      illness = described_class.new(name_ja: '風邪', daily_damage: 2)
-      expect(illness.name_ja).to eq('風邪')
-      expect(illness.daily_damage).to eq(2)
+    context "name_ja='風邪'・daily_damage=2 のとき" do
+      it 'name_ja が "風邪"・daily_damage が 2 になること' do
+        expect(illness).to have_attributes(name_ja: '風邪', daily_damage: 2)
+      end
     end
 
-    it 'contagious を省略すると非感染症として扱われること' do
-      expect(described_class.new(name_ja: '骨折', daily_damage: 4)).not_to be_contagious
+    context 'name_ja が空文字のとき' do
+      let(:name_ja) { '' }
+
+      it 'ArgumentError が発生すること' do
+        expect { illness }.to raise_error(ArgumentError)
+      end
     end
 
-    it 'name_ja が空文字だと ArgumentError が発生すること' do
-      expect { described_class.new(name_ja: '', daily_damage: 1) }.to raise_error(ArgumentError)
+    context 'daily_damage が 0 のとき' do
+      let(:daily_damage) { 0 }
+
+      it 'ArgumentError が発生すること' do
+        expect { illness }.to raise_error(ArgumentError)
+      end
     end
 
-    it 'daily_damage=0 だと ArgumentError が発生すること' do
-      expect { described_class.new(name_ja: '風邪', daily_damage: 0) }.to raise_error(ArgumentError)
-    end
+    context 'daily_damage が Integer 以外の 1.5 のとき' do
+      let(:daily_damage) { 1.5 }
 
-    it 'daily_damage が Integer 以外だと ArgumentError が発生すること' do
-      expect { described_class.new(name_ja: '風邪', daily_damage: 1.5) }.to raise_error(ArgumentError)
+      it 'ArgumentError が発生すること' do
+        expect { illness }.to raise_error(ArgumentError)
+      end
     end
   end
 
   describe '#contagious?' do
-    it 'contagious: true で生成すると true を返すこと' do
-      expect(described_class.new(name_ja: '風邪', daily_damage: 2, contagious: true)).to be_contagious
+    context 'contagious を省略したとき' do
+      it 'false を返すこと' do
+        expect(illness).not_to be_contagious
+      end
     end
 
-    it 'contagious: false で生成すると false を返すこと' do
-      expect(described_class.new(name_ja: '骨折', daily_damage: 4, contagious: false)).not_to be_contagious
+    context 'contagious: true のとき' do
+      let(:options) { { contagious: true } }
+
+      it 'true を返すこと' do
+        expect(illness).to be_contagious
+      end
+    end
+
+    context 'contagious: false のとき' do
+      let(:options) { { contagious: false } }
+
+      it 'false を返すこと' do
+        expect(illness).not_to be_contagious
+      end
     end
   end
 
   describe '#severe?' do
-    it 'daily_damage=5 だと true を返すこと(閾値ぴったり)' do
-      expect(described_class.new(name_ja: '重症', daily_damage: 5)).to be_severe
+    context 'daily_damage が閾値ちょうどの 5 のとき' do
+      let(:daily_damage) { 5 }
+
+      it 'true を返すこと' do
+        expect(illness).to be_severe
+      end
     end
 
-    it 'daily_damage=4 だと false を返すこと' do
-      expect(described_class.new(name_ja: '骨折', daily_damage: 4)).not_to be_severe
+    context 'daily_damage が 4 のとき' do
+      let(:daily_damage) { 4 }
+
+      it 'false を返すこと' do
+        expect(illness).not_to be_severe
+      end
     end
   end
 
   describe '#to_s' do
-    it 'name_ja をそのまま返すこと' do
-      expect(described_class.new(name_ja: '風邪', daily_damage: 2).to_s).to eq('風邪')
+    it 'name_ja の "風邪" を返すこと' do
+      expect(illness.to_s).to eq('風邪')
     end
   end
 
-  describe '等価性' do
-    it 'name_ja・daily_damage・contagious が全て同じなら eq で等しいこと' do
-      a = described_class.new(name_ja: '風邪', daily_damage: 2, contagious: true)
-      b = described_class.new(name_ja: '風邪', daily_damage: 2, contagious: true)
-      expect(a).to eq(b)
+  describe '#==' do
+    let(:options) { { contagious: true } }
+
+    context 'name_ja・daily_damage・contagious がすべて同じとき' do
+      it '等しいこと' do
+        expect(illness).to eq(described_class.new(name_ja: '風邪', daily_damage: 2, contagious: true))
+      end
     end
 
-    it 'daily_damage が違うと eq で等しくないこと' do
-      a = described_class.new(name_ja: '風邪', daily_damage: 2)
-      b = described_class.new(name_ja: '風邪', daily_damage: 3)
-      expect(a).not_to eq(b)
+    context 'daily_damage が 2 と 3 で違うとき' do
+      it '等しくないこと' do
+        expect(illness).not_to eq(described_class.new(name_ja: '風邪', daily_damage: 3, contagious: true))
+      end
     end
   end
 end
 
 RSpec.describe IllnessCatalog do
-  it '.all は KEYS と同数の疾病を返し、各疾病を含むこと' do
-    expect(described_class.all.size).to eq(described_class.keys.size)
-    expect(described_class.all).to include(described_class.cold)
+  describe '.all' do
+    it 'keys と同数の疾病を返し、風邪を含むこと' do
+      expect(described_class.all.size).to eq(described_class.keys.size)
+      expect(described_class.all).to include(described_class.cold)
+    end
   end
 
-  it '.find は未知のキーに nil を返すこと' do
-    expect(described_class.find(:unknown)).to be_nil
+  describe '.find' do
+    context '未知のキー :unknown のとき' do
+      it 'nil を返すこと' do
+        expect(described_class.find(:unknown)).to be_nil
+      end
+    end
   end
 end

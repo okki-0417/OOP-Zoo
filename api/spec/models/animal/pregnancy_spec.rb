@@ -3,70 +3,77 @@
 require 'spec_helper'
 
 RSpec.describe Animal::Pregnancy do
-  sex = Animal::Sex.male
+  subject(:pregnancy) { described_class.new(sex:, gestation_days:, inbreeding_coefficient:) }
+
+  let(:sex) { Animal::Sex.male }
+  let(:gestation_days) { 0 }
+  let(:inbreeding_coefficient) { 0.5 }
 
   describe '.conceived' do
-    it '妊娠0日のインスタンスを返すこと' do
-      pregnancy = described_class.conceived
-      expect(pregnancy.gestation_days).to eq(0)
-    end
-
-    it '受胎時に sex と inbreeding_coefficient が設定されること' do
-      pregnancy = described_class.conceived(inbreeding: 0.25)
-      expect(pregnancy.sex).not_to be_nil
-      expect(pregnancy.inbreeding_coefficient).to eq(0.25)
+    it '妊娠0日で、性別が決まり、渡した inbreeding: 0.25 を近交係数に持つこと' do
+      expect(described_class.conceived(inbreeding: 0.25))
+        .to have_attributes(gestation_days: 0, sex: be_present, inbreeding_coefficient: 0.25)
     end
   end
 
-  describe '#initialize' do
-    it '妊娠日数が負なら ArgumentError になること' do
-      expect { described_class.new(sex: sex, gestation_days: -1) }.to raise_error(ArgumentError)
+  describe '.new' do
+    context '妊娠日数が -1 のとき' do
+      let(:gestation_days) { -1 }
+
+      it 'ArgumentError が発生すること' do
+        expect { pregnancy }.to raise_error(ArgumentError)
+      end
     end
 
-    it '妊娠日数が整数でなければ ArgumentError になること' do
-      expect { described_class.new(sex: sex, gestation_days: 1.5) }.to raise_error(ArgumentError)
+    context '妊娠日数が整数でない 1.5 のとき' do
+      let(:gestation_days) { 1.5 }
+
+      it 'ArgumentError が発生すること' do
+        expect { pregnancy }.to raise_error(ArgumentError)
+      end
     end
   end
 
   describe '#advanced_by' do
-    it '日数を加算した新しいインスタンスを返すこと(10日経過で 0→10)' do
-      advanced = described_class.conceived.advanced_by(10)
-      expect(advanced.gestation_days).to eq(10)
+    context '10 を渡したとき' do
+      it '妊娠10日の新しいインスタンスを返し、元は妊娠0日のままであること' do
+        expect(pregnancy.advanced_by(10).gestation_days).to eq(10)
+        expect(pregnancy.gestation_days).to eq(0)
+      end
+
+      it '性別(オス)と近交係数 0.5 を引き継ぐこと' do
+        expect(pregnancy.advanced_by(10)).to have_attributes(sex:, inbreeding_coefficient: 0.5)
+      end
     end
 
-    it '元のインスタンスを変更しないこと(不変)' do
-      pregnancy = described_class.conceived
-      pregnancy.advanced_by(10)
-      expect(pregnancy.gestation_days).to eq(0)
-    end
-
-    it '性別と近交係数は引き継がれること' do
-      pregnancy = described_class.new(sex: sex, gestation_days: 0, inbreeding_coefficient: 0.5)
-      advanced = pregnancy.advanced_by(5)
-      expect(advanced.sex).to eq(sex)
-      expect(advanced.inbreeding_coefficient).to eq(0.5)
-    end
-
-    it '負の日数は ArgumentError になること' do
-      expect { described_class.conceived.advanced_by(-1) }.to raise_error(ArgumentError)
+    context '-1 を渡したとき' do
+      it 'ArgumentError が発生すること' do
+        expect { pregnancy.advanced_by(-1) }.to raise_error(ArgumentError)
+      end
     end
   end
 
-  describe '等価性' do
-    it '同じ性別・日数・近交係数どうしは等価であること' do
-      expect(described_class.new(sex: sex, gestation_days: 30))
-        .to eq(described_class.new(sex: sex, gestation_days: 30))
+  describe '#==' do
+    let(:gestation_days) { 30 }
+
+    context '性別・日数・近交係数が同じとき' do
+      it '等しいこと' do
+        expect(pregnancy).to eq(described_class.new(sex:, gestation_days: 30, inbreeding_coefficient: 0.5))
+      end
     end
 
-    it '日数が異なれば等価でないこと' do
-      expect(described_class.new(sex: sex, gestation_days: 30))
-        .not_to eq(described_class.new(sex: sex, gestation_days: 31))
+    context '日数が 30 と 31 で違うとき' do
+      it '等しくないこと' do
+        expect(pregnancy).not_to eq(described_class.new(sex:, gestation_days: 31, inbreeding_coefficient: 0.5))
+      end
     end
   end
 
   describe '#to_s' do
-    it '"妊娠N日" の形で表されること' do
-      expect(described_class.new(sex: sex, gestation_days: 42).to_s).to eq('妊娠42日')
+    let(:gestation_days) { 42 }
+
+    it '"妊娠42日" を返すこと' do
+      expect(pregnancy.to_s).to eq('妊娠42日')
     end
   end
 end
