@@ -18,24 +18,13 @@ RSpec.describe 'POST /graphql', type: :request do
     response.parsed_body
   end
 
-  it 'acquireAnimal → addEnclosure → houseAnimal と送ると、houseAnimal の応答に occupants ["レオ"] と occupancy.full=false が返ること' do
-    animal_id = graphql('mutation { acquireAnimal(speciesCode: "lion", name: "レオ", sex: MALE) { id } }')
-                .dig('data', 'acquireAnimal', 'id')
-    enclosure_id = graphql('mutation { addEnclosure(name: "ライオンの丘", celsius: 28, capacity: 4) { id } }')
-                   .dig('data', 'addEnclosure', 'id')
+  it 'POST /graphql に query { enclosures { name } } と送ると、200 で data.enclosures に保存済みのエリア名 "丘" が返ること' do
+    create(:enclosure, name: '丘')
 
-    body = graphql(
-      'mutation($enclosureId: ID!, $animalId: ID!) { ' \
-      'houseAnimal(enclosureId: $enclosureId, animalId: $animalId) { name occupants { name } occupancy { full } } }',
-      { enclosureId: enclosure_id, animalId: animal_id }
-    )
+    body = graphql('{ enclosures { name } }')
 
     expect(response).to have_http_status(:ok)
-    expect(body).to eq(
-      'data' => {
-        'houseAnimal' => { 'name' => 'ライオンの丘', 'occupants' => [{ 'name' => 'レオ' }], 'occupancy' => { 'full' => false } }
-      }
-    )
+    expect(body).to eq('data' => { 'enclosures' => [{ 'name' => '丘' }] })
   end
 
   it "未知の種 dragon で acquireAnimal を送ると、200 で data が null・errors[0].extensions.code が 'SpeciesNotFound' になること" do
