@@ -57,31 +57,90 @@ RSpec.describe Animal::LifeStage do
   end
 
   describe '#baby?' do
-    it '.baby は true・.juvenile は false を返すこと' do
-      expect(described_class.baby).to be_baby
-      expect(described_class.juvenile).not_to be_baby
+    subject(:stage) { described_class.new(value) }
+
+    context 'baby のとき' do
+      let(:value) { :baby }
+
+      it 'true を返すこと' do
+        expect(stage.baby?).to be(true)
+      end
+    end
+
+    context 'juvenile のとき' do
+      let(:value) { :juvenile }
+
+      it 'false を返すこと' do
+        expect(stage.baby?).to be(false)
+      end
     end
   end
 
   describe '#adult?' do
-    it '.adult は true・.elderly は false(老齢は adult? に含まれない)を返すこと' do
-      expect(described_class.adult).to be_adult
-      expect(described_class.elderly).not_to be_adult
+    subject(:stage) { described_class.new(value) }
+
+    context 'adult のとき' do
+      let(:value) { :adult }
+
+      it 'true を返すこと' do
+        expect(stage.adult?).to be(true)
+      end
+    end
+
+    context 'elderly のとき' do
+      let(:value) { :elderly }
+
+      it 'false を返すこと' do
+        expect(stage.adult?).to be(false)
+      end
     end
   end
 
   describe '#elderly?' do
-    it '.elderly は true を返すこと' do
-      expect(described_class.elderly).to be_elderly
+    subject(:stage) { described_class.new(value) }
+
+    context 'elderly のとき' do
+      let(:value) { :elderly }
+
+      it 'true を返すこと' do
+        expect(stage.elderly?).to be(true)
+      end
     end
   end
 
   describe '#mature?' do
-    it '.adult・.elderly は true、.baby・.juvenile は false を返すこと' do
-      expect(described_class.adult).to be_mature
-      expect(described_class.elderly).to be_mature
-      expect(described_class.baby).not_to be_mature
-      expect(described_class.juvenile).not_to be_mature
+    subject(:stage) { described_class.new(value) }
+
+    context 'baby のとき' do
+      let(:value) { :baby }
+
+      it 'false を返すこと' do
+        expect(stage.mature?).to be(false)
+      end
+    end
+
+    context 'juvenile のとき' do
+      let(:value) { :juvenile }
+
+      it 'false を返すこと' do
+        expect(stage.mature?).to be(false)
+      end
+    end
+
+    context 'adult のとき' do
+      let(:value) { :adult }
+
+      it 'true を返すこと' do
+        expect(stage.mature?).to be(true)
+      end
+    end
+
+    context 'elderly のとき' do
+      let(:value) { :elderly }
+
+      it 'true を返すこと' do
+        expect(stage.mature?).to be(true)
+      end
     end
   end
 
