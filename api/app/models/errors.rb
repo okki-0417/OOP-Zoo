@@ -1,0 +1,18 @@
+# frozen_string_literal: true
+
+module Errors
+  class DomainError < StandardError; end
+  class InvalidValue < DomainError; end
+  class CapacityExceeded < DomainError; end
+  class ClimateMismatch < DomainError; end
+  class IncompatibleCohabitation < DomainError; end
+  class DeadAnimal < DomainError; end
+  class BreedingNotAllowed < DomainError; end
+  class HousingNotAllowed < DomainError; end
+  class FeedingNotAllowed < DomainError; end
+  class WorkNotAllowed < DomainError; end
+  class AssignmentNotAllowed < DomainError; end
+  class ReliefNotAllowed < DomainError; end
+  class VaccineUnavailable < DomainError; end
+  class InsufficientFunds < DomainError; end
+end

@@ -3,41 +3,39 @@
 require 'spec_helper'
 
 RSpec.describe '固定費と休園' do
-  catalog = Zoo::Domain::SpeciesCatalog
-
   def savanna
-    Zoo::Domain::Enclosure.new(
-      name: 'サバンナ', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 4
+    Enclosure.new(
+      name: 'サバンナ', temperature: Temperature.celsius(28), capacity: 4
     )
   end
 
   describe '固定費は収入に依存しない' do
     it '在園個体がいれば、来園者のいない休園日でも運営費が発生すること' do
-      daily = Zoo::Domain::OperatingCost.new(
-        enclosures: [savanna], staff: [build_keeper], species: [catalog.lion]
+      daily = OperatingCost.new(
+        enclosures: [savanna], staff: [build_keeper], species: [SpeciesCatalog.lion]
       ).amount
       expect(daily.yen).to be > 0
     end
 
     it '運営費は来園者数ではなく在園頭数で増えること(飼料費)' do
-      one = Zoo::Domain::OperatingCost.new(
-        enclosures: [savanna], staff: [build_keeper], species: [catalog.lion]
+      one = OperatingCost.new(
+        enclosures: [savanna], staff: [build_keeper], species: [SpeciesCatalog.lion]
       ).amount
-      two = Zoo::Domain::OperatingCost.new(
-        enclosures: [savanna], staff: [build_keeper], species: [catalog.lion, catalog.african_elephant]
+      two = OperatingCost.new(
+        enclosures: [savanna], staff: [build_keeper], species: [SpeciesCatalog.lion, SpeciesCatalog.african_elephant]
       ).amount
       expect(two.yen).to be > one.yen
     end
 
     it '同じ種でも、飼料費は頭数分かかること(ライオン3頭はライオン1頭の3倍)' do
-      lions = Array.new(3) { catalog.lion }
-      feed = ->(species) { Zoo::Domain::OperatingCost.new(enclosures: [], staff: [], species:).amount }
-      expect(feed.call(lions)).to eq(feed.call([catalog.lion]) * 3)
+      lions = Array.new(3) { SpeciesCatalog.lion }
+      feed = ->(species) { OperatingCost.new(enclosures: [], staff: [], species:).amount }
+      expect(feed.call(lions)).to eq(feed.call([SpeciesCatalog.lion]) * 3)
     end
 
     it '在園個体がいなくても、エリアと職員(飼育員・獣医)の維持費は発生すること' do
-      staff = [build_keeper, Zoo::Domain::Veterinarian.new(name: '獣医')]
-      daily = Zoo::Domain::OperatingCost.new(enclosures: [savanna], staff: staff, species: []).amount
+      staff = [build_keeper, Veterinarian.new(name: '獣医')]
+      daily = OperatingCost.new(enclosures: [savanna], staff: staff, species: []).amount
       expect(daily.yen).to be > 0
     end
   end

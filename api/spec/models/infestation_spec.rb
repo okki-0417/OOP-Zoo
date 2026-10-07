@@ -1,0 +1,45 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Infestation do
+  def pen
+    Enclosure.new(
+      name: '丘', temperature: Temperature.celsius(28), capacity: 6
+    )
+  end
+
+  def occupancy(enclosure, occupants)
+    build_occupancy(enclosure, occupants)
+  end
+
+  describe '#spread' do
+    it '清潔なエリアでは誰も発病せず [] を返すこと' do
+      enclosure = pen
+      lion = build_adult(SpeciesCatalog.lion)
+
+      expect(described_class.new(enclosure, occupancy(enclosure, [lion])).spread).to eq([])
+      expect(lion).not_to be_sick
+    end
+
+    it 'soil(80)で不潔だと感受性個体が寄生虫に発病し、発病個体を返すこと' do
+      enclosure = pen
+      enclosure.soil(80)
+      healthy = build_adult(SpeciesCatalog.lion)
+
+      result = described_class.new(enclosure, occupancy(enclosure, [healthy])).spread
+
+      expect(result).to contain_exactly(healthy)
+      expect(healthy).to be_sick
+    end
+
+    it '既に病気の個体(感受性なし)は不潔でも発病対象にならず [] を返すこと' do
+      enclosure = pen
+      enclosure.soil(80)
+      already = build_adult(SpeciesCatalog.lion)
+      already.fall_ill(IllnessCatalog.cold)
+
+      expect(described_class.new(enclosure, occupancy(enclosure, [already])).spread).to eq([])
+    end
+  end
+end

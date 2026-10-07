@@ -3,4 +3,4 @@
 
 require_relative '../config/environment'
 
-Rails.root.join('../schema.graphql').write(Zoo::Presentation::Graphql::Schema.to_definition)
+Rails.root.join('../schema.graphql').write(OopZooSchema.to_definition)

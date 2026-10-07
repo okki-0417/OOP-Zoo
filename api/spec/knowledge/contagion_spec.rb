@@ -3,13 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe '病気の感染と免疫' do
-  catalog   = Zoo::Domain::SpeciesCatalog
-  illnesses = Zoo::Domain::IllnessCatalog
-  contagion = Zoo::Domain::Contagion
-
   def pen
-    Zoo::Domain::Enclosure.new(
-      name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 6
+    Enclosure.new(
+      name: 'ライオンの丘', temperature: Temperature.celsius(28), capacity: 6
     )
   end
 
@@ -19,31 +15,31 @@ RSpec.describe '病気の感染と免疫' do
 
   describe '接触感染' do
     it '感染性の病気を持つ個体がいると、同じエリアの健康な個体に広がること' do
-      carrier = build_adult(catalog.lion, name: '感染源')
-      healthy = build_adult(catalog.lion, name: '健康')
-      carrier.fall_ill(illnesses.cold)
+      carrier = build_adult(SpeciesCatalog.lion, name: '感染源')
+      healthy = build_adult(SpeciesCatalog.lion, name: '健康')
+      carrier.fall_ill(IllnessCatalog.cold)
 
-      contagion.new(pen, occupancy(pen, [carrier, healthy])).spread
+      Contagion.new(pen, occupancy(pen, [carrier, healthy])).spread
 
       expect(healthy).to be_sick
     end
 
     it '感染性でない病気(骨折)は広がらないこと' do
-      injured = build_adult(catalog.lion, name: '骨折')
-      healthy = build_adult(catalog.lion, name: '健康')
-      injured.fall_ill(illnesses.fracture)
+      injured = build_adult(SpeciesCatalog.lion, name: '骨折')
+      healthy = build_adult(SpeciesCatalog.lion, name: '健康')
+      injured.fall_ill(IllnessCatalog.fracture)
 
-      contagion.new(pen, occupancy(pen, [injured, healthy])).spread
+      Contagion.new(pen, occupancy(pen, [injured, healthy])).spread
 
       expect(healthy).not_to be_sick
     end
 
     it '別のエリアの個体には広がらないこと' do
-      carrier = build_adult(catalog.lion, name: '感染源')
-      carrier.fall_ill(illnesses.cold)
-      faraway = build_adult(catalog.lion, name: '別エリア')
+      carrier = build_adult(SpeciesCatalog.lion, name: '感染源')
+      carrier.fall_ill(IllnessCatalog.cold)
+      faraway = build_adult(SpeciesCatalog.lion, name: '別エリア')
 
-      contagion.new(pen, occupancy(pen, [carrier])).spread
+      Contagion.new(pen, occupancy(pen, [carrier])).spread
 
       expect(faraway).not_to be_sick
     end
@@ -51,21 +47,21 @@ RSpec.describe '病気の感染と免疫' do
 
   describe '免疫' do
     it '病気から回復すると、その病気に免疫を持つこと' do
-      lion = build_adult(catalog.lion)
-      lion.fall_ill(illnesses.cold)
+      lion = build_adult(SpeciesCatalog.lion)
+      lion.fall_ill(IllnessCatalog.cold)
       lion.recover
 
-      expect(lion.immune_to?(illnesses.cold)).to be(true)
+      expect(lion.immune_to?(IllnessCatalog.cold)).to be(true)
     end
 
     it '免疫を持つ病気には接触しても再びかからないこと' do
-      recovered = build_adult(catalog.lion, name: '回復済み')
-      recovered.fall_ill(illnesses.cold)
+      recovered = build_adult(SpeciesCatalog.lion, name: '回復済み')
+      recovered.fall_ill(IllnessCatalog.cold)
       recovered.recover
-      carrier = build_adult(catalog.lion, name: '感染源')
-      carrier.fall_ill(illnesses.cold)
+      carrier = build_adult(SpeciesCatalog.lion, name: '感染源')
+      carrier.fall_ill(IllnessCatalog.cold)
 
-      contagion.new(pen, occupancy(pen, [recovered, carrier])).spread
+      Contagion.new(pen, occupancy(pen, [recovered, carrier])).spread
 
       expect(recovered).not_to be_sick
     end

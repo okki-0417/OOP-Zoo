@@ -3,28 +3,26 @@
 require 'spec_helper'
 
 RSpec.describe '栄養失調' do
-  foods   = Zoo::Domain::FoodCatalog
-  season  = Zoo::Domain::Season
-  macaque = Zoo::Domain::SpeciesCatalog.japanese_macaque
+  macaque = SpeciesCatalog.japanese_macaque
 
   def troop
-    enclosure = Zoo::Domain::Enclosure.new(
-      name: 'モンキーマウンテン', temperature: Zoo::Domain::Shared::Temperature.celsius(20), capacity: 8
+    enclosure = Enclosure.new(
+      name: 'モンキーマウンテン', temperature: Temperature.celsius(20), capacity: 8
     )
-    macaque = Zoo::Domain::SpeciesCatalog.japanese_macaque
+    macaque = SpeciesCatalog.japanese_macaque
     subject_monkey = build_adult(macaque, name: '主役')
-    companion = build_adult(macaque, name: '仲間', sex: Zoo::Domain::Animal::Sex.female)
+    companion = build_adult(macaque, name: '仲間', sex: Animal::Sex.female)
     [enclosure, subject_monkey, [subject_monkey, companion]]
   end
 
   def feed_daily(animal, foods)
-    keeper = build_keeper(Zoo::Domain::TaxonClass.mammal)
-    Zoo::Domain::Feeding.new(keeper: keeper, animal: animal, foods: foods).serve
+    keeper = build_keeper(TaxonClass.mammal)
+    Feeding.new(keeper: keeper, animal: animal, foods: foods).serve
     animal.settle_nutrition
   end
 
   def malnourish(animal, times: 4)
-    times.times { feed_daily(animal, [Zoo::Domain::FoodCatalog.banana]) }
+    times.times { feed_daily(animal, [FoodCatalog.banana]) }
     animal
   end
 
@@ -38,7 +36,7 @@ RSpec.describe '栄養失調' do
 
     it 'バランスの取れた給餌(果実と昆虫)は栄養を保ち、福祉を後押しすること' do
       enclosure, monkey, occupants = troop
-      4.times { feed_daily(monkey, [foods.banana, foods.cricket]) }
+      4.times { feed_daily(monkey, [FoodCatalog.banana, FoodCatalog.cricket]) }
       expect(monkey).not_to be_malnourished
       expect(welfare_of(monkey, enclosure, occupants).daily_stress).to be < 0
     end
@@ -48,7 +46,7 @@ RSpec.describe '栄養失調' do
     it '栄養失調が続くと体力を損なうこと' do
       monkey = build_adult(macaque, max_health: 100)
       malnourish(monkey)
-      expect { monkey.grow_older(1) }.to change { monkey.current_health }.by(-Zoo::Domain::Animal::MALNUTRITION_DAMAGE_PER_DAY)
+      expect { monkey.grow_older(1) }.to change { monkey.current_health }.by(-Animal::MALNUTRITION_DAMAGE_PER_DAY)
     end
 
     it '深刻な栄養失調が続くと衰弱死し、死因が栄養失調として記録されること' do

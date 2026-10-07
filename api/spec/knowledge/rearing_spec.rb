@@ -3,21 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe '養育と離乳' do
-  catalog = Zoo::Domain::SpeciesCatalog
-  sex     = Zoo::Domain::Animal::Sex
-
   def savanna
-    Zoo::Domain::Enclosure.new(
-      name: 'サバンナ', temperature: Zoo::Domain::Shared::Temperature.celsius(28), capacity: 6
+    Enclosure.new(
+      name: 'サバンナ', temperature: Temperature.celsius(28), capacity: 6
     )
   end
 
   def dam_and_cub(cub_age_in_days:)
-    lion = Zoo::Domain::SpeciesCatalog.lion
-    s = Zoo::Domain::Animal::Sex
+    lion = SpeciesCatalog.lion
+    s = Animal::Sex
     sire = build_adult(lion, name: '父', sex: s.male)
     dam = build_adult(lion, name: '母', sex: s.female)
-    cub = Zoo::Domain::Animal.new(
+    cub = Animal.new(
       species: lion, name: '仔', sex: s.male, max_health: 100,
       age_in_days: cub_age_in_days, sire: sire, dam: dam
     )
@@ -53,8 +50,8 @@ RSpec.describe '養育と離乳' do
         enclosure = savanna
         occupants = [
           cub,
-          build_adult(catalog.lion, name: '他1'),
-          build_adult(catalog.lion, name: '他2', sex: sex.female)
+          build_adult(SpeciesCatalog.lion, name: '他1'),
+          build_adult(SpeciesCatalog.lion, name: '他2', sex: Animal::Sex.female)
         ]
 
         expect(welfare_of(cub, enclosure, occupants).daily_stress).to be > 0
@@ -67,8 +64,8 @@ RSpec.describe '養育と離乳' do
         enclosure = savanna
         occupants = [
           weaned,
-          build_adult(catalog.lion, name: '他1'),
-          build_adult(catalog.lion, name: '他2', sex: sex.female)
+          build_adult(SpeciesCatalog.lion, name: '他1'),
+          build_adult(SpeciesCatalog.lion, name: '他2', sex: Animal::Sex.female)
         ]
 
         expect(welfare_of(weaned, enclosure, occupants).daily_stress).to be < 0

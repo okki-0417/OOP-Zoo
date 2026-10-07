@@ -1,0 +1,14 @@
+# frozen_string_literal: true
+
+module Services
+  module Commands
+    CleanEnclosureCommand = Data.define(:keeper_id, :enclosure_id, :amount) do
+      def initialize(keeper_id:, enclosure_id:, amount: 100)
+        raise ArgumentError, 'keeper_id は必須です' if keeper_id.nil?
+        raise ArgumentError, 'enclosure_id は必須です' if enclosure_id.nil?
+
+        super
+      end
+    end
+  end
+end

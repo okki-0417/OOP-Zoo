@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+module Services
+  module Commands
+    AdmitVisitorsCommand = Data.define(:count) do
+      def initialize(count:)
+        raise ArgumentError, 'count は必須です' if count.nil?
+
+        super
+      end
+    end
+  end
+end

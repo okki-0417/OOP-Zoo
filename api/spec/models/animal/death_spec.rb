@@ -1,0 +1,31 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Animal::Death do
+  describe '.new' do
+    it 'cause: :predation を渡すと cause が :predation を返すこと' do
+      expect(described_class.new(cause: :predation).cause).to eq(:predation)
+    end
+
+    it 'cause を省略すると cause が :unknown を返すこと' do
+      expect(described_class.new.cause).to eq(:unknown)
+    end
+  end
+
+  describe '#to_s' do
+    it '死因のラベル(日本語)を返すこと(例: :old_age → "老衰")' do
+      expect(described_class.new(cause: :old_age).to_s).to eq('老衰')
+    end
+  end
+
+  describe '等価性' do
+    it '同じ cause 同士は eq で等しいこと' do
+      expect(described_class.new(cause: :old_age)).to eq(described_class.new(cause: :old_age))
+    end
+
+    it '異なる cause 同士は eq で等しくないこと' do
+      expect(described_class.new(cause: :old_age)).not_to eq(described_class.new(cause: :predation))
+    end
+  end
+end

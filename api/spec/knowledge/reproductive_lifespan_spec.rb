@@ -4,9 +4,9 @@ require 'spec_helper'
 
 RSpec.describe '繁殖適齢期' do
   def lion_aged(years)
-    Zoo::Domain::Animal.new(
-      species: Zoo::Domain::SpeciesCatalog.lion,
-      name: 'X', sex: Zoo::Domain::Animal::Sex.male, max_health: 100, age_in_days: 365 * years
+    Animal.new(
+      species: SpeciesCatalog.lion,
+      name: 'X', sex: Animal::Sex.male, max_health: 100, age_in_days: 365 * years
     )
   end
 

@@ -2,7 +2,7 @@
 
 ## リポジトリ構成
 
-- `api/` … Rails(API モード) + graphql-ruby + SQLite。`POST /graphql` は `GraphqlController`。ドメイン(ActiveRecord のモデルと PORO)・アプリケーション・GraphQL は `lib/zoo/`(Rails の autoload 対象)。マイグレーションは `db/migrate/`。`cd api` してから `bundle exec rspec` / `bundle exec rubocop` / `bin/rails console` / `bin/rails db:migrate`
+- `api/` … Rails(API モード) + graphql-ruby + SQLite。`POST /graphql` は `GraphqlController`。ドメイン(ActiveRecord のモデル・PORO・値オブジェクト)は `app/models/`、GraphQL は `app/graphql/`、移行中のアプリケーションサービスは `lib/services/`。マイグレーションは `db/migrate/`。`cd api` してから `bundle exec rspec` / `bundle exec rubocop` / `bin/rails console` / `bin/rails db:migrate`
 - `web/` … Vue + Vite の SPA。`schema.graphql` から `pnpm gen:types` で型を生成する
 - `schema.graphql` … api と web の契約。api 側を変えたら `api/bin/dump-graphql-schema` で更新する
 - ルートは pnpm ワークスペース。`pnpm dev:api` / `pnpm dev:web` で個別に、`pnpm dev` でまとめて起動する。
@@ -15,12 +15,12 @@
 
 ### 集約に属するVOは、集約ごとのディレクトリに置く
 
-- 例: `app/domain/animal.rb` の VO は `app/domain/animal/` に置く
+- 例: `app/models/animal.rb` の VO は `app/models/animal/` に置く
 
 ### Rails に乗る
 
-- リソースは ActiveRecord のモデル(`Zoo::Domain::*` で `ApplicationRecord` を継承)。データマッパーやリポジトリは作らない
-- 列と値オブジェクトは Attributes API で結ぶ(`attribute :hunger, Shared::ValueType.new(Hunger, dump: :level.to_proc)`)。
+- リソースは ActiveRecord のモデル(`app/models` に置き `ApplicationRecord` を継承)。データマッパーやリポジトリは作らない
+- 列と値オブジェクトは Attributes API で結ぶ(`attribute :hunger, ValueType.new(Hunger, dump: :level.to_proc)`)。
   値オブジェクトそのものは PORO のまま
 - テーブルは Rails の規約(複数形・bigint の id・`xxx_id`)で、名前はドメインの言葉にする。`_events` のような技術都合の名前は付けない
 - 必要がない履歴は持たない(イベントソーシングしない)。今の状態は列と関連で表す
@@ -120,7 +120,7 @@
 - `context '<状況>'` … ルールが効く「〜の場合 / 〜のとき / 〜と」という状況・条件
 - `it '<帰結>となること'` … その状況で成り立つドメインの帰結。具体値は `it` に書く
 
-### 単体テスト — `spec/zoo/`(ファイル=クラス)
+### 単体テスト — `spec/models/` `spec/graphql/` `spec/services/`(ファイル=クラス)
 
 - Tier 1 を満たすために実装したコードに対して書く
 - `describe Class` ＋メソッド単位。技術的なラベルでよい

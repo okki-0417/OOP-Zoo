@@ -3,25 +3,22 @@
 require 'spec_helper'
 
 RSpec.describe '種内闘争と外傷' do
-  catalog    = Zoo::Domain::SpeciesCatalog
-  sex        = Zoo::Domain::Animal::Sex
-
   def pride(capacity: 6, area_sqm: nil)
-    Zoo::Domain::Enclosure.new(
-      name: 'ライオンの丘', temperature: Zoo::Domain::Shared::Temperature.celsius(28),
+    Enclosure.new(
+      name: 'ライオンの丘', temperature: Temperature.celsius(28),
       capacity: capacity, area_sqm: area_sqm
     )
   end
 
   def senior_and_junior
-    lion = Zoo::Domain::SpeciesCatalog.lion
-    senior = build_animal(lion, name: '長老', sex: Zoo::Domain::Animal::Sex.male, age_in_days: 4000)
-    junior = build_adult(lion, name: '若オス', sex: Zoo::Domain::Animal::Sex.male)
+    lion = SpeciesCatalog.lion
+    senior = build_animal(lion, name: '長老', sex: Animal::Sex.male, age_in_days: 4000)
+    junior = build_adult(lion, name: '若オス', sex: Animal::Sex.male)
     [senior, junior]
   end
 
   def conflict(enclosure, occupants, animal)
-    Zoo::Domain::Companionship.new(
+    Companionship.new(
       enclosure: enclosure, occupancy: build_occupancy(enclosure, occupants), member: animal
     )
   end
@@ -54,13 +51,13 @@ RSpec.describe '種内闘争と外傷' do
     it '深刻な闘争は致死的となり、死因が外傷として記録されること' do
       cramped = pride(capacity: 4, area_sqm: 100)
       cramped.deplete_enrichment(100)
-      senior = build_animal(catalog.lion, name: '長老', sex: sex.male, age_in_days: 4000)
-      junior = build_animal(catalog.lion, name: '若オス', sex: sex.male, age_in_days: 365 * 5, max_health: 10)
+      senior = build_animal(SpeciesCatalog.lion, name: '長老', sex: Animal::Sex.male, age_in_days: 4000)
+      junior = build_animal(SpeciesCatalog.lion, name: '若オス', sex: Animal::Sex.male, age_in_days: 365 * 5, max_health: 10)
       occupants = [senior, junior]
 
       occupancy = build_occupancy(cramped, occupants)
-      Zoo::Domain::Contagion.new(cramped, occupancy).spread
-      occupants.each { |animal| Zoo::Domain::AnimalDay.new(animal:, enclosure: cramped, occupancy:, season: Zoo::Domain::Season.spring).run }
+      Contagion.new(cramped, occupancy).spread
+      occupants.each { |animal| AnimalDay.new(animal:, enclosure: cramped, occupancy:, season: Season.spring).run }
 
       expect(occupants.select(&:dead?)).to include(junior)
       expect(junior.cause_of_death).to eq(:injury)
@@ -70,8 +67,8 @@ RSpec.describe '種内闘争と外傷' do
   describe '回避' do
     it 'バチェラー(独身オス)を別群に分けると、闘争を被らないこと' do
       enclosure = pride
-      lone_male = build_adult(catalog.lion, name: '独身', sex: sex.male)
-      occupants = [lone_male, build_adult(catalog.lion, name: 'メス', sex: sex.female)]
+      lone_male = build_adult(SpeciesCatalog.lion, name: '独身', sex: Animal::Sex.male)
+      occupants = [lone_male, build_adult(SpeciesCatalog.lion, name: 'メス', sex: Animal::Sex.female)]
 
       expect(conflict(enclosure, occupants, lone_male).injury).to eq(0)
     end

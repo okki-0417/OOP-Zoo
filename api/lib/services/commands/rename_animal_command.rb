@@ -1,0 +1,14 @@
+# frozen_string_literal: true
+
+module Services
+  module Commands
+    RenameAnimalCommand = Data.define(:animal_id, :new_name) do
+      def initialize(animal_id:, new_name:)
+        raise ArgumentError, 'animal_id は必須です' if animal_id.nil?
+        raise ArgumentError, 'new_name は必須です' if new_name.nil?
+
+        super
+      end
+    end
+  end
+end

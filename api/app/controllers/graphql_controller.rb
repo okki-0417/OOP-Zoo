@@ -5,7 +5,7 @@ class GraphqlController < ApplicationController
 
   def execute
     started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-    result = Zoo::Presentation::Graphql::Schema.execute(
+    result = OopZooSchema.execute(
       params[:query],
       variables:,
       operation_name: params[:operationName]

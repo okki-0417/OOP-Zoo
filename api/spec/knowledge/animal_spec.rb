@@ -3,29 +3,23 @@
 require 'spec_helper'
 
 RSpec.describe '動物' do
-  sex = Zoo::Domain::Animal::Sex
-  catalog   = Zoo::Domain::SpeciesCatalog
-  foods     = Zoo::Domain::FoodCatalog
-  illnesses = Zoo::Domain::IllnessCatalog
-  errors    = Zoo::Domain::Errors
-
   def build_animal(name: 'Jack', voice: 'Woof', max_health: 10, age_in_days: 0,
-                   sex: Zoo::Domain::Animal::Sex.male)
-    Zoo::Domain::Animal.new(
-      species: Zoo::Domain::SpeciesCatalog.lion,
+                   sex: Animal::Sex.male)
+    Animal.new(
+      species: SpeciesCatalog.lion,
       name: name, sex: sex, voice: voice, max_health: max_health, age_in_days: age_in_days
     )
   end
 
-  def adult_lion(sex: Zoo::Domain::Animal::Sex.male, max_health: 100,
-                 species: Zoo::Domain::SpeciesCatalog.lion)
-    Zoo::Domain::Animal.new(species: species, name: 'X', sex: sex, max_health: max_health, age_in_days: 365 * 5)
+  def adult_lion(sex: Animal::Sex.male, max_health: 100,
+                 species: SpeciesCatalog.lion)
+    Animal.new(species: species, name: 'X', sex: sex, max_health: max_health, age_in_days: 365 * 5)
   end
 
   def build_cub(name, sire:, dam:)
-    Zoo::Domain::Animal.new(
-      species: Zoo::Domain::SpeciesCatalog.lion,
-      name: name, sex: Zoo::Domain::Animal::Sex.male, max_health: 10, sire: sire, dam: dam
+    Animal.new(
+      species: SpeciesCatalog.lion,
+      name: name, sex: Animal::Sex.male, max_health: 10, sire: sire, dam: dam
     )
   end
 
@@ -139,7 +133,7 @@ RSpec.describe '動物' do
     end
 
     it '声を指定しなければ種の既定の声で鳴くこと(ライオンはガオー)' do
-      lion = Zoo::Domain::Animal.new(species: catalog.lion, name: 'レオ', sex: sex.male, max_health: 100)
+      lion = Animal.new(species: SpeciesCatalog.lion, name: 'レオ', sex: Animal::Sex.male, max_health: 100)
       expect(lion.cry_out).to eq('ガオー')
     end
 
@@ -171,8 +165,8 @@ RSpec.describe '動物' do
 
   describe '空腹と飢餓' do
     let(:animal) { build_animal(max_health: 100) }
-    let(:meat) { foods.horse_meat }
-    let(:hay)  { foods.hay }
+    let(:meat) { FoodCatalog.horse_meat }
+    let(:hay)  { FoodCatalog.hay }
 
     context '時間が経つと' do
       it '空腹が進むこと' do
@@ -190,8 +184,8 @@ RSpec.describe '動物' do
     end
 
     def serve(animal, food)
-      Zoo::Domain::Feeding.new(
-        keeper: build_keeper(Zoo::Domain::TaxonClass.mammal), animal: animal, foods: [food]
+      Feeding.new(
+        keeper: build_keeper(TaxonClass.mammal), animal: animal, foods: [food]
       )
     end
 
@@ -206,7 +200,7 @@ RSpec.describe '動物' do
     context '食性に合わない餌を与えられると' do
       it '受け付けず、空腹も変わらないこと' do
         animal.get_hungrier(80)
-        expect { serve(animal, hay).serve }.to raise_error(errors::FeedingNotAllowed)
+        expect { serve(animal, hay).serve }.to raise_error(Errors::FeedingNotAllowed)
         expect(animal.hunger_level).to eq(80)
       end
     end
@@ -214,7 +208,7 @@ RSpec.describe '動物' do
     context '死んでいるとき' do
       it '餌を与えられないこと' do
         animal.die
-        expect { serve(animal, meat).serve }.to raise_error(errors::FeedingNotAllowed)
+        expect { serve(animal, meat).serve }.to raise_error(Errors::FeedingNotAllowed)
       end
     end
 
@@ -267,13 +261,13 @@ RSpec.describe '動物' do
 
     context '発病すると' do
       it '病気にかかった状態になること' do
-        animal.fall_ill(illnesses.cold)
+        animal.fall_ill(IllnessCatalog.cold)
         expect(animal).to be_sick
-        expect(animal.illness).to eq(illnesses.cold)
+        expect(animal.illness).to eq(IllnessCatalog.cold)
       end
 
       it '治療を受けると回復すること' do
-        animal.fall_ill(illnesses.cold)
+        animal.fall_ill(IllnessCatalog.cold)
         animal.recover
         expect(animal).not_to be_sick
         expect(animal.illness).to be_nil
@@ -282,7 +276,7 @@ RSpec.describe '動物' do
 
     context '病気のまま放置されると' do
       it '体力を削られ、やがて病死すること' do
-        animal.fall_ill(illnesses.pneumonia)
+        animal.fall_ill(IllnessCatalog.pneumonia)
         animal.grow_older(20)
         expect(animal).to be_dead
         expect(animal.cause_of_death).to eq(:illness)
@@ -292,7 +286,7 @@ RSpec.describe '動物' do
     context '死んでいるとき' do
       it '発病しないこと' do
         animal.die
-        expect { animal.fall_ill(illnesses.cold) }.to raise_error(errors::DeadAnimal)
+        expect { animal.fall_ill(IllnessCatalog.cold) }.to raise_error(Errors::DeadAnimal)
       end
     end
   end
@@ -361,7 +355,7 @@ RSpec.describe '動物' do
       context '病気のとき' do
         it '繁殖できないこと' do
           lion = adult_lion
-          lion.fall_ill(illnesses.cold)
+          lion.fall_ill(IllnessCatalog.cold)
           expect(lion).not_to be_fertile
         end
       end
@@ -378,7 +372,7 @@ RSpec.describe '動物' do
 
   describe '血縁' do
     let(:sire) { build_animal(name: 'Sire') }
-    let(:dam) { build_animal(name: 'Dam', sex: sex.female) }
+    let(:dam) { build_animal(name: 'Dam', sex: Animal::Sex.female) }
 
     it '親を指定して生まれると両親が血統として記録されること' do
       cub = build_cub('Cub', sire: sire, dam: dam)
@@ -404,7 +398,7 @@ RSpec.describe '動物' do
 
     context '病気(風邪)にかかっていると' do
       it '体調不良であること' do
-        expect(adult_lion.tap { |lion| lion.fall_ill(illnesses.cold) }).to be_ailing
+        expect(adult_lion.tap { |lion| lion.fall_ill(IllnessCatalog.cold) }).to be_ailing
       end
     end
 
@@ -422,7 +416,7 @@ RSpec.describe '動物' do
 
     context '死んだ個体は' do
       it '病気のまま死んでも体調不良とはみなさないこと' do
-        lion = adult_lion.tap { |animal| animal.fall_ill(illnesses.cold) }
+        lion = adult_lion.tap { |animal| animal.fall_ill(IllnessCatalog.cold) }
         lion.die
 
         expect(lion).not_to be_ailing
