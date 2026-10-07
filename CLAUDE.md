@@ -1,81 +1,14 @@
-# 複雑な動物園シミュレーションドメインをDDDで開発する
-
-## リポジトリ構成
-
-- `api/` … Rails(API モード) + graphql-ruby + SQLite。`POST /graphql` は `GraphqlController`。ドメイン(ActiveRecord のモデル・PORO・値オブジェクト)は `app/models/`、GraphQL は `app/graphql/`、移行中のアプリケーションサービスは `lib/services/`。マイグレーションは `db/migrate/`。`cd api` してから `bundle exec rspec` / `bundle exec rubocop` / `bin/rails console` / `bin/rails db:migrate`
-- `web/` … Vue + Vite の SPA。`schema.graphql` から `pnpm gen:types` で型を生成する
-- `schema.graphql` … api と web の契約。api 側を変えたら `api/bin/dump-graphql-schema` で更新する
-- ルートは pnpm ワークスペース。`pnpm dev:api` / `pnpm dev:web` で個別に、`pnpm dev` でまとめて起動する。
-  ほかに `pnpm test:api` / `pnpm lint:api` / `pnpm gen:schema`(スキーマ出力→型生成)
-- CI(`.github/workflows/ci.yml`)で rspec・rubocop・型検査・テストと、スキーマ/生成型のずれを検査する
-
-## 開発ワークフロー上の注意
-
 - 基本的にコミットのタイミングと粒度は Claude に任せます。
+- CLAUDE.md はユーザーが許可しない限り Claude が自動で編集してはいけません。必要な場合は許可を得てから編集すること。
 
-### 集約に属するVOは、集約ごとのディレクトリに置く
+## モデル設計
 
-- 例: `app/models/animal.rb` の VO は `app/models/animal/` に置く
+### 命名規則と切り出し方の方針
 
-### Rails に乗る
-
-- リソースは ActiveRecord のモデル(`app/models` に置き `ApplicationRecord` を継承)。データマッパーやリポジトリは作らない
-- 列と値オブジェクトは Attributes API で結ぶ(`attribute :hunger, ValueType.new(Hunger, dump: :level.to_proc)`)。
-  値オブジェクトそのものは PORO のまま
-- テーブルは Rails の規約(複数形・bigint の id・`xxx_id`)で、名前はドメインの言葉にする。`_events` のような技術都合の名前は付けない
-- 必要がない履歴は持たない(イベントソーシングしない)。今の状態は列と関連で表す
-  (例: 収容は `animals.enclosure_id`、親子は `animals.sire_id` / `dam_id`、担当は `assignments`)
-- 単一モデルに閉じたクエリはそのモデルの scope / クラスメソッドに、モデルをまたぐ読み出しは②の状態モデルのクラスメソッドに置く
-  (例: `Occupancy.of(enclosure)` / `Occupancy.all`)
-- 状態を変えるのはモデルのメソッド経由だけ(`animal.move_to(enclosure)` など)。PORO の中でもクエリや `save!` は自由に使ってよい
-- mutation(アプリケーション層)はレコードを探してモデル/PORO を呼ぶだけ(例: `Housing.new(animal: Animal.find(id), enclosure:).perform`)。
-  トランザクションと、`RecordNotFound`・ドメインのエラーから GraphQL のエラーへの変換は `BaseMutation` が一括で行う。
-  `lib/services` のアプリケーションサービスは移行中の残りで、順にこの形へ移す
-
-### 関連付けとデメテルの法則
-
-- モデル同士の `belongs_to` / `has_many` / `has_many :through` は使ってよい
-- ドメインモデルの中では、ドメインロジックは集約のルートを経由して呼ぶ(例: `Animal#sex_label`)
-- アプリケーション層(サービス・GraphQL の型)では、関連をたどって参照してよい(デメテルの法則で縛らない)
-
-#### ドメインサービスは、貧血な①イベントモデルの兆候
-
-- イベントに関するルールや状態をリソースモデルに実装してしまうと、貧血なドメインモデルとしてドメインサービスが生まれる
-- イベントに関するルールや状態をイベントモデルに持たせると、ドメインサービスを生まない
-- ①は id でなくオブジェクトで集約を受け取る(id だけだとメッセージを送れず貧血になる)
-
-### モデルの3分類（リソース／イベント／状態モデル）
-
-- **リソース集約**: Animal/Enclosure/Keeper 等。ActiveRecord のモデルで、自身の状態を所有する。
-- **リソース間イベント①**: 依存集約の状態を変更する「起きた事実・行為」。基本は PORO で、
-  後から読む必要がある事実だけを ActiveRecord のモデルとして記録する(例: `Breeding` `Operating`)。
-- **リソース間の状態・導出モデル②**: 依存の組み合わせが作る関係/条件。状態を変更せず、
-  判定・導出値を返すだけ(リードモデル、永続化しない)。
-
-#### ①と②は「依存の状態を変更するか」で判別する
-
-- 変更する＝①イベント。変更しない(問い合わせ・導出のみ)＝②状態モデル。
-- ②が依存を変更し始めたら、それは実は①。独立したイベントへ切り出す
-  (例: 「占有」の発病処理は状態変更なので Occupancy から `Infestation` へ出す)。
-- 導出は②(純粋)／適用は①で分ける
-  (例: `Welfare#daily_stress` は値を返すだけ・適用は①の `AnimalDay`／
-  `Companionship#injury` は数値を返すだけ・`injure` は①が呼ぶ)。
-- ②は引数なしの問い合わせを複数持つ「リッチなリードモデル」。
-  依存を保持せず引数で集約を受け取る貧血なドメインサービスとは別物。
-
-#### 命名
-
-- ①(アクターの行為イベント)は進行形 -ing: `Feeding` `Housing` `Examining` `Tending`
-- ②(状態・関係・導出)は名詞: `Occupancy` `Companionship` `ThermalSuitability` `Welfare`
-- 期間/オーケストレーター(複数イベントを駆動)は `XDay` 等の名詞: `ZooDay` `AnimalDay`。
-  永続化される“事実”は、それらが生む記録の方(例: `ZooDay#run` が返す `Operating`)。
-
-#### 切り出しの指針
-
-- 同じ依存・同じ関係についての複数の問いは1つの②に畳む
-  (孤独/母子分離/序列闘争/外傷 は (member, occupancy) の関係なので `Companionship` に集約)。
-- 依存の組み合わせが違うものを1つにしない。
-  同じ依存でも別の事実(`Examining` と `Treating`)は分けたまま。
+- ドメイン上の概念単位で切り出す
+- プログラミングの都合で切り出さない
+- ゆえに、XxxServiceのようなものは作らない
+- ドメインにおけるリソースとしてのモデル、イベントとしてのモデル、複数リソース間の関係性を表すモデル、の3つが基本形
 
 ### メソッド定義では、引数にインスタンス変数にないオブジェクト・異なる集約オブジェクトを渡してはいけない
 
@@ -102,37 +35,20 @@
 - コメントは書かず、コードに語らせる
 - コードにどうしても語らせることができない例外的な実装をした時のみ、補足的に書くことができる
 
-## テストファースト開発
+## テスト設計
 
-- テストは2層に分ける
-- **まずドメイン知識テスト(設計書)を書いて設計を駆動し、その結果実装したコードに対して単体テストも書く**、という順で進める
+- テストの可読性を大事にしたい
 
-### ドメイン知識テスト(設計書) — `spec/knowledge/`
+### describe / context / it をちゃんと使い分ける
 
-- 実装先行ではなくドメイン知識先行にするため、テストファーストで書く
-- テストの構造そのものが、読んでドメインが分かる「仕様書」になるように書く
-- 複雑なドメイン知識を表現するため、ドメインエキスパート目線で、専門的な知識やルールを設計する
-- 対象はドメイン層のルール/振る舞い。横断する知識(福祉・同居適性など)も知識単位の
-  ファイルに置く(クラス=ファイルにはしない)
-- `api/` で `bundle exec rspec spec/knowledge --format doc` がそのまま設計書になる
+- 単体テストでは、describe はインターフェース名
+- context をちゃんと使う
+  - 単体テストの場合、テスト対象のプログラミング的な分岐に沿ってちゃんと context を絞る
+  - it "xxxxの「場合」xxxとなること" のように、it 内に context にあるべき項目が書かれているのは、ダメな例
 
-### describe / context / it の役割
+### let をちゃんと使う
 
-- トップレベルの `RSpec.describe '<ドメイン知識>'` … その知識の名前(クラス名やメソッド名ではない)
-- 内側の `describe '<小さな知識>'` … 知識が大きいとき、それを構成する側面に分ける
-- `context '<状況>'` … ルールが効く「〜の場合 / 〜のとき / 〜と」という状況・条件
-- `it '<帰結>となること'` … その状況で成り立つドメインの帰結。具体値は `it` に書く
-
-### 単体テスト — `spec/models/` `spec/graphql/` `spec/services/`(ファイル=クラス)
-
-- Tier 1 を満たすために実装したコードに対して書く
-- `describe Class` ＋メソッド単位。技術的なラベルでよい
-- 対象は実装の保証・エッジ・技術契約: 値オブジェクトのバリデーション/クランプ/等価性、
-  モデルのバリデーション、保存と読み込みの往復(カスタム型)、トランザクション、HTTP、異常系。
-  infrastructure / application / presentation はすべてここ
-
-### どちらに書くか(litmus)
-
-- Tier 1 = 「飼育員や生物学者などのドメインエキスパートが“動物園について真”と認めること」
-- Tier 2 = 「コードが正しく動くためにプログラマが保証すること」
-- 完全な重複ゼロは目指さない。Tier 1 はルール(意図)、Tier 2 は機構(エッジ)と高度を変える
+- spec 内で def xxx のような独自定義をしてはいけない
+  - 可読性下がるくせにリターンはちょっとのコード量削減くらいなので
+- 値が違う場合の分岐のテストは、let と context を組み合わせて書く
+  - it "xxxの場合にyyyとなること" のように it 内に場合も書いてしまって、テストブロック内で xxx = xxxx のようにその場で値を設定するのは最悪な例
