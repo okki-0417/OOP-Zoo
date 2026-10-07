@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Relieving do
-  let(:keeper) { Keeper.new(name: '田中', specialties: [TaxonClass.mammal]) }
+  let(:keeper) { build(:keeper, name: '田中') }
   let(:enclosure) do
-    Enclosure.new(name: 'サバンナ', temperature: Temperature.celsius(28), capacity: 4)
+    build(:enclosure, name: 'サバンナ')
   end
   let(:relieving) { described_class.new(keeper:, enclosure:) }
 

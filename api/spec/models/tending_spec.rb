@@ -3,15 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe Tending do
-  let(:keeper) { Keeper.new(name: '田中', specialties: [TaxonClass.mammal]) }
+  let(:keeper) { build(:keeper, name: '田中') }
   let(:enclosure) do
-    Enclosure.new(name: 'サバンナ', temperature: Temperature.celsius(28), capacity: 4)
+    build(:enclosure, name: 'サバンナ')
   end
-  let(:lion) { build_adult(SpeciesCatalog.lion) }
-  let(:penguin) { build_adult(SpeciesCatalog.emperor_penguin) }
+  let(:lion) { build(:animal) }
+  let(:penguin) { build(:animal, species: SpeciesCatalog.emperor_penguin) }
 
   def tending(*occupants)
-    described_class.new(keeper:, enclosure:, occupancy: build_occupancy(enclosure, occupants))
+    described_class.new(keeper:, enclosure:, occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants))
   end
 
   describe '#violation!' do
@@ -35,7 +35,7 @@ RSpec.describe Tending do
     end
 
     it '他の飼育員だけが担当しているなら例外を出さないこと' do
-      Keeper.new(name: '鈴木', specialties: [TaxonClass.mammal]).enclosures << enclosure
+      build(:keeper, name: '鈴木').enclosures << enclosure
       expect { tending.violation! }.not_to raise_error
     end
   end

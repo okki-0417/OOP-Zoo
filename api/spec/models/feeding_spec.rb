@@ -32,11 +32,11 @@ RSpec.describe FoodCatalog do
 end
 
 RSpec.describe Feeding do
-  let(:keeper) { build_keeper(TaxonClass.mammal) }
-  let(:bird_keeper) { build_keeper(TaxonClass.bird) }
-  let(:lion) { build_adult(SpeciesCatalog.lion) }
-  let(:macaque) { build_adult(SpeciesCatalog.japanese_macaque) }
-  let(:elephant) { build_adult(SpeciesCatalog.african_elephant) }
+  let(:keeper) { build(:keeper) }
+  let(:bird_keeper) { build(:keeper, specialties: [TaxonClass.bird]) }
+  let(:lion) { build(:animal) }
+  let(:macaque) { build(:animal, species: SpeciesCatalog.japanese_macaque) }
+  let(:elephant) { build(:animal, species: SpeciesCatalog.african_elephant) }
 
   def feeding(animal, foods, by: keeper)
     described_class.new(keeper: by, animal: animal, foods: foods)

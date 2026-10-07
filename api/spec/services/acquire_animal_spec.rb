@@ -9,7 +9,7 @@ RSpec.describe Services::AcquireAnimal do
     let(:command) { Services::Commands::AcquireAnimalCommand.new(species_code:, sex:, name:) }
     let(:sex) { 'male' }
     let(:name) { 'モンタ' }
-    let!(:zoo) { create_zoo(funds: 100_000) }
+    let!(:zoo) { create(:zoo) }
 
     context '存在しない動物の種が与えられた時' do
       let(:species_code) { 'dragon' }

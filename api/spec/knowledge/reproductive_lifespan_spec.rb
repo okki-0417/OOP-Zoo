@@ -4,10 +4,7 @@ require 'spec_helper'
 
 RSpec.describe '繁殖適齢期' do
   def lion_aged(years)
-    Animal.new(
-      species: SpeciesCatalog.lion,
-      name: 'X', sex: Animal::Sex.male, max_health: 100, age_in_days: 365 * years
-    )
+    build(:animal, age_in_days: 365 * years)
   end
 
   context '性成熟前(2歳の幼体)のとき' do

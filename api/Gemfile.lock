@@ -92,6 +92,11 @@ GEM
     drb (2.2.3)
     erb (6.0.7)
     erubi (1.13.1)
+    factory_bot (6.6.0)
+      activesupport (>= 6.1.0)
+    factory_bot_rails (6.5.1)
+      factory_bot (~> 6.5)
+      railties (>= 6.1.0)
     fiber-storage (1.0.1)
     globalid (1.4.0)
       activesupport (>= 6.1)
@@ -237,6 +242,9 @@ GEM
     rubocop-ast (1.50.0)
       parser (>= 3.3.7.2)
       prism (~> 1.7)
+    rubocop-factory_bot (2.28.0)
+      lint_roller (~> 1.1)
+      rubocop (~> 1.72, >= 1.72.1)
     rubocop-rails (2.38.0)
       activesupport (>= 4.2.0)
       lint_roller (~> 1.1)
@@ -276,12 +284,14 @@ PLATFORMS
 DEPENDENCIES
   bootsnap
   debug
+  factory_bot_rails (~> 6.5)
   graphql (~> 2.6)
   puma
   rack-cors
   rails (~> 8.1.4)
   rspec-rails (~> 8.0)
   rubocop
+  rubocop-factory_bot
   rubocop-rails
   rubocop-rspec
   simplecov

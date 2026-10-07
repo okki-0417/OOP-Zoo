@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Services::EnrichEnclosure do
-  let!(:keeper) { build_keeper.tap(&:save!) }
-  let!(:hill) { create_enclosure(celsius: 24).deplete_enrichment(60).tap(&:save!) }
+  let!(:keeper) { create(:keeper) }
+  let!(:hill) { create(:enclosure, celsius: 24).deplete_enrichment(60).tap(&:save!) }
 
   def enrich(keeper_id: keeper.id, enclosure_id: hill.id)
     command = Services::Commands::EnrichEnclosureCommand.new(keeper_id:, enclosure_id:)

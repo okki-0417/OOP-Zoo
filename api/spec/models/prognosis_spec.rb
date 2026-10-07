@@ -4,14 +4,14 @@ require 'spec_helper'
 
 RSpec.describe Prognosis do
   let(:enclosure) do
-    Enclosure.new(name: '丘', temperature: Temperature.celsius(25), capacity: 4)
+    build(:enclosure, name: '丘', celsius: 25)
   end
-  let(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ') }
-  let(:mate) { build_adult(SpeciesCatalog.lion, name: 'ナラ', sex: Animal::Sex.female) }
+  let(:lion) { build(:animal, name: 'レオ') }
+  let(:mate) { build(:animal, :female, name: 'ナラ') }
 
   def prognosis_of(animal, occupants = [animal, mate])
     described_class.new(
-      animal:, enclosure:, occupancy: build_occupancy(enclosure, occupants), season: Season.spring
+      animal:, enclosure:, occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants), season: Season.spring
     )
   end
 
@@ -29,7 +29,7 @@ RSpec.describe Prognosis do
     end
 
     it 'HORIZON_DAYS(30日)を超えて生きる見込みなら nil を返すこと' do
-      lone = build_adult(SpeciesCatalog.lion, name: '孤独')
+      lone = build(:animal, name: '孤独')
       expect(prognosis_of(lone, [lone]).days_to_death).to be_nil
     end
 

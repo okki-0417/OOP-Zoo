@@ -4,22 +4,19 @@ require 'spec_helper'
 
 RSpec.describe '種内闘争と外傷' do
   def pride(capacity: 6, area_sqm: nil)
-    Enclosure.new(
-      name: 'ライオンの丘', temperature: Temperature.celsius(28),
-      capacity: capacity, area_sqm: area_sqm
-    )
+    build(:enclosure, name: 'ライオンの丘', capacity:, area_sqm:)
   end
 
   def senior_and_junior
     lion = SpeciesCatalog.lion
-    senior = build_animal(lion, name: '長老', sex: Animal::Sex.male, age_in_days: 4000)
-    junior = build_adult(lion, name: '若オス', sex: Animal::Sex.male)
+    senior = build(:animal, species: lion, name: '長老', age_in_days: 4000)
+    junior = build(:animal, species: lion, name: '若オス')
     [senior, junior]
   end
 
   def conflict(enclosure, occupants, animal)
     Companionship.new(
-      enclosure: enclosure, occupancy: build_occupancy(enclosure, occupants), member: animal
+      enclosure: enclosure, occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants), member: animal
     )
   end
 
@@ -51,11 +48,11 @@ RSpec.describe '種内闘争と外傷' do
     it '深刻な闘争は致死的となり、死因が外傷として記録されること' do
       cramped = pride(capacity: 4, area_sqm: 100)
       cramped.deplete_enrichment(100)
-      senior = build_animal(SpeciesCatalog.lion, name: '長老', sex: Animal::Sex.male, age_in_days: 4000)
-      junior = build_animal(SpeciesCatalog.lion, name: '若オス', sex: Animal::Sex.male, age_in_days: 365 * 5, max_health: 10)
+      senior = build(:animal, name: '長老', age_in_days: 4000)
+      junior = build(:animal, name: '若オス', age_in_days: 365 * 5, max_health: 10)
       occupants = [senior, junior]
 
-      occupancy = build_occupancy(cramped, occupants)
+      occupancy = Occupancy.new(enclosure: cramped, occupants: occupants)
       Contagion.new(cramped, occupancy).spread
       occupants.each { |animal| AnimalDay.new(animal:, enclosure: cramped, occupancy:, season: Season.spring).run }
 
@@ -67,8 +64,8 @@ RSpec.describe '種内闘争と外傷' do
   describe '回避' do
     it 'バチェラー(独身オス)を別群に分けると、闘争を被らないこと' do
       enclosure = pride
-      lone_male = build_adult(SpeciesCatalog.lion, name: '独身', sex: Animal::Sex.male)
-      occupants = [lone_male, build_adult(SpeciesCatalog.lion, name: 'メス', sex: Animal::Sex.female)]
+      lone_male = build(:animal, name: '独身')
+      occupants = [lone_male, build(:animal, :female, name: 'メス')]
 
       expect(conflict(enclosure, occupants, lone_male).injury).to eq(0)
     end

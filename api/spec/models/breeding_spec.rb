@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Breeding do
   let(:lion) { SpeciesCatalog.lion }
-  let(:sire) { build_adult(lion, name: 'レオ', sex: Animal::Sex.male) }
-  let(:dam)  { build_adult(lion, name: 'ナラ', sex: Animal::Sex.female) }
+  let(:sire) { build(:animal, species: lion, name: 'レオ') }
+  let(:dam)  { build(:animal, :female, species: lion, name: 'ナラ') }
 
   describe '#conceive' do
     it '受胎させると breeding が返り dam が妊娠状態になること' do
@@ -21,7 +21,7 @@ RSpec.describe Breeding do
     end
 
     it '異種では BreedingNotAllowed になること' do
-      zebra_female = build_adult(SpeciesCatalog.grevys_zebra, sex: Animal::Sex.female)
+      zebra_female = build(:animal, :female, species: SpeciesCatalog.grevys_zebra)
       expect do
         described_class.new(sire:, dam: zebra_female, day: 0).conceive
       end.to raise_error(Errors::BreedingNotAllowed)
@@ -35,8 +35,8 @@ RSpec.describe Breeding do
 
     it '季節繁殖種(ニホンザル)は繁殖季節でない季節には受胎できないこと' do
       macaque = SpeciesCatalog.japanese_macaque
-      m_sire = build_adult(macaque, name: 'M♂', sex: Animal::Sex.male)
-      m_dam  = build_adult(macaque, name: 'M♀', sex: Animal::Sex.female)
+      m_sire = build(:animal, species: macaque, name: 'M♂')
+      m_dam  = build(:animal, :female, species: macaque, name: 'M♀')
       expect do
         described_class.new(sire: m_sire, dam: m_dam, day: 0, season: Season.summer).conceive
       end.to raise_error(Errors::BreedingNotAllowed)
@@ -46,8 +46,8 @@ end
 
 RSpec.describe Animal do
   let(:lion) { SpeciesCatalog.lion }
-  let(:sire) { build_adult(lion, name: 'レオ', sex: Animal::Sex.male) }
-  let(:dam)  { build_adult(lion, name: 'ナラ', sex: Animal::Sex.female) }
+  let(:sire) { build(:animal, species: lion, name: 'レオ') }
+  let(:dam)  { build(:animal, :female, species: lion, name: 'ナラ') }
 
   describe '#conceive' do
     it 'オスは妊娠できないこと' do
@@ -147,7 +147,7 @@ RSpec.describe Animal do
 
   describe '#name_animal' do
     it '名前が更新されること' do
-      animal = build_adult(lion, name: 'ライオンの赤ちゃん', sex: Animal::Sex.female)
+      animal = build(:animal, :female, species: lion, name: 'ライオンの赤ちゃん')
       animal.name_animal(name: 'ナラ')
       expect(animal.name).to eq('ナラ')
     end

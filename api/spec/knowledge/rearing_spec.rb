@@ -4,20 +4,15 @@ require 'spec_helper'
 
 RSpec.describe '養育と離乳' do
   def savanna
-    Enclosure.new(
-      name: 'サバンナ', temperature: Temperature.celsius(28), capacity: 6
-    )
+    build(:enclosure, name: 'サバンナ', capacity: 6)
   end
 
   def dam_and_cub(cub_age_in_days:)
     lion = SpeciesCatalog.lion
     s = Animal::Sex
-    sire = build_adult(lion, name: '父', sex: s.male)
-    dam = build_adult(lion, name: '母', sex: s.female)
-    cub = Animal.new(
-      species: lion, name: '仔', sex: s.male, max_health: 100,
-      age_in_days: cub_age_in_days, sire: sire, dam: dam
-    )
+    sire = build(:animal, species: lion, name: '父', sex: s.male)
+    dam = build(:animal, species: lion, name: '母', sex: s.female)
+    cub = build(:animal, species: lion, name: '仔', sex: s.male, age_in_days: cub_age_in_days, sire:, dam:)
     [dam, cub]
   end
 
@@ -40,7 +35,7 @@ RSpec.describe '養育と離乳' do
         enclosure = savanna
         occupants = [dam, cub]
 
-        expect(welfare_of(cub, enclosure, occupants).daily_stress).to be < 0
+        expect(build(:welfare, animal: cub, enclosure:, occupants:).daily_stress).to be < 0
       end
     end
 
@@ -50,11 +45,11 @@ RSpec.describe '養育と離乳' do
         enclosure = savanna
         occupants = [
           cub,
-          build_adult(SpeciesCatalog.lion, name: '他1'),
-          build_adult(SpeciesCatalog.lion, name: '他2', sex: Animal::Sex.female)
+          build(:animal, name: '他1'),
+          build(:animal, :female, name: '他2')
         ]
 
-        expect(welfare_of(cub, enclosure, occupants).daily_stress).to be > 0
+        expect(build(:welfare, animal: cub, enclosure:, occupants:).daily_stress).to be > 0
       end
     end
 
@@ -64,11 +59,11 @@ RSpec.describe '養育と離乳' do
         enclosure = savanna
         occupants = [
           weaned,
-          build_adult(SpeciesCatalog.lion, name: '他1'),
-          build_adult(SpeciesCatalog.lion, name: '他2', sex: Animal::Sex.female)
+          build(:animal, name: '他1'),
+          build(:animal, :female, name: '他2')
         ]
 
-        expect(welfare_of(weaned, enclosure, occupants).daily_stress).to be < 0
+        expect(build(:welfare, animal: weaned, enclosure:, occupants:).daily_stress).to be < 0
       end
     end
   end

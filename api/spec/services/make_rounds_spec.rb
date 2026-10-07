@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Services::MakeRounds do
-  let!(:keeper) { build_keeper(TaxonClass.mammal).tap(&:save!) }
-  let!(:hill) { create_enclosure(celsius: 24) }
-  let!(:leo) { build_adult(SpeciesCatalog.lion, name: 'レオ').get_hungrier(60).move_to(hill).tap(&:save!) }
+  let!(:keeper) { create(:keeper, name: '飼育員') }
+  let!(:hill) { create(:enclosure, celsius: 24) }
+  let!(:leo) { build(:animal, name: 'レオ').get_hungrier(60).move_to(hill).tap(&:save!) }
 
   def make_rounds(keeper_id: keeper.id)
     described_class.new(command: Services::Commands::MakeRoundsCommand.new(keeper_id:)).call

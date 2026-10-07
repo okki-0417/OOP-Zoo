@@ -8,17 +8,11 @@ RSpec.describe '血統と近親交配' do
   end
 
   def founder(name, sex)
-    Animal.new(
-      species: SpeciesCatalog.lion,
-      name: name, sex: sex, max_health: 100, age_in_days: 4000
-    )
+    build(:animal, name:, sex:, age_in_days: 4000)
   end
 
   def offspring(name, sex, sire:, dam:, age: 100)
-    Animal.new(
-      species: SpeciesCatalog.lion,
-      name: name, sex: sex, max_health: 100, age_in_days: age, sire: sire, dam: dam
-    )
+    build(:animal, name:, sex:, age_in_days: age, sire:, dam:)
   end
 
   describe '近縁度(coancestry)' do
@@ -78,8 +72,8 @@ RSpec.describe '血統と近親交配' do
 
   describe '近交弱勢(inbreeding depression)' do
     it '近交係数が高い親から生まれた子ほど虚弱に(最大体力が低く)生まれること' do
-      sire     = build_adult(SpeciesCatalog.lion, name: '父', sex: Animal::Sex.male)
-      dam      = build_adult(SpeciesCatalog.lion, name: '母', sex: Animal::Sex.female)
+      sire     = build(:animal, name: '父')
+      dam      = build(:animal, :female, name: '母')
       gestation = SpeciesCatalog.lion.gestation_period_days
 
       dam.conceive

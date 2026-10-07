@@ -28,7 +28,7 @@ RSpec.describe 'ニュース性' do
 
   describe '話題チャネル(見応えを動かすニュース)' do
     it '幼獣の誕生はニュースになること(buzzで見応えが上がり集客が増える)' do
-      animals = [build_adult(SpeciesCatalog.lion)]
+      animals = [build(:animal)]
       with_buzz = VisitorAttraction.new(on_exhibit: animals,
                                         zoo: double('zoo', reputation_factor: rep, admission_fee: fee,
                                                            buzz: 100)).expected_visitors

@@ -4,18 +4,15 @@ require 'spec_helper'
 
 RSpec.describe '空調と屋内施設' do
   def enclosure(climate_controlled:)
-    Enclosure.new(
-      name: 'ライオンの丘', temperature: Temperature.celsius(20),
-      capacity: 4, climate_controlled: climate_controlled
-    )
+    build(:enclosure, name: 'ライオンの丘', celsius: 20, climate_controlled:)
   end
 
   def pride(climate_controlled:)
     lion = SpeciesCatalog.lion
     enc = enclosure(climate_controlled: climate_controlled)
     occupants = [
-      build_adult(lion, name: 'A'),
-      build_adult(lion, name: 'B', sex: Animal::Sex.female)
+      build(:animal, species: lion, name: 'A'),
+      build(:animal, :female, species: lion, name: 'B')
     ]
     [enc, occupants]
   end
@@ -29,7 +26,7 @@ RSpec.describe '空調と屋内施設' do
     end
 
     it '空調により、本来その季節に合わない種でも快適に保たれること' do
-      lion = build_adult(SpeciesCatalog.lion, name: '主')
+      lion = build(:animal, name: '主')
       controlled = enclosure(climate_controlled: true)
       uncontrolled = enclosure(climate_controlled: false)
 
@@ -42,10 +39,10 @@ RSpec.describe '空調と屋内施設' do
       uncontrolled, uncontrolled_occupants = pride(climate_controlled: false)
       controlled, controlled_occupants = pride(climate_controlled: true)
 
-      expect(welfare_of(uncontrolled_occupants.first, uncontrolled, uncontrolled_occupants,
-                        season: Season.winter).daily_stress).to be > 0
-      expect(welfare_of(controlled_occupants.first, controlled, controlled_occupants,
-                        season: Season.winter).daily_stress).to be < 0
+      expect(build(:welfare, animal: uncontrolled_occupants.first, enclosure: uncontrolled, occupants: uncontrolled_occupants,
+                             season: Season.winter).daily_stress).to be > 0
+      expect(build(:welfare, animal: controlled_occupants.first, enclosure: controlled, occupants: controlled_occupants,
+                             season: Season.winter).daily_stress).to be < 0
     end
   end
 

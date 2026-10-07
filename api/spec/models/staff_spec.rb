@@ -6,8 +6,8 @@ RSpec.describe Keeper do
   let(:mammal_keeper) do
     described_class.new(name: '田中', specialties: [TaxonClass.mammal])
   end
-  let(:lion) { build_adult(SpeciesCatalog.lion) }
-  let(:penguin) { build_adult(SpeciesCatalog.emperor_penguin) }
+  let(:lion) { build(:animal) }
+  let(:penguin) { build(:animal, species: SpeciesCatalog.emperor_penguin) }
 
   it '専門の綱の動物を担当できること' do
     expect(mammal_keeper.specialized_in?(lion.taxon_class)).to be(true)
@@ -84,7 +84,7 @@ RSpec.describe Veterinarian do
 end
 
 RSpec.describe '病気の進行' do
-  let(:animal) { build_adult(SpeciesCatalog.lion, max_health: 30) }
+  let(:animal) { build(:animal, max_health: 30) }
 
   it '治療しないと病気で衰弱し、やがて死亡すること' do
     animal.fall_ill(IllnessCatalog.pneumonia)

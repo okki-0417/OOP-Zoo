@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Services::HireVeterinarian do
   let(:funds) { 100_000 }
-  let!(:zoo) { create_zoo(funds:) }
+  let!(:zoo) { create(:zoo, funds: Money.yen(funds)) }
   let(:service) do
     described_class.new(command: Services::Commands::HireVeterinarianCommand.new(name: '山田'))
   end

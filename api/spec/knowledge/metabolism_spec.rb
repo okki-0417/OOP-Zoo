@@ -28,7 +28,7 @@ RSpec.describe '代謝と体格' do
 
   describe '必要採食量' do
     def satiety(species, food)
-      Feeding.new(animal: build_adult(species), foods: [food]).satiety
+      Feeding.new(animal: build(:animal, species:), foods: [food]).satiety
     end
 
     it '同じ餌でも小型種はよく満たされ、大型種はあまり満たされないこと(サル > ゾウ)' do

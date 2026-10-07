@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Services::OperateDay do
-  let!(:zoo) { create_zoo(funds: 100_000, admission_fee: 2_000) }
-  let!(:enclosure) { create_enclosure(name: 'サバンナ', celsius: 30, capacity: 6) }
-  let!(:zebra) { house(build_adult(SpeciesCatalog.grevys_zebra, name: 'シマオ')) }
+  let!(:zoo) { create(:zoo) }
+  let!(:enclosure) { create(:enclosure, name: 'サバンナ', celsius: 30, capacity: 6) }
+  let!(:zebra) { house(build(:animal, species: SpeciesCatalog.grevys_zebra, name: 'シマオ')) }
 
   let(:no_outbreak) { instance_double(Random, rand: 99) }
   let(:service) { operate_with(no_outbreak) }
@@ -19,7 +19,7 @@ RSpec.describe Services::OperateDay do
   end
 
   def house_carrier
-    carrier = build_adult(SpeciesCatalog.grevys_zebra, name: '感染源', sex: Animal::Sex.female)
+    carrier = build(:animal, :female, species: SpeciesCatalog.grevys_zebra, name: '感染源')
     house(carrier.fall_ill(IllnessCatalog.cold))
   end
 
@@ -36,7 +36,7 @@ RSpec.describe Services::OperateDay do
     end
 
     it '同じ種(グレビーシマウマ)が2頭いれば、飼料費は2頭分を計上すること' do
-      house(build_adult(SpeciesCatalog.grevys_zebra, name: 'シマコ', sex: Animal::Sex.female))
+      house(build(:animal, :female, species: SpeciesCatalog.grevys_zebra, name: 'シマコ'))
 
       report = service.call.value
 
@@ -113,7 +113,7 @@ RSpec.describe Services::OperateDay do
     end
 
     it '1日を締めると、その日200分働いた飼育員の勤務時間がリセットされ保存されること' do
-      keeper = build_keeper.clock_in(200).tap(&:save!)
+      keeper = build(:keeper).clock_in(200).tap(&:save!)
 
       service.call
 
@@ -121,7 +121,7 @@ RSpec.describe Services::OperateDay do
     end
 
     it 'その日に死亡した個体を result.value.casualties で返し、死亡が保存されること' do
-      elder = house(build_animal(SpeciesCatalog.grevys_zebra, name: '老', age_in_days: 1_000_000))
+      elder = house(build(:animal, species: SpeciesCatalog.grevys_zebra, name: '老', age_in_days: 1_000_000))
 
       expect(service.call.value.casualties.map(&:name)).to eq(['老'])
       expect(elder.reload).to be_dead

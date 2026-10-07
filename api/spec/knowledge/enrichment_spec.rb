@@ -4,16 +4,14 @@ require 'spec_helper'
 
 RSpec.describe '環境エンリッチメントと常同行動' do
   def savanna(temp = 28)
-    Enclosure.new(
-      name: 'サバンナ', temperature: Temperature.celsius(temp), capacity: 4
-    )
+    build(:enclosure, name: 'サバンナ', temperature: Temperature.celsius(temp))
   end
 
   def with_company(enclosure)
     lion = SpeciesCatalog.lion
     occupants = [
-      build_adult(lion, name: 'A'),
-      build_adult(lion, name: 'B', sex: Animal::Sex.female)
+      build(:animal, species: lion, name: 'A'),
+      build(:animal, :female, species: lion, name: 'B')
     ]
     [enclosure, occupants]
   end
@@ -24,7 +22,7 @@ RSpec.describe '環境エンリッチメントと常同行動' do
         enclosure, occupants = with_company(savanna)
         occupant = occupants.first
 
-        expect(welfare_of(occupant, enclosure, occupants).daily_stress).to be < 0
+        expect(build(:welfare, animal: occupant, enclosure:, occupants:).daily_stress).to be < 0
       end
     end
 
@@ -34,7 +32,7 @@ RSpec.describe '環境エンリッチメントと常同行動' do
         enclosure.deplete_enrichment(100)
         occupant = occupants.first
 
-        expect(welfare_of(occupant, enclosure, occupants).daily_stress).to be > 0
+        expect(build(:welfare, animal: occupant, enclosure:, occupants:).daily_stress).to be > 0
       end
     end
   end

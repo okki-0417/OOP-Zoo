@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Cleaning do
-  let(:keeper) { Keeper.new(name: '田中', specialties: [TaxonClass.mammal]) }
+  let(:keeper) { build(:keeper, name: '田中') }
   let(:enclosure) do
-    Enclosure.new(name: 'サバンナ', temperature: Temperature.celsius(28), capacity: 4)
+    build(:enclosure, name: 'サバンナ')
   end
 
   describe '#perform' do

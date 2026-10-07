@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe '妊娠と出産' do
   def mated_dam(species)
-    sire, dam = build_pair(species)
+    sire = build(:animal, species: species)
+    dam = build(:animal, :female, species: species)
     dam.conceive
     [sire, dam]
   end
@@ -16,7 +17,8 @@ RSpec.describe '妊娠と出産' do
     end
 
     it '妊娠は母体自身の状態であり、オスは身ごもらないこと' do
-      sire, dam = build_pair(SpeciesCatalog.lion)
+      sire = build(:animal)
+      dam = build(:animal, :female)
       dam.conceive
       expect(sire).not_to be_expecting
     end
@@ -94,11 +96,9 @@ RSpec.describe '妊娠と出産' do
   describe '日々の経過' do
     context '妊娠中のメスがエリアで1日を過ごすと' do
       it '妊娠日数が1日進むこと' do
-        enclosure = Enclosure.new(
-          name: '猛獣舎', temperature: Temperature.celsius(20), capacity: 4
-        )
+        enclosure = build(:enclosure, name: '猛獣舎', celsius: 20)
         sire, dam = mated_dam(SpeciesCatalog.lion)
-        occupancy = build_occupancy(enclosure, [sire, dam])
+        occupancy = Occupancy.new(enclosure: enclosure, occupants: [sire, dam])
         AnimalDay.new(animal: dam, enclosure:, occupancy:).run
         dam.gestate(SpeciesCatalog.lion.gestation_period_days - 2)
         expect(dam).not_to be_ready_to_deliver

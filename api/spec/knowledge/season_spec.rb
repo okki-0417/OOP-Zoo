@@ -4,12 +4,10 @@ require 'spec_helper'
 
 RSpec.describe '季節と気候' do
   def pride(temp)
-    enclosure = Enclosure.new(
-      name: 'ライオンの丘', temperature: Temperature.celsius(temp), capacity: 4
-    )
+    enclosure = build(:enclosure, name: 'ライオンの丘', temperature: Temperature.celsius(temp))
     occupants = [
-      build_adult(SpeciesCatalog.lion, name: 'A'),
-      build_adult(SpeciesCatalog.lion, name: 'B', sex: Animal::Sex.female)
+      build(:animal, name: 'A'),
+      build(:animal, :female, name: 'B')
     ]
     [enclosure, occupants]
   end
@@ -41,14 +39,14 @@ RSpec.describe '季節と気候' do
       enclosure, occupants = pride(20)
       occupant = occupants.first
 
-      expect(welfare_of(occupant, enclosure, occupants, season: Season.winter).daily_stress).to be > 0
+      expect(build(:welfare, animal: occupant, enclosure:, occupants:, season: Season.winter).daily_stress).to be > 0
     end
 
     it '夏など快適な季節では、良好な飼育ならストレスが和らぐこと' do
       enclosure, occupants = pride(20)
       occupant = occupants.first
 
-      expect(welfare_of(occupant, enclosure, occupants, season: Season.summer).daily_stress).to be < 0
+      expect(build(:welfare, animal: occupant, enclosure:, occupants:, season: Season.summer).daily_stress).to be < 0
     end
   end
 end

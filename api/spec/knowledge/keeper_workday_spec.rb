@@ -6,24 +6,24 @@ RSpec.describe '飼育員の勤務と日課' do
   female = Animal::Sex.female
 
   def pen(name = 'ライオンの丘', capacity: 4)
-    Enclosure.new(name:, temperature: Temperature.celsius(24), capacity:)
+    build(:enclosure, name:, celsius: 24, capacity:)
   end
 
   def rounding(keeper, enclosure, occupants, assignees: [keeper])
     assignees.each { |assignee| assignee.enclosures << enclosure }
     Rounding.new(
-      keeper:, occupancy: build_occupancy(enclosure, occupants), foods: FoodCatalog.all
+      keeper:, occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants), foods: FoodCatalog.all
     )
   end
 
   describe '勤務時間' do
     it '飼育員が1日に働けるのは8時間(480分)であること' do
-      expect(build_keeper.remaining_minutes).to eq(480)
+      expect(build(:keeper).remaining_minutes).to eq(480)
     end
 
     it '給餌1回で10分、清掃で60分、遊具などの補充(エンリッチメント)で30分の勤務時間を使うこと' do
-      keeper = build_keeper
-      Feeding.new(keeper:, animal: build_adult(SpeciesCatalog.lion), foods: [FoodCatalog.horse_meat]).serve
+      keeper = build(:keeper)
+      Feeding.new(keeper:, animal: build(:animal), foods: [FoodCatalog.horse_meat]).serve
       Cleaning.new(keeper:, enclosure: pen).perform
       Enriching.new(keeper:, enclosure: pen).perform
 
@@ -32,15 +32,15 @@ RSpec.describe '飼育員の勤務と日課' do
 
     context '勤務時間を使い切った飼育員は' do
       it 'その日はもう給餌できないこと' do
-        keeper = build_keeper
+        keeper = build(:keeper)
         keeper.clock_in(480)
 
-        expect { Feeding.new(keeper:, animal: build_adult(SpeciesCatalog.lion), foods: [FoodCatalog.horse_meat]).serve }
+        expect { Feeding.new(keeper:, animal: build(:animal), foods: [FoodCatalog.horse_meat]).serve }
           .to raise_error(Errors::FeedingNotAllowed, /勤務時間/)
       end
 
       it 'その日はもう清掃できないこと' do
-        keeper = build_keeper
+        keeper = build(:keeper)
         keeper.clock_in(450)
 
         expect { Cleaning.new(keeper:, enclosure: pen).perform }
@@ -50,7 +50,7 @@ RSpec.describe '飼育員の勤務と日課' do
 
     context '1日が終わると' do
       it '勤務時間がリセットされ、翌日はまた8時間働けること' do
-        keeper = build_keeper
+        keeper = build(:keeper)
         keeper.clock_in(300)
         keeper.end_shift
 
@@ -73,10 +73,10 @@ RSpec.describe '飼育員の勤務と日課' do
     end
 
     it 'その日に一度でも餌を食べた動物は給餌済みで、1日が終わるとまた未給餌に戻ること' do
-      lion = build_adult(SpeciesCatalog.lion)
+      lion = build(:animal)
       expect(lion).not_to be_fed_today
 
-      Feeding.new(keeper: build_keeper, animal: lion, foods: [FoodCatalog.horse_meat]).serve
+      Feeding.new(keeper: build(:keeper), animal: lion, foods: [FoodCatalog.horse_meat]).serve
       expect(lion).to be_fed_today
 
       lion.settle_nutrition
@@ -90,34 +90,34 @@ RSpec.describe '飼育員の勤務と日課' do
     end
 
     it '肉食のライオンには肉だけを与えること' do
-      expect(ration_of(build_adult(SpeciesCatalog.lion)).foods.map(&:category).uniq).to eq([:meat])
+      expect(ration_of(build(:animal)).foods.map(&:category).uniq).to eq([:meat])
     end
 
     it '雑食のニホンザルには、栄養が偏らないよう2種類以上の餌の分類を組み合わせること' do
-      expect(ration_of(build_adult(SpeciesCatalog.japanese_macaque)).foods.map(&:category).uniq.size).to be >= 2
+      expect(ration_of(build(:animal, species: SpeciesCatalog.japanese_macaque)).foods.map(&:category).uniq.size).to be >= 2
     end
 
     it '計画どおりに与えると、その日の栄養の多様性が満たされること' do
-      monkey = build_adult(SpeciesCatalog.japanese_macaque)
+      monkey = build(:animal, species: SpeciesCatalog.japanese_macaque)
       expect(Feeding.new(animal: monkey, foods: ration_of(monkey).foods).nutritionally_adequate?)
         .to be(true)
     end
 
     it 'お腹を空かせているほど量を増やし、空腹を満たせるだけの餌を出すこと' do
-      lion = build_adult(SpeciesCatalog.lion).get_hungrier(90)
+      lion = build(:animal).get_hungrier(90)
       ration = ration_of(lion)
 
       expect(Feeding.new(animal: lion, foods: ration.foods).satiety).to be >= 90
-      expect(ration.foods.size).to be > ration_of(build_adult(SpeciesCatalog.lion)).foods.size
+      expect(ration.foods.size).to be > ration_of(build(:animal)).foods.size
     end
   end
 
   describe '担当エリアの見回り' do
-    let(:keeper) { build_keeper(TaxonClass.mammal) }
+    let(:keeper) { build(:keeper) }
 
     it '担当エリアの、その日まだ食べていない動物に給餌計画どおりの餌を与えること' do
-      leo = build_adult(SpeciesCatalog.lion, name: 'レオ').get_hungrier(60)
-      nala = build_adult(SpeciesCatalog.lion, name: 'ナラ', sex: female).get_hungrier(60)
+      leo = build(:animal, name: 'レオ').get_hungrier(60)
+      nala = build(:animal, name: 'ナラ', sex: female).get_hungrier(60)
 
       report = rounding(keeper, pen, [leo, nala]).perform
 
@@ -127,7 +127,7 @@ RSpec.describe '飼育員の勤務と日課' do
     end
 
     it 'その日すでに食べた動物には重ねて与えないこと' do
-      leo = build_adult(SpeciesCatalog.lion, name: 'レオ')
+      leo = build(:animal, name: 'レオ')
       Feeding.new(keeper:, animal: leo, foods: [FoodCatalog.horse_meat]).serve
 
       expect(rounding(keeper, pen, [leo]).perform.fed).to be_empty
@@ -135,7 +135,7 @@ RSpec.describe '飼育員の勤務と日課' do
 
     it '汚れてきた(清潔度70以下)エリアは清掃すること' do
       enclosure = pen.tap { |e| e.soil(30) }
-      report = rounding(keeper, enclosure, [build_adult(SpeciesCatalog.lion)]).perform
+      report = rounding(keeper, enclosure, [build(:animal)]).perform
 
       expect(report).to be_cleaned
       expect(enclosure.cleanliness_level).to eq(100)
@@ -143,21 +143,21 @@ RSpec.describe '飼育員の勤務と日課' do
 
     it '刺激が乏しくなってきた(刺激度50以下)エリアには遊具などを補充すること' do
       enclosure = pen.tap { |e| e.deplete_enrichment(50) }
-      report = rounding(keeper, enclosure, [build_adult(SpeciesCatalog.lion)]).perform
+      report = rounding(keeper, enclosure, [build(:animal)]).perform
 
       expect(report).to be_enriched
       expect(enclosure).not_to be_barren
     end
 
     it '担当していないエリアは見回れないこと' do
-      other = build_keeper(TaxonClass.mammal)
-      expect { rounding(keeper, pen, [build_adult(SpeciesCatalog.lion)], assignees: [other]).perform }
+      other = build(:keeper)
+      expect { rounding(keeper, pen, [build(:animal)], assignees: [other]).perform }
         .to raise_error(Errors::WorkNotAllowed, /担当/)
     end
 
     it '専門外の動物には給餌せず、見送った理由を記録すること' do
-      bird_keeper = build_keeper(TaxonClass.bird)
-      leo = build_adult(SpeciesCatalog.lion, name: 'レオ')
+      bird_keeper = build(:keeper, specialties: [TaxonClass.bird])
+      leo = build(:animal, name: 'レオ')
 
       report = rounding(bird_keeper, pen, [leo]).perform
 
@@ -168,7 +168,7 @@ RSpec.describe '飼育員の勤務と日課' do
     context '勤務時間が足りないと' do
       it '給餌を最優先し、清掃と補充は見送ること' do
         enclosure = pen.tap { |e| e.soil(50) }.tap { |e| e.deplete_enrichment(60) }
-        leo = build_adult(SpeciesCatalog.lion, name: 'レオ')
+        leo = build(:animal, name: 'レオ')
         keeper.clock_in(460)
 
         report = rounding(keeper, enclosure, [leo]).perform
@@ -180,8 +180,8 @@ RSpec.describe '飼育員の勤務と日課' do
       end
 
       it '給餌しきれなかった動物を見送ったと記録すること' do
-        leo = build_adult(SpeciesCatalog.lion, name: 'レオ')
-        nala = build_adult(SpeciesCatalog.lion, name: 'ナラ', sex: female)
+        leo = build(:animal, name: 'レオ')
+        nala = build(:animal, name: 'ナラ', sex: female)
         keeper.clock_in(470)
 
         report = rounding(keeper, pen, [leo, nala]).perform

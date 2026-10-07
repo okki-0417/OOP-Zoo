@@ -20,20 +20,20 @@ RSpec.describe '検疫' do
 
   describe '検疫解除の判断' do
     it '観察期間が完了し健康なら、解除して合流できること' do
-      healthy = build_adult(SpeciesCatalog.lion, name: '健康')
+      healthy = build(:animal, name: '健康')
       cleared = Quarantine.begin.observe(30)
       expect(cleared.safe_to_release?(healthy)).to be(true)
     end
 
     it '観察期間が完了しても、病気が出ていれば解除できないこと' do
-      sick = build_adult(SpeciesCatalog.lion, name: '発症')
+      sick = build(:animal, name: '発症')
       sick.fall_ill(IllnessCatalog.cold)
       cleared = Quarantine.begin.observe(30)
       expect(cleared.safe_to_release?(sick)).to be(false)
     end
 
     it '健康でも観察期間が終わっていなければ解除できないこと' do
-      healthy = build_adult(SpeciesCatalog.lion, name: '健康')
+      healthy = build(:animal, name: '健康')
       partway = Quarantine.begin.observe(10)
       expect(partway.safe_to_release?(healthy)).to be(false)
     end

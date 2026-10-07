@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Services::AssignKeeper do
-  let!(:keeper) { Keeper.create!(name: '田中', specialties: [TaxonClass.mammal]) }
-  let!(:enclosure) { create_enclosure(name: 'サバンナ') }
+  let!(:keeper) { create(:keeper, name: '田中') }
+  let!(:enclosure) { create(:enclosure, name: 'サバンナ') }
 
   def assign(keeper_id: keeper.id, enclosure_id: enclosure.id)
     described_class.new(command: Services::Commands::AssignKeeperCommand.new(keeper_id:, enclosure_id:)).call
@@ -12,14 +12,14 @@ RSpec.describe Services::AssignKeeper do
 
   describe '#call' do
     it '専門の綱(哺乳類)のライオンがいるエリアへ担当割り当てすると success になり担当関係が保存されること' do
-      build_adult(SpeciesCatalog.lion).move_to(enclosure).save!
+      build(:animal).move_to(enclosure).save!
 
       expect(assign.success?).to be(true)
       expect(keeper.reload.enclosures).to contain_exactly(enclosure)
     end
 
     it '専門外の綱(鳥類)のペンギンがいるエリアへの担当割り当ては failure で error が AssignmentNotAllowed となり保存されないこと' do
-      build_adult(SpeciesCatalog.emperor_penguin).move_to(enclosure).save!
+      build(:animal, species: SpeciesCatalog.emperor_penguin).move_to(enclosure).save!
 
       expect(assign.error).to be_a(Errors::AssignmentNotAllowed)
       expect(Assignment.count).to eq(0)

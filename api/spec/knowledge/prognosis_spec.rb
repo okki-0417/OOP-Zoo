@@ -4,20 +4,18 @@ require 'spec_helper'
 
 RSpec.describe '予後(日々の給餌は続け、治療も環境改善もしなかった場合の見通し)' do
   def lion_hill
-    Enclosure.new(
-      name: 'ライオンの丘', temperature: Temperature.celsius(25), capacity: 4
-    )
+    build(:enclosure, name: 'ライオンの丘', celsius: 25)
   end
 
   def prognosis_of(animal, enclosure, occupants)
     Prognosis.new(
-      animal:, enclosure:, occupancy: build_occupancy(enclosure, occupants), season: Season.spring
+      animal:, enclosure:, occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants), season: Season.spring
     )
   end
 
   def pride
     lion = SpeciesCatalog.lion
-    [build_adult(lion, name: 'オス'), build_adult(lion, name: 'メス', sex: Animal::Sex.female)]
+    [build(:animal, species: lion, name: 'オス'), build(:animal, :female, species: lion, name: 'メス')]
   end
 
   describe '良好な予後' do
@@ -44,7 +42,7 @@ RSpec.describe '予後(日々の給餌は続け、治療も環境改善もしな
       it '重い病気(肺炎)ほど、軽い病気(寄生虫)より早く死に至ること' do
         pneumonia_patient, female = pride
         pneumonia_patient.fall_ill(IllnessCatalog.pneumonia)
-        parasite_patient = build_adult(SpeciesCatalog.lion, name: '寄生虫')
+        parasite_patient = build(:animal, name: '寄生虫')
         parasite_patient.fall_ill(IllnessCatalog.parasite)
 
         pneumonia = prognosis_of(pneumonia_patient, lion_hill, [pneumonia_patient, female]).days_to_death
@@ -65,9 +63,9 @@ RSpec.describe '予後(日々の給餌は続け、治療も環境改善もしな
 
     context '体力が残りわずかな個体が重い病気にかかっていると' do
       it '3日以内の死亡が見込まれ、危篤と判定されること' do
-        weak = build_adult(SpeciesCatalog.lion, name: '瀕死', max_health: 10)
+        weak = build(:animal, name: '瀕死', max_health: 10)
         weak.fall_ill(IllnessCatalog.pneumonia)
-        female = build_adult(SpeciesCatalog.lion, name: 'メス', sex: Animal::Sex.female)
+        female = build(:animal, :female, name: 'メス')
 
         expect(prognosis_of(weak, lion_hill, [weak, female]).outlook).to eq(:grave)
       end
@@ -86,8 +84,8 @@ RSpec.describe '予後(日々の給餌は続け、治療も環境改善もしな
 
     context '序列下位のオスが優位なオスと同居し続けると' do
       it '闘争による外傷で死亡が見込まれること' do
-        senior = build_animal(SpeciesCatalog.lion, name: '長老', sex: Animal::Sex.male, age_in_days: 4000)
-        junior = build_adult(SpeciesCatalog.lion, name: '若', sex: Animal::Sex.male)
+        senior = build(:animal, name: '長老', age_in_days: 4000)
+        junior = build(:animal, name: '若')
 
         expect(prognosis_of(junior, lion_hill, [senior, junior]).cause_of_death).to eq(:injury)
       end
@@ -97,8 +95,8 @@ RSpec.describe '予後(日々の給餌は続け、治療も環境改善もしな
   describe '寿命' do
     context '寿命が尽きかけている老齢個体は' do
       it '老衰による死亡が見込まれること' do
-        elder = build_animal(SpeciesCatalog.lion, name: '長老', age_in_days: (SpeciesCatalog.lion.lifespan_years * 365) - 5)
-        female = build_adult(SpeciesCatalog.lion, name: 'メス', sex: Animal::Sex.female)
+        elder = build(:animal, name: '長老', age_in_days: (SpeciesCatalog.lion.lifespan_years * 365) - 5)
+        female = build(:animal, :female, name: 'メス')
 
         prognosis = prognosis_of(elder, lion_hill, [elder, female])
         expect(prognosis.cause_of_death).to eq(:old_age)
@@ -120,15 +118,15 @@ RSpec.describe '予後(日々の給餌は続け、治療も環境改善もしな
 
   describe '給餌が途絶えた場合' do
     it '満腹のライオン(1日に空腹度+10)は、給餌が途絶えると10日で飢餓に陥ること' do
-      expect(build_adult(SpeciesCatalog.lion).days_until_starving).to eq(10)
+      expect(build(:animal).days_until_starving).to eq(10)
     end
 
     it '代謝の速い種(フンボルトペンギン 1日+26)ほど早く飢餓に陥ること' do
-      expect(build_adult(SpeciesCatalog.humboldt_penguin).days_until_starving).to eq(4)
+      expect(build(:animal, species: SpeciesCatalog.humboldt_penguin).days_until_starving).to eq(4)
     end
 
     it 'すでに飢餓状態なら0日であること' do
-      lion = build_adult(SpeciesCatalog.lion).get_hungrier(100)
+      lion = build(:animal).get_hungrier(100)
       expect(lion.days_until_starving).to eq(0)
     end
   end

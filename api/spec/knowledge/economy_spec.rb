@@ -4,10 +4,7 @@ require 'spec_helper'
 
 RSpec.describe '運営の経済' do
   def zoo(funds:)
-    Zoo.new(
-      name: '動物園', admission_fee: Money.yen(2_000),
-      funds: Money.yen(funds)
-    )
+    build(:zoo, name: '動物園', admission_fee: Money.yen(2_000), funds: Money.yen(funds))
   end
 
   describe '成長アクションの費用' do

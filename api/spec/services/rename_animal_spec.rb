@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Services::RenameAnimal do
-  let!(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ').tap(&:save!) }
+  let!(:lion) { create(:animal, name: 'レオ') }
 
   def rename(animal_id, new_name)
     described_class.new(command: Services::Commands::RenameAnimalCommand.new(animal_id:, new_name:)).call

@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Services::ExamineAnimal do
-  let!(:penguin) { build_adult(SpeciesCatalog.emperor_penguin, name: 'ペン').tap(&:save!) }
-  let!(:vet) { Veterinarian.create!(name: '山田') }
+  let!(:penguin) { create(:animal, species: SpeciesCatalog.emperor_penguin, name: 'ペン') }
+  let!(:vet) { create(:veterinarian, name: '山田') }
 
   def examine(veterinarian_id: vet.id, animal_id: penguin.id)
     command = Services::Commands::ExamineAnimalCommand.new(veterinarian_id:, animal_id:)

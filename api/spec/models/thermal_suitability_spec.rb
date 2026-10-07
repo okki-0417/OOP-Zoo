@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe ThermalSuitability do
-  let(:lion) { build_adult(SpeciesCatalog.lion, name: '主') }
-  let(:polar_bear) { build_adult(SpeciesCatalog.polar_bear, name: '白') }
+  let(:lion) { build(:animal, name: '主') }
+  let(:polar_bear) { build(:animal, species: SpeciesCatalog.polar_bear, name: '白') }
 
   def temp(celsius)
     Temperature.celsius(celsius)

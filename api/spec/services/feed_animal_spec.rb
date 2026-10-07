@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Services::FeedAnimal do
-  let!(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ').get_hungrier(40).tap(&:save!) }
-  let!(:mammal_keeper) { Keeper.create!(name: '田中', specialties: [TaxonClass.mammal]) }
-  let!(:bird_keeper) { Keeper.create!(name: '鈴木', specialties: [TaxonClass.bird]) }
+  let!(:lion) { build(:animal, name: 'レオ').get_hungrier(40).tap(&:save!) }
+  let!(:mammal_keeper) { create(:keeper, name: '田中') }
+  let!(:bird_keeper) { create(:keeper, name: '鈴木', specialties: [TaxonClass.bird]) }
 
   def call_with(keeper_id:, animal_id:, food_code: 'horse_meat')
     command = Services::Commands::FeedAnimalCommand.new(keeper_id:, animal_id:, food_code:)

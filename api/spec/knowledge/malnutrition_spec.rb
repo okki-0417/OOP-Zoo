@@ -6,17 +6,15 @@ RSpec.describe '栄養失調' do
   macaque = SpeciesCatalog.japanese_macaque
 
   def troop
-    enclosure = Enclosure.new(
-      name: 'モンキーマウンテン', temperature: Temperature.celsius(20), capacity: 8
-    )
+    enclosure = build(:enclosure, name: 'モンキーマウンテン', celsius: 20, capacity: 8)
     macaque = SpeciesCatalog.japanese_macaque
-    subject_monkey = build_adult(macaque, name: '主役')
-    companion = build_adult(macaque, name: '仲間', sex: Animal::Sex.female)
+    subject_monkey = build(:animal, species: macaque, name: '主役')
+    companion = build(:animal, :female, species: macaque, name: '仲間')
     [enclosure, subject_monkey, [subject_monkey, companion]]
   end
 
   def feed_daily(animal, foods)
-    keeper = build_keeper(TaxonClass.mammal)
+    keeper = build(:keeper)
     Feeding.new(keeper: keeper, animal: animal, foods: foods).serve
     animal.settle_nutrition
   end
@@ -31,26 +29,26 @@ RSpec.describe '栄養失調' do
       enclosure, monkey, occupants = troop
       malnourish(monkey)
       expect(monkey).to be_malnourished
-      expect(welfare_of(monkey, enclosure, occupants).daily_stress).to be > 0
+      expect(build(:welfare, animal: monkey, enclosure:, occupants:).daily_stress).to be > 0
     end
 
     it 'バランスの取れた給餌(果実と昆虫)は栄養を保ち、福祉を後押しすること' do
       enclosure, monkey, occupants = troop
       4.times { feed_daily(monkey, [FoodCatalog.banana, FoodCatalog.cricket]) }
       expect(monkey).not_to be_malnourished
-      expect(welfare_of(monkey, enclosure, occupants).daily_stress).to be < 0
+      expect(build(:welfare, animal: monkey, enclosure:, occupants:).daily_stress).to be < 0
     end
   end
 
   describe '栄養失調と健康' do
     it '栄養失調が続くと体力を損なうこと' do
-      monkey = build_adult(macaque, max_health: 100)
+      monkey = build(:animal, species: macaque)
       malnourish(monkey)
       expect { monkey.grow_older(1) }.to change { monkey.current_health }.by(-Animal::MALNUTRITION_DAMAGE_PER_DAY)
     end
 
     it '深刻な栄養失調が続くと衰弱死し、死因が栄養失調として記録されること' do
-      monkey = build_adult(macaque, max_health: 4)
+      monkey = build(:animal, species: macaque, max_health: 4)
       malnourish(monkey)
       monkey.grow_older(2)
       expect(monkey).to be_dead
@@ -60,13 +58,13 @@ RSpec.describe '栄養失調' do
 
   describe '栄養失調と繁殖' do
     it '栄養不良の個体は繁殖できないこと' do
-      monkey = build_adult(macaque)
+      monkey = build(:animal, species: macaque)
       malnourish(monkey)
       expect(monkey).not_to be_fertile
     end
 
     it '妊娠中の母体の栄養失調は流産の要因になること' do
-      _sire, dam = build_pair(macaque)
+      dam = build(:animal, :female, species: macaque)
       dam.conceive
       malnourish(dam)
       dam.gestate(10)

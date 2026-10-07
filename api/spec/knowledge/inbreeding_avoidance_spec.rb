@@ -4,17 +4,11 @@ require 'spec_helper'
 
 RSpec.describe '近親交配の回避' do
   def founder(name, sex)
-    Animal.new(
-      species: SpeciesCatalog.lion,
-      name: name, sex: sex, max_health: 100, age_in_days: 4000
-    )
+    build(:animal, name:, sex:, age_in_days: 4000)
   end
 
   def offspring(name, sex, sire:, dam:)
-    Animal.new(
-      species: SpeciesCatalog.lion,
-      name: name, sex: sex, max_health: 100, age_in_days: 365 * 4, sire: sire, dam: dam
-    )
+    build(:animal, name:, sex:, age_in_days: 365 * 4, sire:, dam:)
   end
 
   context '血縁のない成熟ペアのとき' do

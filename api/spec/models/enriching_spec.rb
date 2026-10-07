@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Enriching do
-  let(:keeper) { build_keeper }
+  let(:keeper) { build(:keeper, name: '飼育員') }
   let(:enclosure) do
-    Enclosure.new(name: '丘', temperature: Temperature.celsius(24), capacity: 4)
+    build(:enclosure, name: '丘', celsius: 24)
   end
 
   describe '#perform' do

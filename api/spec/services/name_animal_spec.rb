@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Services::NameAnimal do
   let!(:animal) do
-    build_adult(SpeciesCatalog.lion, name: 'ライオンの赤ちゃん', sex: Animal::Sex.female).tap(&:save!)
+    create(:animal, :female, name: 'ライオンの赤ちゃん')
   end
 
   def call_with(animal_id: animal.id, name: 'ナラ')

@@ -4,9 +4,7 @@ require 'spec_helper'
 
 RSpec.describe '運営費の内訳' do
   def enclosure(name, climate_controlled: false)
-    Enclosure.new(
-      name:, temperature: Temperature.celsius(25), capacity: 4, climate_controlled:
-    )
+    build(:enclosure, name:, celsius: 25, climate_controlled:)
   end
 
   def breakdown(enclosures: [], staff: [], species: [])
@@ -16,8 +14,8 @@ RSpec.describe '運営費の内訳' do
   context '職員を雇っているとき' do
     it '人件費として、職員1人ごとに職名と名前で計上されること(飼育員 田中・獣医 佐藤)' do
       staff = [
-        Keeper.new(name: '田中', specialties: [TaxonClass.mammal]),
-        Veterinarian.new(name: '佐藤')
+        build(:keeper, name: '田中'),
+        build(:veterinarian, name: '佐藤')
       ]
 
       payroll = breakdown(staff:)
@@ -56,7 +54,7 @@ RSpec.describe '運営費の内訳' do
   context '内訳を合計すると' do
     it '1日の運営費の総額と一致すること' do
       cost = OperatingCost.new(
-        enclosures: [enclosure('サバンナ')], staff: [build_keeper], species: [SpeciesCatalog.lion, SpeciesCatalog.lion]
+        enclosures: [enclosure('サバンナ')], staff: [build(:keeper)], species: [SpeciesCatalog.lion, SpeciesCatalog.lion]
       )
       expect(cost.expenses.sum(Money.zero, &:amount)).to eq(cost.amount)
     end

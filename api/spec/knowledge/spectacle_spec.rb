@@ -13,7 +13,7 @@ RSpec.describe '集客の見応え' do
 
   def herd(species, count: 1, stress: 0)
     Array.new(count) do
-      animal = build_adult(species)
+      animal = build(:animal, species:)
       animal.add_stress(stress) if stress.positive?
       animal
     end
@@ -38,16 +38,18 @@ RSpec.describe '集客の見応え' do
     end
 
     it 'カリスマある種を増やせば集客は増えること(多様化はカリスマ合計に内包され、種数そのものは加点しない)' do
-      diverse = [build_adult(SpeciesCatalog.lion), build_adult(SpeciesCatalog.grevys_zebra)]
-      single = [build_adult(SpeciesCatalog.lion)]
+      diverse = [build(:animal), build(:animal, species: SpeciesCatalog.grevys_zebra)]
+      single = [build(:animal)]
       expect(visitors(diverse)).to be > visitors(single)
     end
 
     it '見応えは展示を増やすほど高まるが、増分は逓減すること(1日の鑑賞容量は有限)' do
-      modest = [build_adult(SpeciesCatalog.koi)]
-      rich = [SpeciesCatalog.lion, SpeciesCatalog.african_elephant, SpeciesCatalog.polar_bear, SpeciesCatalog.red_panda].map { |s| build_adult(s) }
-      gain_when_modest = spectacle(modest + [build_adult(SpeciesCatalog.grevys_zebra)]) - spectacle(modest)
-      gain_when_rich = spectacle(rich + [build_adult(SpeciesCatalog.grevys_zebra)]) - spectacle(rich)
+      modest = [build(:animal, species: SpeciesCatalog.koi)]
+      rich = [SpeciesCatalog.lion, SpeciesCatalog.african_elephant, SpeciesCatalog.polar_bear, SpeciesCatalog.red_panda].map do |s|
+        build(:animal, species: s)
+      end
+      gain_when_modest = spectacle(modest + [build(:animal, species: SpeciesCatalog.grevys_zebra)]) - spectacle(modest)
+      gain_when_rich = spectacle(rich + [build(:animal, species: SpeciesCatalog.grevys_zebra)]) - spectacle(rich)
       expect(gain_when_modest).to be > gain_when_rich
     end
   end
@@ -67,7 +69,7 @@ RSpec.describe '集客の見応え' do
     end
 
     it '話題は時間とともに薄れること' do
-      zoo = Zoo.new(name: '園', admission_fee: Money.yen(2_000))
+      zoo = build(:zoo, name: '園', admission_fee: Money.yen(2_000))
       zoo.generate_buzz(100)
       expect { zoo.advance_day }.to change(zoo, :buzz).by(-Zoo::BUZZ_DECAY_PER_DAY)
     end

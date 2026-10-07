@@ -4,24 +4,22 @@ require 'spec_helper'
 
 RSpec.describe '飼育員の担当割り当てに対するルール(専門一致)' do
   def pen(name = '区画', capacity: 4, temp: 25)
-    Enclosure.new(
-      name: name, temperature: Temperature.celsius(temp), capacity: capacity
-    )
+    build(:enclosure, name:, temperature: Temperature.celsius(temp), capacity:)
   end
 
   def assign!(keeper, enclosure, occupants = [], assignees = [])
     assignees.each { |assignee| assignee.enclosures << enclosure }
     Tending.new(
-      keeper: keeper, enclosure: enclosure, occupancy: build_occupancy(enclosure, occupants)
+      keeper: keeper, enclosure: enclosure, occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants)
     ).violation!
   end
 
-  let(:mammal_keeper) { Keeper.new(name: '田中', specialties: [TaxonClass.mammal]) }
+  let(:mammal_keeper) { build(:keeper, name: '田中') }
 
   describe '専門の綱と担当エリアの一致' do
     it '専門の綱の動物だけがいるエリアには担当割り当てできること' do
       savanna = pen('サバンナ', temp: 28)
-      residents = [build_adult(SpeciesCatalog.lion), build_adult(SpeciesCatalog.grevys_zebra)]
+      residents = [build(:animal), build(:animal, species: SpeciesCatalog.grevys_zebra)]
 
       expect { assign!(mammal_keeper, savanna, residents) }.not_to raise_error
     end
@@ -29,24 +27,22 @@ RSpec.describe '飼育員の担当割り当てに対するルール(専門一致
     it '専門外の綱の動物がいるエリアには担当割り当てできないこと' do
       pool = pen('ペンギンプール', temp: 0)
 
-      expect { assign!(mammal_keeper, pool, [build_adult(SpeciesCatalog.emperor_penguin)]) }
+      expect { assign!(mammal_keeper, pool, [build(:animal, species: SpeciesCatalog.emperor_penguin)]) }
         .to raise_error(Errors::AssignmentNotAllowed, /鳥類/)
     end
 
     it '専門の綱と専門外の綱が混在するエリアには担当割り当てできないこと' do
       mixed = pen('混合展示', temp: 22)
-      residents = [build_adult(SpeciesCatalog.lion), build_adult(SpeciesCatalog.emperor_penguin)]
+      residents = [build(:animal), build(:animal, species: SpeciesCatalog.emperor_penguin)]
 
       expect { assign!(mammal_keeper, mixed, residents) }
         .to raise_error(Errors::AssignmentNotAllowed)
     end
 
     it '複数の専門を持つ飼育員は担当できる綱の範囲が広がること' do
-      generalist = Keeper.new(
-        name: '万能', specialties: [TaxonClass.mammal, TaxonClass.bird]
-      )
+      generalist = build(:keeper, name: '万能', specialties: [TaxonClass.mammal, TaxonClass.bird])
       mixed = pen('混合展示', temp: 22)
-      residents = [build_adult(SpeciesCatalog.lion), build_adult(SpeciesCatalog.emperor_penguin)]
+      residents = [build(:animal), build(:animal, species: SpeciesCatalog.emperor_penguin)]
 
       expect { assign!(generalist, mixed, residents) }.not_to raise_error
     end
@@ -68,7 +64,7 @@ RSpec.describe '飼育員の担当割り当てに対するルール(専門一致
 
     it '別の飼育員が担当しているエリアには配属できること' do
       savanna = pen('サバンナ', temp: 28)
-      suzuki = Keeper.new(name: '鈴木', specialties: [TaxonClass.mammal])
+      suzuki = build(:keeper, name: '鈴木')
 
       expect { assign!(mammal_keeper, savanna, [], [suzuki]) }.not_to raise_error
     end

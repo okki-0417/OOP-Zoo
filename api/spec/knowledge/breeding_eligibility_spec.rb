@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe '繁殖できる相手' do
   def adult(species, sex, name: '個体')
-    Animal.new(species: species, name: name, sex: sex, max_health: 100, age_in_days: 4000)
+    build(:animal, species:, name:, sex:, age_in_days: 4000)
   end
 
   context '同種の異性で双方が成熟しているとき' do
@@ -43,9 +43,7 @@ RSpec.describe '繁殖できる相手' do
   context '相手がまだ成熟していないとき' do
     it '成熟していなければ繁殖できないこと' do
       sire = adult(SpeciesCatalog.lion, Animal::Sex.male, name: '父')
-      cub  = Animal.new(
-        species: SpeciesCatalog.lion, name: '仔', sex: Animal::Sex.female, max_health: 100, age_in_days: 0
-      )
+      cub  = build(:animal, :female, :newborn, name: '仔')
       expect { Breeding.new(sire:, dam: cub).conceive }
         .to raise_error(Errors::BreedingNotAllowed, /成熟/)
     end

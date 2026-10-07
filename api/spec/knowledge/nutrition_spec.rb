@@ -6,7 +6,7 @@ RSpec.describe '栄養バランスと餌の多様性' do
   # 栄養が満たされるかは「ある個体にその日の餌を与えたとき、種類が偏っていないか」
   # という給餌の判定として観測される。
   def adequate?(species, foods)
-    Feeding.new(animal: build_adult(species), foods: foods).nutritionally_adequate?
+    Feeding.new(animal: build(:animal, species:), foods: foods).nutritionally_adequate?
   end
 
   describe '単一カテゴリの食性(肉食ライオン)' do
@@ -49,28 +49,28 @@ RSpec.describe '栄養バランスと餌の多様性' do
 
   describe '1日の食事と栄養状態' do
     def fed(animal, *foods_of_the_day)
-      keeper = build_keeper(TaxonClass.mammal)
+      keeper = build(:keeper)
       foods_of_the_day.each { |food| Feeding.new(keeper:, animal:, foods: [food]).serve }
       animal
     end
 
     context '雑食のニホンザルに、同じ日のうちにバナナとコオロギを別々に与えると' do
       it '1日の終わりに果実と昆虫の2カテゴリがそろったとみなされ、栄養状態が保たれること' do
-        monkey = fed(build_adult(SpeciesCatalog.japanese_macaque), FoodCatalog.banana, FoodCatalog.cricket)
+        monkey = fed(build(:animal, species: SpeciesCatalog.japanese_macaque), FoodCatalog.banana, FoodCatalog.cricket)
         expect { monkey.settle_nutrition }.not_to(change { monkey.nutrition_level })
       end
     end
 
     context 'その日に何も与えないと' do
       it '1日の終わりに栄養状態が25下がること' do
-        lion = build_adult(SpeciesCatalog.lion)
+        lion = build(:animal)
         expect { lion.settle_nutrition }.to change { lion.nutrition_level }.by(-25)
       end
     end
 
     context '前日にバランスよく食べていても' do
       it '翌日の食事は数え直しになり、その日に食べた分だけで評価されること' do
-        monkey = fed(build_adult(SpeciesCatalog.japanese_macaque), FoodCatalog.banana, FoodCatalog.cricket)
+        monkey = fed(build(:animal, species: SpeciesCatalog.japanese_macaque), FoodCatalog.banana, FoodCatalog.cricket)
         monkey.settle_nutrition
         fed(monkey, FoodCatalog.banana)
         expect { monkey.settle_nutrition }.to change { monkey.nutrition_level }.by(-25)
@@ -79,11 +79,9 @@ RSpec.describe '栄養バランスと餌の多様性' do
 
     context 'エリアで1日を過ごすと' do
       it '日々の締めくくりとして、その日の食事で栄養状態が評価されること' do
-        enclosure = Enclosure.new(
-          name: '猛獣舎', temperature: Temperature.celsius(20), capacity: 4
-        )
-        lion = build_adult(SpeciesCatalog.lion)
-        occupancy = build_occupancy(enclosure, [lion])
+        enclosure = build(:enclosure, name: '猛獣舎', celsius: 20)
+        lion = build(:animal)
+        occupancy = Occupancy.new(enclosure: enclosure, occupants: [lion])
         expect { AnimalDay.new(animal: lion, enclosure:, occupancy:).run }
           .to change { lion.nutrition_level }.by(-25)
       end

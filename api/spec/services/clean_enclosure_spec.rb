@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Services::CleanEnclosure do
-  let!(:keeper) { Keeper.create!(name: '田中', specialties: [TaxonClass.mammal]) }
-  let!(:enclosure) { create_enclosure.soil(80).tap(&:save!) }
+  let!(:keeper) { create(:keeper, name: '田中') }
+  let!(:enclosure) { create(:enclosure).soil(80).tap(&:save!) }
 
   def clean(command)
     described_class.new(command:).call

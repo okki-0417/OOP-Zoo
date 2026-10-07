@@ -4,9 +4,7 @@ require 'spec_helper'
 
 RSpec.describe '飼育密度と過密' do
   def pen(capacity, temp)
-    Enclosure.new(
-      name: '区画', temperature: Temperature.celsius(temp), capacity: capacity
-    )
+    build(:enclosure, name: '区画', temperature: Temperature.celsius(temp), capacity:)
   end
 
   describe '必要面積' do
@@ -19,16 +17,16 @@ RSpec.describe '飼育密度と過密' do
   describe '過密' do
     it '体格に見合う広さなら過密にならないこと' do
       enclosure = pen(4, 28)
-      occupants = [build_adult(SpeciesCatalog.lion, name: 'A'), build_adult(SpeciesCatalog.lion, name: 'B')]
-      occupancy = build_occupancy(enclosure, occupants)
+      occupants = [build(:animal, name: 'A'), build(:animal, name: 'B')]
+      occupancy = Occupancy.new(enclosure: enclosure, occupants: occupants)
 
       expect(occupancy.overcrowded?).to be(false)
     end
 
     it '必要面積の合計が区画の広さを超えると過密になること' do
       enclosure = pen(4, 25)
-      occupants = [build_adult(SpeciesCatalog.african_elephant)]
-      occupancy = build_occupancy(enclosure, occupants)
+      occupants = [build(:animal, species: SpeciesCatalog.african_elephant)]
+      occupancy = Occupancy.new(enclosure: enclosure, occupants: occupants)
 
       expect(occupancy.overcrowded?).to be(true)
     end

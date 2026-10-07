@@ -5,22 +5,16 @@ require 'spec_helper'
 RSpec.describe '動物' do
   def build_animal(name: 'Jack', voice: 'Woof', max_health: 10, age_in_days: 0,
                    sex: Animal::Sex.male)
-    Animal.new(
-      species: SpeciesCatalog.lion,
-      name: name, sex: sex, voice: voice, max_health: max_health, age_in_days: age_in_days
-    )
+    build(:animal, name:, sex:, voice:, max_health:, age_in_days:)
   end
 
   def adult_lion(sex: Animal::Sex.male, max_health: 100,
                  species: SpeciesCatalog.lion)
-    Animal.new(species: species, name: 'X', sex: sex, max_health: max_health, age_in_days: 365 * 5)
+    build(:animal, species:, sex:, max_health:, age_in_days: 365 * 5)
   end
 
   def build_cub(name, sire:, dam:)
-    Animal.new(
-      species: SpeciesCatalog.lion,
-      name: name, sex: Animal::Sex.male, max_health: 10, sire: sire, dam: dam
-    )
+    build(:animal, :newborn, name:, max_health: 10, sire:, dam:)
   end
 
   describe '生死' do
@@ -133,7 +127,7 @@ RSpec.describe '動物' do
     end
 
     it '声を指定しなければ種の既定の声で鳴くこと(ライオンはガオー)' do
-      lion = Animal.new(species: SpeciesCatalog.lion, name: 'レオ', sex: Animal::Sex.male, max_health: 100)
+      lion = build(:animal, :newborn, name: 'レオ')
       expect(lion.cry_out).to eq('ガオー')
     end
 
@@ -185,7 +179,7 @@ RSpec.describe '動物' do
 
     def serve(animal, food)
       Feeding.new(
-        keeper: build_keeper(TaxonClass.mammal), animal: animal, foods: [food]
+        keeper: build(:keeper), animal: animal, foods: [food]
       )
     end
 

@@ -5,16 +5,16 @@ require 'spec_helper'
 RSpec.describe Services::AlertList do
   female = Animal::Sex.female
 
-  let(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ') }
-  let(:mate) { build_adult(SpeciesCatalog.lion, name: 'ナラ', sex: female) }
+  let(:lion) { build(:animal, name: 'レオ') }
+  let(:mate) { build(:animal, name: 'ナラ', sex: female) }
   let(:hill) { enclosure_at(25, name: 'ライオンの丘') }
-  let(:keepers) { [build_keeper(TaxonClass.mammal)] }
-  let(:veterinarians) { [Veterinarian.new(name: '山田')] }
+  let(:keepers) { [build(:keeper)] }
+  let(:veterinarians) { [build(:veterinarian, name: '山田')] }
 
-  let(:zoo) { create_zoo }
+  let(:zoo) { create(:zoo) }
 
   def enclosure_at(celsius, name: '丘', capacity: 4)
-    Enclosure.new(name:, temperature: Temperature.celsius(celsius), capacity:)
+    build(:enclosure, name:, temperature: Temperature.celsius(celsius), capacity:)
   end
 
   def alerts(animals: [lion, mate], housed_in: hill, keepers: self.keepers,
@@ -51,7 +51,7 @@ RSpec.describe Services::AlertList do
     end
 
     it '収容中の綱(哺乳類)を専門とする飼育員がいなければ kind=:no_keeper を返すこと' do
-      expect(alerts(keepers: [build_keeper(TaxonClass.bird)]).pluck(:message))
+      expect(alerts(keepers: [build(:keeper, specialties: [TaxonClass.bird])]).pluck(:message))
         .to include('哺乳類を世話できる飼育員がいません')
     end
 
@@ -91,7 +91,7 @@ RSpec.describe Services::AlertList do
     end
 
     it '体力がわずかで重病の個体は予後 kind=:grave・severity=:critical を返すこと' do
-      dying = build_adult(SpeciesCatalog.lion, name: '瀕死', max_health: 10)
+      dying = build(:animal, name: '瀕死', max_health: 10)
       dying.fall_ill(IllnessCatalog.pneumonia)
 
       expect(alerts(animals: [dying, mate]).first).to include(kind: :grave, severity: :critical)
@@ -132,8 +132,8 @@ RSpec.describe Services::AlertList do
     end
 
     it '生きているのにどのエリアにもいない個体は kind=:unhoused、死亡個体は対象外であること' do
-      stray = build_adult(SpeciesCatalog.lion, name: '迷子')
-      dead = build_adult(SpeciesCatalog.lion, name: '故').die
+      stray = build(:animal, name: '迷子')
+      dead = build(:animal, name: '故').die
 
       list = kinds(alerts(unhoused: [stray, dead]))
       expect(list).to include([:unhoused, '迷子'])

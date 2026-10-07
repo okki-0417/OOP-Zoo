@@ -4,9 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Assignment do
   let(:enclosure) do
-    Enclosure.create!(name: 'サバンナ', temperature: Temperature.celsius(28), capacity: 4)
+    create(:enclosure, name: 'サバンナ')
   end
-  let(:tanaka) { Keeper.create!(name: '田中', specialties: [TaxonClass.mammal]) }
+  let(:tanaka) { create(:keeper, name: '田中') }
 
   it '田中をサバンナに割り当てて保存すると、田中の enclosures と サバンナの keepers から互いに引けること' do
     described_class.create!(keeper: tanaka, enclosure:)

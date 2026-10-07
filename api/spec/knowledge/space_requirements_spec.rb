@@ -23,14 +23,12 @@ RSpec.describe '必要面積' do
 
   describe '群れの規模' do
     it '群れで暮らす種は、個体数に応じた面積を要すること' do
-      enclosure = Enclosure.new(
-        name: 'サバンナ', temperature: Temperature.celsius(28), capacity: 6
-      )
+      enclosure = build(:enclosure, name: 'サバンナ', capacity: 6)
       occupants = [
-        build_adult(SpeciesCatalog.lion, name: 'A'),
-        build_adult(SpeciesCatalog.lion, name: 'B', sex: Animal::Sex.female)
+        build(:animal, name: 'A'),
+        build(:animal, :female, name: 'B')
       ]
-      occupancy = build_occupancy(enclosure, occupants)
+      occupancy = Occupancy.new(enclosure: enclosure, occupants: occupants)
 
       expect(occupancy.required_area).to eq(2 * SpeciesCatalog.lion.space_requirement_sqm)
     end
@@ -38,15 +36,13 @@ RSpec.describe '必要面積' do
 
   describe '過密の帰結' do
     it '必要な空間を欠く(過密)と福祉が損なわれること' do
-      den = Enclosure.new(
-        name: '狭い獣舎', temperature: Temperature.celsius(0), capacity: 1
-      )
-      bear = build_adult(SpeciesCatalog.polar_bear)
+      den = build(:enclosure, name: '狭い獣舎', celsius: 0, capacity: 1)
+      bear = build(:animal, species: SpeciesCatalog.polar_bear)
       occupants = [bear]
-      occupancy = build_occupancy(den, occupants)
+      occupancy = Occupancy.new(enclosure: den, occupants: occupants)
 
       expect(occupancy.overcrowded?).to be(true)
-      expect(welfare_of(bear, den, occupants).daily_stress).to be > 0
+      expect(build(:welfare, animal: bear, enclosure: den, occupants:).daily_stress).to be > 0
     end
   end
 end

@@ -15,9 +15,9 @@ end
 RSpec.describe OperatingCost do
   it 'エリア維持費・職員給与・在園個体の飼料費(種ごと)の合計を返すこと' do
     enclosures = Array.new(2) do
-      Enclosure.new(name: 'A', temperature: Temperature.celsius(20), capacity: 4)
+      build(:enclosure, name: 'A', celsius: 20)
     end
-    staff = Array.new(3) { build_keeper }
+    staff = Array.new(3) { build(:keeper) }
     zebras = Array.new(5) { SpeciesCatalog.grevys_zebra }
     food = zebras.sum { |s| s.daily_food_cost.yen }
 
@@ -29,10 +29,8 @@ RSpec.describe OperatingCost do
   end
 
   it '空調付きエリアは稼働費が上乗せされること' do
-    plain = Enclosure.new(name: '平', temperature: Temperature.celsius(20), capacity: 4)
-    controlled = Enclosure.new(
-      name: '空調', temperature: Temperature.celsius(20), capacity: 4, climate_controlled: true
-    )
+    plain = build(:enclosure, name: '平', celsius: 20)
+    controlled = build(:enclosure, name: '空調', celsius: 20, climate_controlled: true)
 
     plain_cost = described_class.new(enclosures: [plain], staff: [], species: []).amount
     controlled_cost = described_class.new(enclosures: [controlled], staff: [], species: []).amount
@@ -45,9 +43,7 @@ RSpec.describe VisitorAttraction do
   fee = Money.yen(2_000)
 
   def zebra
-    Animal.new(
-      species: SpeciesCatalog.grevys_zebra, name: 'シマオ', sex: Animal::Sex.male, max_health: 100
-    )
+    build(:animal, :newborn, species: SpeciesCatalog.grevys_zebra, name: 'シマオ')
   end
 
   def mock_zoo(reputation_factor:, admission_fee:)
@@ -87,9 +83,7 @@ end
 
 RSpec.describe SpontaneousInfection do
   def animal(name = 'シマオ')
-    Animal.new(
-      species: SpeciesCatalog.grevys_zebra, name: name, sex: Animal::Sex.male, max_health: 100
-    )
+    build(:animal, :newborn, species: SpeciesCatalog.grevys_zebra, name:)
   end
 
   it '発生する乱数(rand<20)では対象個体を発病させて返すこと' do

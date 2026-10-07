@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Services::AddEnclosure do
   let(:funds) { 100_000 }
-  let!(:zoo) { create_zoo(funds:) }
+  let!(:zoo) { create(:zoo, funds: Money.yen(funds)) }
 
   def add(name: 'ライオンの丘', celsius: 28, capacity: 4, climate_controlled: false)
     command = Services::Commands::AddEnclosureCommand.new(name:, celsius:, capacity:, climate_controlled:)

@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Examining do
-  let(:vet) { Veterinarian.new(name: '佐藤') }
-  let(:animal) { build_adult(SpeciesCatalog.lion) }
+  let(:vet) { build(:veterinarian, name: '佐藤') }
+  let(:animal) { build(:animal) }
 
   def diagnose
     described_class.new(veterinarian: vet, animal: animal).diagnosis

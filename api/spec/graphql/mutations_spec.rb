@@ -14,7 +14,7 @@ RSpec.describe Mutations do
   end
 
   describe 'BaseMutation の応答' do
-    let(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ') }
+    let(:lion) { build(:animal, name: 'レオ') }
 
     it 'サービスが success(value: レオ) を返すと、data.renameAnimal にその動物の name "レオ" が出ること' do
       stub_service(:rename_animal, Services::Result.success(:rename_animal, lion))
@@ -58,8 +58,8 @@ RSpec.describe Mutations do
   end
 
   describe 'モデルを直接呼ぶ mutation' do
-    let(:hill) { create_enclosure(name: 'ライオンの丘') }
-    let(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ').tap(&:save!) }
+    let(:hill) { create(:enclosure, name: 'ライオンの丘') }
+    let(:lion) { create(:animal, name: 'レオ') }
 
     it 'houseAnimal(enclosureId: 丘, animalId: レオ) は丘を返し、レオが丘に収容されること' do
       response = execute(%(mutation { houseAnimal(enclosureId: "#{hill.id}", animalId: "#{lion.id}") { name } }))
@@ -70,7 +70,7 @@ RSpec.describe Mutations do
 
     it 'transferAnimal(animalId: レオ, enclosureId: 草原) はレオを返し、レオが草原に移ること' do
       lion.move_to(hill).save!
-      meadow = create_enclosure(name: '草原')
+      meadow = create(:enclosure, name: '草原')
 
       response = execute(%(mutation { transferAnimal(animalId: "#{lion.id}", enclosureId: "#{meadow.id}") { name } }))
 
@@ -99,9 +99,9 @@ RSpec.describe Mutations do
     end
 
     it "ドメインのルール違反(定員1の満員エリアへの収容)は extensions.code 'HousingNotAllowed' になり、収容は保存されないこと" do
-      full = create_enclosure(name: '小屋', capacity: 1)
-      build_adult(SpeciesCatalog.lion, name: '先住').move_to(full).save!
-      lion = build_adult(SpeciesCatalog.lion, name: 'レオ').tap(&:save!)
+      full = create(:enclosure, name: '小屋', capacity: 1)
+      build(:animal, name: '先住').move_to(full).save!
+      lion = create(:animal, name: 'レオ')
 
       response = execute(%(mutation { houseAnimal(enclosureId: "#{full.id}", animalId: "#{lion.id}") { name } }))
 

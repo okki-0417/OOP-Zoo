@@ -4,13 +4,11 @@ require 'spec_helper'
 
 RSpec.describe Pedigree do
   def founder(name, sex)
-    Animal.new(species: SpeciesCatalog.lion, name: name, sex: sex, max_health: 100, age_in_days: 3000)
+    build(:animal, name:, sex:, age_in_days: 3000)
   end
 
   def offspring(name, sex, sire:, dam:, age: 100)
-    Animal.new(
-      species: SpeciesCatalog.lion, name: name, sex: sex, max_health: 100, age_in_days: age, sire:, dam:
-    )
+    build(:animal, name:, sex:, age_in_days: age, sire:, dam:)
   end
 
   describe '#coancestry' do

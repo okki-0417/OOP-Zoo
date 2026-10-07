@@ -3,16 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe Services::RunDays do
-  let!(:zoo) { create_zoo(funds: 100_000, admission_fee: 2_000) }
-  let!(:enclosure) { create_enclosure }
+  let!(:zoo) { create(:zoo) }
+  let!(:enclosure) { create(:enclosure) }
   let(:no_outbreak) { instance_double(Random, rand: 99) }
   let(:service) do
     described_class.new(command: Services::Commands::RunDaysCommand.new(days: 3, random: no_outbreak))
   end
 
   before do
-    build_adult(SpeciesCatalog.lion, name: '若').move_to(enclosure).save!
-    build_animal(SpeciesCatalog.lion, name: '老', age_in_days: 1_000_000).move_to(enclosure).save!
+    build(:animal, name: '若').move_to(enclosure).save!
+    build(:animal, name: '老', age_in_days: 1_000_000).move_to(enclosure).save!
   end
 
   describe '#call' do

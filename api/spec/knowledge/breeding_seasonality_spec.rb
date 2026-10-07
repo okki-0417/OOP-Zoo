@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe '繁殖の季節性' do
   def mate_in(species, season)
-    sire, dam = build_pair(species)
+    sire = build(:animal, species: species)
+    dam = build(:animal, :female, species: species)
     Breeding.new(sire:, dam:, day: 0, season:).conceive
   end
 

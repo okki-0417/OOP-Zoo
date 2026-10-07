@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Services::DischargeKeeper do
-  let!(:keeper) { Keeper.create!(name: '田中', specialties: [TaxonClass.mammal]) }
-  let!(:enclosure) { create_enclosure(name: 'サバンナ') }
+  let!(:keeper) { create(:keeper, name: '田中') }
+  let!(:enclosure) { create(:enclosure, name: 'サバンナ') }
 
   def discharge(keeper_id: keeper.id, enclosure_id: enclosure.id)
     command = Services::Commands::DischargeKeeperCommand.new(keeper_id:, enclosure_id:)

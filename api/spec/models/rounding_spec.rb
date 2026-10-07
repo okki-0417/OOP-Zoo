@@ -3,26 +3,26 @@
 require 'spec_helper'
 
 RSpec.describe Rounding do
-  let(:keeper) { build_keeper(TaxonClass.mammal) }
+  let(:keeper) { build(:keeper, name: '飼育員') }
   let(:enclosure) do
-    Enclosure.new(name: '丘', temperature: Temperature.celsius(24), capacity: 4)
+    build(:enclosure, name: '丘', celsius: 24)
   end
 
   def rounding(occupants)
     keeper.enclosures << enclosure unless keeper.in_charge_of?(enclosure)
     described_class.new(
-      keeper:, occupancy: build_occupancy(enclosure, occupants), foods: FoodCatalog.all
+      keeper:, occupancy: Occupancy.new(enclosure: enclosure, occupants: occupants), foods: FoodCatalog.all
     )
   end
 
   describe '#perform' do
     it '死亡個体には給餌しないこと' do
-      dead = build_adult(SpeciesCatalog.lion).die
+      dead = build(:animal).die
       expect(rounding([dead]).perform.fed).to eq([])
     end
 
     it '清潔で刺激も十分なエリアでは cleaned=false・enriched=false で、給餌1頭ぶん(10分)だけ勤務時間を使うこと' do
-      report = rounding([build_adult(SpeciesCatalog.lion)]).perform
+      report = rounding([build(:animal)]).perform
 
       expect(report).to have_attributes(enclosure:, cleaned: false, enriched: false, skipped: [])
       expect(keeper.worked_minutes).to eq(10)
@@ -43,9 +43,9 @@ RSpec.describe Rounding do
     end
 
     it '担当でない飼育員は WorkNotAllowed になり、何も変えないこと' do
-      lion = build_adult(SpeciesCatalog.lion).get_hungrier(50)
+      lion = build(:animal).get_hungrier(50)
       unassigned = described_class.new(
-        keeper:, occupancy: build_occupancy(enclosure, [lion]), foods: FoodCatalog.all
+        keeper:, occupancy: Occupancy.new(enclosure: enclosure, occupants: [lion]), foods: FoodCatalog.all
       )
 
       expect { unassigned.perform }.to raise_error(Errors::WorkNotAllowed, '飼育員飼育員は丘の担当ではありません')

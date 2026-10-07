@@ -7,12 +7,10 @@ RSpec.describe '同居適性' do
   # 入園判定として観測される。新入りの適温域に収まる区画を用意し、
   # 気温自体は入園を妨げないようにして同居ルールだけを浮かび上がらせる。
   def admission(newcomer_species, resident_species)
-    enclosure = Enclosure.new(
-      name: '展示エリア', temperature: newcomer_species.habitable_temperature_range.begin, capacity: 9
-    )
-    occupancy = build_occupancy(enclosure, [build_adult(resident_species, name: '先住')])
+    enclosure = build(:enclosure, name: '展示エリア', temperature: newcomer_species.habitable_temperature_range.begin, capacity: 9)
+    occupancy = Occupancy.new(enclosure: enclosure, occupants: [build(:animal, species: resident_species, name: '先住')])
     Housing.new(
-      animal: build_adult(newcomer_species, name: '新入り'),
+      animal: build(:animal, species: newcomer_species, name: '新入り'),
       enclosure: enclosure,
       occupancy: occupancy
     )

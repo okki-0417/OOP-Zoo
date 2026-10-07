@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Services::AdmitVisitors do
-  let!(:zoo) { create_zoo(admission_fee: 2_000) }
+  let!(:zoo) { create(:zoo) }
 
   def admit(count)
     described_class.new(command: Services::Commands::AdmitVisitorsCommand.new(count:)).call

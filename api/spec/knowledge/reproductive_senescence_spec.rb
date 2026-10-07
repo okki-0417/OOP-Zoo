@@ -4,10 +4,7 @@ require 'spec_helper'
 
 RSpec.describe '生殖の老化' do
   def aged(species, years)
-    Animal.new(
-      species: species, name: 'X', sex: Animal::Sex.male,
-      max_health: 100, age_in_days: 365 * years
-    )
+    build(:animal, species:, age_in_days: 365 * years)
   end
 
   describe '生殖老化のある分類群' do

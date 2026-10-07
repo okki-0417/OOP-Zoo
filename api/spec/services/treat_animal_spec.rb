@@ -4,10 +4,10 @@ require 'spec_helper'
 
 RSpec.describe Services::TreatAnimal do
   let!(:penguin) do
-    build_adult(SpeciesCatalog.emperor_penguin, name: 'ペン')
+    build(:animal, species: SpeciesCatalog.emperor_penguin, name: 'ペン')
       .fall_ill(IllnessCatalog.pneumonia).tap(&:save!)
   end
-  let!(:vet) { Veterinarian.create!(name: '山田') }
+  let!(:vet) { create(:veterinarian, name: '山田') }
 
   def treat(veterinarian_id:, animal_id:)
     command = Services::Commands::TreatAnimalCommand.new(veterinarian_id:, animal_id:)

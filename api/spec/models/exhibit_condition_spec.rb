@@ -9,8 +9,8 @@ RSpec.describe ExhibitCondition do
     end
 
     it '生存個体の visible_condition の平均を返すこと' do
-      healthy = build_adult(SpeciesCatalog.lion)
-      stressed = build_adult(SpeciesCatalog.lion)
+      healthy = build(:animal)
+      stressed = build(:animal)
       stressed.add_stress(70)
 
       average = (healthy.visible_condition + stressed.visible_condition) / 2
@@ -18,8 +18,8 @@ RSpec.describe ExhibitCondition do
     end
 
     it '死亡個体は平均から除外されること' do
-      alive = build_adult(SpeciesCatalog.lion)
-      dead = build_adult(SpeciesCatalog.lion)
+      alive = build(:animal)
+      dead = build(:animal)
       dead.die
 
       expect(described_class.new([alive, dead]).score).to eq(alive.visible_condition)

@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Birth do
   let(:lion) { SpeciesCatalog.lion }
-  let(:sire) { build_adult(lion, name: 'レオ', sex: Animal::Sex.male) }
-  let(:dam)  { build_adult(lion, name: 'ナラ', sex: Animal::Sex.female) }
+  let(:sire) { build(:animal, species: lion, name: 'レオ') }
+  let(:dam)  { build(:animal, :female, species: lion, name: 'ナラ') }
 
   def ready_dam(inbreeding: 0.0)
     dam.conceive(inbreeding: inbreeding)
@@ -41,7 +41,7 @@ RSpec.describe Birth do
 
     it '近交係数が高いほど虚弱に(最大体力が低く)生まれること' do
       healthy = described_class.new(sire:, dam: ready_dam).deliver.offspring
-      inbred_dam = build_adult(lion, name: '母2', sex: Animal::Sex.female)
+      inbred_dam = build(:animal, :female, species: lion, name: '母2')
       inbred_dam.conceive(inbreeding: 0.25)
       inbred_dam.gestate(lion.gestation_period_days)
       inbred = described_class.new(sire:, dam: inbred_dam).deliver.offspring

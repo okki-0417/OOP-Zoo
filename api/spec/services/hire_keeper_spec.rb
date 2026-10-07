@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Services::HireKeeper do
   let(:funds) { 100_000 }
-  let!(:zoo) { create_zoo(funds:) }
+  let!(:zoo) { create(:zoo, funds: Money.yen(funds)) }
 
   def call_with(specialties: %w[mammal])
     command = Services::Commands::HireKeeperCommand.new(name: '田中', specialties:)

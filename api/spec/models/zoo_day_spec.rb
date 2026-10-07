@@ -3,14 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe ZooDay do
-  let(:zoo) { Zoo.new(name: '園', admission_fee: Money.yen(2_000), funds: Money.yen(100_000)) }
-  let(:hill) { Enclosure.new(name: '丘', temperature: Temperature.celsius(28), capacity: 4) }
-  let(:lion) { build_adult(SpeciesCatalog.lion, name: 'レオ') }
-  let(:keeper) { build_keeper }
+  let(:zoo) { build(:zoo, name: '園', admission_fee: Money.yen(2_000), funds: Money.yen(100_000)) }
+  let(:hill) { build(:enclosure, name: '丘') }
+  let(:lion) { build(:animal, name: 'レオ') }
+  let(:keeper) { build(:keeper) }
 
   def zoo_day(occupants: [lion], yesterday: nil)
     described_class.new(
-      zoo:, occupancies: [build_occupancy(hill, occupants)], keepers: [keeper], veterinarians: [],
+      zoo:, occupancies: [Occupancy.new(enclosure: hill, occupants: occupants)], keepers: [keeper], veterinarians: [],
       yesterday:, random: Random.new(0)
     )
   end
@@ -48,7 +48,7 @@ RSpec.describe ZooDay do
     end
 
     it '死んだ動物は casualties と deaths に数えられること' do
-      dying = build_adult(SpeciesCatalog.lion, name: '老', max_health: 1).tap { |animal| animal.get_hungrier(100) }
+      dying = build(:animal, name: '老', max_health: 1).tap { |animal| animal.get_hungrier(100) }
       operating = zoo_day(occupants: [dying]).run
       expect(operating.casualties).to eq([dying])
       expect(operating.deaths).to eq(1)

@@ -5,22 +5,18 @@ require 'spec_helper'
 RSpec.describe '疾病の重症度と伝播' do
   def sick_lion(age_in_days:, stress: 0, illness: IllnessCatalog.cold)
     lion = SpeciesCatalog.lion
-    animal = Animal.new(
-      species: lion, name: 'X', sex: Animal::Sex.male, max_health: 100, age_in_days: age_in_days
-    )
+    animal = build(:animal, species: lion, age_in_days:)
     animal.add_stress(stress) if stress.positive?
     animal.fall_ill(illness)
     animal
   end
 
   def pen
-    Enclosure.new(
-      name: 'ライオンの丘', temperature: Temperature.celsius(28), capacity: 6
-    )
+    build(:enclosure, name: 'ライオンの丘', capacity: 6)
   end
 
   def occupancy(enclosure, occupants)
-    build_occupancy(enclosure, occupants)
+    Occupancy.new(enclosure: enclosure, occupants: occupants)
   end
 
   describe '重症度(進行の速さ)' do
@@ -65,9 +61,9 @@ RSpec.describe '疾病の重症度と伝播' do
 
   describe '伝播は確率的' do
     it '感染源と同居しても、必ず感染するとは限らないこと(伝播判定に失敗する乱数)' do
-      carrier = build_adult(SpeciesCatalog.lion, name: '感染源')
+      carrier = build(:animal, name: '感染源')
       carrier.fall_ill(IllnessCatalog.cold)
-      healthy = build_adult(SpeciesCatalog.lion, name: '健康')
+      healthy = build(:animal, name: '健康')
 
       Contagion.new(pen, occupancy(pen, [carrier, healthy]), random: instance_double(Random, rand: 99)).spread
 
@@ -75,9 +71,9 @@ RSpec.describe '疾病の重症度と伝播' do
     end
 
     it '伝播判定に成功する乱数では感染が起きること' do
-      carrier = build_adult(SpeciesCatalog.lion, name: '感染源')
+      carrier = build(:animal, name: '感染源')
       carrier.fall_ill(IllnessCatalog.cold)
-      healthy = build_adult(SpeciesCatalog.lion, name: '健康')
+      healthy = build(:animal, name: '健康')
 
       Contagion.new(pen, occupancy(pen, [carrier, healthy]), random: instance_double(Random, rand: 0)).spread
 
@@ -86,9 +82,9 @@ RSpec.describe '疾病の重症度と伝播' do
 
     it '同じ伝播条件(rand=60)でも、清潔なら防げる伝播が不衛生なエリアでは起きること' do
       infect_into = lambda do |enclosure|
-        carrier = build_adult(SpeciesCatalog.lion, name: '感染源')
+        carrier = build(:animal, name: '感染源')
         carrier.fall_ill(IllnessCatalog.cold)
-        healthy = build_adult(SpeciesCatalog.lion, name: '健康')
+        healthy = build(:animal, name: '健康')
         Contagion.new(enclosure, occupancy(enclosure, [carrier, healthy]), random: instance_double(Random, rand: 60)).spread
         healthy
       end
@@ -98,9 +94,9 @@ RSpec.describe '疾病の重症度と伝播' do
     end
 
     it '免疫を持つ個体は伝播の対象から外れること' do
-      immune = build_adult(SpeciesCatalog.lion, name: '接種済み')
+      immune = build(:animal, name: '接種済み')
       immune.vaccinate(IllnessCatalog.cold)
-      carrier = build_adult(SpeciesCatalog.lion, name: '感染源')
+      carrier = build(:animal, name: '感染源')
       carrier.fall_ill(IllnessCatalog.cold)
 
       Contagion.new(pen, occupancy(pen, [immune, carrier]), random: instance_double(Random, rand: 0)).spread

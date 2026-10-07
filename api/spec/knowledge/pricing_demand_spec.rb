@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe '入園料と需要' do
   def exhibit
     catalog = SpeciesCatalog
-    [build_adult(catalog.lion, name: 'A'), build_adult(catalog.grevys_zebra, name: 'B')]
+    [build(:animal, species: catalog.lion, name: 'A'), build(:animal, species: catalog.grevys_zebra, name: 'B')]
   end
 
   def visitors_at(fee)
@@ -56,9 +56,9 @@ RSpec.describe '入園料と需要' do
     it '需要を超える人数を手動で入れても、実際の入場は需要が上限になること' do
       pending('需要を上限とする入場の導入で対応予定。現状 admit_visitors は無制限に受け入れる')
       catalog = SpeciesCatalog
-      zoo = Zoo.new(name: '園', admission_fee: Money.yen(2_000))
+      zoo = build(:zoo, name: '園', admission_fee: Money.yen(2_000))
       demand = VisitorAttraction.new(
-        on_exhibit: [build_adult(catalog.lion, name: 'レオ')], zoo:
+        on_exhibit: [build(:animal, species: catalog.lion, name: 'レオ')], zoo:
       ).expected_visitors
       zoo.admit_visitors(1_000_000)
 

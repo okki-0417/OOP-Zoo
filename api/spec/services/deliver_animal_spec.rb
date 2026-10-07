@@ -3,11 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Services::DeliverAnimal do
-  let!(:zoo) { create_zoo }
-  let!(:pair) { build_pair(SpeciesCatalog.lion).each(&:save!) }
-  let(:sire) { pair[0] }
-  let(:dam)  { pair[1] }
-  let!(:enclosure) { create_enclosure }
+  let!(:zoo) { create(:zoo) }
+  let!(:sire) { create(:animal) }
+  let!(:dam) { create(:animal, :female) }
+  let!(:enclosure) { create(:enclosure) }
 
   def deliver(dam_id: dam.id, enclosure_id: enclosure.id, keeper_id: nil)
     command = Services::Commands::DeliverAnimalCommand.new(dam_id:, enclosure_id:, keeper_id:)
@@ -26,8 +25,8 @@ RSpec.describe Services::DeliverAnimal do
   end
 
   def full_enclosure
-    create_enclosure(name: '小屋', capacity: 1).tap do |full|
-      build_adult(SpeciesCatalog.lion, name: '先住').move_to(full).save!
+    create(:enclosure, name: '小屋', capacity: 1).tap do |full|
+      build(:animal, name: '先住').move_to(full).save!
     end
   end
 

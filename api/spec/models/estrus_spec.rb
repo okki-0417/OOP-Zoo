@@ -8,7 +8,7 @@ RSpec.describe Estrus do
   let(:season) { Season }
 
   def female(species)
-    build_adult(species, sex: Animal::Sex.female)
+    build(:animal, :female, species:)
   end
 
   describe '#active?' do
@@ -27,7 +27,7 @@ RSpec.describe Estrus do
 
   describe '.new' do
     it 'オスを渡すと ArgumentError(発情はメスにのみ起こります)を送出すること' do
-      buck = build_adult(macaque, sex: Animal::Sex.male)
+      buck = build(:animal, species: macaque)
       expect { described_class.new(buck, season.autumn) }
         .to raise_error(ArgumentError, '発情はメスにのみ起こります')
     end

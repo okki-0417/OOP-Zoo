@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Services::SetAdmissionFee do
-  let!(:zoo) { create_zoo(admission_fee: 2_000) }
+  let!(:zoo) { create(:zoo) }
 
   describe '#call' do
     it 'fee=3500 で入園料を改定すると保存された Zoo の admission_fee が更新され、result.value がその Zoo になること' do

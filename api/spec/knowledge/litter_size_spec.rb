@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe '産仔数' do
   def delivered_litter(species, inbreeding: 0.0)
-    sire, dam = build_pair(species)
+    sire = build(:animal, species: species)
+    dam = build(:animal, :female, species: species)
     dam.conceive(inbreeding: inbreeding)
     dam.gestate(species.gestation_period_days)
     Birth.new(sire: sire, dam: dam, name: '仔').deliver_litter.offspring
@@ -49,7 +50,8 @@ RSpec.describe '産仔数' do
     end
 
     it '同腹の全個体に同じ両親が血統として記録されること' do
-      sire, dam = build_pair(SpeciesCatalog.lion)
+      sire = build(:animal)
+      dam = build(:animal, :female)
       dam.conceive
       dam.gestate(SpeciesCatalog.lion.gestation_period_days)
       litter = Birth.new(sire: sire, dam: dam, name: '仔').deliver_litter.offspring

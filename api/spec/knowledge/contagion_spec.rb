@@ -4,19 +4,17 @@ require 'spec_helper'
 
 RSpec.describe '病気の感染と免疫' do
   def pen
-    Enclosure.new(
-      name: 'ライオンの丘', temperature: Temperature.celsius(28), capacity: 6
-    )
+    build(:enclosure, name: 'ライオンの丘', capacity: 6)
   end
 
   def occupancy(enclosure, occupants)
-    build_occupancy(enclosure, occupants)
+    Occupancy.new(enclosure: enclosure, occupants: occupants)
   end
 
   describe '接触感染' do
     it '感染性の病気を持つ個体がいると、同じエリアの健康な個体に広がること' do
-      carrier = build_adult(SpeciesCatalog.lion, name: '感染源')
-      healthy = build_adult(SpeciesCatalog.lion, name: '健康')
+      carrier = build(:animal, name: '感染源')
+      healthy = build(:animal, name: '健康')
       carrier.fall_ill(IllnessCatalog.cold)
 
       Contagion.new(pen, occupancy(pen, [carrier, healthy])).spread
@@ -25,8 +23,8 @@ RSpec.describe '病気の感染と免疫' do
     end
 
     it '感染性でない病気(骨折)は広がらないこと' do
-      injured = build_adult(SpeciesCatalog.lion, name: '骨折')
-      healthy = build_adult(SpeciesCatalog.lion, name: '健康')
+      injured = build(:animal, name: '骨折')
+      healthy = build(:animal, name: '健康')
       injured.fall_ill(IllnessCatalog.fracture)
 
       Contagion.new(pen, occupancy(pen, [injured, healthy])).spread
@@ -35,9 +33,9 @@ RSpec.describe '病気の感染と免疫' do
     end
 
     it '別のエリアの個体には広がらないこと' do
-      carrier = build_adult(SpeciesCatalog.lion, name: '感染源')
+      carrier = build(:animal, name: '感染源')
       carrier.fall_ill(IllnessCatalog.cold)
-      faraway = build_adult(SpeciesCatalog.lion, name: '別エリア')
+      faraway = build(:animal, name: '別エリア')
 
       Contagion.new(pen, occupancy(pen, [carrier])).spread
 
@@ -47,7 +45,7 @@ RSpec.describe '病気の感染と免疫' do
 
   describe '免疫' do
     it '病気から回復すると、その病気に免疫を持つこと' do
-      lion = build_adult(SpeciesCatalog.lion)
+      lion = build(:animal)
       lion.fall_ill(IllnessCatalog.cold)
       lion.recover
 
@@ -55,10 +53,10 @@ RSpec.describe '病気の感染と免疫' do
     end
 
     it '免疫を持つ病気には接触しても再びかからないこと' do
-      recovered = build_adult(SpeciesCatalog.lion, name: '回復済み')
+      recovered = build(:animal, name: '回復済み')
       recovered.fall_ill(IllnessCatalog.cold)
       recovered.recover
-      carrier = build_adult(SpeciesCatalog.lion, name: '感染源')
+      carrier = build(:animal, name: '感染源')
       carrier.fall_ill(IllnessCatalog.cold)
 
       Contagion.new(pen, occupancy(pen, [recovered, carrier])).spread
