@@ -20,39 +20,39 @@ module Types
     field :taxon_classes, [TaxonClass], null: false
 
     def animals
-      ::Animal.order(:id)
+      current_zoo.animals.order(:id)
     end
 
     def animal(id:)
-      ::Animal.find_by(id:)
+      current_zoo.animals.find_by(id:)
     end
 
     def enclosures
-      ::Enclosure.order(:id)
+      current_zoo.enclosures.order(:id)
     end
 
     def enclosure(id:)
-      ::Enclosure.find_by(id:)
+      current_zoo.enclosures.find_by(id:)
     end
 
     def keepers
-      ::Keeper.order(:id)
+      current_zoo.keepers.order(:id)
     end
 
     def veterinarians
-      ::Veterinarian.order(:id)
+      current_zoo.veterinarians.order(:id)
     end
 
     def zoo
-      ::Zoo.current
+      current_zoo
     end
 
     def operatings
-      ::Operating.order(:day, :id)
+      current_zoo.operatings.order(:day, :id)
     end
 
     def alerts
-      ::Alert.all
+      ::Alert.of(current_zoo)
     end
 
     def species
@@ -65,6 +65,12 @@ module Types
 
     def taxon_classes
       ::TaxonClass::CLASSES.keys.map { |key| ::TaxonClass.new(key) }
+    end
+
+    private
+
+    def current_zoo
+      context[:current_zoo]
     end
   end
 end

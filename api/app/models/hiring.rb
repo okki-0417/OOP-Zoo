@@ -7,6 +7,7 @@ class Hiring
   end
 
   def perform
+    @employee.zoo = @zoo
     @zoo.purchase(@employee.class.signing_fee)
     @zoo.save!
     @employee.save!

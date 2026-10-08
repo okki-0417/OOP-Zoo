@@ -9,8 +9,8 @@ class Occupancy
     new(enclosure:, occupants: enclosure.animals.select(&:alive?))
   end
 
-  def self.all
-    Enclosure.includes(animals: %i[sire dam]).order(:id).map { |enclosure| of(enclosure) }.select(&:any?)
+  def self.of_zoo(zoo)
+    zoo.enclosures.includes(animals: %i[sire dam]).order(:id).map { |enclosure| of(enclosure) }.select(&:any?)
   end
 
   def initialize(enclosure:, occupants: [])

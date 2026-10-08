@@ -11,6 +11,7 @@ class Enclosure < ApplicationRecord
   UPKEEP_YEN = 5_000
   CLIMATE_CONTROL_RUNNING_YEN = 4_000
 
+  belongs_to :zoo
   has_many :animals, -> { order(:id) }, inverse_of: :enclosure, dependent: :nullify
   has_many :assignments, dependent: :destroy
   has_many :keepers, -> { order(:id) }, through: :assignments

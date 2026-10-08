@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe Operating do
   subject(:operating) do
     described_class.new(
-      day:, visitors: 10, income: Money.yen(income), cost: Money.yen(cost), expenses:,
+      zoo: build(:zoo), day:, visitors: 10, income: Money.yen(income), cost: Money.yen(cost), expenses:,
       deaths: 0, balance: Balance.new(100_000), reputation: 50, outbreak: nil,
       total_visitors: 10, total_revenue: Money.yen(income)
     )
@@ -63,8 +63,8 @@ RSpec.describe Operating do
       let(:day) { 2 }
 
       before do
-        operating.dup.tap { |first| first.day = 1 }.save!
         operating.save!
+        operating.dup.tap { |first| first.day = 1 }.save!
       end
 
       it '2日目の記録を返すこと' do

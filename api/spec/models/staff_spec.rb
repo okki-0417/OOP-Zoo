@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Keeper do
-  subject(:keeper) { described_class.new(name:, specialties:) }
+  subject(:keeper) { build(:keeper, name:, specialties:) }
 
   let(:name) { '田中' }
   let(:specialties) { [TaxonClass.mammal] }

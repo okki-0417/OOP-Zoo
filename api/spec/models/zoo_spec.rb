@@ -117,22 +117,26 @@ RSpec.describe Zoo do
     end
   end
 
-  describe '.current' do
-    subject(:current) { described_class.current }
+  describe '.of' do
+    subject(:owned) { described_class.of(user) }
 
-    context '動物園がまだないとき' do
-      it '既定(OOP動物園・入園料¥2,000・資金¥1,000,000)で保存した動物園を返すこと' do
-        expect(current).to be_persisted
-        expect(current).to have_attributes(name: 'OOP動物園', admission_fee: Money.yen(2_000))
-        expect(current.balance).to eq(Balance.new(1_000_000))
+    let(:user) { create(:user) }
+
+    before { create(:zoo, name: 'よその園') }
+
+    context 'ユーザーがまだ動物園を持っていないとき' do
+      it '既定(OOP動物園・入園料¥2,000・資金¥1,000,000)でそのユーザーの動物園を保存して返すこと' do
+        expect(owned).to be_persisted
+        expect(owned).to have_attributes(user:, name: 'OOP動物園', admission_fee: Money.yen(2_000))
+        expect(owned.balance).to eq(Balance.new(1_000_000))
       end
     end
 
-    context '動物園がすでにあるとき' do
-      let!(:existing) { create(:zoo, name: '既存園') }
+    context 'ユーザーがすでに動物園を持っているとき' do
+      let!(:existing) { create(:zoo, name: '既存園', user:) }
 
       it 'その動物園を返すこと' do
-        expect(current).to eq(existing)
+        expect(owned).to eq(existing)
       end
     end
   end

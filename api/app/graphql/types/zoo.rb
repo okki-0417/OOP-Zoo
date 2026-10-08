@@ -74,7 +74,7 @@ module Types
     private
 
     def on_exhibit
-      @on_exhibit ||= ::Occupancy.all.flat_map(&:to_a)
+      @on_exhibit ||= ::Occupancy.of_zoo(object).flat_map(&:to_a)
     end
   end
 end

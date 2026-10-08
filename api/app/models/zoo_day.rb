@@ -3,13 +3,13 @@
 class ZooDay
   attr_reader :zoo
 
-  def self.current(random: Random.new)
+  def self.of(zoo, random: Random.new)
     new(
-      zoo: Zoo.current,
-      occupancies: Occupancy.all,
-      keepers: Keeper.order(:id).to_a,
-      veterinarians: Veterinarian.order(:id).to_a,
-      yesterday: Operating.latest,
+      zoo:,
+      occupancies: Occupancy.of_zoo(zoo),
+      keepers: zoo.keepers.order(:id).to_a,
+      veterinarians: zoo.veterinarians.order(:id).to_a,
+      yesterday: zoo.operatings.latest,
       random:
     )
   end
@@ -102,6 +102,7 @@ class ZooDay
 
   def record(operating_cost)
     Operating.new(
+      zoo: @zoo,
       day: @zoo.day,
       visitors: @zoo.visitor_count - @yesterday.total_visitors,
       income: Money.yen(@zoo.revenue.yen - @yesterday.total_revenue.yen),

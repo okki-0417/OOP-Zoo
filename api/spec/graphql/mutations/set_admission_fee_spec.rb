@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe Mutations::SetAdmissionFee do
   describe 'setAdmissionFee(fee:)' do
-    subject(:response) { OopZooSchema.execute('mutation { setAdmissionFee(fee: 1800) { admissionFee } }').to_h }
+    subject(:response) { OopZooSchema.execute('mutation { setAdmissionFee(fee: 1800) { admissionFee } }', context: { current_zoo: zoo }).to_h }
 
     let!(:zoo) { create(:zoo) }
 

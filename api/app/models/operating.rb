@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Operating < ApplicationRecord
+  belongs_to :zoo
+
   MONEY = ValueType.new(Money, load: Money.method(:yen), dump: :yen.to_proc)
 
   attribute :income, MONEY

@@ -13,6 +13,7 @@ class Animal < ApplicationRecord
 
   ILLNESS_VULNERABILITY_INCREMENT = 0.5
 
+  belongs_to :zoo
   belongs_to :enclosure, optional: true, inverse_of: :animals
   belongs_to :sire, class_name: 'Animal', optional: true
   belongs_to :dam, class_name: 'Animal', optional: true

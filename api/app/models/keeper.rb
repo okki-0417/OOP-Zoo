@@ -4,6 +4,7 @@ class Keeper < ApplicationRecord
   SIGNING_FEE_YEN = 20_000
   DAILY_SALARY_YEN = 12_000
 
+  belongs_to :zoo
   has_many :assignments, dependent: :destroy
   has_many :enclosures, -> { order(:id) }, through: :assignments
 

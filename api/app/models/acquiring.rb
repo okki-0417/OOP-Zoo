@@ -10,6 +10,7 @@ class Acquiring
   end
 
   def perform
+    @animal.zoo = @zoo
     if @animal.tradeable?
       @zoo.purchase(@animal.acquisition_price)
     else

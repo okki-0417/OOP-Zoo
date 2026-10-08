@@ -13,10 +13,18 @@ class Zoo < ApplicationRecord
   attribute :reputation, ValueType.new(Reputation, dump: :value.to_proc),
             default: -> { Reputation.default }
 
+  belongs_to :user
+  has_many :enclosures, dependent: :destroy
+  has_many :animals, dependent: :destroy
+  has_many :keepers, dependent: :destroy
+  has_many :veterinarians, dependent: :destroy
+  has_many :operatings, dependent: :destroy
+
   validates :name, presence: { message: '動物園名は必須です' }
 
-  def self.current
-    first || create!(
+  def self.of(user)
+    find_by(user:) || create!(
+      user:,
       name: DEFAULT_NAME,
       admission_fee: Money.yen(DEFAULT_ADMISSION_FEE_YEN),
       funds: Money.yen(DEFAULT_FUNDS_YEN)

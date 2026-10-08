@@ -40,10 +40,10 @@ RSpec.describe Acquiring do
     context '購入できたとき' do
       let(:animal) { build(:animal, species: SpeciesCatalog.japanese_macaque) }
 
-      it '園と動物を保存し、その動物を返すこと' do
+      it '園と動物を保存し、その園の動物として返すこと' do
         expect(acquiring.perform).to eq(animal)
         expect(zoo).to be_persisted
-        expect(animal).to be_persisted
+        expect(animal).to be_persisted.and have_attributes(zoo:)
       end
     end
   end

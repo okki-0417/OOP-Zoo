@@ -11,7 +11,7 @@ class GraphqlController < ApplicationController
       params[:query],
       variables: params[:variables]&.to_unsafe_h || {},
       operation_name: params[:operationName],
-      context: { current_user: session.user }
+      context: { current_zoo: Zoo.of(session.user) }
     )
     render json: result
   end

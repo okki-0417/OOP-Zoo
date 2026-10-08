@@ -4,9 +4,9 @@ require 'rails_helper'
 
 RSpec.describe Mutations::RunDays do
   describe 'runDays(days:)' do
-    subject(:response) { OopZooSchema.execute(%(mutation { runDays(days: #{days}) { days totalDeaths } })).to_h }
+    subject(:response) { OopZooSchema.execute(%(mutation { runDays(days: #{days}) { days totalDeaths } }), context: { current_zoo: zoo }).to_h }
 
-    before { create(:zoo) }
+    let(:zoo) { create(:zoo) }
 
     context 'days が3のとき' do
       let(:days) { 3 }
@@ -18,7 +18,7 @@ RSpec.describe Mutations::RunDays do
       it '3日分の営業記録を保存すること' do
         response
 
-        expect(Operating.order(:day).pluck(:day)).to eq([1, 2, 3])
+        expect(zoo.operatings.order(:day).pluck(:day)).to eq([1, 2, 3])
       end
     end
 

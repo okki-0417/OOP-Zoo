@@ -2,6 +2,7 @@
 
 FactoryBot.define do
   factory :keeper do
+    zoo
     sequence(:name) { |n| "飼育員#{n}" }
     specialties { [TaxonClass.mammal] }
   end

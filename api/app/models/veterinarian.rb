@@ -4,6 +4,8 @@ class Veterinarian < ApplicationRecord
   SIGNING_FEE_YEN = 30_000
   DAILY_SALARY_YEN = 12_000
 
+  belongs_to :zoo
+
   validates :name, presence: { message: '獣医名は必須です' }
 
   def self.signing_fee

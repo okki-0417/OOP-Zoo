@@ -15,10 +15,10 @@ RSpec.describe Hiring do
           .to change(zoo, :balance).to(Balance.new(1_000_000 - Keeper.signing_fee.yen))
       end
 
-      it '園と飼育員を保存し、その飼育員を返すこと' do
+      it '園と飼育員を保存し、その園の飼育員として返すこと' do
         expect(hiring.perform).to eq(employee)
         expect(zoo).to be_persisted
-        expect(employee).to be_persisted
+        expect(employee).to be_persisted.and have_attributes(zoo:)
       end
     end
 

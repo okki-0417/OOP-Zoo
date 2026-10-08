@@ -42,7 +42,7 @@ RSpec.describe Types::Zoo do
   end
 
   context 'ライオンの丘にライオン1頭を展示しているとき' do
-    before { create(:animal, enclosure: create(:enclosure, name: 'ライオンの丘')) }
+    before { create(:animal, zoo:, enclosure: create(:enclosure, zoo:, name: 'ライオンの丘')) }
 
     describe 'exhibitCondition' do
       it '100 を返すこと' do

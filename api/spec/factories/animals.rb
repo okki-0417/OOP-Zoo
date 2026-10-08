@@ -2,6 +2,7 @@
 
 FactoryBot.define do
   factory :animal do
+    zoo
     species { SpeciesCatalog.lion }
     sequence(:name) { |n| "動物#{n}" }
     sex { Animal::Sex.male }

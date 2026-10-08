@@ -6,12 +6,14 @@ RSpec.describe Mutations::FeedAnimal do
   describe 'feedAnimal(animalId:, keeperId:, foodCode:)' do
     subject(:response) do
       OopZooSchema.execute(
-        %(mutation { feedAnimal(animalId: "#{lion.id}", keeperId: "#{keeper.id}", foodCode: "#{food_code}") { name fedToday } })
+        %(mutation { feedAnimal(animalId: "#{lion.id}", keeperId: "#{keeper.id}", foodCode: "#{food_code}") { name fedToday } }),
+        context: { current_zoo: zoo }
       ).to_h
     end
 
-    let(:lion) { create(:animal, name: 'レオ') }
-    let(:keeper) { create(:keeper) }
+    let(:zoo) { create(:zoo) }
+    let(:lion) { create(:animal, zoo:, name: 'レオ') }
+    let(:keeper) { create(:keeper, zoo:) }
     let(:food_code) { 'horse_meat' }
 
     context 'foodCode が "horse_meat" のとき' do

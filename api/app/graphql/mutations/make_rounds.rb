@@ -7,7 +7,7 @@ module Mutations
     argument :keeper_id, ID
 
     def resolve(keeper_id:)
-      keeper = Keeper.find(keeper_id)
+      keeper = current_zoo.keepers.find(keeper_id)
       reports = keeper.enclosures.map do |enclosure|
         Rounding.new(keeper:, occupancy: Occupancy.of(enclosure), foods: FoodCatalog.all).perform
       end

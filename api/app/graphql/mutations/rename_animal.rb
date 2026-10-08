@@ -8,7 +8,7 @@ module Mutations
     argument :new_name, String
 
     def resolve(animal_id:, new_name:)
-      Animal.find(animal_id).change_name(new_name).tap(&:save!)
+      current_zoo.animals.find(animal_id).change_name(new_name).tap(&:save!)
     end
   end
 end

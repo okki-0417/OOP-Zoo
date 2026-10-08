@@ -6,12 +6,14 @@ RSpec.describe Mutations::EnrichEnclosure do
   describe 'enrichEnclosure(enclosureId:, keeperId:)' do
     subject(:response) do
       OopZooSchema.execute(
-        %(mutation { enrichEnclosure(enclosureId: "#{hill.id}", keeperId: "#{keeper.id}") { name enrichment } })
+        %(mutation { enrichEnclosure(enclosureId: "#{hill.id}", keeperId: "#{keeper.id}") { name enrichment } }),
+        context: { current_zoo: zoo }
       ).to_h
     end
 
-    let(:hill) { create(:enclosure, name: '丘').deplete_enrichment(60).tap(&:save!) }
-    let(:keeper) { create(:keeper) }
+    let(:zoo) { create(:zoo) }
+    let(:hill) { create(:enclosure, zoo:, name: '丘').deplete_enrichment(60).tap(&:save!) }
+    let(:keeper) { create(:keeper, zoo:) }
 
     it '刺激40の丘に遊具を補充して enrichment=100 で返すこと' do
       expect(response).to eq('data' => { 'enrichEnclosure' => { 'name' => '丘', 'enrichment' => 100 } })

@@ -16,10 +16,10 @@ RSpec.describe Birth do
 
   describe '#deliver' do
     context '妊娠期間を満たした dam のとき' do
-      it '両親を parents に持つ日齢0・幼体のライオン「シンバ」を offspring にすること' do
+      it '両親を parents に持つ日齢0・幼体のライオン「シンバ」を、dam と同じ園の動物として offspring にすること' do
         offspring = birth.deliver.offspring
 
-        expect(offspring).to have_attributes(species:, name: 'シンバ', age_in_days: 0)
+        expect(offspring).to have_attributes(species:, name: 'シンバ', age_in_days: 0, zoo: dam.zoo)
         expect(offspring.parents).to contain_exactly(sire, dam)
         expect(offspring.life_stage).to be_baby
       end

@@ -6,13 +6,15 @@ RSpec.describe Mutations::MakeRounds do
   describe 'makeRounds(keeperId:)' do
     subject(:response) do
       OopZooSchema.execute(
-        %(mutation { makeRounds(keeperId: "#{keeper.id}") { keeper { name } reports { enclosure { name } fed { name } } } })
+        %(mutation { makeRounds(keeperId: "#{keeper.id}") { keeper { name } reports { enclosure { name } fed { name } } } }),
+        context: { current_zoo: zoo }
       ).to_h
     end
 
-    let(:hill) { create(:enclosure, name: '丘') }
-    let(:keeper) { create(:keeper, name: '田中', enclosures: [hill]) }
-    let!(:lion) { create(:animal, name: 'レオ', enclosure: hill) }
+    let(:zoo) { create(:zoo) }
+    let(:hill) { create(:enclosure, zoo:, name: '丘') }
+    let(:keeper) { create(:keeper, zoo:, name: '田中', enclosures: [hill]) }
+    let!(:lion) { create(:animal, zoo:, name: 'レオ', enclosure: hill) }
 
     it '田中と、丘でレオに給餌した報告を返すこと' do
       expect(response).to eq(

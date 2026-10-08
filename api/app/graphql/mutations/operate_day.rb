@@ -5,7 +5,7 @@ module Mutations
     type Types::Operating, null: false
 
     def resolve
-      ZooDay.current.run
+      ZooDay.of(current_zoo).run
     end
   end
 end

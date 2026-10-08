@@ -3,21 +3,22 @@
 require 'rails_helper'
 
 RSpec.describe Alert do
-  describe '.all' do
-    subject(:alerts) { described_class.all }
+  describe '.of' do
+    subject(:alerts) { described_class.of(zoo) }
 
-    let(:hill) { create(:enclosure) }
+    let(:zoo) { create(:zoo) }
+    let(:hill) { create(:enclosure, zoo:) }
 
     before do
-      create(:zoo)
-      create(:veterinarian)
-      create(:keeper).enclosures << hill
-      create(:animal, enclosure: hill)
-      create(:animal, name: '迷子')
-      create(:animal, name: '故').die.save!
+      create(:veterinarian, zoo:)
+      create(:keeper, zoo:).enclosures << hill
+      create(:animal, enclosure: hill, zoo:)
+      create(:animal, name: '迷子', zoo:)
+      create(:animal, name: '故', zoo:).die.save!
+      create(:animal, name: 'よその迷子')
     end
 
-    it '保存済みの園から組み立て、生きていてどのエリアにもいない迷子だけを kind=:unhoused で返すこと' do
+    it '渡した園の保存済みの記録から組み立て、生きていてどのエリアにもいない迷子だけを kind=:unhoused で返すこと' do
       expect(alerts).to contain_exactly(
         { severity: :warning, kind: :unhoused, subject_type: :animal, subject: Animal.find_by!(name: '迷子'),
           message: 'どのエリアにも収容されていません' }

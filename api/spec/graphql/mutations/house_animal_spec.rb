@@ -5,11 +5,13 @@ require 'rails_helper'
 RSpec.describe Mutations::HouseAnimal do
   describe 'houseAnimal(enclosureId:, animalId:)' do
     subject(:response) do
-      OopZooSchema.execute(%(mutation { houseAnimal(enclosureId: "#{hill.id}", animalId: "#{lion.id}") { name } })).to_h
+      OopZooSchema.execute(%(mutation { houseAnimal(enclosureId: "#{hill.id}", animalId: "#{lion.id}") { name } }),
+                           context: { current_zoo: zoo }).to_h
     end
 
-    let(:hill) { create(:enclosure, name: '丘') }
-    let(:lion) { create(:animal) }
+    let(:zoo) { create(:zoo) }
+    let(:hill) { create(:enclosure, zoo:, name: '丘') }
+    let(:lion) { create(:animal, zoo:) }
 
     it '丘を返すこと' do
       expect(response).to eq('data' => { 'houseAnimal' => { 'name' => '丘' } })

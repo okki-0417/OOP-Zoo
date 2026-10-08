@@ -7,7 +7,7 @@ module Mutations
     argument :name, String
 
     def resolve(name:)
-      Hiring.new(zoo: Zoo.current, employee: Veterinarian.new(name:)).perform
+      Hiring.new(zoo: current_zoo, employee: Veterinarian.new(name:)).perform
     end
   end
 end

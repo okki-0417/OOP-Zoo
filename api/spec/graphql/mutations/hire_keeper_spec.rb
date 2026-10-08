@@ -5,7 +5,8 @@ require 'rails_helper'
 RSpec.describe Mutations::HireKeeper do
   describe 'hireKeeper(name:, specialties:)' do
     subject(:response) do
-      OopZooSchema.execute('mutation { hireKeeper(name: "田中", specialties: ["mammal", "bird"]) { name specialties { code } } }').to_h
+      OopZooSchema.execute('mutation { hireKeeper(name: "田中", specialties: ["mammal", "bird"]) { name specialties { code } } }',
+                           context: { current_zoo: zoo }).to_h
     end
 
     let!(:zoo) { create(:zoo) }
@@ -16,10 +17,10 @@ RSpec.describe Mutations::HireKeeper do
       )
     end
 
-    it '田中を保存し、園の残高から契約金を引くこと' do
+    it '田中をこの動物園の飼育員として保存し、園の残高から契約金を引くこと' do
       response
 
-      expect(Keeper.sole.name).to eq('田中')
+      expect(zoo.keepers.sole.name).to eq('田中')
       expect(zoo.reload.balance.yen).to eq(100_000 - Keeper::SIGNING_FEE_YEN)
     end
   end

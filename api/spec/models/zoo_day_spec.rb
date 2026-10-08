@@ -3,25 +3,31 @@
 require 'rails_helper'
 
 RSpec.describe ZooDay do
-  describe '.current' do
-    subject(:current) { described_class.current(random: Random.new(0)) }
+  describe '.of' do
+    subject(:assembled) { described_class.of(zoo, random: Random.new(0)) }
 
-    let!(:hill) { create(:enclosure, name: '丘') }
-    let!(:lion) { create(:animal, name: 'レオ', enclosure: hill) }
-    let!(:keeper) { create(:keeper) }
+    let(:zoo) { create(:zoo) }
+    let!(:hill) { create(:enclosure, name: '丘', zoo:) }
+    let!(:lion) { create(:animal, name: 'レオ', enclosure: hill, zoo:) }
+    let!(:keeper) { create(:keeper, zoo:) }
 
-    it '保存済みの園・エリア・動物・飼育員から1日を組み立てること' do
-      expect(current.zoo).to eq(Zoo.current)
-      expect(current.enclosures).to eq([hill])
-      expect(current.on_exhibit).to eq([lion])
-      expect(current.keepers).to eq([keeper])
+    before do
+      create(:animal, enclosure: create(:enclosure))
+      create(:keeper)
+    end
+
+    it 'ほかの園のものを含めず、渡した園の保存済みのエリア・動物・飼育員から1日を組み立てること' do
+      expect(assembled.zoo).to eq(zoo)
+      expect(assembled.enclosures).to eq([hill])
+      expect(assembled.on_exhibit).to eq([lion])
+      expect(assembled.keepers).to eq([keeper])
     end
 
     context '前日の営業が保存済みのとき' do
-      before { described_class.current(random: Random.new(0)).run }
+      before { described_class.of(zoo, random: Random.new(0)).run }
 
-      it '#run で day=2 の Operating を返すこと' do
-        expect(current.run.day).to eq(2)
+      it '#run で day=2 の Operating をその園の記録として返すこと' do
+        expect(assembled.run).to have_attributes(day: 2, zoo:)
       end
     end
   end

@@ -3,13 +3,13 @@
 class Alert
   SEVERITIES = %i[critical warning notice].freeze
 
-  def self.all
+  def self.of(zoo)
     new(
-      zoo: Zoo.current,
-      occupancies: Occupancy.all,
-      keepers: Keeper.all.to_a,
-      veterinarians: Veterinarian.all.to_a,
-      unhoused: Animal.alive.where(enclosure: nil).to_a
+      zoo:,
+      occupancies: Occupancy.of_zoo(zoo),
+      keepers: zoo.keepers.to_a,
+      veterinarians: zoo.veterinarians.to_a,
+      unhoused: zoo.animals.alive.where(enclosure: nil).to_a
     ).to_a
   end
 

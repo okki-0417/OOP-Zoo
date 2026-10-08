@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_000010) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_000012) do
   create_table "animals", force: :cascade do |t|
     t.string "species", null: false
     t.string "name", null: false
@@ -34,9 +34,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000010) do
     t.integer "dam_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "zoo_id", null: false
     t.index ["dam_id"], name: "index_animals_on_dam_id"
     t.index ["enclosure_id"], name: "index_animals_on_enclosure_id"
     t.index ["sire_id"], name: "index_animals_on_sire_id"
+    t.index ["zoo_id"], name: "index_animals_on_zoo_id"
   end
 
   create_table "assignments", force: :cascade do |t|
@@ -70,6 +72,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000010) do
     t.integer "enrichment", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "zoo_id", null: false
+    t.index ["zoo_id"], name: "index_enclosures_on_zoo_id"
   end
 
   create_table "keepers", force: :cascade do |t|
@@ -78,6 +82,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000010) do
     t.integer "worked_minutes", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "zoo_id", null: false
+    t.index ["zoo_id"], name: "index_keepers_on_zoo_id"
   end
 
   create_table "operatings", force: :cascade do |t|
@@ -94,7 +100,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000010) do
     t.integer "total_revenue", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "zoo_id", null: false
     t.index ["day"], name: "index_operatings_on_day"
+    t.index ["zoo_id"], name: "index_operatings_on_zoo_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -115,6 +123,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000010) do
     t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "zoo_id", null: false
+    t.index ["zoo_id"], name: "index_veterinarians_on_zoo_id"
   end
 
   create_table "zoos", force: :cascade do |t|
@@ -128,14 +138,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000010) do
     t.integer "buzz", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id"], name: "index_zoos_on_user_id", unique: true
   end
 
   add_foreign_key "animals", "animals", column: "dam_id"
   add_foreign_key "animals", "animals", column: "sire_id"
   add_foreign_key "animals", "enclosures"
+  add_foreign_key "animals", "zoos"
   add_foreign_key "assignments", "enclosures"
   add_foreign_key "assignments", "keepers"
   add_foreign_key "breedings", "animals", column: "dam_id"
   add_foreign_key "breedings", "animals", column: "sire_id"
+  add_foreign_key "enclosures", "zoos"
+  add_foreign_key "keepers", "zoos"
+  add_foreign_key "operatings", "zoos"
   add_foreign_key "sessions", "users"
+  add_foreign_key "veterinarians", "zoos"
+  add_foreign_key "zoos", "users"
 end

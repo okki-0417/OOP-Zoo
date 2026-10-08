@@ -35,7 +35,7 @@ RSpec.describe 'POST /graphql', type: :request do
     before { post '/dev/session' }
 
     context 'query { enclosures { name } } を送ったとき' do
-      before { create(:enclosure, name: '丘') }
+      before { create(:enclosure, name: '丘', zoo: Zoo.of(User.sole)) }
 
       it '200 で data.enclosures に保存済みのエリア名 "丘" を返すこと' do
         expect(body).to eq('data' => { 'enclosures' => [{ 'name' => '丘' }] })

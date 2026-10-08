@@ -6,12 +6,14 @@ RSpec.describe Mutations::CleanEnclosure do
   describe 'cleanEnclosure(enclosureId:, keeperId:)' do
     subject(:response) do
       OopZooSchema.execute(
-        %(mutation { cleanEnclosure(enclosureId: "#{hill.id}", keeperId: "#{keeper.id}") { name cleanliness } })
+        %(mutation { cleanEnclosure(enclosureId: "#{hill.id}", keeperId: "#{keeper.id}") { name cleanliness } }),
+        context: { current_zoo: zoo }
       ).to_h
     end
 
-    let(:hill) { create(:enclosure, name: '丘').soil(50).tap(&:save!) }
-    let(:keeper) { create(:keeper) }
+    let(:zoo) { create(:zoo) }
+    let(:hill) { create(:enclosure, zoo:, name: '丘').soil(50).tap(&:save!) }
+    let(:keeper) { create(:keeper, zoo:) }
 
     it '清潔度50の丘を清掃して cleanliness=100 で返すこと' do
       expect(response).to eq('data' => { 'cleanEnclosure' => { 'name' => '丘', 'cleanliness' => 100 } })

@@ -6,6 +6,7 @@ FactoryBot.define do
       celsius { 28 }
     end
 
+    zoo
     sequence(:name) { |n| "エリア#{n}" }
     temperature { Temperature.celsius(celsius) }
     capacity { 4 }

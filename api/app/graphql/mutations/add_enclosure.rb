@@ -11,7 +11,7 @@ module Mutations
 
     def resolve(name:, celsius:, capacity:, climate_controlled:)
       enclosure = Enclosure.new(name:, temperature: Temperature.celsius(celsius), capacity:, climate_controlled:)
-      Constructing.new(zoo: Zoo.current, enclosure:).perform
+      Constructing.new(zoo: current_zoo, enclosure:).perform
     end
   end
 end

@@ -16,10 +16,10 @@ RSpec.describe Constructing do
         expect { constructing.perform }.to change(zoo, :balance).to(Balance.new(10_000_000 - cost.yen))
       end
 
-      it '園とエリアを保存し、そのエリアを返すこと' do
+      it '園とエリアを保存し、その園のエリアとして返すこと' do
         expect(constructing.perform).to eq(enclosure)
         expect(zoo).to be_persisted
-        expect(enclosure).to be_persisted
+        expect(enclosure).to be_persisted.and have_attributes(zoo:)
       end
     end
 

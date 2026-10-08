@@ -8,8 +8,8 @@ module Mutations
     argument :enclosure_id, ID
 
     def resolve(animal_id:, enclosure_id:)
-      enclosure = Enclosure.find(enclosure_id)
-      Housing.new(animal: Animal.find(animal_id), enclosure:).perform
+      enclosure = current_zoo.enclosures.find(enclosure_id)
+      Housing.new(animal: current_zoo.animals.find(animal_id), enclosure:).perform
     end
   end
 end

@@ -9,7 +9,7 @@ module Mutations
 
     def resolve(name:, specialties:)
       keeper = Keeper.new(name:, specialties: specialties.map { |key| TaxonClass.new(key) })
-      Hiring.new(zoo: Zoo.current, employee: keeper).perform
+      Hiring.new(zoo: current_zoo, employee: keeper).perform
     end
   end
 end

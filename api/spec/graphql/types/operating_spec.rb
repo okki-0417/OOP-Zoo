@@ -9,7 +9,7 @@ RSpec.describe Types::Operating do
   end
   let(:operating) do
     Operating.create!(
-      day: 1, visitors: 12, income: Money.yen(24_000), cost: Money.yen(4_500), deaths: 0,
+      zoo: create(:zoo), day: 1, visitors: 12, income: Money.yen(24_000), cost: Money.yen(4_500), deaths: 0,
       balance: Balance.new(119_500), reputation: 50, outbreak: nil,
       total_visitors: 12, total_revenue: Money.yen(24_000), expenses: [feed]
     )

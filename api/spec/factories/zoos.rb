@@ -2,6 +2,7 @@
 
 FactoryBot.define do
   factory :zoo do
+    user
     name { 'テスト動物園' }
     admission_fee { Money.yen(2_000) }
     funds { Money.yen(100_000) }

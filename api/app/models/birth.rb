@@ -44,7 +44,7 @@ class Birth
     Animal.new(
       species: @dam.species, name: name, sex: sex,
       max_health: newborn_vitality(@max_health, inbreeding),
-      age_in_days: 0, sire: @sire, dam: @dam
+      age_in_days: 0, sire: @sire, dam: @dam, zoo: @dam.zoo
     )
   end
 

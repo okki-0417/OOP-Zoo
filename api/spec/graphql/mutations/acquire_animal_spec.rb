@@ -5,9 +5,11 @@ require 'rails_helper'
 RSpec.describe Mutations::AcquireAnimal do
   describe 'acquireAnimal(speciesCode:, name:, sex:)' do
     subject(:response) do
-      OopZooSchema.execute(%(mutation { acquireAnimal(speciesCode: "#{species_code}", name: "レオ", sex: MALE) { name } })).to_h
+      OopZooSchema.execute(%(mutation { acquireAnimal(speciesCode: "#{species_code}", name: "レオ", sex: MALE) { name } }),
+                           context: { current_zoo: zoo }).to_h
     end
 
+    let(:zoo) { create(:zoo) }
     let(:species_code) { 'lion' }
 
     context 'speciesCode が "lion" のとき' do
@@ -15,10 +17,10 @@ RSpec.describe Mutations::AcquireAnimal do
         expect(response).to eq('data' => { 'acquireAnimal' => { 'name' => 'レオ' } })
       end
 
-      it 'ライオンのレオを保存すること' do
+      it 'ライオンのレオをこの動物園の動物として保存すること' do
         response
 
-        expect(Animal.sole).to have_attributes(name: 'レオ', species: SpeciesCatalog.lion)
+        expect(zoo.animals.sole).to have_attributes(name: 'レオ', species: SpeciesCatalog.lion)
       end
     end
 

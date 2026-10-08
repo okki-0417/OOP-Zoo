@@ -16,6 +16,10 @@ module Mutations
 
     private
 
+    def current_zoo
+      context[:current_zoo]
+    end
+
     def failure(error)
       GraphQL::ExecutionError.new(error.message, extensions: { code: error.class.name.split('::').last })
     end

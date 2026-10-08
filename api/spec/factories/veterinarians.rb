@@ -2,6 +2,7 @@
 
 FactoryBot.define do
   factory :veterinarian do
+    zoo
     sequence(:name) { |n| "獣医#{n}" }
   end
 end

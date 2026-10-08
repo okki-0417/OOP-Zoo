@@ -7,6 +7,7 @@ class Constructing
   end
 
   def perform
+    @enclosure.zoo = @zoo
     @zoo.purchase(Enclosure.construction_cost(capacity: @enclosure.capacity,
                                               climate_controlled: @enclosure.climate_controlled))
     @zoo.save!

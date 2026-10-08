@@ -86,7 +86,7 @@ module Types
       occupancy = housed_occupancy or return
 
       ::Prognosis.new(
-        animal: object, enclosure: occupancy.enclosure, occupancy:, season: ::Zoo.current.season
+        animal: object, enclosure: occupancy.enclosure, occupancy:, season: object.zoo.season
       )
     end
 
@@ -100,7 +100,7 @@ module Types
       occupancy = housed_occupancy or return
 
       ::ThermalSuitability.new(
-        object, occupancy.enclosure.effective_temperature(::Zoo.current.season)
+        object, occupancy.enclosure.effective_temperature(object.zoo.season)
       )
     end
 

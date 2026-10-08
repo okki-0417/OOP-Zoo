@@ -13,7 +13,7 @@ module Mutations
         species: SpeciesCatalog.find!(species_code), name:, sex: Animal::Sex.new(sex),
         max_health: Acquiring::ACQUIRED_HEALTH
       )
-      Acquiring.new(zoo: Zoo.current, animal:).perform
+      Acquiring.new(zoo: current_zoo, animal:).perform
     end
   end
 end

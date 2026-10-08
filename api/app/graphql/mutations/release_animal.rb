@@ -7,7 +7,7 @@ module Mutations
     argument :animal_id, ID
 
     def resolve(animal_id:)
-      Animal.find(animal_id).move_out.tap(&:save!)
+      current_zoo.animals.find(animal_id).move_out.tap(&:save!)
     end
   end
 end
