@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Types::Rounds do
   let(:keeper) { build(:keeper, name: '田中') }

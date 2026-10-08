@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '産仔数' do
   def delivered_litter(species, inbreeding: 0.0)

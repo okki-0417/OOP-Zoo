@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '予後(日々の給餌は続け、治療も環境改善もしなかった場合の見通し)' do
   def lion_hill

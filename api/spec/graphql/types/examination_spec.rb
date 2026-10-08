@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Types::Examination do
   let(:leo) { build(:animal, name: 'レオ') }

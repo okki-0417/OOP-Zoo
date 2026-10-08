@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Treating do
   subject(:treating) { described_class.new(veterinarian: build(:veterinarian, name: '佐藤'), animal:) }

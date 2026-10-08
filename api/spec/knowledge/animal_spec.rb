@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '動物' do
   def build_animal(name: 'Jack', voice: 'Woof', max_health: 10, age_in_days: 0,

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '継続コストと拡大投資' do
   describe '収容力の拡張(投資)' do

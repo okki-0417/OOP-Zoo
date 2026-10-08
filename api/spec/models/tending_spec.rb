@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Tending do
   subject(:tending) { described_class.new(keeper:, enclosure:, occupancy: Occupancy.new(enclosure:, occupants:)) }

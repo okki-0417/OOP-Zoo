@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '評判の動学' do
   CROWD = Zoo::Reputation::EXPOSURE_REFERENCE

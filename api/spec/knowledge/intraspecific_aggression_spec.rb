@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '種内闘争と外傷' do
   def pride(capacity: 6, area_sqm: nil)

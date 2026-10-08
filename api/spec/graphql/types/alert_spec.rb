@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Types::Alert do
   let(:alert) { { severity: :warning, kind: :unassigned, subject_type:, subject: target, message: '担当がいません' } }

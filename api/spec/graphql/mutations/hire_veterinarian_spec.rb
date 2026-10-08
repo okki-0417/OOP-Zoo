@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Mutations::HireVeterinarian do
   describe 'hireVeterinarian(name: "山田")' do

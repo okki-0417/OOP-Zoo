@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Assignment do
   subject(:assign) { described_class.create!(keeper: tanaka, enclosure:) }

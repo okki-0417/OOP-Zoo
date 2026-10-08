@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Types::Occupancy do
   let(:occupancy) { Occupancy.new(enclosure: build(:enclosure, capacity: 1), occupants: [build(:animal)]) }

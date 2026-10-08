@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Acquiring do
   subject(:acquiring) { described_class.new(zoo:, animal:) }

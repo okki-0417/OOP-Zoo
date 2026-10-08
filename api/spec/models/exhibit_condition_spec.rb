@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe ExhibitCondition do
   subject(:exhibit_condition) { described_class.new(animals) }

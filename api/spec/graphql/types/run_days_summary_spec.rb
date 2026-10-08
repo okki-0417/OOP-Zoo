@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Types::RunDaysSummary do
   let(:summary) { { days: 3, total_deaths: 1, deaths_by_cause: { old_age: 1 } } }

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Services::Commands::AcquireAnimalCommand do
   let(:input) { { species_code: 'lion', name: 'レオ', sex: 'male' } }

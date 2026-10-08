@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Animal::Illness do
   subject(:illness) { described_class.new(name_ja:, daily_damage:, **options) }

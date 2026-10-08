@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Animal do
   subject(:animal) { build(:animal, name: 'レオ') }

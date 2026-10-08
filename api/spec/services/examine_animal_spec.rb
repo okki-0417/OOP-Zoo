@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Services::ExamineAnimal do
   let!(:penguin) { create(:animal, species: SpeciesCatalog.emperor_penguin, name: 'ペン') }

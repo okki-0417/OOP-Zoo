@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Infestation do
   subject(:infestation) { described_class.new(enclosure, Occupancy.new(enclosure:, occupants: [animal])) }

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Mutations::FeedAnimal do
   describe 'feedAnimal(animalId: "a1", keeperId: "k1", foodCode: "horse_meat")' do

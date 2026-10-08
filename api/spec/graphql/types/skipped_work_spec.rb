@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Types::SkippedWork do
   let(:skipped) { { subject: 'ライオンの丘', reason: '勤務時間が足りず清掃できません' } }

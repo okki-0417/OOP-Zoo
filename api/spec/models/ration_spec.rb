@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Ration do
   subject(:ration) { described_class.new(animal:, foods:) }

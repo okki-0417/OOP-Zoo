@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Animal::Health do
   subject(:health) { described_class.new(current:, max:) }

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Types::Veterinarian do
   let(:vet) { create(:veterinarian, name: '山田') }

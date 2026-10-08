@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '飼育員の担当割り当てに対するルール(専門一致)' do
   def pen(name = '区画', capacity: 4, temp: 25)

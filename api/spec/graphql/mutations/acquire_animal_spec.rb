@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Mutations::AcquireAnimal do
   describe 'acquireAnimal(speciesCode: "lion", name: "レオ", sex: MALE)' do

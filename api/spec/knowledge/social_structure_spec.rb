@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '群れと社会構造' do
   def savanna(capacity: 4, temp: 28)

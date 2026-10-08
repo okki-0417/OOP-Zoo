@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Types::Zoo do
   let(:zoo) { create(:zoo, funds: Money.yen(100_000), admission_fee: Money.yen(2_000)) }

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Types::RoundReport do
   let(:hill) { build(:enclosure, name: 'ライオンの丘') }

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Prognosis do
   subject(:prognosis) { described_class.new(animal:, enclosure:, occupancy:, season: Season.spring) }

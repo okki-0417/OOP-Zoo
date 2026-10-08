@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '区画の占有に対するルール(過密・収容可否)' do
   def pen(name = '区画', capacity: 4, temp: 25)

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Animal::Hunger do
   subject(:hunger) { described_class.new(level) }

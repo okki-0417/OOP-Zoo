@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '動物福祉' do
   def savanna(temp = 28, capacity: 4)

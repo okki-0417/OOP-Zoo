@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Quarantine do
   subject(:quarantine) { described_class.new(days_observed) }

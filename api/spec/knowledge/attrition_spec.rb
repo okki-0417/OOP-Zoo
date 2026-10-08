@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '生物ドメインの経済接続' do
   describe '見応えは種・展示レベルで決まる(個体の年齢ではない)' do

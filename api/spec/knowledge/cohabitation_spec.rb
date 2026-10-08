@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '同居適性' do
   # 同居の可否は「ある種の個体を、別種が先住する区画へ収容できるか」という

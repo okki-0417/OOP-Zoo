@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Estrus do
   subject(:estrus) { described_class.new(animal, season) }

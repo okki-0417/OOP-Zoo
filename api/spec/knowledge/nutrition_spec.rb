@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '栄養バランスと餌の多様性' do
   # 栄養が満たされるかは「ある個体にその日の餌を与えたとき、種類が偏っていないか」

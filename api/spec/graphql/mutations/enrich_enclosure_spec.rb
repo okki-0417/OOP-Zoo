@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Mutations::EnrichEnclosure do
   describe 'enrichEnclosure(enclosureId: "e1", keeperId: "k1")' do

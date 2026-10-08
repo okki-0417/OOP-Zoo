@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Animal::Pregnancy do
   subject(:pregnancy) { described_class.new(sex:, gestation_days:, inbreeding_coefficient:) }

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Services::FeedAnimal do
   let!(:lion) { build(:animal, name: 'レオ').get_hungrier(40).tap(&:save!) }

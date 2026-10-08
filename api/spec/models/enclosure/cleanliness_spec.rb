@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Enclosure::Cleanliness do
   subject(:cleanliness) { described_class.new(level) }

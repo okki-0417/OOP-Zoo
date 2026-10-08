@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '運営費の内訳' do
   def enclosure(name, climate_controlled: false)

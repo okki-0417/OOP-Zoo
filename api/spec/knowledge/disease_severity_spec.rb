@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '疾病の重症度と伝播' do
   def sick_lion(age_in_days:, stress: 0, illness: IllnessCatalog.cold)

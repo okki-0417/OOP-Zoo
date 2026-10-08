@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Mutations::DischargeKeeper do
   describe 'dischargeKeeper(enclosureId: "e1", keeperId: "k1")' do

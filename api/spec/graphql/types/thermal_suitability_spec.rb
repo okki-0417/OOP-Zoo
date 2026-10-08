@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Types::ThermalSuitability do
   let(:suitability) { ThermalSuitability.new(build(:animal), Temperature.celsius(28)) }

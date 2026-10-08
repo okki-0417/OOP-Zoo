@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Relieving do
   subject(:relieving) { described_class.new(keeper:, enclosure:) }

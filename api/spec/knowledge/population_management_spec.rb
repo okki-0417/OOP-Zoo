@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '個体群管理(交配推奨)' do
   describe '遺伝的多様性を保つ推奨' do

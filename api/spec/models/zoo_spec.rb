@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Zoo do
   subject(:zoo) { build(:zoo, name: 'おうきの動物園', admission_fee: Money.yen(2_000), funds:) }

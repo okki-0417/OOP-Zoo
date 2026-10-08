@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Mutations::AddEnclosure do
   describe 'addEnclosure(name: "丘", celsius: 28, capacity: 4)' do

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe Mutations::MakeRounds do
   describe 'makeRounds(keeperId: "k1")' do

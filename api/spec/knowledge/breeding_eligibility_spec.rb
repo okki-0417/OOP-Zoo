@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'rails_helper'
 
 RSpec.describe '繁殖できる相手' do
   def adult(species, sex, name: '個体')
