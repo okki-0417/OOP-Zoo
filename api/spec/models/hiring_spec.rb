@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe Hiring do
   subject(:hiring) { described_class.new(zoo:, employee:) }
 
-  let(:zoo) { build(:zoo, funds: Money.yen(1_000_000)) }
+  let(:zoo) { create(:zoo, opening_funds: Money.yen(1_000_000)) }
   let(:employee) { build(:keeper, name: '田中') }
 
   describe '#perform' do
@@ -15,9 +15,14 @@ RSpec.describe Hiring do
           .to change(zoo, :balance).to(Balance.new(1_000_000 - Keeper.signing_fee.yen))
       end
 
-      it '園と飼育員を保存し、その園の飼育員として返すこと' do
+      it '0日目・契約金の記録として保存されること' do
+        hiring.perform
+
+        expect(hiring).to be_persisted.and have_attributes(day: 0, cost: Keeper.signing_fee)
+      end
+
+      it '飼育員を保存し、その園の飼育員として返すこと' do
         expect(hiring.perform).to eq(employee)
-        expect(zoo).to be_persisted
         expect(employee).to be_persisted.and have_attributes(zoo:)
       end
     end
@@ -32,7 +37,7 @@ RSpec.describe Hiring do
     end
 
     context '残高が契約金に足りないとき' do
-      let(:zoo) { build(:zoo, funds: Money.zero) }
+      let(:zoo) { create(:zoo, opening_funds: Money.zero) }
 
       it 'InsufficientFunds を投げ、従業員を保存しないこと' do
         expect { hiring.perform }.to raise_error(Errors::InsufficientFunds)

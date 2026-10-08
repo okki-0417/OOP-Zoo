@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe Acquiring do
   subject(:acquiring) { described_class.new(zoo:, animal:) }
 
-  let(:zoo) { build(:zoo, funds: Money.yen(100_000)) }
+  let(:zoo) { create(:zoo, opening_funds: Money.yen(100_000)) }
 
   describe '#perform' do
     context '取引可能な種(ニホンザル)のとき' do
@@ -28,7 +28,7 @@ RSpec.describe Acquiring do
     end
 
     context '残高が取得価格に足りないとき' do
-      let(:zoo) { build(:zoo, funds: Money.zero) }
+      let(:zoo) { create(:zoo, opening_funds: Money.zero) }
       let(:animal) { build(:animal, species: SpeciesCatalog.japanese_macaque) }
 
       it 'InsufficientFunds を投げ、動物を保存しないこと' do
@@ -40,9 +40,14 @@ RSpec.describe Acquiring do
     context '購入できたとき' do
       let(:animal) { build(:animal, species: SpeciesCatalog.japanese_macaque) }
 
-      it '園と動物を保存し、その園の動物として返すこと' do
+      it '0日目・取得価格の記録として保存されること' do
+        acquiring.perform
+
+        expect(acquiring).to be_persisted.and have_attributes(day: 0, cost: animal.acquisition_price)
+      end
+
+      it '動物を保存し、その園の動物として返すこと' do
         expect(acquiring.perform).to eq(animal)
-        expect(zoo).to be_persisted
         expect(animal).to be_persisted.and have_attributes(zoo:)
       end
     end

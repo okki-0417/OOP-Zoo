@@ -6,12 +6,15 @@ class Zoo < ApplicationRecord
   DEFAULT_FUNDS_YEN = 1_000_000
 
   attribute :admission_fee, ValueType.new(Money, load: Money.method(:yen), dump: :yen.to_proc)
-  attribute :balance, ValueType.new(Balance, dump: :yen.to_proc),
-            default: -> { Balance.zero }
+  attribute :opening_funds, ValueType.new(Money, load: Money.method(:yen), dump: :yen.to_proc),
+            default: -> { Money.zero }
   attribute :reputation, ValueType.new(Reputation, dump: :value.to_proc),
             default: -> { Reputation.default }
 
   belongs_to :user
+  has_many :acquirings, inverse_of: :zoo, dependent: :destroy
+  has_many :constructings, inverse_of: :zoo, dependent: :destroy
+  has_many :hirings, inverse_of: :zoo, dependent: :destroy
   has_many :enclosures, dependent: :destroy
   has_many :animals, dependent: :destroy
   has_many :keepers, dependent: :destroy
@@ -25,12 +28,8 @@ class Zoo < ApplicationRecord
       user:,
       name: DEFAULT_NAME,
       admission_fee: Money.yen(DEFAULT_ADMISSION_FEE_YEN),
-      funds: Money.yen(DEFAULT_FUNDS_YEN)
+      opening_funds: Money.yen(DEFAULT_FUNDS_YEN)
     )
-  end
-
-  def funds=(money)
-    self.balance = Balance.new(money.yen)
   end
 
   def reputation_factor
@@ -49,28 +48,26 @@ class Zoo < ApplicationRecord
     Season.on_day(day)
   end
 
-  def admit_visitors(count)
-    raise ArgumentError, '来園者数は0以上でなければなりません' if count.negative?
+  def admission_income(visitors)
+    raise ArgumentError, '来園者数は0以上でなければなりません' if visitors.negative?
 
-    earned = admission_fee * count
-    self.balance += earned
-    earned
+    admission_fee * visitors
   end
 
-  def spend(money)
-    self.balance -= money
-    balance
+  def balance
+    settle(operatings, outlays)
+  end
+
+  def closing_balance(day)
+    settle(operatings.where(day: ..day), outlays.map { |outlay| outlay.where(day: ...day) })
   end
 
   def afford?(money)
     balance.yen >= money.yen
   end
 
-  def purchase(money)
+  def authorize_payment(money)
     raise Errors::InsufficientFunds, "残高#{balance}では#{money}を支払えません" unless afford?(money)
-
-    self.balance -= money
-    balance
   end
 
   def bankrupt?
@@ -94,5 +91,24 @@ class Zoo < ApplicationRecord
 
   def to_s
     name
+  end
+
+  private
+
+  def outlays
+    [acquirings, constructings, hirings]
+  end
+
+  def settle(operatings, outlays)
+    Balance.new(
+      opening_funds.yen + yen_sum(operatings, :income) - yen_sum(operatings, :cost) -
+      outlays.sum { |outlay| yen_sum(outlay, :cost) }
+    )
+  end
+
+  def yen_sum(records, column)
+    return 0 if new_record?
+
+    records.sum(column).yen
   end
 end

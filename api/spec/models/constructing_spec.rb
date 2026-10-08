@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe Constructing do
   subject(:constructing) { described_class.new(zoo:, enclosure:) }
 
-  let(:zoo) { build(:zoo, funds: Money.yen(10_000_000)) }
+  let(:zoo) { create(:zoo, opening_funds: Money.yen(10_000_000)) }
   let(:climate_controlled) { false }
   let(:enclosure) { build(:enclosure, name: 'サバンナ', capacity: 4, climate_controlled:) }
   let(:cost) { Enclosure.construction_cost(capacity: 4, climate_controlled:) }
@@ -16,9 +16,14 @@ RSpec.describe Constructing do
         expect { constructing.perform }.to change(zoo, :balance).to(Balance.new(10_000_000 - cost.yen))
       end
 
-      it '園とエリアを保存し、その園のエリアとして返すこと' do
+      it '0日目・建設費の記録として保存されること' do
+        constructing.perform
+
+        expect(constructing).to be_persisted.and have_attributes(day: 0, cost:)
+      end
+
+      it 'エリアを保存し、その園のエリアとして返すこと' do
         expect(constructing.perform).to eq(enclosure)
-        expect(zoo).to be_persisted
         expect(enclosure).to be_persisted.and have_attributes(zoo:)
       end
     end
@@ -32,7 +37,7 @@ RSpec.describe Constructing do
     end
 
     context '残高が建設費に足りないとき' do
-      let(:zoo) { build(:zoo, funds: Money.zero) }
+      let(:zoo) { create(:zoo, opening_funds: Money.zero) }
 
       it 'InsufficientFunds を投げ、エリアを保存しないこと' do
         expect { constructing.perform }.to raise_error(Errors::InsufficientFunds)

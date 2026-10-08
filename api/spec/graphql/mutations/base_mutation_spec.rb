@@ -54,9 +54,9 @@ RSpec.describe Mutations::BaseMutation do
         OopZooSchema.execute('mutation { addEnclosure(name: "丘", celsius: 28, capacity: 0) { name } }', context: { current_zoo: zoo }).to_h
       end
 
-      it "extensions.code を 'RecordInvalid' にし、建設費の支払いを巻き戻すこと" do
+      it "extensions.code を 'RecordInvalid' にし、建設の記録を残さないこと" do
         expect(response['errors'].first['extensions']).to eq('code' => 'RecordInvalid')
-        expect(zoo.reload.balance.yen).to eq(100_000)
+        expect(zoo.constructings.reload).to be_empty
       end
     end
   end

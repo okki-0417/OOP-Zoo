@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Types::Zoo do
-  let(:zoo) { create(:zoo, funds: Money.yen(100_000), admission_fee: Money.yen(2_000)) }
+  let(:zoo) { create(:zoo, opening_funds: Money.yen(100_000), admission_fee: Money.yen(2_000)) }
 
   describe 'balance' do
     it '残高 ¥100,000 を円の整数 100000 で返すこと' do

@@ -5,6 +5,6 @@ FactoryBot.define do
     user
     name { 'テスト動物園' }
     admission_fee { Money.yen(2_000) }
-    funds { Money.yen(100_000) }
+    opening_funds { Money.yen(100_000) }
   end
 end

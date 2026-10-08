@@ -8,7 +8,7 @@ RSpec.describe Types::Operating do
                            amount: Money.yen(4_500))
   end
   let(:operating) do
-    create(:operating, visitors: 12, income: Money.yen(24_000), cost: Money.yen(4_500), balance: Balance.new(119_500),
+    create(:operating, visitors: 12, income: Money.yen(24_000), cost: Money.yen(4_500),
                        expenses: [feed])
   end
 
@@ -31,7 +31,7 @@ RSpec.describe Types::Operating do
   end
 
   describe 'balance' do
-    it '¥119,500 を円の整数 119500 で返すこと' do
+    it '開業資金 ¥100,000 にその日の純益 ¥19,500 を足した円の整数 119500 で返すこと' do
       expect(run_graphql_field('Operating.balance', operating)).to eq(119_500)
     end
   end

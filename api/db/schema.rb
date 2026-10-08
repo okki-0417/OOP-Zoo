@@ -10,7 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_000018) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_000019) do
+  create_table "acquirings", force: :cascade do |t|
+    t.integer "zoo_id", null: false
+    t.integer "animal_id", null: false
+    t.integer "day", null: false
+    t.integer "cost", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["animal_id"], name: "index_acquirings_on_animal_id", unique: true
+    t.index ["zoo_id"], name: "index_acquirings_on_zoo_id"
+  end
+
   create_table "animal_immunities", force: :cascade do |t|
     t.integer "animal_id", null: false
     t.string "illness", null: false
@@ -78,6 +89,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000018) do
     t.index ["sire_id"], name: "index_breedings_on_sire_id"
   end
 
+  create_table "constructings", force: :cascade do |t|
+    t.integer "zoo_id", null: false
+    t.integer "enclosure_id", null: false
+    t.integer "day", null: false
+    t.integer "cost", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["enclosure_id"], name: "index_constructings_on_enclosure_id", unique: true
+    t.index ["zoo_id"], name: "index_constructings_on_zoo_id"
+  end
+
   create_table "enclosures", force: :cascade do |t|
     t.string "name", null: false
     t.float "temperature", null: false
@@ -90,6 +112,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000018) do
     t.datetime "updated_at", null: false
     t.integer "zoo_id", null: false
     t.index ["zoo_id"], name: "index_enclosures_on_zoo_id"
+  end
+
+  create_table "hirings", force: :cascade do |t|
+    t.integer "zoo_id", null: false
+    t.string "employee_type", null: false
+    t.integer "employee_id", null: false
+    t.integer "day", null: false
+    t.integer "cost", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_type", "employee_id"], name: "index_hirings_on_employee", unique: true
+    t.index ["zoo_id"], name: "index_hirings_on_zoo_id"
   end
 
   create_table "keeper_specialties", force: :cascade do |t|
@@ -127,7 +161,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000018) do
     t.integer "income", null: false
     t.integer "cost", null: false
     t.integer "deaths", null: false
-    t.integer "balance", null: false
     t.integer "reputation", null: false
     t.string "outbreak"
     t.datetime "created_at", null: false
@@ -162,14 +195,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000018) do
   create_table "zoos", force: :cascade do |t|
     t.string "name", null: false
     t.integer "admission_fee", null: false
-    t.integer "balance", default: 0, null: false
     t.float "reputation", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.integer "opening_funds", default: 0, null: false
     t.index ["user_id"], name: "index_zoos_on_user_id", unique: true
   end
 
+  add_foreign_key "acquirings", "animals"
+  add_foreign_key "acquirings", "zoos"
   add_foreign_key "animal_immunities", "animals"
   add_foreign_key "animal_pregnancies", "animals", column: "dam_id"
   add_foreign_key "animals", "animals", column: "dam_id"
@@ -180,7 +215,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000018) do
   add_foreign_key "assignments", "keepers"
   add_foreign_key "breedings", "animals", column: "dam_id"
   add_foreign_key "breedings", "animals", column: "sire_id"
+  add_foreign_key "constructings", "enclosures"
+  add_foreign_key "constructings", "zoos"
   add_foreign_key "enclosures", "zoos"
+  add_foreign_key "hirings", "zoos"
   add_foreign_key "keeper_specialties", "keepers"
   add_foreign_key "keepers", "zoos"
   add_foreign_key "operating_expenses", "operatings"

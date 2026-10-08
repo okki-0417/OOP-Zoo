@@ -48,7 +48,7 @@ RSpec.describe Alert do
     end
 
     context '残高が -¥5,000 のとき' do
-      before { zoo.spend(Money.yen(zoo.balance.yen + 5_000)) }
+      before { create(:operating, zoo:, cost: Money.yen(105_000)) }
 
       it "園を対象に kind=:insolvent・severity=:critical・'資金が赤字です(残高 -¥5,000)' を返すこと" do
         expect(alerts).to contain_exactly(
@@ -74,7 +74,7 @@ RSpec.describe Alert do
       let(:hill) { build(:enclosure, name: 'ライオンの丘') }
 
       before do
-        zoo.spend(Money.yen(zoo.balance.yen + 1))
+        create(:operating, zoo:, cost: Money.yen(100_001))
         lion.add_stress(60)
         lion.get_hungrier(85)
       end

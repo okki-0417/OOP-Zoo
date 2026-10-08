@@ -4,8 +4,7 @@ require 'rails_helper'
 
 RSpec.describe Operating do
   subject(:operating) do
-    build(:operating, day:, visitors: 10, income: Money.yen(income), cost: Money.yen(cost), expenses:,
-                      balance: Balance.new(100_000))
+    build(:operating, day:, visitors: 10, income: Money.yen(income), cost: Money.yen(cost), expenses:)
   end
 
   let(:day) { 1 }
@@ -47,10 +46,9 @@ RSpec.describe Operating do
 
     before { operating.save! }
 
-    it '収入¥20,000・費用¥8,000・残高¥100,000・飼料費1件が、再読込後も同じであること' do
+    it '収入¥20,000・費用¥8,000・飼料費1件が、再読込後も同じであること' do
       expect(restored.income).to eq(Money.yen(20_000))
       expect(restored.cost).to eq(Money.yen(8_000))
-      expect(restored.balance).to eq(Balance.new(100_000))
       expect(restored.expenses).to eq([feed])
     end
   end

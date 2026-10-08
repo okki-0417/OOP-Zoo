@@ -25,11 +25,10 @@ class ZooDay
 
   def run
     today_visitors = VisitorAttraction.new(on_exhibit:, zoo: @zoo).expected_visitors
-    income = @zoo.admit_visitors(today_visitors)
+    income = @zoo.admission_income(today_visitors)
 
     operating_cost = OperatingCost.new(enclosures:, staff: @keepers + @veterinarians,
                                        species: on_exhibit.map(&:species))
-    @zoo.spend(operating_cost.amount)
 
     @occupancies.each { |occupancy| pass_day_in(occupancy) }
 
@@ -105,7 +104,6 @@ class ZooDay
       cost: operating_cost.amount,
       expenses: operating_cost.expenses,
       deaths: @dead.size,
-      balance: @zoo.balance,
       reputation: @zoo.reputation_score,
       outbreak: @afflicted&.name,
       casualties: @dead.dup

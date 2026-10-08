@@ -1,14 +1,13 @@
 # frozen_string_literal: true
 
 class Operating < ApplicationRecord
-  belongs_to :zoo
+  belongs_to :zoo, inverse_of: :operatings
   has_many :expenses, -> { order(:id) }, inverse_of: :operating, dependent: :destroy
 
   MONEY = ValueType.new(Money, load: Money.method(:yen), dump: :yen.to_proc)
 
   attribute :income, MONEY
   attribute :cost, MONEY
-  attribute :balance, ValueType.new(Balance, dump: :yen.to_proc)
   attribute :casualties, default: -> { [] }
 
   def net_income

@@ -8,7 +8,6 @@ FactoryBot.define do
     income { Money.zero }
     cost { Money.zero }
     deaths { 0 }
-    balance { Balance.zero }
     reputation { 50 }
   end
 end

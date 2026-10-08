@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe '運営の経済' do
   def zoo(funds:)
-    build(:zoo, name: '動物園', admission_fee: Money.yen(2_000), funds: Money.yen(funds))
+    create(:zoo, name: '動物園', admission_fee: Money.yen(2_000), opening_funds: Money.yen(funds))
   end
 
   describe '成長アクションの費用' do
@@ -38,20 +38,20 @@ RSpec.describe '運営の経済' do
     context '残高で支払えるとき' do
       it '購入するとその費用ぶん残高が減ること' do
         z = zoo(funds: 100_000)
-        z.purchase(Money.yen(30_000))
+        create(:constructing, zoo: z, cost: Money.yen(30_000))
         expect(z.balance).to eq(Balance.new(70_000))
       end
     end
 
     context '残高が費用に満たないとき' do
       it '資金不足として購入できないこと' do
-        expect { zoo(funds: 10_000).purchase(Money.yen(30_000)) }
+        expect { zoo(funds: 10_000).authorize_payment(Money.yen(30_000)) }
           .to raise_error(Errors::InsufficientFunds)
       end
 
       it '購入が拒否されたとき残高は変わらないこと' do
         z = zoo(funds: 10_000)
-        expect { z.purchase(Money.yen(30_000)) }.to raise_error(Errors::InsufficientFunds)
+        expect { z.authorize_payment(Money.yen(30_000)) }.to raise_error(Errors::InsufficientFunds)
         expect(z.balance).to eq(Balance.new(10_000))
       end
     end
@@ -59,7 +59,7 @@ RSpec.describe '運営の経済' do
     context '避けられない運営費を支払うとき' do
       it '残高を超えても支払われ、赤字(破産)になりうること(購入との違い)' do
         z = zoo(funds: 1_000)
-        z.spend(Money.yen(5_000))
+        create(:operating, zoo: z, cost: Money.yen(5_000))
         expect(z).to be_bankrupt
       end
     end

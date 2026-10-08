@@ -26,7 +26,7 @@ module Types
     end
 
     def balance
-      object.balance.yen
+      object.zoo.closing_balance(object.day).yen
     end
   end
 end
