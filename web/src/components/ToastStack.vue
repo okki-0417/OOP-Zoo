@@ -25,7 +25,7 @@ const { toasts, dismiss } = useToast();
   inset: 16px 16px auto auto;
   display: grid;
   gap: 8px;
-  width: min(380px, calc(100vw - 32px));
+  width: min(380px, calc(100cqw - 32px));
   pointer-events: none;
 }
 

@@ -40,7 +40,7 @@ async function enter() {
 .sign-in {
   display: grid;
   place-items: center;
-  min-height: 100dvh;
+  min-height: 100cqh;
   padding: 16px;
 }
 

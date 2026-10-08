@@ -398,7 +398,7 @@ async function changeFee() {
   margin-top: 0;
 }
 
-@media (width < 1100px) {
+@container screen (width < 1100px) {
   .board {
     grid-template-columns: minmax(0, 1fr);
   }

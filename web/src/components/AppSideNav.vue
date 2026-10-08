@@ -42,7 +42,7 @@ const tabs = [
   display: flex;
   flex-direction: column;
   gap: 4px;
-  height: 100dvh;
+  height: 100cqh;
   padding: 20px 12px;
   background: var(--surface);
   border-right: 1px solid var(--line);
@@ -100,7 +100,7 @@ const tabs = [
   opacity: 1;
 }
 
-@media (width < 900px) {
+@container screen (width < 900px) {
   .sidenav {
     padding: 20px 8px;
   }

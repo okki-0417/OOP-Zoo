@@ -120,7 +120,7 @@ onBeforeUnmount(() => (open.value = false));
   z-index: 15;
   top: calc(100% + 8px);
   right: 0;
-  width: min(520px, calc(100vw - 32px));
+  width: min(520px, calc(100cqw - 32px));
   padding: 16px;
   border-radius: 16px;
   border: 1px solid var(--line);

@@ -326,7 +326,7 @@ async function release(id: string, name: string | null) {
   align-items: start;
 }
 
-@media (width < 1100px) {
+@container screen (width < 1100px) {
   .inside {
     grid-template-columns: minmax(0, 1fr);
   }
