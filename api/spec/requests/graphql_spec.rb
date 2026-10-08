@@ -8,26 +8,49 @@ RSpec.describe 'POST /graphql', type: :request do
     response.parsed_body
   end
 
+  let(:query) { '{ enclosures { name } }' }
   let(:variables) { {} }
 
-  context 'query { enclosures { name } } を送ったとき' do
-    let(:query) { '{ enclosures { name } }' }
-
-    before { create(:enclosure, name: '丘') }
-
-    it '200 で data.enclosures に保存済みのエリア名 "丘" を返すこと' do
-      expect(body).to eq('data' => { 'enclosures' => [{ 'name' => '丘' }] })
-      expect(response).to have_http_status(:ok)
+  context 'ログインしていないとき' do
+    it "401 で errors[0].extensions.code を 'Unauthenticated' にすること" do
+      expect(body['errors'].first['extensions']).to eq('code' => 'Unauthenticated')
+      expect(response).to have_http_status(:unauthorized)
     end
   end
 
-  context '未知の種 dragon で acquireAnimal を送ったとき' do
-    let(:query) { 'mutation { acquireAnimal(speciesCode: "dragon", name: "X", sex: MALE) { id } }' }
+  context 'セッションの記録が消されたとき' do
+    before do
+      post '/dev/session'
+      Session.destroy_all
+    end
 
-    it "200 で data を null に、errors[0].extensions.code を 'SpeciesNotFound' にすること" do
-      expect(body['data']).to be_nil
-      expect(body['errors'].first['extensions']).to eq('code' => 'SpeciesNotFound')
-      expect(response).to have_http_status(:ok)
+    it '401 を返すこと' do
+      body
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
+  context 'ログイン中のとき' do
+    before { post '/dev/session' }
+
+    context 'query { enclosures { name } } を送ったとき' do
+      before { create(:enclosure, name: '丘') }
+
+      it '200 で data.enclosures に保存済みのエリア名 "丘" を返すこと' do
+        expect(body).to eq('data' => { 'enclosures' => [{ 'name' => '丘' }] })
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context '未知の種 dragon で acquireAnimal を送ったとき' do
+      let(:query) { 'mutation { acquireAnimal(speciesCode: "dragon", name: "X", sex: MALE) { id } }' }
+
+      it "200 で data を null に、errors[0].extensions.code を 'SpeciesNotFound' にすること" do
+        expect(body['data']).to be_nil
+        expect(body['errors'].first['extensions']).to eq('code' => 'SpeciesNotFound')
+        expect(response).to have_http_status(:ok)
+      end
     end
   end
 end

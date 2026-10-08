@@ -4,11 +4,21 @@ class GraphqlController < ApplicationController
   wrap_parameters false
 
   def execute
+    session = current_session
+    return render json: unauthenticated, status: :unauthorized unless session
+
     result = OopZooSchema.execute(
       params[:query],
       variables: params[:variables]&.to_unsafe_h || {},
-      operation_name: params[:operationName]
+      operation_name: params[:operationName],
+      context: { current_user: session.user }
     )
     render json: result
+  end
+
+  private
+
+  def unauthenticated
+    { errors: [{ message: 'ログインしていません', extensions: { code: 'Unauthenticated' } }] }
   end
 end

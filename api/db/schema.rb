@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_000008) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_000010) do
   create_table "animals", force: :cascade do |t|
     t.string "species", null: false
     t.string "name", null: false
@@ -97,6 +97,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000008) do
     t.index ["day"], name: "index_operatings_on_day"
   end
 
+  create_table "sessions", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "user_agent"
+    t.string "ip_address"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "veterinarians", force: :cascade do |t|
     t.string "name", null: false
     t.datetime "created_at", null: false
@@ -123,4 +137,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000008) do
   add_foreign_key "assignments", "keepers"
   add_foreign_key "breedings", "animals", column: "dam_id"
   add_foreign_key "breedings", "animals", column: "sire_id"
+  add_foreign_key "sessions", "users"
 end
