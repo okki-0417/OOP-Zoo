@@ -7,7 +7,7 @@ class VisitorAttraction
   def initialize(on_exhibit:, zoo:)
     @on_exhibit = on_exhibit
     @zoo = zoo
-    @spectacle = Spectacle.new(on_exhibit: on_exhibit, buzz: zoo.buzz)
+    @spectacle = Spectacle.new(on_exhibit: on_exhibit)
   end
 
   def expected_visitors

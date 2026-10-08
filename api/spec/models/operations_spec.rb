@@ -151,7 +151,7 @@ RSpec.describe VisitorAttraction do
   describe '#expected_visitors' do
     subject(:visitors) { described_class.new(on_exhibit:, zoo:).expected_visitors }
 
-    let(:zoo) { instance_double(Zoo, reputation_factor: Zoo::Reputation.new(reputation).factor, admission_fee:, buzz: 0) }
+    let(:zoo) { instance_double(Zoo, reputation_factor: Zoo::Reputation.new(reputation).factor, admission_fee:) }
     let(:reputation) { 100 }
     let(:admission_fee) { Money.yen(2_000) }
     let(:on_exhibit) { [build(:animal, :newborn, species: SpeciesCatalog.grevys_zebra)] }

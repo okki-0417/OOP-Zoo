@@ -3,9 +3,6 @@
 require 'rails_helper'
 
 RSpec.describe 'ニュース性' do
-  fee = Money.yen(2_000)
-  rep = Zoo::Reputation.new(50).factor
-
   describe '信頼チャネル(評判を動かすニュース)' do
     it 'カリスマ個体の死はニュースになること(来園ゼロでも評判が下がる)' do
       after = Zoo::Reputation.new(80).after_day(experience: 100, exposure: 0,
@@ -23,19 +20,6 @@ RSpec.describe 'ニュース性' do
       breeding = ReputationEvent::ConservationBreeding.for(SpeciesCatalog.red_panda)
       after = Zoo::Reputation.new(50).after_day(experience: 50, exposure: 0, events: [breeding])
       expect(after.score).to be > 50
-    end
-  end
-
-  describe '話題チャネル(見応えを動かすニュース)' do
-    it '幼獣の誕生はニュースになること(buzzで見応えが上がり集客が増える)' do
-      animals = [build(:animal)]
-      with_buzz = VisitorAttraction.new(on_exhibit: animals,
-                                        zoo: double('zoo', reputation_factor: rep, admission_fee: fee,
-                                                           buzz: 100)).expected_visitors
-      without_buzz = VisitorAttraction.new(on_exhibit: animals,
-                                           zoo: double('zoo', reputation_factor: rep, admission_fee: fee,
-                                                              buzz: 0)).expected_visitors
-      expect(with_buzz).to be > without_buzz
     end
   end
 

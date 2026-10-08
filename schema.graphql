@@ -307,7 +307,6 @@ type Veterinarian {
 type Zoo {
   admissionFee: Int!
   balance: Int!
-  buzz: Int!
   day: Int!
   exhibitCondition: Int!
   expectedVisitors: Int!

@@ -14,7 +14,6 @@ module Types
     field :reputation_decay, Float, null: false
     field :reputation_swing_limit, Integer, null: false
     field :visitors_for_full_swing, Integer, null: false
-    field :buzz, Integer, null: false
     field :spectacle, Integer, null: false
     field :spectacle_saturation, Integer, null: false
     field :willingness_to_pay, Integer, null: false
@@ -57,7 +56,7 @@ module Types
     end
 
     def spectacle
-      ::Spectacle.new(on_exhibit:, buzz: object.buzz).value.round
+      ::Spectacle.new(on_exhibit:).value.round
     end
 
     def spectacle_saturation
@@ -66,7 +65,7 @@ module Types
 
     def willingness_to_pay
       attraction = ::VisitorAttraction
-      spending = ::Spectacle.new(on_exhibit:, buzz: object.buzz).value *
+      spending = ::Spectacle.new(on_exhibit:).value *
                  attraction::WILLINGNESS_PER_SPECTACLE_YEN * object.reputation_factor
       (attraction::WILLINGNESS_BASE_YEN + spending).round
     end

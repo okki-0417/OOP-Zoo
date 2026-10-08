@@ -3,13 +3,12 @@
 class Spectacle
   SATURATION = 3_000
 
-  def initialize(on_exhibit:, buzz: 0)
+  def initialize(on_exhibit:)
     @on_exhibit = on_exhibit
-    @buzz = buzz
   end
 
   def value
-    saturate(charisma_total) + @buzz
+    saturate(charisma_total)
   end
 
   private

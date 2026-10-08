@@ -22,7 +22,6 @@ const ReputationQuery = graphql(`
       reputationDecay
       reputationSwingLimit
       visitorsForFullSwing
-      buzz
       spectacle
       spectacleSaturation
       willingnessToPay
@@ -92,7 +91,6 @@ const exhibitedSpecies = computed(() =>
     ...new Map(exhibited.value.map((animal) => [animal.species.code, animal.species])).values(),
   ].sort((a, b) => b.charisma - a.charisma),
 );
-const popularity = computed(() => (zoo.value ? zoo.value.spectacle - zoo.value.buzz : 0));
 
 const lastDay = computed(() => query.data.value?.operatings.at(-1));
 
@@ -269,7 +267,7 @@ function signed(value: number, digits = 0) {
                       <span
                         class="info"
                         tabindex="0"
-                        data-tip="人気度と話題性の合計。来園者数の上限と、払ってもよい入園料の上限を決める"
+                        data-tip="来園者数の上限と、払ってもよい入園料の上限を決める"
                         >ⓘ</span
                       >
                     </span>
@@ -291,10 +289,10 @@ function signed(value: number, digits = 0) {
                         </span>
                         <GaugeBar
                           class="gauge"
-                          :value="popularity"
+                          :value="zoo.spectacle"
                           :max="zoo.spectacleSaturation"
                         />
-                        <span class="value">{{ popularity }}</span>
+                        <span class="value">{{ zoo.spectacle }}</span>
                         <RouterLink to="/animals" class="action">未展示の種を導入する ›</RouterLink>
                       </div>
                       <ul>
@@ -307,20 +305,6 @@ function signed(value: number, digits = 0) {
                           <span class="action" />
                         </li>
                       </ul>
-                    </li>
-                    <li class="node">
-                      <span class="label">
-                        話題性
-                        <span
-                          class="info"
-                          tabindex="0"
-                          data-tip="赤ちゃんが生まれると増え、毎日少しずつ冷める"
-                          >ⓘ</span
-                        >
-                      </span>
-                      <GaugeBar class="gauge" :value="zoo.buzz" :max="zoo.spectacleSaturation" />
-                      <span class="value">{{ zoo.buzz }}</span>
-                      <span class="action" />
                     </li>
                   </ul>
                 </li>

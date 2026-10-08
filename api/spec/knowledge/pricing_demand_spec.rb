@@ -10,7 +10,7 @@ RSpec.describe '入園料と需要' do
 
   def visitors_at(fee)
     zoo = double('zoo', reputation_factor: Zoo::Reputation.default.factor,
-                        admission_fee: Money.yen(fee), buzz: 0)
+                        admission_fee: Money.yen(fee))
     VisitorAttraction.new(on_exhibit: exhibit, zoo: zoo).expected_visitors
   end
 

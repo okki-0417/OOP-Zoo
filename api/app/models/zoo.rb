@@ -43,20 +43,12 @@ class Zoo < ApplicationRecord
     reputation.score
   end
 
-  BUZZ_DECAY_PER_DAY = 10
-
-  def generate_buzz(amount)
-    self.buzz += amount
-    self
-  end
-
   def season
     Season.on_day(day)
   end
 
   def advance_day
     self.day += 1
-    self.buzz = [buzz - BUZZ_DECAY_PER_DAY, 0].max
     self
   end
 

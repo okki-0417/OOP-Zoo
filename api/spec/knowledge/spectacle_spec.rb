@@ -19,8 +19,8 @@ RSpec.describe '集客の見応え' do
     end
   end
 
-  def visitors(on_exhibit, buzz: 0)
-    zoo = double('zoo', reputation_factor: rep, admission_fee: fee, buzz: buzz)
+  def visitors(on_exhibit)
+    zoo = double('zoo', reputation_factor: rep, admission_fee: fee)
     VisitorAttraction.new(on_exhibit: on_exhibit, zoo: zoo).expected_visitors
   end
 
@@ -59,19 +59,6 @@ RSpec.describe '集客の見応え' do
       content = herd(SpeciesCatalog.lion, count: 4)
       stressed = herd(SpeciesCatalog.lion, count: 4, stress: 70)
       expect(visitors(stressed)).to eq(visitors(content))
-    end
-  end
-
-  describe '話題性' do
-    it '幼獣誕生などの話題は一時的に集客を押し上げること' do
-      animals = herd(SpeciesCatalog.lion)
-      expect(visitors(animals, buzz: 100)).to be > visitors(animals, buzz: 0)
-    end
-
-    it '話題は時間とともに薄れること' do
-      zoo = build(:zoo, name: '園', admission_fee: Money.yen(2_000))
-      zoo.generate_buzz(100)
-      expect { zoo.advance_day }.to change(zoo, :buzz).by(-Zoo::BUZZ_DECAY_PER_DAY)
     end
   end
 end
