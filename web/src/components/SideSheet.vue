@@ -1,9 +1,9 @@
 <script setup lang="ts">
-defineProps<{ title: string; closeTo: string }>();
+defineProps<{ title: string; closeTo: string; wide?: boolean }>();
 </script>
 
 <template>
-  <aside class="sheet">
+  <aside class="sheet" :class="{ wide }">
     <header class="sheet-header">
       <h2 class="grow">{{ title }}</h2>
       <RouterLink :to="closeTo" class="close" aria-label="閉じる">✕</RouterLink>

@@ -121,6 +121,8 @@ onBeforeUnmount(() => (open.value = false));
   top: calc(100% + 8px);
   right: 0;
   width: min(520px, calc(100cqw - 32px));
+  max-height: calc(100cqh - 72px);
+  overflow-y: auto;
   padding: 16px;
   border-radius: 16px;
   border: 1px solid var(--line);

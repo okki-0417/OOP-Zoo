@@ -17,6 +17,7 @@ import * as types from './graphql';
 type Documents = {
     "\n  query ZooStatus {\n    zoo {\n      day\n      balance\n      reputation\n    }\n  }\n": typeof types.ZooStatusDocument,
     "\n  query Alerts {\n    alerts {\n      severity\n      kind\n      subjectType\n      subjectId\n      subjectName\n      message\n    }\n  }\n": typeof types.AlertsDocument,
+    "\n  query Chores {\n    enclosures {\n      id\n      name\n      soiled\n      dull\n      occupants {\n        id\n        name\n        alive\n        fedToday\n      }\n    }\n    animals {\n      id\n      name\n      alive\n      sick\n    }\n  }\n": typeof types.ChoresDocument,
     "\n  mutation MakeRounds($keeperId: ID!) {\n    makeRounds(keeperId: $keeperId) {\n      keeper {\n        id\n        name\n        remainingMinutes\n      }\n      reports {\n        enclosure {\n          id\n          name\n        }\n        fed {\n          name\n        }\n        cleaned\n        enriched\n        skipped {\n          subject\n          reason\n        }\n      }\n    }\n  }\n": typeof types.MakeRoundsDocument,
     "\n  query SpeciesCatalog {\n    species {\n      code\n      nameJa\n      conservationLabel\n      taxonClass {\n        label\n      }\n    }\n  }\n": typeof types.SpeciesCatalogDocument,
     "\n  mutation AcquireAnimal($speciesCode: String!, $name: String!, $sex: Sex!) {\n    acquireAnimal(speciesCode: $speciesCode, name: $name, sex: $sex) {\n      id\n      name\n      species {\n        nameJa\n      }\n    }\n  }\n": typeof types.AcquireAnimalDocument,
@@ -42,16 +43,19 @@ type Documents = {
     "\n  mutation HireKeeper($name: String!, $specialties: [String!]!) {\n    hireKeeper(name: $name, specialties: $specialties) {\n      id\n      name\n    }\n  }\n": typeof types.HireKeeperDocument,
     "\n  mutation HireVeterinarian($name: String!) {\n    hireVeterinarian(name: $name) {\n      name\n    }\n  }\n": typeof types.HireVeterinarianDocument,
     "\n  query Keepers {\n    keepers {\n      id\n      name\n      workedMinutes\n      specialties {\n        label\n      }\n      enclosures {\n        id\n        name\n        occupants {\n          alive\n          fedToday\n        }\n      }\n    }\n  }\n": typeof types.KeepersDocument,
-    "\n  query Office {\n    zoo {\n      balance\n      reputation\n      admissionFee\n    }\n    operatings {\n      day\n      visitors\n      netIncome\n      deaths\n    }\n    enclosures {\n      id\n      name\n      soiled\n      dull\n      occupants {\n        id\n        name\n        alive\n        fedToday\n        species {\n          nameJa\n          threatened\n          conservationCode\n          conservationLabel\n        }\n      }\n    }\n    animals {\n      id\n      name\n      alive\n      sick\n      causeOfDeath\n      species {\n        nameJa\n      }\n    }\n  }\n": typeof types.OfficeDocument,
-    "\n  mutation OperateDay {\n    operateDay {\n      visitors\n      income\n      cost\n      deaths\n      balance\n      outbreak\n    }\n  }\n": typeof types.OperateDayDocument,
+    "\n  query Memorial {\n    animals {\n      id\n      name\n      alive\n      causeOfDeath\n      species {\n        nameJa\n      }\n    }\n  }\n": typeof types.MemorialDocument,
+    "\n  query Office {\n    zoo {\n      reputation\n      reputationDrift\n      reputationDecay\n      admissionFee\n    }\n    operatings {\n      visitors\n      netIncome\n    }\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n        }\n      }\n    }\n    animals {\n      alive\n    }\n  }\n": typeof types.OfficeDocument,
+    "\n  mutation OperateDay {\n    operateDay {\n      visitors\n      income\n      cost\n      deaths\n      outbreak\n    }\n  }\n": typeof types.OperateDayDocument,
     "\n  mutation RunDays($days: Int!) {\n    runDays(days: $days) {\n      days\n      totalDeaths\n    }\n  }\n": typeof types.RunDaysDocument,
     "\n  mutation SetAdmissionFee($fee: Int!) {\n    setAdmissionFee(fee: $fee) {\n      admissionFee\n    }\n  }\n": typeof types.SetAdmissionFeeDocument,
     "\n  query Reputation {\n    zoo {\n      reputation\n      admissionFee\n      exhibitCondition\n      experience\n      expectedVisitors\n      reputationDrift\n      reputationDecay\n      reputationSwingLimit\n      visitorsForFullSwing\n      spectacle\n      spectacleSaturation\n      willingnessToPay\n    }\n    animals {\n      id\n      name\n      alive\n      visibleCondition\n      blemishes {\n        cause\n        penalty\n      }\n      stressors {\n        cause\n        amount\n      }\n      species {\n        code\n        nameJa\n        charisma\n      }\n      enclosure {\n        id\n        name\n      }\n    }\n    operatings {\n      deaths\n      outbreak\n    }\n  }\n": typeof types.ReputationDocument,
     "\n  query Staff {\n    keepers {\n      id\n      name\n      remainingMinutes\n      specialties {\n        label\n      }\n      enclosures {\n        id\n        occupants {\n          alive\n          fedToday\n        }\n      }\n    }\n    veterinarians {\n      id\n      name\n    }\n  }\n": typeof types.StaffDocument,
+    "\n  query Threatened {\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n          conservationCode\n          conservationLabel\n        }\n      }\n    }\n  }\n": typeof types.ThreatenedDocument,
 };
 const documents: Documents = {
     "\n  query ZooStatus {\n    zoo {\n      day\n      balance\n      reputation\n    }\n  }\n": types.ZooStatusDocument,
     "\n  query Alerts {\n    alerts {\n      severity\n      kind\n      subjectType\n      subjectId\n      subjectName\n      message\n    }\n  }\n": types.AlertsDocument,
+    "\n  query Chores {\n    enclosures {\n      id\n      name\n      soiled\n      dull\n      occupants {\n        id\n        name\n        alive\n        fedToday\n      }\n    }\n    animals {\n      id\n      name\n      alive\n      sick\n    }\n  }\n": types.ChoresDocument,
     "\n  mutation MakeRounds($keeperId: ID!) {\n    makeRounds(keeperId: $keeperId) {\n      keeper {\n        id\n        name\n        remainingMinutes\n      }\n      reports {\n        enclosure {\n          id\n          name\n        }\n        fed {\n          name\n        }\n        cleaned\n        enriched\n        skipped {\n          subject\n          reason\n        }\n      }\n    }\n  }\n": types.MakeRoundsDocument,
     "\n  query SpeciesCatalog {\n    species {\n      code\n      nameJa\n      conservationLabel\n      taxonClass {\n        label\n      }\n    }\n  }\n": types.SpeciesCatalogDocument,
     "\n  mutation AcquireAnimal($speciesCode: String!, $name: String!, $sex: Sex!) {\n    acquireAnimal(speciesCode: $speciesCode, name: $name, sex: $sex) {\n      id\n      name\n      species {\n        nameJa\n      }\n    }\n  }\n": types.AcquireAnimalDocument,
@@ -77,12 +81,14 @@ const documents: Documents = {
     "\n  mutation HireKeeper($name: String!, $specialties: [String!]!) {\n    hireKeeper(name: $name, specialties: $specialties) {\n      id\n      name\n    }\n  }\n": types.HireKeeperDocument,
     "\n  mutation HireVeterinarian($name: String!) {\n    hireVeterinarian(name: $name) {\n      name\n    }\n  }\n": types.HireVeterinarianDocument,
     "\n  query Keepers {\n    keepers {\n      id\n      name\n      workedMinutes\n      specialties {\n        label\n      }\n      enclosures {\n        id\n        name\n        occupants {\n          alive\n          fedToday\n        }\n      }\n    }\n  }\n": types.KeepersDocument,
-    "\n  query Office {\n    zoo {\n      balance\n      reputation\n      admissionFee\n    }\n    operatings {\n      day\n      visitors\n      netIncome\n      deaths\n    }\n    enclosures {\n      id\n      name\n      soiled\n      dull\n      occupants {\n        id\n        name\n        alive\n        fedToday\n        species {\n          nameJa\n          threatened\n          conservationCode\n          conservationLabel\n        }\n      }\n    }\n    animals {\n      id\n      name\n      alive\n      sick\n      causeOfDeath\n      species {\n        nameJa\n      }\n    }\n  }\n": types.OfficeDocument,
-    "\n  mutation OperateDay {\n    operateDay {\n      visitors\n      income\n      cost\n      deaths\n      balance\n      outbreak\n    }\n  }\n": types.OperateDayDocument,
+    "\n  query Memorial {\n    animals {\n      id\n      name\n      alive\n      causeOfDeath\n      species {\n        nameJa\n      }\n    }\n  }\n": types.MemorialDocument,
+    "\n  query Office {\n    zoo {\n      reputation\n      reputationDrift\n      reputationDecay\n      admissionFee\n    }\n    operatings {\n      visitors\n      netIncome\n    }\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n        }\n      }\n    }\n    animals {\n      alive\n    }\n  }\n": types.OfficeDocument,
+    "\n  mutation OperateDay {\n    operateDay {\n      visitors\n      income\n      cost\n      deaths\n      outbreak\n    }\n  }\n": types.OperateDayDocument,
     "\n  mutation RunDays($days: Int!) {\n    runDays(days: $days) {\n      days\n      totalDeaths\n    }\n  }\n": types.RunDaysDocument,
     "\n  mutation SetAdmissionFee($fee: Int!) {\n    setAdmissionFee(fee: $fee) {\n      admissionFee\n    }\n  }\n": types.SetAdmissionFeeDocument,
     "\n  query Reputation {\n    zoo {\n      reputation\n      admissionFee\n      exhibitCondition\n      experience\n      expectedVisitors\n      reputationDrift\n      reputationDecay\n      reputationSwingLimit\n      visitorsForFullSwing\n      spectacle\n      spectacleSaturation\n      willingnessToPay\n    }\n    animals {\n      id\n      name\n      alive\n      visibleCondition\n      blemishes {\n        cause\n        penalty\n      }\n      stressors {\n        cause\n        amount\n      }\n      species {\n        code\n        nameJa\n        charisma\n      }\n      enclosure {\n        id\n        name\n      }\n    }\n    operatings {\n      deaths\n      outbreak\n    }\n  }\n": types.ReputationDocument,
     "\n  query Staff {\n    keepers {\n      id\n      name\n      remainingMinutes\n      specialties {\n        label\n      }\n      enclosures {\n        id\n        occupants {\n          alive\n          fedToday\n        }\n      }\n    }\n    veterinarians {\n      id\n      name\n    }\n  }\n": types.StaffDocument,
+    "\n  query Threatened {\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n          conservationCode\n          conservationLabel\n        }\n      }\n    }\n  }\n": types.ThreatenedDocument,
 };
 
 /**
@@ -93,6 +99,10 @@ export function graphql(source: "\n  query ZooStatus {\n    zoo {\n      day\n  
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query Alerts {\n    alerts {\n      severity\n      kind\n      subjectType\n      subjectId\n      subjectName\n      message\n    }\n  }\n"): typeof import('./graphql').AlertsDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query Chores {\n    enclosures {\n      id\n      name\n      soiled\n      dull\n      occupants {\n        id\n        name\n        alive\n        fedToday\n      }\n    }\n    animals {\n      id\n      name\n      alive\n      sick\n    }\n  }\n"): typeof import('./graphql').ChoresDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -196,11 +206,15 @@ export function graphql(source: "\n  query Keepers {\n    keepers {\n      id\n 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query Office {\n    zoo {\n      balance\n      reputation\n      admissionFee\n    }\n    operatings {\n      day\n      visitors\n      netIncome\n      deaths\n    }\n    enclosures {\n      id\n      name\n      soiled\n      dull\n      occupants {\n        id\n        name\n        alive\n        fedToday\n        species {\n          nameJa\n          threatened\n          conservationCode\n          conservationLabel\n        }\n      }\n    }\n    animals {\n      id\n      name\n      alive\n      sick\n      causeOfDeath\n      species {\n        nameJa\n      }\n    }\n  }\n"): typeof import('./graphql').OfficeDocument;
+export function graphql(source: "\n  query Memorial {\n    animals {\n      id\n      name\n      alive\n      causeOfDeath\n      species {\n        nameJa\n      }\n    }\n  }\n"): typeof import('./graphql').MemorialDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation OperateDay {\n    operateDay {\n      visitors\n      income\n      cost\n      deaths\n      balance\n      outbreak\n    }\n  }\n"): typeof import('./graphql').OperateDayDocument;
+export function graphql(source: "\n  query Office {\n    zoo {\n      reputation\n      reputationDrift\n      reputationDecay\n      admissionFee\n    }\n    operatings {\n      visitors\n      netIncome\n    }\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n        }\n      }\n    }\n    animals {\n      alive\n    }\n  }\n"): typeof import('./graphql').OfficeDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation OperateDay {\n    operateDay {\n      visitors\n      income\n      cost\n      deaths\n      outbreak\n    }\n  }\n"): typeof import('./graphql').OperateDayDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -217,6 +231,10 @@ export function graphql(source: "\n  query Reputation {\n    zoo {\n      reputa
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query Staff {\n    keepers {\n      id\n      name\n      remainingMinutes\n      specialties {\n        label\n      }\n      enclosures {\n        id\n        occupants {\n          alive\n          fedToday\n        }\n      }\n    }\n    veterinarians {\n      id\n      name\n    }\n  }\n"): typeof import('./graphql').StaffDocument;
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query Threatened {\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n          conservationCode\n          conservationLabel\n        }\n      }\n    }\n  }\n"): typeof import('./graphql').ThreatenedDocument;
 
 
 export function graphql(source: string) {

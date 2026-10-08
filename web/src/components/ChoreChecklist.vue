@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-export type Chore = {
-  kind: "feeding" | "treatment" | "cleaning" | "enrichment";
-  label: string;
-  items: { subject: { type: "animal" | "enclosure"; id: string; name: string }; done: boolean }[];
-};
+import type { Chore } from "../composables/useChores";
 
 const props = defineProps<{ chores: Chore[] }>();
 
@@ -53,13 +49,13 @@ function percent(done: number, all: number) {
 </script>
 
 <template>
-  <section class="card stack checklist">
+  <section class="stack checklist">
     <div class="overall">
       <span class="grow">
         <strong>{{ doneCount }} / {{ total }}</strong>
         <span class="muted"> 件完了</span>
       </span>
-      <RouterLink to="/staff" class="btn">🚶 見回りへ</RouterLink>
+      <RouterLink to="/staff" class="btn btn-small">🚶 見回りへ</RouterLink>
     </div>
     <div class="bar" role="progressbar" :aria-valuenow="percent(doneCount, total)">
       <span :style="{ width: `${percent(doneCount, total)}%` }" />
@@ -102,15 +98,18 @@ function percent(done: number, all: number) {
 </template>
 
 <style scoped>
+.checklist {
+  gap: 8px;
+}
+
 .overall {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 1.05rem;
 }
 
 .bar {
-  height: 10px;
+  height: 8px;
   border-radius: 5px;
   background: var(--surface-sunk);
   overflow: hidden;
@@ -134,13 +133,13 @@ function percent(done: number, all: number) {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .chore {
   display: grid;
-  gap: 6px;
-  padding: 10px 12px;
+  gap: 4px;
+  padding: 6px 10px;
   border-radius: 12px;
   background: var(--surface-sunk);
 }
@@ -152,7 +151,7 @@ function percent(done: number, all: number) {
 }
 
 .check {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: var(--ink-soft);
 }
 
@@ -165,7 +164,7 @@ function percent(done: number, all: number) {
 }
 
 .icon {
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .tally {
@@ -178,15 +177,15 @@ function percent(done: number, all: number) {
 }
 
 .note {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .pending {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
+  gap: 4px;
+  font-size: 0.8rem;
 }
 
 .chip {

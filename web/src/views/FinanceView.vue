@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, reactive } from "vue";
 import { graphql } from "../api/generated";
 import type { ExpenseCategory } from "../api/generated/graphql";
-import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
+import SideSheet from "../components/SideSheet.vue";
 import { useQuery } from "../composables/useQuery";
 import { yen } from "../lib/currency";
 
@@ -26,7 +26,7 @@ const FinanceQuery = graphql(`
   }
 `);
 
-const DAYS_SHOWN = 7;
+const DAYS_SHOWN = 4;
 
 const categories: { key: ExpenseCategory; label: string; remedy: string; to: string }[] = [
   { key: "PAYROLL", label: "人件費", remedy: "スタッフを見る", to: "/staff" },
@@ -35,6 +35,12 @@ const categories: { key: ExpenseCategory; label: string; remedy: string; to: str
 ];
 
 const query = useQuery(FinanceQuery);
+const opened = reactive(new Set<ExpenseCategory>());
+
+function toggle(category: ExpenseCategory) {
+  if (opened.has(category)) opened.delete(category);
+  else opened.add(category);
+}
 
 const days = computed(() => (query.data.value?.operatings ?? []).slice(-DAYS_SHOWN));
 const latest = computed(() => days.value.at(-1));
@@ -97,41 +103,14 @@ const incomeChange = computed(() =>
 </script>
 
 <template>
-  <PageHeader
-    title="収支"
-    :crumbs="[{ label: '園長室', to: '/' }]"
-    :subtitle="latest ? `${latest.day}日目までの直近${days.length}日` : undefined"
-  />
-
-  <QueryState
-    :loading="query.loading.value"
-    :error="query.error.value"
-    :empty="days.length === 0"
-    empty-text="まだ営業記録がありません"
-    @retry="query.reload"
-  >
-    <section v-if="latest" class="kpis">
-      <div class="card kpi">
-        <p class="muted">前日の収入</p>
-        <p class="figure plus">{{ yen(latest.income) }}</p>
-        <p class="muted">来園 {{ latest.visitors.toLocaleString() }} 人</p>
-      </div>
-      <div class="card kpi">
-        <p class="muted">前日の支出</p>
-        <p class="figure minus">{{ yen(latest.cost) }}</p>
-        <p v-if="previous" class="muted">前日比 {{ signed(latest.cost - previous.cost) }}</p>
-      </div>
-      <div class="card kpi">
-        <p class="muted">前日の純益</p>
-        <p class="figure" :class="latest.netIncome < 0 ? 'minus' : 'plus'">
-          {{ signed(latest.netIncome) }}
-        </p>
-        <p class="muted">資金 {{ yen(latest.balance) }}</p>
-      </div>
-    </section>
-
-    <h2 class="section-title">日別の内訳</h2>
-    <div class="card table-card">
+  <SideSheet title="収支" close-to="/" wide>
+    <QueryState
+      :loading="query.loading.value"
+      :error="query.error.value"
+      :empty="days.length === 0"
+      empty-text="まだ営業記録がありません"
+      @retry="query.reload"
+    >
       <table class="data-table">
         <thead>
           <tr>
@@ -141,10 +120,18 @@ const incomeChange = computed(() =>
           </tr>
         </thead>
         <tbody>
+          <tr>
+            <td>来園者</td>
+            <td v-for="day in days" :key="day.day" class="num">
+              {{ day.visitors.toLocaleString() }}人
+            </td>
+            <td class="num">
+              {{ previous ? (latest!.visitors - previous.visitors).toLocaleString() : "—" }}
+            </td>
+          </tr>
           <tr class="group">
             <td>
-              収入(入園料)
-              <RouterLink to="/reputation" class="more">評判を見る ›</RouterLink>
+              <RouterLink to="/reputation" class="label">収入(入園料) ›</RouterLink>
             </td>
             <td v-for="day in days" :key="day.day" class="num">{{ yen(day.income) }}</td>
             <td class="num" :class="tone(incomeChange, 'income')">
@@ -153,10 +140,10 @@ const incomeChange = computed(() =>
           </tr>
 
           <template v-for="section in sections" :key="section.key">
-            <tr class="group">
+            <tr class="group toggle" @click="toggle(section.key)">
               <td>
+                <span class="caret" :class="{ open: opened.has(section.key) }">▸</span>
                 {{ section.label }}
-                <RouterLink :to="section.to" class="more">{{ section.remedy }} ›</RouterLink>
               </td>
               <td v-for="(cell, i) in section.cells" :key="i" class="num">
                 {{ cell ? yen(cell.amount) : "—" }}
@@ -165,19 +152,26 @@ const incomeChange = computed(() =>
                 {{ change(section.cells) === undefined ? "—" : signed(change(section.cells)!) }}
               </td>
             </tr>
-            <tr v-for="line in section.lines" :key="`${section.key}-${line.label}`" class="item">
-              <td>{{ line.label }}</td>
-              <td v-for="(cell, i) in line.cells" :key="i" class="num">
-                <template v-if="cell && cell.quantity > 0">
-                  {{ yen(cell.amount)
-                  }}<small v-if="cell.quantity > 1" class="muted"> ×{{ cell.quantity }}</small>
-                </template>
-                <template v-else>—</template>
-              </td>
-              <td class="num" :class="tone(change(line.cells), 'expense')">
-                {{ change(line.cells) ? signed(change(line.cells)!) : "" }}
-              </td>
-            </tr>
+            <template v-if="opened.has(section.key)">
+              <tr v-for="line in section.lines" :key="`${section.key}-${line.label}`" class="item">
+                <td>{{ line.label }}</td>
+                <td v-for="(cell, i) in line.cells" :key="i" class="num">
+                  <template v-if="cell && cell.quantity > 0">
+                    {{ yen(cell.amount)
+                    }}<small v-if="cell.quantity > 1" class="muted"> ×{{ cell.quantity }}</small>
+                  </template>
+                  <template v-else>—</template>
+                </td>
+                <td class="num" :class="tone(change(line.cells), 'expense')">
+                  {{ change(line.cells) ? signed(change(line.cells)!) : "" }}
+                </td>
+              </tr>
+              <tr class="item">
+                <td colspan="99">
+                  <RouterLink :to="section.to" class="label">{{ section.remedy }} ›</RouterLink>
+                </td>
+              </tr>
+            </template>
           </template>
 
           <tr class="total">
@@ -207,44 +201,41 @@ const incomeChange = computed(() =>
           </tr>
         </tbody>
       </table>
-    </div>
-    <p class="muted note">— は内訳を記録する前の日、または計上のなかった項目です。</p>
-  </QueryState>
+    </QueryState>
+  </SideSheet>
 </template>
 
 <style scoped>
-.kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+.data-table {
+  font-size: 0.8rem;
 }
 
-.kpi {
-  display: grid;
-  gap: 6px;
-  align-content: start;
-}
-
-.figure {
-  font-size: 1.6rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.15;
+.data-table th,
+.data-table :deep(td) {
+  padding: 5px 8px;
 }
 
 .data-table td:first-child {
   white-space: nowrap;
 }
 
-.more {
-  margin-left: 8px;
-  font-size: 0.75rem;
+.label {
   font-weight: 700;
   color: var(--brand);
 }
 
-.more:hover {
-  text-decoration: underline;
+.toggle {
+  cursor: pointer;
+}
+
+.caret {
+  display: inline-block;
+  color: var(--ink-soft);
+  transition: rotate 0.15s ease;
+}
+
+.caret.open {
+  rotate: 90deg;
 }
 
 .group td {
@@ -253,7 +244,7 @@ const incomeChange = computed(() =>
 }
 
 .item td:first-child {
-  padding-left: 32px;
+  padding-left: 24px;
   color: var(--ink-soft);
 }
 
@@ -268,10 +259,5 @@ const incomeChange = computed(() =>
 
 .minus {
   color: var(--bad);
-}
-
-.note {
-  margin-top: 8px;
-  font-size: 0.8rem;
 }
 </style>

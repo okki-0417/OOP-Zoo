@@ -8,18 +8,21 @@ export const router = createRouter({
       name: "office",
       component: () => import("./views/OfficeView.vue"),
       meta: { section: "office" },
-    },
-    {
-      path: "/reputation",
-      name: "reputation",
-      component: () => import("./views/ReputationView.vue"),
-      meta: { section: "office" },
-    },
-    {
-      path: "/finance",
-      name: "finance",
-      component: () => import("./views/FinanceView.vue"),
-      meta: { section: "office" },
+      children: [
+        { path: "chores", name: "chores", component: () => import("./views/ChoresView.vue") },
+        {
+          path: "reputation",
+          name: "reputation",
+          component: () => import("./views/ReputationView.vue"),
+        },
+        { path: "finance", name: "finance", component: () => import("./views/FinanceView.vue") },
+        {
+          path: "threatened",
+          name: "threatened",
+          component: () => import("./views/ThreatenedView.vue"),
+        },
+        { path: "memorial", name: "memorial", component: () => import("./views/MemorialView.vue") },
+      ],
     },
     {
       path: "/animals",

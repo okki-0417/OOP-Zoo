@@ -88,6 +88,11 @@ export type AlertsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type AlertsQuery = { alerts: Array<{ severity: AlertSeverity, kind: AlertKind, subjectType: AlertSubject, subjectId: string | null, subjectName: string, message: string }> };
 
+export type ChoresQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ChoresQuery = { enclosures: Array<{ id: string, name: string, soiled: boolean, dull: boolean, occupants: Array<{ id: string, name: string | null, alive: boolean, fedToday: boolean }> }>, animals: Array<{ id: string, name: string | null, alive: boolean, sick: boolean }> };
+
 export type MakeRoundsMutationVariables = Exact<{
   keeperId: string | number;
 }>;
@@ -269,15 +274,20 @@ export type KeepersQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type KeepersQuery = { keepers: Array<{ id: string, name: string, workedMinutes: number, specialties: Array<{ label: string }>, enclosures: Array<{ id: string, name: string, occupants: Array<{ alive: boolean, fedToday: boolean }> }> }> };
 
+export type MemorialQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MemorialQuery = { animals: Array<{ id: string, name: string | null, alive: boolean, causeOfDeath: string | null, species: { nameJa: string } }> };
+
 export type OfficeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type OfficeQuery = { zoo: { balance: number, reputation: number, admissionFee: number }, operatings: Array<{ day: number, visitors: number, netIncome: number, deaths: number }>, enclosures: Array<{ id: string, name: string, soiled: boolean, dull: boolean, occupants: Array<{ id: string, name: string | null, alive: boolean, fedToday: boolean, species: { nameJa: string, threatened: boolean, conservationCode: string, conservationLabel: string } }> }>, animals: Array<{ id: string, name: string | null, alive: boolean, sick: boolean, causeOfDeath: string | null, species: { nameJa: string } }> };
+export type OfficeQuery = { zoo: { reputation: number, reputationDrift: number, reputationDecay: number, admissionFee: number }, operatings: Array<{ visitors: number, netIncome: number }>, enclosures: Array<{ occupants: Array<{ alive: boolean, species: { nameJa: string, threatened: boolean } }> }>, animals: Array<{ alive: boolean }> };
 
 export type OperateDayMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type OperateDayMutation = { operateDay: { visitors: number, income: number, cost: number, deaths: number, balance: number, outbreak: string | null } };
+export type OperateDayMutation = { operateDay: { visitors: number, income: number, cost: number, deaths: number, outbreak: string | null } };
 
 export type RunDaysMutationVariables = Exact<{
   days: number;
@@ -302,6 +312,11 @@ export type StaffQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type StaffQuery = { keepers: Array<{ id: string, name: string, remainingMinutes: number, specialties: Array<{ label: string }>, enclosures: Array<{ id: string, occupants: Array<{ alive: boolean, fedToday: boolean }> }> }>, veterinarians: Array<{ id: string, name: string }> };
+
+export type ThreatenedQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ThreatenedQuery = { enclosures: Array<{ occupants: Array<{ alive: boolean, species: { nameJa: string, threatened: boolean, conservationCode: string, conservationLabel: string } }> }> };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -343,6 +358,28 @@ export const AlertsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<AlertsQuery, AlertsQueryVariables>;
+export const ChoresDocument = new TypedDocumentString(`
+    query Chores {
+  enclosures {
+    id
+    name
+    soiled
+    dull
+    occupants {
+      id
+      name
+      alive
+      fedToday
+    }
+  }
+  animals {
+    id
+    name
+    alive
+    sick
+  }
+}
+    `) as unknown as TypedDocumentString<ChoresQuery, ChoresQueryVariables>;
 export const MakeRoundsDocument = new TypedDocumentString(`
     mutation MakeRounds($keeperId: ID!) {
   makeRounds(keeperId: $keeperId) {
@@ -733,46 +770,42 @@ export const KeepersDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<KeepersQuery, KeepersQueryVariables>;
-export const OfficeDocument = new TypedDocumentString(`
-    query Office {
-  zoo {
-    balance
-    reputation
-    admissionFee
-  }
-  operatings {
-    day
-    visitors
-    netIncome
-    deaths
-  }
-  enclosures {
-    id
-    name
-    soiled
-    dull
-    occupants {
-      id
-      name
-      alive
-      fedToday
-      species {
-        nameJa
-        threatened
-        conservationCode
-        conservationLabel
-      }
-    }
-  }
+export const MemorialDocument = new TypedDocumentString(`
+    query Memorial {
   animals {
     id
     name
     alive
-    sick
     causeOfDeath
     species {
       nameJa
     }
+  }
+}
+    `) as unknown as TypedDocumentString<MemorialQuery, MemorialQueryVariables>;
+export const OfficeDocument = new TypedDocumentString(`
+    query Office {
+  zoo {
+    reputation
+    reputationDrift
+    reputationDecay
+    admissionFee
+  }
+  operatings {
+    visitors
+    netIncome
+  }
+  enclosures {
+    occupants {
+      alive
+      species {
+        nameJa
+        threatened
+      }
+    }
+  }
+  animals {
+    alive
   }
 }
     `) as unknown as TypedDocumentString<OfficeQuery, OfficeQueryVariables>;
@@ -783,7 +816,6 @@ export const OperateDayDocument = new TypedDocumentString(`
     income
     cost
     deaths
-    balance
     outbreak
   }
 }
@@ -871,3 +903,18 @@ export const StaffDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<StaffQuery, StaffQueryVariables>;
+export const ThreatenedDocument = new TypedDocumentString(`
+    query Threatened {
+  enclosures {
+    occupants {
+      alive
+      species {
+        nameJa
+        threatened
+        conservationCode
+        conservationLabel
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<ThreatenedQuery, ThreatenedQueryVariables>;
