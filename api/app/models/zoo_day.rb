@@ -26,7 +26,7 @@ class ZooDay
   end
 
   def run
-    today_visitors = VisitorAttraction.new(on_exhibit:, zoo: @zoo).expected_visitors
+    today_visitors = VisitorAttraction.new(spectacle: Spectacle.of(@occupancies, today: @zoo.day), zoo: @zoo).expected_visitors
     income = @zoo.admission_income(today_visitors)
 
     operating_cost = OperatingCost.new(enclosures:, staff: @keepers + @veterinarians,

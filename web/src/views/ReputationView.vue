@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { graphql } from "../api/generated";
-import type { BlemishCause } from "../api/generated/graphql";
+import type { BlemishCause, BuzzKind } from "../api/generated/graphql";
 import GaugeBar from "../components/GaugeBar.vue";
 import QueryState from "../components/QueryState.vue";
 import SideSheet from "../components/SideSheet.vue";
@@ -24,6 +24,31 @@ const ReputationQuery = graphql(`
       visitorsForFullSwing
       spectacle
       spectacleSaturation
+      spectacleCharisma
+      spectacleHerdBonus
+      spectacleBuzz
+      herds {
+        size
+        multiplier
+        bonus
+        species {
+          nameJa
+        }
+        enclosure {
+          name
+        }
+      }
+      buzzes {
+        kind
+        amount
+        animal {
+          id
+          name
+          species {
+            nameJa
+          }
+        }
+      }
       willingnessToPay
     }
     animals {
@@ -55,6 +80,11 @@ const ReputationQuery = graphql(`
     }
   }
 `);
+
+const buzzKinds: Record<BuzzKind, string> = {
+  NEWBORN: "🍼 赤ちゃん",
+  NEWCOMER: "🆕 新入り",
+};
 
 const causes: Record<BlemishCause, { label: string; remedy?: string }> = {
   STRESSED: { label: "ストレス" },
@@ -331,10 +361,10 @@ function signed(value: number, digits = 0) {
                                   </span>
                                   <GaugeBar
                                     class="gauge"
-                                    :value="zoo.spectacle"
+                                    :value="zoo.spectacleCharisma"
                                     :max="zoo.spectacleSaturation"
                                   />
-                                  <span class="value">{{ zoo.spectacle }}</span>
+                                  <span class="value">{{ zoo.spectacleCharisma }}</span>
                                   <RouterLink to="/animals" class="action">
                                     未展示の種を導入する ›
                                   </RouterLink>
@@ -350,6 +380,85 @@ function signed(value: number, digits = 0) {
                                     </span>
                                     <GaugeBar class="gauge" :value="species.charisma" :max="100" />
                                     <span class="value">{{ species.charisma }}</span>
+                                  </li>
+                                </ul>
+                              </details>
+                            </li>
+                            <li>
+                              <details>
+                                <summary class="node">
+                                  <span class="label">
+                                    群れの見応え
+                                    <span
+                                      class="info"
+                                      tabindex="0"
+                                      data-tip="群れで暮らす種は、同じエリアの頭数が多いほど見応えが増す(上限1.5倍)。過密なエリアでは増えない"
+                                      >ⓘ</span
+                                    >
+                                  </span>
+                                  <GaugeBar
+                                    class="gauge"
+                                    :value="zoo.spectacleHerdBonus"
+                                    :max="zoo.spectacleSaturation"
+                                  />
+                                  <span class="value">+{{ zoo.spectacleHerdBonus }}</span>
+                                  <RouterLink to="/enclosures" class="action">
+                                    群れを見直す ›
+                                  </RouterLink>
+                                </summary>
+                                <ul>
+                                  <li
+                                    v-for="herd in zoo.herds"
+                                    :key="`${herd.species.nameJa}-${herd.enclosure.name}`"
+                                    class="node"
+                                  >
+                                    <span class="label">
+                                      {{ emojiOf(herd.species.nameJa) }} {{ herd.species.nameJa }}
+                                      {{ herd.size }}頭
+                                      <small class="muted"
+                                        >{{ herd.enclosure.name }}・×{{ herd.multiplier }}</small
+                                      >
+                                    </span>
+                                    <span class="value">+{{ herd.bonus }}</span>
+                                  </li>
+                                  <li v-if="zoo.herds.length === 0" class="node">
+                                    <span class="label muted">群れで見せている種はありません</span>
+                                  </li>
+                                </ul>
+                              </details>
+                            </li>
+                            <li>
+                              <details>
+                                <summary class="node">
+                                  <span class="label">
+                                    話題
+                                    <span
+                                      class="info"
+                                      tabindex="0"
+                                      data-tip="園で生まれた赤ちゃん(30日)と導入したばかりの新入り(7日)が人を呼ぶ。日が経つと薄れる"
+                                      >ⓘ</span
+                                    >
+                                  </span>
+                                  <GaugeBar
+                                    class="gauge"
+                                    :value="zoo.spectacleBuzz"
+                                    :max="zoo.spectacleSaturation"
+                                  />
+                                  <span class="value">+{{ zoo.spectacleBuzz }}</span>
+                                </summary>
+                                <ul>
+                                  <li v-for="buzz in zoo.buzzes" :key="buzz.animal.id" class="node">
+                                    <span class="label">
+                                      {{ buzzKinds[buzz.kind] }} {{ buzz.animal.name }}
+                                      <small class="muted">{{ buzz.animal.species.nameJa }}</small>
+                                    </span>
+                                    <span class="value">+{{ buzz.amount }}</span>
+                                    <RouterLink :to="`/animals/${buzz.animal.id}`" class="action">
+                                      会いに行く ›
+                                    </RouterLink>
+                                  </li>
+                                  <li v-if="zoo.buzzes.length === 0" class="node">
+                                    <span class="label muted">赤ちゃんや新入りはいません</span>
                                   </li>
                                 </ul>
                               </details>

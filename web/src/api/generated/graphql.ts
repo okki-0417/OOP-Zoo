@@ -38,6 +38,10 @@ export type BlemishCause =
   | 'STRESSED'
   | 'WEAK';
 
+export type BuzzKind =
+  | 'NEWBORN'
+  | 'NEWCOMER';
+
 export type Diagnosis =
   | 'DEAD'
   | 'HEALTHY'
@@ -306,7 +310,7 @@ export type SetAdmissionFeeMutation = { setAdmissionFee: { admissionFee: number 
 export type ReputationQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ReputationQuery = { zoo: { reputation: number, admissionFee: number, exhibitCondition: number, experience: number, expectedVisitors: number, reputationDrift: number, reputationDecay: number, reputationSwingLimit: number, visitorsForFullSwing: number, spectacle: number, spectacleSaturation: number, willingnessToPay: number }, animals: Array<{ id: string, name: string | null, alive: boolean, visibleCondition: number, blemishes: Array<{ cause: BlemishCause, penalty: number }>, stressors: Array<{ cause: StressorCause, amount: number }>, species: { code: string, nameJa: string, charisma: number }, enclosure: { id: string, name: string } | null }>, operatings: Array<{ deaths: number, outbreak: string | null }> };
+export type ReputationQuery = { zoo: { reputation: number, admissionFee: number, exhibitCondition: number, experience: number, expectedVisitors: number, reputationDrift: number, reputationDecay: number, reputationSwingLimit: number, visitorsForFullSwing: number, spectacle: number, spectacleSaturation: number, spectacleCharisma: number, spectacleHerdBonus: number, spectacleBuzz: number, willingnessToPay: number, herds: Array<{ size: number, multiplier: number, bonus: number, species: { nameJa: string }, enclosure: { name: string } }>, buzzes: Array<{ kind: BuzzKind, amount: number, animal: { id: string, name: string | null, species: { nameJa: string } } }> }, animals: Array<{ id: string, name: string | null, alive: boolean, visibleCondition: number, blemishes: Array<{ cause: BlemishCause, penalty: number }>, stressors: Array<{ cause: StressorCause, amount: number }>, species: { code: string, nameJa: string, charisma: number }, enclosure: { id: string, name: string } | null }>, operatings: Array<{ deaths: number, outbreak: string | null }> };
 
 export type StaffQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -850,6 +854,31 @@ export const ReputationDocument = new TypedDocumentString(`
     visitorsForFullSwing
     spectacle
     spectacleSaturation
+    spectacleCharisma
+    spectacleHerdBonus
+    spectacleBuzz
+    herds {
+      size
+      multiplier
+      bonus
+      species {
+        nameJa
+      }
+      enclosure {
+        name
+      }
+    }
+    buzzes {
+      kind
+      amount
+      animal {
+        id
+        name
+        species {
+          nameJa
+        }
+      }
+    }
     willingnessToPay
   }
   animals {

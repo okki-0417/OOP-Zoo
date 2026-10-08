@@ -19,13 +19,17 @@ RSpec.describe '集客の見応え' do
     end
   end
 
+  def exhibition(on_exhibit)
+    Spectacle.of([Occupancy.new(enclosure: build(:enclosure, capacity: 100), occupants: on_exhibit)], today: 0)
+  end
+
   def visitors(on_exhibit)
     zoo = double('zoo', reputation_factor: rep, admission_fee: fee)
-    VisitorAttraction.new(on_exhibit: on_exhibit, zoo: zoo).expected_visitors
+    VisitorAttraction.new(spectacle: exhibition(on_exhibit), zoo: zoo).expected_visitors
   end
 
   def spectacle(on_exhibit)
-    Spectacle.new(on_exhibit: on_exhibit).value
+    exhibition(on_exhibit).value
   end
 
   describe '見応えの源泉' do

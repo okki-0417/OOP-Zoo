@@ -10,7 +10,7 @@ class Occupancy
   end
 
   def self.of_zoo(zoo)
-    zoo.enclosures.includes(animals: %i[sire dam immunities pregnancies]).order(:id).map { |enclosure| of(enclosure) }.select(&:any?)
+    zoo.enclosures.includes(animals: %i[sire dam immunities pregnancies acquiring]).order(:id).map { |enclosure| of(enclosure) }.select(&:any?)
   end
 
   def initialize(enclosure:, occupants: [])

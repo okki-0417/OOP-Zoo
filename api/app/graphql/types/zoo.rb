@@ -16,6 +16,11 @@ module Types
     field :visitors_for_full_swing, Integer, null: false
     field :spectacle, Integer, null: false
     field :spectacle_saturation, Integer, null: false
+    field :spectacle_charisma, Integer, null: false
+    field :spectacle_herd_bonus, Integer, null: false
+    field :spectacle_buzz, Integer, null: false
+    field :herds, [Herd], null: false
+    field :buzzes, [Buzz], null: false
     field :willingness_to_pay, Integer, null: false
 
     def balance
@@ -35,7 +40,7 @@ module Types
     end
 
     def expected_visitors
-      ::VisitorAttraction.new(on_exhibit:, zoo: object).expected_visitors
+      ::VisitorAttraction.new(spectacle: spectacle_model, zoo: object).expected_visitors
     end
 
     def reputation_drift
@@ -56,7 +61,7 @@ module Types
     end
 
     def spectacle
-      ::Spectacle.new(on_exhibit:).value.round
+      spectacle_model.value.round
     end
 
     def spectacle_saturation
@@ -65,15 +70,43 @@ module Types
 
     def willingness_to_pay
       attraction = ::VisitorAttraction
-      spending = ::Spectacle.new(on_exhibit:).value *
+      spending = spectacle_model.value *
                  attraction::WILLINGNESS_PER_SPECTACLE_YEN * object.reputation_factor
       (attraction::WILLINGNESS_BASE_YEN + spending).round
     end
 
+    def spectacle_charisma
+      spectacle_model.charisma
+    end
+
+    def spectacle_herd_bonus
+      spectacle_model.herd_bonus.round
+    end
+
+    def spectacle_buzz
+      spectacle_model.buzz.round
+    end
+
+    def herds
+      spectacle_model.herds.select { |herd| herd.bonus.positive? }.sort_by { |herd| -herd.bonus }
+    end
+
+    def buzzes
+      spectacle_model.buzzes.sort_by { |buzz| -buzz.amount }
+    end
+
     private
 
+    def occupancies
+      @occupancies ||= ::Occupancy.of_zoo(object)
+    end
+
     def on_exhibit
-      @on_exhibit ||= ::Occupancy.of_zoo(object).flat_map(&:to_a)
+      @on_exhibit ||= occupancies.flat_map(&:to_a)
+    end
+
+    def spectacle_model
+      @spectacle_model ||= ::Spectacle.of(occupancies, today: object.day)
     end
   end
 end

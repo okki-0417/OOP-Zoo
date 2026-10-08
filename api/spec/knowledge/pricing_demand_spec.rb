@@ -11,7 +11,8 @@ RSpec.describe '入園料と需要' do
   def visitors_at(fee)
     zoo = double('zoo', reputation_factor: Zoo::Reputation.default.factor,
                         admission_fee: Money.yen(fee))
-    VisitorAttraction.new(on_exhibit: exhibit, zoo: zoo).expected_visitors
+    spectacle = Spectacle.of([Occupancy.new(enclosure: build(:enclosure), occupants: exhibit)], today: 0)
+    VisitorAttraction.new(spectacle:, zoo: zoo).expected_visitors
   end
 
   def revenue_at(fee)
@@ -57,9 +58,9 @@ RSpec.describe '入園料と需要' do
       pending('需要を上限とする入場の導入で対応予定。現状 admit_visitors は無制限に受け入れる')
       catalog = SpeciesCatalog
       zoo = build(:zoo, name: '園', admission_fee: Money.yen(2_000))
-      demand = VisitorAttraction.new(
-        on_exhibit: [build(:animal, species: catalog.lion, name: 'レオ')], zoo:
-      ).expected_visitors
+      exhibit = [build(:animal, species: catalog.lion, name: 'レオ')]
+      spectacle = Spectacle.of([Occupancy.new(enclosure: build(:enclosure), occupants: exhibit)], today: 0)
+      demand = VisitorAttraction.new(spectacle:, zoo:).expected_visitors
       expect(zoo.admit_visitors(1_000_000)).to be <= zoo.admission_fee * demand
     end
   end

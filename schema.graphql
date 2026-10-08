@@ -92,6 +92,17 @@ enum BlemishCause {
   WEAK
 }
 
+type Buzz {
+  amount: Int!
+  animal: Animal!
+  kind: BuzzKind!
+}
+
+enum BuzzKind {
+  NEWBORN
+  NEWCOMER
+}
+
 type Companionship {
   lonely: Boolean!
   separatedDependent: Boolean!
@@ -154,6 +165,15 @@ enum FoodCategory {
   MEAT
   PLANT
   SEED
+}
+
+type Herd {
+  bonus: Int!
+  crowded: Boolean!
+  enclosure: Enclosure!
+  multiplier: Float!
+  size: Int!
+  species: Species!
 }
 
 type Keeper {
@@ -307,16 +327,21 @@ type Veterinarian {
 type Zoo {
   admissionFee: Int!
   balance: Int!
+  buzzes: [Buzz!]!
   day: Int!
   exhibitCondition: Int!
   expectedVisitors: Int!
   experience: Int!
+  herds: [Herd!]!
   name: String!
   reputation: Int!
   reputationDecay: Float!
   reputationDrift: Float!
   reputationSwingLimit: Int!
   spectacle: Int!
+  spectacleBuzz: Int!
+  spectacleCharisma: Int!
+  spectacleHerdBonus: Int!
   spectacleSaturation: Int!
   visitorsForFullSwing: Int!
   willingnessToPay: Int!

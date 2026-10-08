@@ -17,6 +17,7 @@ class Animal < ApplicationRecord
   belongs_to :enclosure, optional: true, inverse_of: :animals
   belongs_to :sire, class_name: 'Animal', optional: true
   belongs_to :dam, class_name: 'Animal', optional: true
+  has_one :acquiring, dependent: :destroy
   has_many :immunities, dependent: :destroy
   has_many :pregnancies, -> { order(:id) }, foreign_key: :dam_id, inverse_of: :dam, autosave: true, dependent: :destroy
 
