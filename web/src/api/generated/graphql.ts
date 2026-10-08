@@ -282,7 +282,7 @@ export type MemorialQuery = { animals: Array<{ id: string, name: string | null, 
 export type OfficeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type OfficeQuery = { zoo: { reputation: number, reputationDrift: number, reputationDecay: number, admissionFee: number }, operatings: Array<{ visitors: number, netIncome: number }>, enclosures: Array<{ occupants: Array<{ alive: boolean, species: { nameJa: string, threatened: boolean } }> }>, animals: Array<{ alive: boolean }> };
+export type OfficeQuery = { zoo: { balance: number, reputation: number, reputationDrift: number, reputationDecay: number, admissionFee: number }, operatings: Array<{ visitors: number, netIncome: number }>, enclosures: Array<{ occupants: Array<{ alive: boolean, species: { nameJa: string, threatened: boolean } }> }>, animals: Array<{ alive: boolean }> };
 
 export type OperateDayMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -786,6 +786,7 @@ export const MemorialDocument = new TypedDocumentString(`
 export const OfficeDocument = new TypedDocumentString(`
     query Office {
   zoo {
+    balance
     reputation
     reputationDrift
     reputationDecay

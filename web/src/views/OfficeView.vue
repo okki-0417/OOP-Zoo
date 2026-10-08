@@ -12,6 +12,7 @@ import { yen } from "../lib/currency";
 const OfficeQuery = graphql(`
   query Office {
     zoo {
+      balance
       reputation
       reputationDrift
       reputationDecay
@@ -193,13 +194,16 @@ async function changeFee() {
 
         <div class="side">
           <RouterLink to="/finance" class="card link-card stat">
-            <p class="card-title">収支 <span class="more">内訳 ›</span></p>
-            <template v-if="yesterday">
-              <p class="figure" :class="yesterday.netIncome < 0 ? 'minus' : 'plus'">
-                {{ yesterday.netIncome < 0 ? "" : "+" }}{{ yen(yesterday.netIncome) }}
-              </p>
-              <p class="muted">前日・来園 {{ yesterday.visitors.toLocaleString() }} 人</p>
-            </template>
+            <p class="card-title">資金 <span class="more">収支の内訳 ›</span></p>
+            <p v-if="zoo" class="figure" :class="{ minus: zoo.balance < 0 }">
+              {{ yen(zoo.balance) }}
+            </p>
+            <p v-if="yesterday" class="muted">
+              前日
+              <strong :class="yesterday.netIncome < 0 ? 'minus' : 'plus'"
+                >{{ yesterday.netIncome < 0 ? "" : "+" }}{{ yen(yesterday.netIncome) }}</strong
+              >・来園 {{ yesterday.visitors.toLocaleString() }} 人
+            </p>
             <p v-else class="muted">まだ営業記録がありません</p>
           </RouterLink>
 

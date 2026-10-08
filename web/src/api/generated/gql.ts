@@ -44,7 +44,7 @@ type Documents = {
     "\n  mutation HireVeterinarian($name: String!) {\n    hireVeterinarian(name: $name) {\n      name\n    }\n  }\n": typeof types.HireVeterinarianDocument,
     "\n  query Keepers {\n    keepers {\n      id\n      name\n      workedMinutes\n      specialties {\n        label\n      }\n      enclosures {\n        id\n        name\n        occupants {\n          alive\n          fedToday\n        }\n      }\n    }\n  }\n": typeof types.KeepersDocument,
     "\n  query Memorial {\n    animals {\n      id\n      name\n      alive\n      causeOfDeath\n      species {\n        nameJa\n      }\n    }\n  }\n": typeof types.MemorialDocument,
-    "\n  query Office {\n    zoo {\n      reputation\n      reputationDrift\n      reputationDecay\n      admissionFee\n    }\n    operatings {\n      visitors\n      netIncome\n    }\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n        }\n      }\n    }\n    animals {\n      alive\n    }\n  }\n": typeof types.OfficeDocument,
+    "\n  query Office {\n    zoo {\n      balance\n      reputation\n      reputationDrift\n      reputationDecay\n      admissionFee\n    }\n    operatings {\n      visitors\n      netIncome\n    }\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n        }\n      }\n    }\n    animals {\n      alive\n    }\n  }\n": typeof types.OfficeDocument,
     "\n  mutation OperateDay {\n    operateDay {\n      visitors\n      income\n      cost\n      deaths\n      outbreak\n    }\n  }\n": typeof types.OperateDayDocument,
     "\n  mutation RunDays($days: Int!) {\n    runDays(days: $days) {\n      days\n      totalDeaths\n    }\n  }\n": typeof types.RunDaysDocument,
     "\n  mutation SetAdmissionFee($fee: Int!) {\n    setAdmissionFee(fee: $fee) {\n      admissionFee\n    }\n  }\n": typeof types.SetAdmissionFeeDocument,
@@ -82,7 +82,7 @@ const documents: Documents = {
     "\n  mutation HireVeterinarian($name: String!) {\n    hireVeterinarian(name: $name) {\n      name\n    }\n  }\n": types.HireVeterinarianDocument,
     "\n  query Keepers {\n    keepers {\n      id\n      name\n      workedMinutes\n      specialties {\n        label\n      }\n      enclosures {\n        id\n        name\n        occupants {\n          alive\n          fedToday\n        }\n      }\n    }\n  }\n": types.KeepersDocument,
     "\n  query Memorial {\n    animals {\n      id\n      name\n      alive\n      causeOfDeath\n      species {\n        nameJa\n      }\n    }\n  }\n": types.MemorialDocument,
-    "\n  query Office {\n    zoo {\n      reputation\n      reputationDrift\n      reputationDecay\n      admissionFee\n    }\n    operatings {\n      visitors\n      netIncome\n    }\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n        }\n      }\n    }\n    animals {\n      alive\n    }\n  }\n": types.OfficeDocument,
+    "\n  query Office {\n    zoo {\n      balance\n      reputation\n      reputationDrift\n      reputationDecay\n      admissionFee\n    }\n    operatings {\n      visitors\n      netIncome\n    }\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n        }\n      }\n    }\n    animals {\n      alive\n    }\n  }\n": types.OfficeDocument,
     "\n  mutation OperateDay {\n    operateDay {\n      visitors\n      income\n      cost\n      deaths\n      outbreak\n    }\n  }\n": types.OperateDayDocument,
     "\n  mutation RunDays($days: Int!) {\n    runDays(days: $days) {\n      days\n      totalDeaths\n    }\n  }\n": types.RunDaysDocument,
     "\n  mutation SetAdmissionFee($fee: Int!) {\n    setAdmissionFee(fee: $fee) {\n      admissionFee\n    }\n  }\n": types.SetAdmissionFeeDocument,
@@ -210,7 +210,7 @@ export function graphql(source: "\n  query Memorial {\n    animals {\n      id\n
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query Office {\n    zoo {\n      reputation\n      reputationDrift\n      reputationDecay\n      admissionFee\n    }\n    operatings {\n      visitors\n      netIncome\n    }\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n        }\n      }\n    }\n    animals {\n      alive\n    }\n  }\n"): typeof import('./graphql').OfficeDocument;
+export function graphql(source: "\n  query Office {\n    zoo {\n      balance\n      reputation\n      reputationDrift\n      reputationDecay\n      admissionFee\n    }\n    operatings {\n      visitors\n      netIncome\n    }\n    enclosures {\n      occupants {\n        alive\n        species {\n          nameJa\n          threatened\n        }\n      }\n    }\n    animals {\n      alive\n    }\n  }\n"): typeof import('./graphql').OfficeDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
