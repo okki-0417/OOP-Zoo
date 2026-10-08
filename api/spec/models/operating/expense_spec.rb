@@ -12,10 +12,6 @@ RSpec.describe Operating::Expense do
   let(:amount) { Money.yen(4_500) }
 
   describe '.new' do
-    it 'frozen であること' do
-      expect(expense).to be_frozen
-    end
-
     context 'quantity を省略したとき' do
       subject(:expense) do
         described_class.new(category: Operating::Expense::Category.upkeep, subject: 'サバンナ', amount: Money.yen(5_000))
@@ -25,51 +21,42 @@ RSpec.describe Operating::Expense do
         expect(expense.quantity).to eq(1)
       end
     end
+  end
+
+  describe '#valid?' do
+    subject(:expense) do
+      described_class.new(operating: Operating.none_yet, category: Operating::Expense::Category.feed, subject: target, quantity:, amount:)
+    end
+
+    context '対象・数量がそろっているとき' do
+      it 'true を返すこと' do
+        expect(expense).to be_valid
+      end
+    end
 
     context 'subject が空文字のとき' do
       let(:target) { '' }
 
-      it '「対象は必須」の ArgumentError を投げること' do
-        expect { expense }.to raise_error(ArgumentError, /対象は必須/)
+      it 'false を返し、subject に「費目の対象は必須です」が付くこと' do
+        expect(expense).not_to be_valid
+        expect(expense.errors[:subject]).to eq(['費目の対象は必須です'])
       end
     end
 
     context 'quantity が 0 のとき' do
       let(:quantity) { 0 }
 
-      it '「数量」の ArgumentError を投げること' do
-        expect { expense }.to raise_error(ArgumentError, /数量/)
+      it 'false を返し、quantity に「数量は1以上の整数でなければなりません」が付くこと' do
+        expect(expense).not_to be_valid
+        expect(expense.errors[:quantity]).to eq(['数量は1以上の整数でなければなりません'])
       end
     end
 
     context 'quantity が整数でない 1.5 のとき' do
       let(:quantity) { 1.5 }
 
-      it '「数量」の ArgumentError を投げること' do
-        expect { expense }.to raise_error(ArgumentError, /数量/)
-      end
-    end
-  end
-
-  describe '#==' do
-    let(:other) do
-      described_class.new(category: Operating::Expense::Category.feed, subject: 'ライオン', quantity: other_quantity,
-                          amount: Money.yen(4_500))
-    end
-
-    context '費目・対象・数量・金額が同じとき' do
-      let(:other_quantity) { 3 }
-
-      it '等しいこと' do
-        expect(expense).to eq(other)
-      end
-    end
-
-    context '数量だけが 3 と 2 で違うとき' do
-      let(:other_quantity) { 2 }
-
-      it '等しくないこと' do
-        expect(expense).not_to eq(other)
+      it 'false を返すこと' do
+        expect(expense).not_to be_valid
       end
     end
   end

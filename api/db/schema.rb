@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_000015) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_000016) do
   create_table "animal_immunities", force: :cascade do |t|
     t.integer "animal_id", null: false
     t.string "illness", null: false
@@ -110,12 +110,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000015) do
     t.index ["zoo_id"], name: "index_keepers_on_zoo_id"
   end
 
+  create_table "operating_expenses", force: :cascade do |t|
+    t.integer "operating_id", null: false
+    t.string "category", null: false
+    t.string "subject", null: false
+    t.integer "quantity", default: 1, null: false
+    t.integer "amount", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operating_id"], name: "index_operating_expenses_on_operating_id"
+  end
+
   create_table "operatings", force: :cascade do |t|
     t.integer "day", null: false
     t.integer "visitors", null: false
     t.integer "income", null: false
     t.integer "cost", null: false
-    t.text "expenses", null: false
     t.integer "deaths", null: false
     t.integer "balance", null: false
     t.integer "reputation", null: false
@@ -179,6 +189,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000015) do
   add_foreign_key "enclosures", "zoos"
   add_foreign_key "keeper_specialties", "keepers"
   add_foreign_key "keepers", "zoos"
+  add_foreign_key "operating_expenses", "operatings"
   add_foreign_key "operatings", "zoos"
   add_foreign_key "sessions", "users"
   add_foreign_key "veterinarians", "zoos"

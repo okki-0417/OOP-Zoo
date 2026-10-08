@@ -1,42 +1,19 @@
 # frozen_string_literal: true
 
 class Operating < ApplicationRecord
-  class Expense
-    include ValueObject
+  class Expense < ApplicationRecord
+    belongs_to :operating
 
-    attr_reader :category, :subject, :quantity, :amount
+    attribute :category, ValueType.new(Category, dump: ->(category) { category.value.to_s })
+    attribute :amount, ValueType.new(Money, load: Money.method(:yen), dump: :yen.to_proc)
+    attribute :quantity, default: 1
 
-    def initialize(category:, subject:, amount:, quantity: 1)
-      raise ArgumentError, '費目の対象は必須です' if subject.to_s.empty?
-      raise ArgumentError, '数量は1以上の整数でなければなりません' unless quantity.is_a?(Integer) && quantity.positive?
-
-      @category = category
-      @subject = subject
-      @quantity = quantity
-      @amount = amount
-      freeze
-    end
-
-    def self.from_h(hash)
-      new(
-        category: Category.new(hash.fetch('category')), subject: hash.fetch('subject'),
-        quantity: hash.fetch('quantity'), amount: Money.yen(hash.fetch('amount'))
-      )
-    end
-
-    def to_h
-      { category: @category.value.to_s, subject: @subject, quantity: @quantity, amount: @amount.yen }
-    end
+    validates :subject, presence: { message: '費目の対象は必須です' }
+    validates :quantity, numericality: { only_integer: true, greater_than: 0, message: '数量は1以上の整数でなければなりません' }
 
     def to_s
-      counted = @quantity > 1 ? "#{@subject}×#{@quantity}" : @subject
-      "#{@category} #{counted} #{@amount}"
-    end
-
-    protected
-
-    def components
-      [@category, @subject, @quantity, @amount]
+      counted = quantity > 1 ? "#{subject}×#{quantity}" : subject
+      "#{category} #{counted} #{amount}"
     end
   end
 end

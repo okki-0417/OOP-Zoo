@@ -2,6 +2,7 @@
 
 class Operating < ApplicationRecord
   belongs_to :zoo
+  has_many :expenses, -> { order(:id) }, inverse_of: :operating, dependent: :destroy
 
   MONEY = ValueType.new(Money, load: Money.method(:yen), dump: :yen.to_proc)
 
@@ -9,11 +10,6 @@ class Operating < ApplicationRecord
   attribute :cost, MONEY
   attribute :total_revenue, MONEY
   attribute :balance, ValueType.new(Balance, dump: :yen.to_proc)
-  attribute :expenses, ValueType.new(
-    Array,
-    load: ->(json) { JSON.parse(json).map { |row| Expense.from_h(row) } },
-    dump: ->(expenses) { JSON.generate(expenses.map(&:to_h)) }
-  ), default: -> { [] }
   attribute :casualties, default: -> { [] }
 
   def self.latest
