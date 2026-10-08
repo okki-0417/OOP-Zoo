@@ -75,8 +75,8 @@ function careTone(value: number) {
               </span>
               <span class="tile-signs">
                 <span class="dots">
-                  <span class="dot" :class="careTone(enclosure.cleanliness)" title="清潔度" />
-                  <span class="dot" :class="careTone(enclosure.enrichment)" title="刺激" />
+                  <span class="dot" :class="careTone(enclosure.cleanliness)" />
+                  <span class="dot" :class="careTone(enclosure.enrichment)" />
                 </span>
                 <span v-if="enclosure.filthy" class="badge badge-bad">不潔</span>
                 <span

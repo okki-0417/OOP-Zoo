@@ -255,10 +255,6 @@ async function changeFee() {
   padding: 10px 14px;
 }
 
-.link-card:hover {
-  border-color: var(--brand);
-}
-
 .card-title {
   display: flex;
   justify-content: space-between;

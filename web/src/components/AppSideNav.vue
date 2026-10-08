@@ -77,10 +77,6 @@ const tabs = [
   cursor: pointer;
 }
 
-.tab:hover {
-  background: var(--surface-sunk);
-}
-
 .icon {
   font-size: 1.3rem;
 }

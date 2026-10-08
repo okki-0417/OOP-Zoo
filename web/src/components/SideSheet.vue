@@ -51,10 +51,6 @@ h2 {
   color: var(--ink-soft);
 }
 
-.close:hover {
-  background: var(--surface-sunk);
-}
-
 .sheet-body {
   display: grid;
   align-content: start;

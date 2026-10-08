@@ -115,7 +115,7 @@ function healthTone(animal: Animal) {
                 <small class="muted">{{ animal.enclosure?.name ?? animal.species.nameJa }}</small>
               </span>
               <span v-if="animal.alive" class="tile-signs">
-                <span class="dot" :class="healthTone(animal)" title="体力" />
+                <span class="dot" :class="healthTone(animal)" />
                 <span v-if="animal.ailing" class="badge badge-bad">不調</span>
                 <span v-else-if="animal.hungry" class="badge badge-bad">空腹</span>
                 <span v-else-if="!animal.enclosure" class="badge badge-warn">未収容</span>

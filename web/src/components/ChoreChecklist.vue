@@ -195,9 +195,4 @@ function percent(done: number, all: number) {
   background: var(--surface);
   font-weight: 700;
 }
-
-.chip:hover {
-  border-color: var(--brand);
-  color: var(--brand);
-}
 </style>

@@ -330,9 +330,4 @@ async function release(id: string, name: string | null) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.who:hover strong {
-  color: var(--brand);
-  text-decoration: underline;
-}
 </style>

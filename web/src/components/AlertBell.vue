@@ -87,7 +87,6 @@ onBeforeUnmount(() => (open.value = false));
   cursor: pointer;
 }
 
-.bell:hover,
 .bell[aria-expanded="true"] {
   background: var(--surface-sunk);
 }

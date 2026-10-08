@@ -114,10 +114,6 @@ select {
     opacity 0.2s;
 }
 
-.btn:hover:not(:disabled) {
-  filter: brightness(0.96);
-}
-
 .btn:active {
   transform: scale(0.97);
 }
@@ -240,17 +236,6 @@ select {
   box-shadow: var(--shadow);
 }
 
-a.card {
-  transition:
-    border-color 0.15s ease,
-    transform 0.15s ease;
-}
-
-a.card:hover {
-  border-color: var(--brand);
-  transform: translateY(-2px);
-}
-
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -275,10 +260,6 @@ a.card:hover {
 
 .data-table tbody tr:last-child td {
   border-bottom: none;
-}
-
-.data-table tbody tr:hover {
-  background: color-mix(in srgb, var(--surface-sunk) 60%, transparent);
 }
 
 .data-table .num {
@@ -407,10 +388,6 @@ a.card:hover {
   border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--surface);
-}
-
-a.tile:hover {
-  border-color: var(--brand);
 }
 
 a.tile.router-link-active {

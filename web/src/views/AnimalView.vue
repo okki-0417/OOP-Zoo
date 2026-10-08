@@ -569,8 +569,4 @@ button.badge {
   font-weight: 700;
   color: var(--brand);
 }
-
-.remedy:hover {
-  text-decoration: underline;
-}
 </style>

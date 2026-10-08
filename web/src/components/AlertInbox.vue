@@ -141,10 +141,6 @@ function linkOf(alert: Alert) {
   background: var(--surface-sunk);
 }
 
-a.item:hover {
-  filter: brightness(0.97);
-}
-
 .item.critical {
   border-left-color: var(--bad);
   background: color-mix(in srgb, var(--bad) 10%, var(--surface));

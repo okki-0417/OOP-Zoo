@@ -539,10 +539,6 @@ details[open] > summary.node .label::before {
   color: var(--brand);
 }
 
-a.action:hover {
-  text-decoration: underline;
-}
-
 .forecast {
   margin-left: 8px;
   font-size: 0.85rem;
@@ -579,7 +575,6 @@ a.action:hover {
   transition: opacity 0.12s ease;
 }
 
-.info:hover::after,
 .info:focus::after {
   opacity: 1;
   visibility: visible;

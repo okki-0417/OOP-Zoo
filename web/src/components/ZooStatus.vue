@@ -50,10 +50,6 @@ const zoo = computed(() => query.data.value?.zoo);
   background: var(--surface-sunk);
 }
 
-.pill:hover {
-  color: var(--brand);
-}
-
 .negative {
   color: var(--bad);
 }
