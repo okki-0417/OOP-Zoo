@@ -1,0 +1,151 @@
+erDiagram
+    users ||--o{ sessions : ""
+    users ||--|| zoos : ""
+
+    zoos ||--o{ enclosures : ""
+    zoos ||--o{ animals : ""
+    zoos ||--o{ keepers : ""
+    zoos ||--o{ veterinarians : ""
+    zoos ||--o{ operatings : ""
+
+    enclosures |o--o{ animals : ""
+    keepers ||--o{ assignments : ""
+    enclosures ||--o{ assignments : ""
+    keepers ||--|{ keeper_specialties : ""
+
+    animals |o--o{ animals : sire
+    animals |o--o{ animals : dam
+    animals ||--o{ animal_immunities : ""
+    animals ||--o{ animal_pregnancies : ""
+    animals ||--o{ breedings : sire
+    animals ||--o{ breedings : dam
+
+    operatings ||--o{ operating_expenses : ""
+
+    users {
+        integer id PK
+    }
+
+    sessions {
+        integer id PK
+        integer user_id FK
+        string user_agent
+        string ip_address
+    }
+
+    zoos {
+        integer id PK
+        integer user_id FK, UK
+        string name
+        integer admission_fee
+        integer revenue
+        integer visitor_count
+        integer balance
+        float reputation
+        integer day
+        integer buzz
+    }
+
+    enclosures {
+        integer id PK
+        integer zoo_id FK
+        string name
+        float temperature
+        integer capacity
+        integer area_sqm
+        boolean climate_controlled
+        integer cleanliness
+        integer enrichment
+    }
+
+    animals {
+        integer id PK
+        integer zoo_id FK
+        integer enclosure_id FK
+        integer sire_id FK
+        integer dam_id FK
+        string species
+        string name
+        string sex
+        integer age_in_days
+        integer current_health
+        integer max_health
+        integer hunger
+        integer stress
+        integer nutrition
+        string meals
+        string illness
+        string death_cause
+    }
+
+    animal_immunities {
+        integer id PK
+        integer animal_id FK
+        string illness
+    }
+
+    animal_pregnancies {
+        integer id PK
+        integer dam_id FK
+        string sex
+        integer gestation_days
+        float inbreeding_coefficient
+        string outcome
+    }
+
+    breedings {
+        integer id PK
+        integer sire_id FK
+        integer dam_id FK
+        integer day
+        string season
+    }
+
+    keepers {
+        integer id PK
+        integer zoo_id FK
+        string name
+        integer worked_minutes
+    }
+
+    keeper_specialties {
+        integer id PK
+        integer keeper_id FK
+        string taxon_class
+    }
+
+    assignments {
+        integer id PK
+        integer keeper_id FK
+        integer enclosure_id FK
+    }
+
+    veterinarians {
+        integer id PK
+        integer zoo_id FK
+        string name
+    }
+
+    operatings {
+        integer id PK
+        integer zoo_id FK
+        integer day
+        integer visitors
+        integer income
+        integer cost
+        integer deaths
+        integer balance
+        integer reputation
+        string outbreak
+        integer total_visitors
+        integer total_revenue
+    }
+
+    operating_expenses {
+        integer id PK
+        integer operating_id FK
+        string category
+        string subject
+        integer quantity
+        integer amount
+    }
