@@ -21,9 +21,15 @@ RSpec.describe Acquiring do
     context '絶滅危惧種(ライオン=VU)のとき' do
       let(:animal) { build(:animal) }
 
-      it '購入せず残高を ¥100,000 のままにし、保全貢献として評判を上げること' do
-        expect { acquiring.perform }.to change(zoo, :reputation).to(be > zoo.reputation)
+      it '費用 ¥0 で記録し、残高を ¥100,000 のままにすること' do
+        acquiring.perform
+
+        expect(acquiring.cost).to eq(Money.zero)
         expect(zoo.balance).to eq(Balance.new(100_000))
+      end
+
+      it '受け入れた時点では評判を変えないこと' do
+        expect { acquiring.perform }.not_to change(zoo, :reputation)
       end
     end
 
@@ -49,6 +55,24 @@ RSpec.describe Acquiring do
       it '動物を保存し、その園の動物として返すこと' do
         expect(acquiring.perform).to eq(animal)
         expect(animal).to be_persisted.and have_attributes(zoo:)
+      end
+    end
+  end
+
+  describe '#conservation?' do
+    context '絶滅危惧種(ライオン=VU)のとき' do
+      let(:animal) { build(:animal) }
+
+      it 'true を返すこと' do
+        expect(acquiring).to be_conservation
+      end
+    end
+
+    context '取引可能な種(ニホンザル)のとき' do
+      let(:animal) { build(:animal, species: SpeciesCatalog.japanese_macaque) }
+
+      it 'false を返すこと' do
+        expect(acquiring).not_to be_conservation
       end
     end
   end

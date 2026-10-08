@@ -8,8 +8,6 @@ class Zoo < ApplicationRecord
   attribute :admission_fee, ValueType.new(Money, load: Money.method(:yen), dump: :yen.to_proc)
   attribute :opening_funds, ValueType.new(Money, load: Money.method(:yen), dump: :yen.to_proc),
             default: -> { Money.zero }
-  attribute :reputation, ValueType.new(Reputation, dump: :value.to_proc),
-            default: -> { Reputation.default }
 
   belongs_to :user
   has_many :acquirings, inverse_of: :zoo, dependent: :destroy
@@ -30,6 +28,10 @@ class Zoo < ApplicationRecord
       admission_fee: Money.yen(DEFAULT_ADMISSION_FEE_YEN),
       opening_funds: Money.yen(DEFAULT_FUNDS_YEN)
     )
+  end
+
+  def reputation
+    operatings.last&.reputation || Reputation.default
   end
 
   def reputation_factor
@@ -72,16 +74,6 @@ class Zoo < ApplicationRecord
 
   def bankrupt?
     balance.negative?
-  end
-
-  def gain_reputation(amount)
-    self.reputation = reputation.gain(amount)
-    self
-  end
-
-  def update_reputation(reputation)
-    self.reputation = reputation
-    self
   end
 
   def change_admission_fee(fee)

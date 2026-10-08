@@ -8,6 +8,7 @@ class Operating < ApplicationRecord
 
   attribute :income, MONEY
   attribute :cost, MONEY
+  attribute :reputation, ValueType.new(Zoo::Reputation, dump: :value.to_proc)
   attribute :casualties, default: -> { [] }
 
   def net_income

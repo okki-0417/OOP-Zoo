@@ -9,15 +9,17 @@ class ZooDay
       occupancies: Occupancy.of_zoo(zoo),
       keepers: zoo.keepers.order(:id).to_a,
       veterinarians: zoo.veterinarians.order(:id).to_a,
+      acquirings: zoo.acquirings.where(day: zoo.day).includes(:animal).to_a,
       random:
     )
   end
 
-  def initialize(zoo:, occupancies:, keepers:, veterinarians:, random: Random.new)
+  def initialize(zoo:, occupancies:, keepers:, veterinarians:, acquirings: [], random: Random.new)
     @zoo           = zoo
     @occupancies   = occupancies
     @keepers       = keepers
     @veterinarians = veterinarians
+    @acquirings    = acquirings
     @random        = random
     @dead          = []
     @afflicted     = nil
@@ -32,16 +34,14 @@ class ZooDay
 
     @occupancies.each { |occupancy| pass_day_in(occupancy) }
 
-    @zoo.update_reputation(
-      @zoo.reputation.after_day(
-        experience: Experience.new(on_exhibit:, fee: @zoo.admission_fee).score,
-        exposure: Exposure.new(visitors: today_visitors).score,
-        events: news
-      )
+    reputation = @zoo.reputation.after_day(
+      experience: Experience.new(on_exhibit:, fee: @zoo.admission_fee).score,
+      exposure: Exposure.new(visitors: today_visitors).score,
+      events: news
     )
 
     @keepers.each(&:end_shift)
-    record(visitors: today_visitors, income:, operating_cost:).tap { |operating| persist(operating) }
+    record(visitors: today_visitors, income:, operating_cost:, reputation:).tap { |operating| persist(operating) }
   end
 
   def enclosures
@@ -84,7 +84,8 @@ class ZooDay
   def news
     [
       *@dead.map { |animal| Zoo::NewsEvent.new(animal:) },
-      (@afflicted ? Zoo::NewsEvent.new(afflicted: @afflicted) : nil)
+      (@afflicted ? Zoo::NewsEvent.new(afflicted: @afflicted) : nil),
+      *@acquirings.select(&:conservation?).map { ReputationEvent::ConservationAcquisition.new }
     ].compact
   end
 
@@ -96,7 +97,7 @@ class ZooDay
     @zoo.save!
   end
 
-  def record(visitors:, income:, operating_cost:)
+  def record(visitors:, income:, operating_cost:, reputation:)
     @zoo.operatings.build(
       day: @zoo.day + 1,
       visitors:,
@@ -104,7 +105,7 @@ class ZooDay
       cost: operating_cost.amount,
       expenses: operating_cost.expenses,
       deaths: @dead.size,
-      reputation: @zoo.reputation_score,
+      reputation:,
       outbreak: @afflicted&.name,
       casualties: @dead.dup
     )

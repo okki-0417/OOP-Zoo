@@ -184,16 +184,22 @@ RSpec.describe Zoo do
     end
   end
 
-  describe '#save!' do
-    subject(:restored) { described_class.find(zoo.id) }
-
-    before do
-      zoo.gain_reputation(10)
-      zoo.save!
+  describe '#reputation' do
+    context 'まだ営業していないとき' do
+      it '既定の評判 50 を返すこと' do
+        expect(zoo.reputation).to eq(Zoo::Reputation.default)
+      end
     end
 
-    it '評判+10を保存すると、再読込後も評判60であること' do
-      expect(restored.reputation_score).to eq(60)
+    context '1日目の評判 55.5・2日目の評判 62.25 で営業したとき' do
+      before do
+        create(:operating, zoo:, day: 2, reputation: Zoo::Reputation.new(62.25))
+        create(:operating, zoo:, day: 1, reputation: Zoo::Reputation.new(55.5))
+      end
+
+      it '最新の2日目の評判 62.25 を返すこと' do
+        expect(zoo.reputation).to eq(Zoo::Reputation.new(62.25))
+      end
     end
   end
 

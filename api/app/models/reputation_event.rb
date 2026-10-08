@@ -27,6 +27,14 @@ module ReputationEvent
     end
   end
 
+  class ConservationAcquisition
+    REPUTATION_GAIN = 5
+
+    def reputation_delta
+      REPUTATION_GAIN
+    end
+  end
+
   class ConservationBreeding
     REPUTATION_GAIN = 4
 

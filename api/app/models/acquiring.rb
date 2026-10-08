@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Acquiring < ApplicationRecord
-  CONSERVATION_REPUTATION_GAIN = 5
   ACQUIRED_HEALTH = 100
 
   belongs_to :zoo, inverse_of: :acquirings
@@ -14,10 +13,12 @@ class Acquiring < ApplicationRecord
     self.day = zoo.day
     self.cost = animal.tradeable? ? animal.acquisition_price : Money.zero
     zoo.authorize_payment(cost)
-    zoo.gain_reputation(CONSERVATION_REPUTATION_GAIN) unless animal.tradeable?
-    zoo.save!
     animal.save!
     save!
     animal
+  end
+
+  def conservation?
+    !animal.tradeable?
   end
 end

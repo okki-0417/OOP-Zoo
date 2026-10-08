@@ -25,6 +25,10 @@ module Types
       object.net_income.yen
     end
 
+    def reputation
+      object.reputation.score
+    end
+
     def balance
       object.zoo.closing_balance(object.day).yen
     end

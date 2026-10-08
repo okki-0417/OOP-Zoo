@@ -8,6 +8,6 @@ FactoryBot.define do
     income { Money.zero }
     cost { Money.zero }
     deaths { 0 }
-    reputation { 50 }
+    reputation { Zoo::Reputation.default }
   end
 end

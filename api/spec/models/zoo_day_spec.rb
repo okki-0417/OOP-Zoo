@@ -23,6 +23,33 @@ RSpec.describe ZooDay do
       expect(assembled.keepers).to eq([keeper])
     end
 
+    context 'その日に絶滅危惧種のライオンを受け入れていたとき' do
+      before do
+        create(:acquiring, zoo:, animal: create(:animal, zoo:), day: zoo.day)
+        allow(ReputationEvent::ConservationAcquisition).to receive(:new).and_call_original
+      end
+
+      it '#run でその受け入れを評判に1件反映すること' do
+        assembled.run
+
+        expect(ReputationEvent::ConservationAcquisition).to have_received(:new).once
+      end
+    end
+
+    context '前日に絶滅危惧種のライオンを受け入れていたとき' do
+      before do
+        create(:acquiring, zoo:, animal: create(:animal, zoo:), day: zoo.day)
+        described_class.of(zoo, random: Random.new(0)).run
+        allow(ReputationEvent::ConservationAcquisition).to receive(:new).and_call_original
+      end
+
+      it '#run でその受け入れを評判に反映しないこと' do
+        assembled.run
+
+        expect(ReputationEvent::ConservationAcquisition).not_to have_received(:new)
+      end
+    end
+
     context '前日の営業が保存済みのとき' do
       before { described_class.of(zoo, random: Random.new(0)).run }
 
@@ -35,9 +62,11 @@ RSpec.describe ZooDay do
   subject(:zoo_day) do
     described_class.new(
       zoo:, occupancies: [Occupancy.new(enclosure: hill, occupants:)], keepers: [keeper], veterinarians: [],
-      random: Random.new(0)
+      acquirings:, random: Random.new(0)
     )
   end
+
+  let(:acquirings) { [] }
 
   let(:zoo) { build(:zoo) }
   let(:hill) { build(:enclosure, name: '丘') }
@@ -63,6 +92,30 @@ RSpec.describe ZooDay do
 
       expect(hill.cleanliness_level).to eq(99)
       expect(hill.enrichment.level).to eq(98)
+    end
+
+    context 'その日に保全目的の受け入れがあったとき' do
+      let(:acquirings) { [instance_double(Acquiring, conservation?: true)] }
+
+      before { allow(ReputationEvent::ConservationAcquisition).to receive(:new).and_call_original }
+
+      it 'その日の終わりの評判に保全の受け入れを1件反映すること' do
+        operating
+
+        expect(ReputationEvent::ConservationAcquisition).to have_received(:new).once
+      end
+    end
+
+    context 'その日に取引での購入だけがあったとき' do
+      let(:acquirings) { [instance_double(Acquiring, conservation?: false)] }
+
+      before { allow(ReputationEvent::ConservationAcquisition).to receive(:new).and_call_original }
+
+      it '保全の受け入れを評判に反映しないこと' do
+        operating
+
+        expect(ReputationEvent::ConservationAcquisition).not_to have_received(:new)
+      end
     end
 
     context '飼育員が100分働いているとき' do
