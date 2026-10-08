@@ -75,7 +75,7 @@ RSpec.describe Feeding do
   let(:keeper) { build(:keeper) }
   let(:animal) { build(:animal) }
   let(:foods) { [FoodCatalog.horse_meat] }
-  let(:bird_keeper) { build(:keeper, specialties: [TaxonClass.bird]) }
+  let(:bird_keeper) { build(:keeper, taxon_classes: [TaxonClass.bird]) }
 
   describe '#serve' do
     before { animal.get_hungrier(50) }

@@ -9,6 +9,10 @@ module Types
     field :remaining_minutes, Integer, null: false
     field :enclosures, [Enclosure], null: false
 
+    def specialties
+      object.specialties.map(&:taxon_class)
+    end
+
     def enclosures
       object.enclosures
     end

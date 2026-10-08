@@ -3,10 +3,10 @@
 require 'rails_helper'
 
 RSpec.describe Keeper do
-  subject(:keeper) { build(:keeper, name:, specialties:) }
+  subject(:keeper) { build(:keeper, name:, taxon_classes:) }
 
   let(:name) { '田中' }
-  let(:specialties) { [TaxonClass.mammal] }
+  let(:taxon_classes) { [TaxonClass.mammal] }
 
   describe '#specialized_in?' do
     it '哺乳類専門の飼育員はライオンの綱に true・コウテイペンギンの綱に false を返すこと' do
@@ -23,7 +23,7 @@ RSpec.describe Keeper do
 
   describe '#valid?' do
     context '専門分野が空のとき' do
-      let(:specialties) { [] }
+      let(:taxon_classes) { [] }
 
       it 'false を返し、specialties に「専門分野を1つ以上指定してください」が付くこと' do
         expect(keeper).not_to be_valid
@@ -87,13 +87,13 @@ RSpec.describe Keeper do
   end
 
   describe '#save!' do
-    let(:specialties) { [TaxonClass.mammal, TaxonClass.bird] }
+    let(:taxon_classes) { [TaxonClass.mammal, TaxonClass.bird] }
 
     before { keeper.clock_in(200).save! }
 
     it '専門[哺乳類・鳥類]・勤務200分が、再読込後も同じであること' do
       restored = described_class.find(keeper.id)
-      expect(restored.specialties).to eq([TaxonClass.mammal, TaxonClass.bird])
+      expect(restored.specialties.map(&:taxon_class)).to eq([TaxonClass.mammal, TaxonClass.bird])
       expect(restored.worked_minutes).to eq(200)
     end
   end

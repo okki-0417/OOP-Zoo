@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_000014) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_000015) do
   create_table "animal_immunities", force: :cascade do |t|
     t.integer "animal_id", null: false
     t.string "illness", null: false
@@ -92,9 +92,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000014) do
     t.index ["zoo_id"], name: "index_enclosures_on_zoo_id"
   end
 
+  create_table "keeper_specialties", force: :cascade do |t|
+    t.integer "keeper_id", null: false
+    t.string "taxon_class", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["keeper_id", "taxon_class"], name: "index_keeper_specialties_on_keeper_id_and_taxon_class", unique: true
+    t.index ["keeper_id"], name: "index_keeper_specialties_on_keeper_id"
+  end
+
   create_table "keepers", force: :cascade do |t|
     t.string "name", null: false
-    t.string "specialties", null: false
     t.integer "worked_minutes", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -169,6 +177,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000014) do
   add_foreign_key "breedings", "animals", column: "dam_id"
   add_foreign_key "breedings", "animals", column: "sire_id"
   add_foreign_key "enclosures", "zoos"
+  add_foreign_key "keeper_specialties", "keepers"
   add_foreign_key "keepers", "zoos"
   add_foreign_key "operatings", "zoos"
   add_foreign_key "sessions", "users"

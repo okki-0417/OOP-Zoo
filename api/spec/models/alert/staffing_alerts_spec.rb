@@ -18,7 +18,7 @@ RSpec.describe Alert::StaffingAlerts do
     end
 
     context '飼育員が鳥類専門の1人だけのとき' do
-      let(:keepers) { [build(:keeper, specialties: [TaxonClass.bird])] }
+      let(:keepers) { [build(:keeper, taxon_classes: [TaxonClass.bird])] }
 
       it '園を対象に kind=:no_keeper・severity=:warning・"哺乳類を世話できる飼育員がいません" を返すこと' do
         expect(alerts).to contain_exactly(

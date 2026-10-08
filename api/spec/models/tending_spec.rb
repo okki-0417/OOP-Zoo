@@ -19,7 +19,7 @@ RSpec.describe Tending do
     context 'occupancy を省略したとき' do
       subject(:tending) { described_class.new(keeper:, enclosure:) }
 
-      let(:keeper) { create(:keeper, specialties: [TaxonClass.bird]) }
+      let(:keeper) { create(:keeper, taxon_classes: [TaxonClass.bird]) }
       let(:enclosure) { create(:enclosure) }
 
       before { create(:animal, enclosure:) }

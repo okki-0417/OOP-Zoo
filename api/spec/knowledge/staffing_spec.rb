@@ -40,7 +40,7 @@ RSpec.describe '飼育員の担当割り当てに対するルール(専門一致
     end
 
     it '複数の専門を持つ飼育員は担当できる綱の範囲が広がること' do
-      generalist = build(:keeper, name: '万能', specialties: [TaxonClass.mammal, TaxonClass.bird])
+      generalist = build(:keeper, name: '万能', taxon_classes: [TaxonClass.mammal, TaxonClass.bird])
       mixed = pen('混合展示', temp: 22)
       residents = [build(:animal), build(:animal, species: SpeciesCatalog.emperor_penguin)]
 

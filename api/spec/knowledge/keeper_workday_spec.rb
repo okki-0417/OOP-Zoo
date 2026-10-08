@@ -156,7 +156,7 @@ RSpec.describe '飼育員の勤務と日課' do
     end
 
     it '専門外の動物には給餌せず、見送った理由を記録すること' do
-      bird_keeper = build(:keeper, specialties: [TaxonClass.bird])
+      bird_keeper = build(:keeper, taxon_classes: [TaxonClass.bird])
       leo = build(:animal, name: 'レオ')
 
       report = rounding(bird_keeper, pen, [leo]).perform

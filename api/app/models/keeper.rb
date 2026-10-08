@@ -7,8 +7,7 @@ class Keeper < ApplicationRecord
   belongs_to :zoo
   has_many :assignments, dependent: :destroy
   has_many :enclosures, -> { order(:id) }, through: :assignments
-
-  attribute :specialties, ListType.new(load: TaxonClass.method(:new), dump: :value.to_proc)
+  has_many :specialties, -> { order(:id) }, inverse_of: :keeper, dependent: :destroy
 
   validates :name, presence: { message: '飼育員名は必須です' }
   validates :specialties, presence: { message: '専門分野を1つ以上指定してください' }
@@ -48,7 +47,7 @@ class Keeper < ApplicationRecord
   end
 
   def specialized_in?(taxon_class)
-    specialties.include?(taxon_class)
+    taxon_classes.include?(taxon_class)
   end
 
   def in_charge_of?(enclosure)
@@ -56,7 +55,7 @@ class Keeper < ApplicationRecord
   end
 
   def specialties_label
-    specialties.map(&:label).join('・')
+    taxon_classes.map(&:label).join('・')
   end
 
   def to_s
@@ -64,6 +63,10 @@ class Keeper < ApplicationRecord
   end
 
   private
+
+  def taxon_classes
+    specialties.map(&:taxon_class)
+  end
 
   def shift
     Shift.new(worked_minutes)

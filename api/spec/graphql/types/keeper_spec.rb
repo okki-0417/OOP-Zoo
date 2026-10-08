@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Types::Keeper do
-  let(:keeper) { create(:keeper, name: '田中', specialties: [TaxonClass.bird]) }
+  let(:keeper) { create(:keeper, name: '田中', taxon_classes: [TaxonClass.bird]) }
 
   describe 'name' do
     it '"田中" を返すこと' do
