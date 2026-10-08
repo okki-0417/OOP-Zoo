@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import AppSideNav from "./components/AppSideNav.vue";
 import ToastStack from "./components/ToastStack.vue";
+import { useSession } from "./composables/useSession";
+import SignInView from "./views/SignInView.vue";
+
+const { signedOut } = useSession();
 </script>
 
 <template>
-  <div class="layout">
+  <SignInView v-if="signedOut" />
+  <div v-else class="layout">
     <AppSideNav />
     <main class="content">
       <RouterView />

@@ -2,11 +2,13 @@ import { ref } from "vue";
 import { execute } from "../api/client";
 import type { TypedDocumentString } from "../api/generated/graphql";
 import { refetchActiveQueries } from "./useQuery";
+import { useSession } from "./useSession";
 import { useToast } from "./useToast";
 
 export function useMutation() {
   const busy = ref(false);
   const { notify } = useToast();
+  const { noticeUnauthenticated } = useSession();
 
   async function mutate<R, V>(
     document: TypedDocumentString<R, V>,
@@ -20,6 +22,7 @@ export function useMutation() {
       void refetchActiveQueries();
       return result;
     } catch (e) {
+      noticeUnauthenticated(e);
       notify((e as Error).message, "bad");
       return undefined;
     } finally {

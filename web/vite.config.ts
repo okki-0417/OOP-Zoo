@@ -11,4 +11,9 @@ export default defineConfig({
     options: { typeAware: true, typeCheck: true },
   },
   plugins: lazyPlugins(() => [vue()]),
+  server: {
+    proxy: Object.fromEntries(
+      ["/graphql", "/session", "/dev"].map((path) => [path, "http://localhost:4567"]),
+    ),
+  },
 });

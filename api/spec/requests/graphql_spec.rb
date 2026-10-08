@@ -54,20 +54,3 @@ RSpec.describe 'POST /graphql', type: :request do
     end
   end
 end
-
-RSpec.describe 'OPTIONS /graphql', type: :request do
-  context 'Origin 付きのプリフライトを送ったとき' do
-    before do
-      process :options, '/graphql', headers: {
-        'Origin' => 'http://localhost:5173',
-        'Access-Control-Request-Method' => 'POST',
-        'Access-Control-Request-Headers' => 'Content-Type'
-      }
-    end
-
-    it '200 で Access-Control-Allow-Origin: * を返すこと' do
-      expect(response).to have_http_status(:ok)
-      expect(response.headers['Access-Control-Allow-Origin']).to eq('*')
-    end
-  end
-end

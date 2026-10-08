@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
+import { useSession } from "../composables/useSession";
 
 const route = useRoute();
+const { signOut } = useSession();
 const tabs = [
   { to: "/", section: "office", label: "園長室", icon: "🏛️" },
   { to: "/animals", section: "animals", label: "動物", icon: "🐾" },
@@ -26,6 +28,10 @@ const tabs = [
       <span class="icon">{{ tab.icon }}</span>
       <span class="label">{{ tab.label }}</span>
     </RouterLink>
+    <button class="tab sign-out" @click="signOut">
+      <span class="icon">🚪</span>
+      <span class="label">ログアウト</span>
+    </button>
   </nav>
 </template>
 
@@ -61,6 +67,14 @@ const tabs = [
   color: var(--ink-soft);
   font-weight: 700;
   transition: background 0.15s ease;
+}
+
+.sign-out {
+  margin-top: auto;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
 }
 
 .tab:hover {

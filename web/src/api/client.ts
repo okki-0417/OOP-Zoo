@@ -13,13 +13,11 @@ export class ApiError extends Error {
   }
 }
 
-const endpoint = `${import.meta.env.VITE_API_BASE ?? "http://localhost:4567"}/graphql`;
-
 export async function execute<R, V>(
   document: TypedDocumentString<R, V>,
   variables?: V,
 ): Promise<R> {
-  const response = await globalThis.fetch(endpoint, {
+  const response = await globalThis.fetch("/graphql", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: document.toString(), variables }),

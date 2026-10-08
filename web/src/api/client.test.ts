@@ -24,13 +24,13 @@ afterEach(() => {
 });
 
 describe("execute", () => {
-  it("POST localhost:4567/graphql に {query, variables} を JSON で送ること", async () => {
+  it("同じオリジンの POST /graphql に {query, variables} を JSON で送ること", async () => {
     const fetchMock = stubFetch(200, { data: { zoo: { day: 1 } } });
 
     await execute(document, { id: "a1" });
 
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(url).toBe("http://localhost:4567/graphql");
+    expect(url).toBe("/graphql");
     expect(init.method).toBe("POST");
     expect(new Headers(init.headers).get("Content-Type")).toBe("application/json");
     expect(JSON.parse(init.body as string)).toEqual({

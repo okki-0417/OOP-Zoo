@@ -9,6 +9,7 @@ import {
 } from "vue";
 import { execute } from "../api/client";
 import type { TypedDocumentString } from "../api/generated/graphql";
+import { useSession } from "./useSession";
 
 const active = new Set<() => Promise<void>>();
 
@@ -23,6 +24,7 @@ export function useQuery<R, V>(
   const data = shallowRef<R>();
   const error = shallowRef<Error>();
   const loading = ref(false);
+  const { noticeUnauthenticated } = useSession();
   let latest = 0;
 
   async function reload() {
@@ -34,6 +36,7 @@ export function useQuery<R, V>(
       data.value = result;
       error.value = undefined;
     } catch (e) {
+      noticeUnauthenticated(e);
       if (request === latest) error.value = e as Error;
     } finally {
       if (request === latest) loading.value = false;
