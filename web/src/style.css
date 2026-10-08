@@ -407,13 +407,14 @@ a.card:hover {
 }
 
 .split > :first-child {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   min-height: 0;
 }
 
 .scroll-box {
+  flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
 }
@@ -450,4 +451,109 @@ a.card:hover {
 
 .fold > :not(summary) {
   margin: 0 12px 12px;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  align-content: start;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+a.tile:hover {
+  border-color: var(--brand);
+}
+
+a.tile.router-link-active {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 12%, var(--surface));
+}
+
+.tile-icon {
+  font-size: 1.5rem;
+}
+
+.tile-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  line-height: 1.25;
+}
+
+.tile-text > * {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile-signs {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--good);
+}
+
+.dot.warn {
+  background: var(--warn);
+}
+
+.dot.bad {
+  background: var(--bad);
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action-row .grow {
+  width: 0;
+}
+
+.action-row .btn {
+  flex: none;
+}
+
+.verb {
+  flex: none;
+  width: 5em;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.facts dt {
+  color: var(--ink-soft);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 700;
 }

@@ -163,6 +163,16 @@ export type AnimalsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type AnimalsQuery = { animals: Array<{ id: string, name: string | null, alive: boolean, health: number, maxHealth: number, ailing: boolean, hungry: boolean, fedToday: boolean, species: { nameJa: string }, enclosure: { id: string, name: string } | null }> };
 
+export type AddEnclosureMutationVariables = Exact<{
+  name: string;
+  celsius: number;
+  capacity: number;
+  climateControlled?: boolean | null | undefined;
+}>;
+
+
+export type AddEnclosureMutation = { addEnclosure: { id: string, name: string } };
+
 export type EnclosureQueryVariables = Exact<{
   id: string | number;
 }>;
@@ -221,16 +231,6 @@ export type EnclosuresQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type EnclosuresQuery = { enclosures: Array<{ id: string, name: string, celsius: number, climateControlled: boolean, capacity: number, cleanliness: number, enrichment: number, filthy: boolean, barren: boolean, occupants: Array<{ id: string }>, occupancy: { full: boolean }, keepers: Array<{ id: string, name: string }> }> };
-
-export type AddEnclosureMutationVariables = Exact<{
-  name: string;
-  celsius: number;
-  capacity: number;
-  climateControlled?: boolean | null | undefined;
-}>;
-
-
-export type AddEnclosureMutation = { addEnclosure: { name: string } };
 
 export type FinanceQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -505,6 +505,19 @@ export const AnimalsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<AnimalsQuery, AnimalsQueryVariables>;
+export const AddEnclosureDocument = new TypedDocumentString(`
+    mutation AddEnclosure($name: String!, $celsius: Int!, $capacity: Int!, $climateControlled: Boolean) {
+  addEnclosure(
+    name: $name
+    celsius: $celsius
+    capacity: $capacity
+    climateControlled: $climateControlled
+  ) {
+    id
+    name
+  }
+}
+    `) as unknown as TypedDocumentString<AddEnclosureMutation, AddEnclosureMutationVariables>;
 export const EnclosureDocument = new TypedDocumentString(`
     query Enclosure($id: ID!) {
   enclosure(id: $id) {
@@ -623,18 +636,6 @@ export const EnclosuresDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<EnclosuresQuery, EnclosuresQueryVariables>;
-export const AddEnclosureDocument = new TypedDocumentString(`
-    mutation AddEnclosure($name: String!, $celsius: Int!, $capacity: Int!, $climateControlled: Boolean) {
-  addEnclosure(
-    name: $name
-    celsius: $celsius
-    capacity: $capacity
-    climateControlled: $climateControlled
-  ) {
-    name
-  }
-}
-    `) as unknown as TypedDocumentString<AddEnclosureMutation, AddEnclosureMutationVariables>;
 export const FinanceDocument = new TypedDocumentString(`
     query Finance {
   operatings {

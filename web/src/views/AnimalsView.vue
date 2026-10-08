@@ -63,7 +63,7 @@ const visible = computed(() =>
 
 function healthTone(animal: Animal) {
   const ratio = animal.health / animal.maxHealth;
-  if (ratio >= 0.6) return "good";
+  if (ratio >= 0.6) return "";
   if (ratio >= 0.3) return "warn";
   return "bad";
 }
@@ -104,19 +104,17 @@ function healthTone(animal: Animal) {
         empty-text="該当する動物はいません"
         @retry="query.reload"
       >
-        <ul class="scroll-box cards">
+        <ul class="scroll-box tiles">
           <li v-for="animal in visible" :key="animal.id">
-            <RouterLink
-              :to="`/animals/${animal.id}`"
-              class="animal"
-              :class="{ dead: !animal.alive }"
-            >
-              <span class="emoji">{{ animal.alive ? emojiOf(animal.species.nameJa) : "🪦" }}</span>
-              <span class="who">
+            <RouterLink :to="`/animals/${animal.id}`" class="tile" :class="{ dead: !animal.alive }">
+              <span class="tile-icon">{{
+                animal.alive ? emojiOf(animal.species.nameJa) : "🪦"
+              }}</span>
+              <span class="tile-text">
                 <strong>{{ animal.name }}</strong>
                 <small class="muted">{{ animal.enclosure?.name ?? animal.species.nameJa }}</small>
               </span>
-              <span v-if="animal.alive" class="signs">
+              <span v-if="animal.alive" class="tile-signs">
                 <span class="dot" :class="healthTone(animal)" title="体力" />
                 <span v-if="animal.ailing" class="badge badge-bad">不調</span>
                 <span v-else-if="animal.hungry" class="badge badge-bad">空腹</span>
@@ -168,78 +166,8 @@ function healthTone(animal: Animal) {
   }
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  align-content: start;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.animal {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-}
-
-.animal:hover {
-  border-color: var(--brand);
-}
-
-.animal.router-link-active {
-  border-color: var(--brand);
-  background: color-mix(in srgb, var(--brand) 12%, var(--surface));
-}
-
-.animal.dead {
+.tile.dead {
   filter: grayscale(1);
   opacity: 0.7;
-}
-
-.emoji {
-  font-size: 1.5rem;
-}
-
-.who {
-  flex: 1;
-  min-width: 0;
-  display: grid;
-  line-height: 1.25;
-}
-
-.who > * {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.signs {
-  display: grid;
-  justify-items: end;
-  gap: 4px;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-}
-
-.dot.good {
-  background: var(--good);
-}
-
-.dot.warn {
-  background: var(--warn);
-}
-
-.dot.bad {
-  background: var(--bad);
 }
 </style>

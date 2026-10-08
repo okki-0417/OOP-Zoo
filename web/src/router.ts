@@ -45,13 +45,19 @@ export const router = createRouter({
       name: "enclosures",
       component: () => import("./views/EnclosuresView.vue"),
       meta: { section: "enclosures" },
-    },
-    {
-      path: "/enclosures/:id",
-      name: "enclosure",
-      component: () => import("./views/EnclosureView.vue"),
-      props: true,
-      meta: { section: "enclosures" },
+      children: [
+        {
+          path: "new",
+          name: "build-enclosure",
+          component: () => import("./views/BuildEnclosureView.vue"),
+        },
+        {
+          path: ":id",
+          name: "enclosure",
+          component: () => import("./views/EnclosureView.vue"),
+          props: true,
+        },
+      ],
     },
     {
       path: "/staff",

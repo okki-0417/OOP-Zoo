@@ -372,7 +372,7 @@ async function rename() {
           </template>
 
           <div v-else-if="tab === 'care'" class="care">
-            <form v-if="!animal.enclosure" class="action" @submit.prevent="house">
+            <form v-if="!animal.enclosure" class="action-row" @submit.prevent="house">
               <span class="verb">🌳 収容</span>
               <select v-model="enclosureId" class="inline-select grow" required aria-label="収容先">
                 <option value="" disabled>収容先…</option>
@@ -385,7 +385,7 @@ async function rename() {
               </button>
             </form>
 
-            <form class="action" @submit.prevent="feed">
+            <form class="action-row" @submit.prevent="feed">
               <span class="verb">🍖 ごはん</span>
               <select v-model="keeperId" class="inline-select grow" required aria-label="飼育員">
                 <option v-for="k in query.data.value?.keepers" :key="k.id" :value="k.id">
@@ -402,7 +402,7 @@ async function rename() {
               </button>
             </form>
 
-            <div class="action">
+            <div class="action-row">
               <span class="verb">🩺 診療</span>
               <select v-model="veterinarianId" class="inline-select grow" aria-label="獣医">
                 <option v-for="v in query.data.value?.veterinarians" :key="v.id" :value="v.id">
@@ -417,7 +417,7 @@ async function rename() {
               </button>
             </div>
 
-            <form v-if="animal.enclosure" class="action" @submit.prevent="transfer">
+            <form v-if="animal.enclosure" class="action-row" @submit.prevent="transfer">
               <span class="verb">🚚 移送</span>
               <select v-model="enclosureId" class="inline-select grow" required aria-label="移送先">
                 <option value="" disabled>移送先…</option>
@@ -428,7 +428,7 @@ async function rename() {
               <button class="btn btn-small" :disabled="busy || !enclosureId">移送</button>
             </form>
 
-            <form class="action" @submit.prevent="rename">
+            <form class="action-row" @submit.prevent="rename">
               <span class="verb">✏️ 改名</span>
               <input
                 v-model.trim="newName"
@@ -546,27 +546,6 @@ button.badge {
   gap: 8px;
 }
 
-.action {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.action .grow {
-  width: 0;
-}
-
-.action .btn {
-  flex: none;
-}
-
-.verb {
-  flex: none;
-  width: 5em;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
 .memorial {
   text-align: center;
   color: var(--ink-soft);
@@ -593,21 +572,5 @@ button.badge {
 
 .remedy:hover {
   text-decoration: underline;
-}
-
-.facts {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 16px;
-  font-size: 0.85rem;
-}
-
-.facts dt {
-  color: var(--ink-soft);
-}
-
-.facts dd {
-  margin: 0;
-  font-weight: 700;
 }
 </style>
