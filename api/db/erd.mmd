@@ -7,11 +7,17 @@ erDiagram
     zoos ||--o{ keepers : ""
     zoos ||--o{ veterinarians : ""
     zoos ||--o{ operatings : ""
+    zoos ||--o{ acquirings : ""
+    zoos ||--o{ constructings : ""
+    zoos ||--o{ hirings : ""
 
     enclosures |o--o{ animals : ""
     keepers ||--o{ assignments : ""
     enclosures ||--o{ assignments : ""
     keepers ||--|{ keeper_specialties : ""
+    enclosures ||--o| constructings : ""
+    keepers ||--o| hirings : employee
+    veterinarians ||--o| hirings : employee
 
     animals |o--o{ animals : sire
     animals |o--o{ animals : dam
@@ -19,6 +25,7 @@ erDiagram
     animals ||--o{ animal_pregnancies : ""
     animals ||--o{ breedings : sire
     animals ||--o{ breedings : dam
+    animals ||--o| acquirings : ""
 
     operatings ||--o{ operating_expenses : ""
 
@@ -38,12 +45,7 @@ erDiagram
         integer user_id FK, UK
         string name
         integer admission_fee
-        integer revenue
-        integer visitor_count
-        integer balance
-        float reputation
-        integer day
-        integer buzz
+        integer opening_funds
     }
 
     enclosures {
@@ -134,11 +136,8 @@ erDiagram
         integer income
         integer cost
         integer deaths
-        integer balance
-        integer reputation
+        float reputation
         string outbreak
-        integer total_visitors
-        integer total_revenue
     }
 
     operating_expenses {
@@ -148,4 +147,29 @@ erDiagram
         string subject
         integer quantity
         integer amount
+    }
+
+    acquirings {
+        integer id PK
+        integer zoo_id FK
+        integer animal_id FK, UK
+        integer day
+        integer cost
+    }
+
+    constructings {
+        integer id PK
+        integer zoo_id FK
+        integer enclosure_id FK, UK
+        integer day
+        integer cost
+    }
+
+    hirings {
+        integer id PK
+        integer zoo_id FK
+        string employee_type
+        integer employee_id FK
+        integer day
+        integer cost
     }
