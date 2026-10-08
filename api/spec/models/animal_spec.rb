@@ -220,6 +220,17 @@ RSpec.describe Animal do
       end
     end
 
+    context '妊娠中のメスの複製が10日妊娠を進めたとき' do
+      subject(:animal) { build(:animal, :female).conceive }
+
+      before { copy.gestate(10) }
+
+      it '複製の gestation_days は 10 になり、元の個体は 0 のままであること' do
+        expect(copy.gestation_days).to eq(10)
+        expect(animal.gestation_days).to eq(0)
+      end
+    end
+
     context '保存済みの個体のとき' do
       subject(:animal) { create(:animal) }
 
@@ -524,6 +535,17 @@ RSpec.describe Animal do
       it '再読込後も妊娠中で gestation_days 3・expected_offspring_inbreeding 0.25 であること' do
         expect(restored).to be_expecting
         expect(restored).to have_attributes(gestation_days: 3, expected_offspring_inbreeding: 0.25)
+      end
+    end
+
+    context '飢餓で流産したメスのとき' do
+      subject(:animal) { build(:animal, :female) }
+
+      before { animal.conceive.get_hungrier(100).gestate(1) }
+
+      it '再読込後も妊娠しておらず、miscarried? が true であること' do
+        expect(restored).not_to be_expecting
+        expect(restored).to be_miscarried
       end
     end
 

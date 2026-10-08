@@ -18,6 +18,7 @@ class Animal < ApplicationRecord
   belongs_to :sire, class_name: 'Animal', optional: true
   belongs_to :dam, class_name: 'Animal', optional: true
   has_many :immunities, dependent: :destroy
+  has_many :pregnancies, -> { order(:id) }, foreign_key: :dam_id, inverse_of: :dam, autosave: true, dependent: :destroy
 
   attribute :species, ValueType.new(
     Species, load: SpeciesCatalog.method(:find), dump: ->(species) { SpeciesCatalog.key_of(species).to_s }
@@ -404,8 +405,7 @@ class Animal < ApplicationRecord
     raise Errors::BreedingNotAllowed, 'メスのみ妊娠できます' unless sex.female?
     raise Errors::BreedingNotAllowed, '既に妊娠/抱卵中です' if expecting?
 
-    self.pregnancy = Pregnancy.conceived(inbreeding: inbreeding)
-    self.miscarried = false
+    pregnancies.build(inbreeding_coefficient: inbreeding)
     self
   end
 
@@ -413,15 +413,19 @@ class Animal < ApplicationRecord
     !pregnancy.nil?
   end
 
+  def miscarried?
+    pregnancies.to_a.last&.miscarried? || false
+  end
+
   def gestate(days = 1)
     return self unless expecting?
 
-    if pregnancy_failing?
-      miscarry
-    else
-      self.pregnancy = pregnancy.advanced_by(days)
-    end
+    pregnancy_failing? ? pregnancy.miscarry : pregnancy.advance(days)
     self
+  end
+
+  def gestation_days
+    pregnancy&.gestation_days
   end
 
   def gestation_period_days
@@ -447,7 +451,7 @@ class Animal < ApplicationRecord
   def deliver
     raise Errors::BreedingNotAllowed, 'まだ出産/孵化の時期ではありません' unless ready_to_deliver?
 
-    self.pregnancy = nil
+    pregnancy.deliver
     self
   end
 
@@ -492,6 +496,7 @@ class Animal < ApplicationRecord
   def initialize_dup(other)
     super
     self.immunities = other.immunities.map(&:dup)
+    self.pregnancies = other.pregnancies.map(&:dup)
   end
 
   def acquire_immunity(illness)
@@ -520,26 +525,11 @@ class Animal < ApplicationRecord
   end
 
   def pregnancy
-    return nil if pregnancy_sex.nil?
-
-    Pregnancy.new(
-      sex: Sex.new(pregnancy_sex), gestation_days: gestation_days, inbreeding_coefficient: pregnancy_inbreeding
-    )
-  end
-
-  def pregnancy=(pregnancy)
-    self.pregnancy_sex = pregnancy && pregnancy.sex.value.to_s
-    self.gestation_days = pregnancy&.gestation_days
-    self.pregnancy_inbreeding = pregnancy&.inbreeding_coefficient
+    pregnancies.find(&:ongoing?)
   end
 
   def pregnancy_failing?
     starving? || stress.severe? || malnourished?
-  end
-
-  def miscarry
-    self.pregnancy = nil
-    self.miscarried = true
   end
 
   def illness_damage(days)

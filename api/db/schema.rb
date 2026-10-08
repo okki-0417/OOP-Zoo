@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_000013) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_000014) do
   create_table "animal_immunities", force: :cascade do |t|
     t.integer "animal_id", null: false
     t.string "illness", null: false
@@ -18,6 +18,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000013) do
     t.datetime "updated_at", null: false
     t.index ["animal_id", "illness"], name: "index_animal_immunities_on_animal_id_and_illness", unique: true
     t.index ["animal_id"], name: "index_animal_immunities_on_animal_id"
+  end
+
+  create_table "animal_pregnancies", force: :cascade do |t|
+    t.integer "dam_id", null: false
+    t.string "sex", null: false
+    t.integer "gestation_days", default: 0, null: false
+    t.float "inbreeding_coefficient", default: 0.0, null: false
+    t.string "outcome"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["dam_id"], name: "index_animal_pregnancies_on_dam_id"
+    t.index ["dam_id"], name: "index_animal_pregnancies_ongoing", unique: true, where: "outcome IS NULL"
   end
 
   create_table "animals", force: :cascade do |t|
@@ -32,10 +44,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000013) do
     t.integer "nutrition", null: false
     t.string "meals", default: "", null: false
     t.string "illness"
-    t.string "pregnancy_sex"
-    t.integer "gestation_days"
-    t.float "pregnancy_inbreeding"
-    t.boolean "miscarried", default: false, null: false
     t.string "death_cause"
     t.integer "enclosure_id"
     t.integer "sire_id"
@@ -151,6 +159,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000013) do
   end
 
   add_foreign_key "animal_immunities", "animals"
+  add_foreign_key "animal_pregnancies", "animals", column: "dam_id"
   add_foreign_key "animals", "animals", column: "dam_id"
   add_foreign_key "animals", "animals", column: "sire_id"
   add_foreign_key "animals", "enclosures"
