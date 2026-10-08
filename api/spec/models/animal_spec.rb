@@ -215,8 +215,8 @@ RSpec.describe Animal do
       end
 
       it '複製の免疫は [風邪] になり、元の個体の免疫は [] のままであること' do
-        expect(copy.immunities).to eq([IllnessCatalog.cold])
-        expect(animal.immunities).to eq([])
+        expect(copy.immunities.map(&:illness)).to eq([IllnessCatalog.cold])
+        expect(animal.immunities).to be_empty
       end
     end
 

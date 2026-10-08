@@ -9,13 +9,13 @@ RSpec.describe 'Animal#vaccinate' do
     before { lion.vaccinate(IllnessCatalog.cold) }
 
     it 'immunities に風邪が加わること' do
-      expect(lion.immunities).to include(IllnessCatalog.cold)
+      expect(lion.immunities.map(&:illness)).to include(IllnessCatalog.cold)
     end
 
     it 'もう一度風邪を接種しても、immunities の風邪は 1 つのままであること' do
       lion.vaccinate(IllnessCatalog.cold)
 
-      expect(lion.immunities.count(IllnessCatalog.cold)).to eq(1)
+      expect(lion.immunities.map(&:illness)).to eq([IllnessCatalog.cold])
     end
 
     it '風邪に fall_ill しても発病しないこと' do

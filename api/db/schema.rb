@@ -10,7 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_000012) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_000013) do
+  create_table "animal_immunities", force: :cascade do |t|
+    t.integer "animal_id", null: false
+    t.string "illness", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["animal_id", "illness"], name: "index_animal_immunities_on_animal_id_and_illness", unique: true
+    t.index ["animal_id"], name: "index_animal_immunities_on_animal_id"
+  end
+
   create_table "animals", force: :cascade do |t|
     t.string "species", null: false
     t.string "name", null: false
@@ -23,7 +32,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000012) do
     t.integer "nutrition", null: false
     t.string "meals", default: "", null: false
     t.string "illness"
-    t.string "immunities", default: "", null: false
     t.string "pregnancy_sex"
     t.integer "gestation_days"
     t.float "pregnancy_inbreeding"
@@ -142,6 +150,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000012) do
     t.index ["user_id"], name: "index_zoos_on_user_id", unique: true
   end
 
+  add_foreign_key "animal_immunities", "animals"
   add_foreign_key "animals", "animals", column: "dam_id"
   add_foreign_key "animals", "animals", column: "sire_id"
   add_foreign_key "animals", "enclosures"

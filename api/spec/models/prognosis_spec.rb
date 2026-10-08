@@ -40,7 +40,7 @@ RSpec.describe Prognosis do
 
       it '元の個体の病気・免疫・食事と、エリアの清潔度・刺激度を変えないこと' do
         expect { prognosis.days_to_death }
-          .not_to(change { [animal.illness, animal.immunities, animal.meals, enclosure.cleanliness_level, enclosure.enrichment] })
+          .not_to(change { [animal.illness, animal.immunities.to_a, animal.meals, enclosure.cleanliness_level, enclosure.enrichment] })
       end
     end
   end

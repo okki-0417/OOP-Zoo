@@ -17,6 +17,7 @@ class Animal < ApplicationRecord
   belongs_to :enclosure, optional: true, inverse_of: :animals
   belongs_to :sire, class_name: 'Animal', optional: true
   belongs_to :dam, class_name: 'Animal', optional: true
+  has_many :immunities, dependent: :destroy
 
   attribute :species, ValueType.new(
     Species, load: SpeciesCatalog.method(:find), dump: ->(species) { SpeciesCatalog.key_of(species).to_s }
@@ -30,9 +31,6 @@ class Animal < ApplicationRecord
   ), default: -> { Meals.none }
   attribute :illness, ValueType.new(
     Illness, load: IllnessCatalog.method(:find), dump: ->(illness) { IllnessCatalog.key_of(illness).to_s }
-  )
-  attribute :immunities, ListType.new(
-    load: IllnessCatalog.method(:find), dump: ->(illness) { IllnessCatalog.key_of(illness).to_s }
   )
 
   scope :alive, -> { where(death_cause: nil) }
@@ -136,12 +134,12 @@ class Animal < ApplicationRecord
     raise Errors::DeadAnimal, "#{name}は死亡しています" if dead?
     raise Errors::VaccineUnavailable, "#{illness.name_ja}にはワクチンがありません" unless illness.contagious?
 
-    self.immunities = immunities + [illness] unless immune_to?(illness)
+    acquire_immunity(illness)
     self
   end
 
   def recover
-    self.immunities = immunities + [illness] if illness && !immune_to?(illness)
+    acquire_immunity(illness) if illness
     self.illness = nil
     self
   end
@@ -171,7 +169,7 @@ class Animal < ApplicationRecord
   end
 
   def immune_to?(illness)
-    immunities.include?(illness)
+    immunities.map(&:illness).include?(illness)
   end
 
   def add_stress(amount)
@@ -490,6 +488,15 @@ class Animal < ApplicationRecord
   end
 
   private
+
+  def initialize_dup(other)
+    super
+    self.immunities = other.immunities.map(&:dup)
+  end
+
+  def acquire_immunity(illness)
+    immunities.build(illness:) unless immune_to?(illness)
+  end
 
   def health
     Health.new(current: current_health, max: max_health)
