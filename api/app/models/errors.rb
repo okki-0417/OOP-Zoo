@@ -15,4 +15,6 @@ module Errors
   class ReliefNotAllowed < DomainError; end
   class VaccineUnavailable < DomainError; end
   class InsufficientFunds < DomainError; end
+  class SpeciesNotFound < DomainError; end
+  class FoodNotFound < DomainError; end
 end

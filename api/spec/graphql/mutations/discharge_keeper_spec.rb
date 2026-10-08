@@ -3,14 +3,22 @@
 require 'rails_helper'
 
 RSpec.describe Mutations::DischargeKeeper do
-  describe 'dischargeKeeper(enclosureId: "e1", keeperId: "k1")' do
-    let!(:service) { stub_service(:discharge_keeper, Services::Result.success(:discharge_keeper, Object.new)) }
+  describe 'dischargeKeeper(enclosureId:, keeperId:)' do
+    subject(:response) do
+      OopZooSchema.execute(%(mutation { dischargeKeeper(enclosureId: "#{hill.id}", keeperId: "#{keeper.id}") { name } })).to_h
+    end
 
-    before { OopZooSchema.execute('mutation { dischargeKeeper(enclosureId: "e1", keeperId: "k1") { __typename } }') }
+    let(:hill) { create(:enclosure, name: '丘') }
+    let(:keeper) { create(:keeper, enclosures: [hill]) }
 
-    it 'enclosure_id: e1・keeper_id: k1 の DischargeKeeperCommand を Services::DischargeKeeper に渡すこと' do
-      expect(service).to have_received(:new)
-        .with(command: an_instance_of(Services::Commands::DischargeKeeperCommand).and(having_attributes(enclosure_id: 'e1', keeper_id: 'k1')))
+    it '丘を返すこと' do
+      expect(response).to eq('data' => { 'dischargeKeeper' => { 'name' => '丘' } })
+    end
+
+    it '飼育員を丘の担当から外すこと' do
+      response
+
+      expect(keeper.reload.enclosures).to be_empty
     end
   end
 end

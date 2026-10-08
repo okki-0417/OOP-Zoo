@@ -13,7 +13,8 @@ class Treating
 
     @animal.recover if @animal.sick?
     @animal.heal(HEAL_AMOUNT)
-    self
+    @animal.save!
+    @animal
   end
 
   def to_s

@@ -9,8 +9,9 @@ module Mutations
     argument :capacity, Integer
     argument :climate_controlled, Boolean, required: false, default_value: false
 
-    def resolve(**)
-      perform(:add_enclosure, **)
+    def resolve(name:, celsius:, capacity:, climate_controlled:)
+      enclosure = Enclosure.new(name:, temperature: Temperature.celsius(celsius), capacity:, climate_controlled:)
+      Constructing.new(zoo: Zoo.current, enclosure:).perform
     end
   end
 end

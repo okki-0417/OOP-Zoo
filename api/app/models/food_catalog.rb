@@ -70,4 +70,8 @@ module FoodCatalog
 
     public_send(symbol)
   end
+
+  def find!(key)
+    find(key) or raise Errors::FoodNotFound, "未知の餌です: #{key}"
+  end
 end

@@ -6,8 +6,8 @@ module Mutations
 
     argument :fee, Integer
 
-    def resolve(**)
-      perform(:set_admission_fee, **)
+    def resolve(fee:)
+      Zoo.current.change_admission_fee(Money.yen(fee)).tap(&:save!)
     end
   end
 end

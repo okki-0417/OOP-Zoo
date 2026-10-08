@@ -52,7 +52,7 @@ module Types
     end
 
     def alerts
-      Services::AlertList.new(command: Services::Commands::AlertListCommand.new).call.value
+      ::Alert.all
     end
 
     def species

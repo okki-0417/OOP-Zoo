@@ -3,14 +3,24 @@
 require 'rails_helper'
 
 RSpec.describe Mutations::TreatAnimal do
-  describe 'treatAnimal(animalId: "a1", veterinarianId: "v1")' do
-    let!(:service) { stub_service(:treat_animal, Services::Result.success(:treat_animal, Object.new)) }
+  describe 'treatAnimal(animalId:, veterinarianId:)' do
+    subject(:response) do
+      OopZooSchema.execute(
+        %(mutation { treatAnimal(animalId: "#{lion.id}", veterinarianId: "#{veterinarian.id}") { name sick } })
+      ).to_h
+    end
 
-    before { OopZooSchema.execute('mutation { treatAnimal(animalId: "a1", veterinarianId: "v1") { __typename } }') }
+    let(:lion) { create(:animal, name: 'レオ').fall_ill(IllnessCatalog.cold).tap(&:save!) }
+    let(:veterinarian) { create(:veterinarian) }
 
-    it 'animal_id: a1・veterinarian_id: v1 の TreatAnimalCommand を Services::TreatAnimal に渡すこと' do
-      expect(service).to have_received(:new)
-        .with(command: an_instance_of(Services::Commands::TreatAnimalCommand).and(having_attributes(animal_id: 'a1', veterinarian_id: 'v1')))
+    it '風邪の治ったレオを sick=false で返すこと' do
+      expect(response).to eq('data' => { 'treatAnimal' => { 'name' => 'レオ', 'sick' => false } })
+    end
+
+    it 'レオの回復を保存すること' do
+      response
+
+      expect(lion.reload).not_to be_sick
     end
   end
 end

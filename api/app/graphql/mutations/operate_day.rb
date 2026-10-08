@@ -4,8 +4,8 @@ module Mutations
   class OperateDay < BaseMutation
     type Types::Operating, null: false
 
-    def resolve(**)
-      perform(:operate_day, **)
+    def resolve
+      ZooDay.current.run
     end
   end
 end

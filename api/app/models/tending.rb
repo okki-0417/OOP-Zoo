@@ -3,7 +3,7 @@
 class Tending
   attr_reader :keeper, :enclosure
 
-  def initialize(keeper:, enclosure:, occupancy:)
+  def initialize(keeper:, enclosure:, occupancy: Occupancy.of(enclosure))
     @keeper = keeper
     @enclosure = enclosure
     @occupancy = occupancy

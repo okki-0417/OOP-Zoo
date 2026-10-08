@@ -7,8 +7,9 @@ module Mutations
     argument :animal_id, ID
     argument :veterinarian_id, ID
 
-    def resolve(**)
-      perform(:examine_animal, **)
+    def resolve(animal_id:, veterinarian_id:)
+      animal = Animal.find(animal_id)
+      { animal:, diagnosis: Examining.new(veterinarian: Veterinarian.find(veterinarian_id), animal:).diagnosis }
     end
   end
 end

@@ -3,6 +3,17 @@
 class ZooDay
   attr_reader :zoo
 
+  def self.current(random: Random.new)
+    new(
+      zoo: Zoo.current,
+      occupancies: Occupancy.all,
+      keepers: Keeper.order(:id).to_a,
+      veterinarians: Veterinarian.order(:id).to_a,
+      yesterday: Operating.latest,
+      random:
+    )
+  end
+
   def initialize(zoo:, occupancies:, keepers:, veterinarians:, yesterday: nil, random: Random.new)
     @zoo           = zoo
     @occupancies   = occupancies
@@ -34,7 +45,7 @@ class ZooDay
 
     @keepers.each(&:end_shift)
     @zoo.advance_day
-    record(operating_cost)
+    record(operating_cost).tap { |operating| persist(operating) }
   end
 
   def enclosures
@@ -79,6 +90,14 @@ class ZooDay
       *@dead.map { |animal| Zoo::NewsEvent.new(animal:) },
       (@afflicted ? Zoo::NewsEvent.new(afflicted: @afflicted) : nil)
     ].compact
+  end
+
+  def persist(operating)
+    operating.save!
+    enclosures.each(&:save!)
+    on_exhibit.each(&:save!)
+    @keepers.each(&:save!)
+    @zoo.save!
   end
 
   def record(operating_cost)

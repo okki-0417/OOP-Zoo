@@ -15,6 +15,9 @@ class Cleaning
   def perform
     @keeper.clock_in(WORK_MINUTES)
     @enclosure.clean(@amount)
+    @enclosure.save!
+    @keeper.save!
+    @enclosure
   end
 
   def to_s

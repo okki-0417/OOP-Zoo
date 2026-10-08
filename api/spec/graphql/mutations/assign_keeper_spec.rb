@@ -3,14 +3,22 @@
 require 'rails_helper'
 
 RSpec.describe Mutations::AssignKeeper do
-  describe 'assignKeeper(enclosureId: "e1", keeperId: "k1")' do
-    let!(:service) { stub_service(:assign_keeper, Services::Result.success(:assign_keeper, Object.new)) }
+  describe 'assignKeeper(enclosureId:, keeperId:)' do
+    subject(:response) do
+      OopZooSchema.execute(%(mutation { assignKeeper(enclosureId: "#{hill.id}", keeperId: "#{keeper.id}") { name } })).to_h
+    end
 
-    before { OopZooSchema.execute('mutation { assignKeeper(enclosureId: "e1", keeperId: "k1") { __typename } }') }
+    let(:hill) { create(:enclosure, name: '丘') }
+    let(:keeper) { create(:keeper) }
 
-    it 'enclosure_id: e1・keeper_id: k1 の AssignKeeperCommand を Services::AssignKeeper に渡すこと' do
-      expect(service).to have_received(:new)
-        .with(command: an_instance_of(Services::Commands::AssignKeeperCommand).and(having_attributes(enclosure_id: 'e1', keeper_id: 'k1')))
+    it '丘を返すこと' do
+      expect(response).to eq('data' => { 'assignKeeper' => { 'name' => '丘' } })
+    end
+
+    it '飼育員を丘の担当にすること' do
+      response
+
+      expect(keeper.reload.enclosures).to eq([hill])
     end
   end
 end

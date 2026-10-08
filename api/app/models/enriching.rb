@@ -11,6 +11,9 @@ class Enriching
   def perform
     @keeper.clock_in(WORK_MINUTES)
     @enclosure.enrich
+    @enclosure.save!
+    @keeper.save!
+    @enclosure
   end
 
   def to_s

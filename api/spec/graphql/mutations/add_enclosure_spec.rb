@@ -3,28 +3,27 @@
 require 'rails_helper'
 
 RSpec.describe Mutations::AddEnclosure do
-  describe 'addEnclosure(name: "丘", celsius: 28, capacity: 4)' do
-    let!(:service) { stub_service(:add_enclosure, Services::Result.success(:add_enclosure, Object.new)) }
+  describe 'addEnclosure(name:, celsius:, capacity:, climateControlled:)' do
+    subject(:response) do
+      OopZooSchema.execute(
+        'mutation { addEnclosure(name: "温室", celsius: 30, capacity: 2, climateControlled: true) { name capacity climateControlled } }'
+      ).to_h
+    end
 
-    before { OopZooSchema.execute('mutation { addEnclosure(name: "丘", celsius: 28, capacity: 4) { __typename } }') }
+    let!(:zoo) { create(:zoo) }
 
-    it 'name: 丘・celsius: 28・capacity: 4・climate_controlled: false の AddEnclosureCommand を Services::AddEnclosure に渡すこと' do
-      expect(service).to have_received(:new).with(
-        command: an_instance_of(Services::Commands::AddEnclosureCommand)
-                 .and(having_attributes(name: '丘', celsius: 28, capacity: 4, climate_controlled: false))
+    it '定員2・空調付きの温室を返すこと' do
+      expect(response).to eq(
+        'data' => { 'addEnclosure' => { 'name' => '温室', 'capacity' => 2, 'climateControlled' => true } }
       )
     end
-  end
 
-  describe 'addEnclosure(name: "温室", celsius: 30, capacity: 2, climateControlled: true)' do
-    let!(:service) { stub_service(:add_enclosure, Services::Result.success(:add_enclosure, Object.new)) }
+    it '温室を保存し、園の残高から建設費を引くこと' do
+      response
 
-    before { OopZooSchema.execute('mutation { addEnclosure(name: "温室", celsius: 30, capacity: 2, climateControlled: true) { __typename } }') }
-
-    it 'name: 温室・celsius: 30・capacity: 2・climate_controlled: true の AddEnclosureCommand を Services::AddEnclosure に渡すこと' do
-      expect(service).to have_received(:new).with(
-        command: an_instance_of(Services::Commands::AddEnclosureCommand)
-                 .and(having_attributes(name: '温室', celsius: 30, capacity: 2, climate_controlled: true))
+      expect(Enclosure.sole.name).to eq('温室')
+      expect(zoo.reload.balance.yen).to eq(
+        100_000 - Enclosure.construction_cost(capacity: 2, climate_controlled: true).yen
       )
     end
   end

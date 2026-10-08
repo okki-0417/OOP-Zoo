@@ -3,14 +3,24 @@
 require 'rails_helper'
 
 RSpec.describe Mutations::HireKeeper do
-  describe 'hireKeeper(name: "田中", specialties: ["mammal", "bird"])' do
-    let!(:service) { stub_service(:hire_keeper, Services::Result.success(:hire_keeper, Object.new)) }
+  describe 'hireKeeper(name:, specialties:)' do
+    subject(:response) do
+      OopZooSchema.execute('mutation { hireKeeper(name: "田中", specialties: ["mammal", "bird"]) { name specialties { code } } }').to_h
+    end
 
-    before { OopZooSchema.execute('mutation { hireKeeper(name: "田中", specialties: ["mammal", "bird"]) { __typename } }') }
+    let!(:zoo) { create(:zoo) }
 
-    it 'name: 田中・specialties: [mammal, bird] の HireKeeperCommand を Services::HireKeeper に渡すこと' do
-      expect(service).to have_received(:new)
-        .with(command: an_instance_of(Services::Commands::HireKeeperCommand).and(having_attributes(name: '田中', specialties: %w[mammal bird])))
+    it '哺乳類と鳥類を専門とする田中を返すこと' do
+      expect(response).to eq(
+        'data' => { 'hireKeeper' => { 'name' => '田中', 'specialties' => [{ 'code' => 'mammal' }, { 'code' => 'bird' }] } }
+      )
+    end
+
+    it '田中を保存し、園の残高から契約金を引くこと' do
+      response
+
+      expect(Keeper.sole.name).to eq('田中')
+      expect(zoo.reload.balance.yen).to eq(100_000 - Keeper::SIGNING_FEE_YEN)
     end
   end
 end

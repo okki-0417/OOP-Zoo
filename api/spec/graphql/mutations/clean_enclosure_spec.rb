@@ -3,14 +3,25 @@
 require 'rails_helper'
 
 RSpec.describe Mutations::CleanEnclosure do
-  describe 'cleanEnclosure(enclosureId: "e1", keeperId: "k1")' do
-    let!(:service) { stub_service(:clean_enclosure, Services::Result.success(:clean_enclosure, Object.new)) }
+  describe 'cleanEnclosure(enclosureId:, keeperId:)' do
+    subject(:response) do
+      OopZooSchema.execute(
+        %(mutation { cleanEnclosure(enclosureId: "#{hill.id}", keeperId: "#{keeper.id}") { name cleanliness } })
+      ).to_h
+    end
 
-    before { OopZooSchema.execute('mutation { cleanEnclosure(enclosureId: "e1", keeperId: "k1") { __typename } }') }
+    let(:hill) { create(:enclosure, name: '丘').soil(50).tap(&:save!) }
+    let(:keeper) { create(:keeper) }
 
-    it 'enclosure_id: e1・keeper_id: k1 の CleanEnclosureCommand を Services::CleanEnclosure に渡すこと' do
-      expect(service).to have_received(:new)
-        .with(command: an_instance_of(Services::Commands::CleanEnclosureCommand).and(having_attributes(enclosure_id: 'e1', keeper_id: 'k1')))
+    it '清潔度50の丘を清掃して cleanliness=100 で返すこと' do
+      expect(response).to eq('data' => { 'cleanEnclosure' => { 'name' => '丘', 'cleanliness' => 100 } })
+    end
+
+    it '丘の清潔度と飼育員の勤務時間を保存すること' do
+      response
+
+      expect(hill.reload.cleanliness_level).to eq(100)
+      expect(keeper.reload.worked_minutes).to eq(Cleaning::WORK_MINUTES)
     end
   end
 end

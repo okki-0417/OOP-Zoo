@@ -6,8 +6,8 @@ module Mutations
 
     argument :name, String
 
-    def resolve(**)
-      perform(:hire_veterinarian, **)
+    def resolve(name:)
+      Hiring.new(zoo: Zoo.current, employee: Veterinarian.new(name:)).perform
     end
   end
 end

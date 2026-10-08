@@ -227,4 +227,8 @@ module SpeciesCatalog
 
     public_send(symbol)
   end
+
+  def find!(key)
+    find(key) or raise Errors::SpeciesNotFound, "未知の種です: #{key}"
+  end
 end

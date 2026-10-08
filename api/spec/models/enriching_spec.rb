@@ -18,6 +18,12 @@ RSpec.describe Enriching do
         expect(enclosure.enrichment.level).to eq(100)
         expect(keeper.worked_minutes).to eq(30)
       end
+
+      it 'エリアと飼育員を保存し、そのエリアを返すこと' do
+        expect(enriching.perform).to eq(enclosure)
+        expect(enclosure).to be_persisted
+        expect(keeper).to be_persisted
+      end
     end
 
     context '残り勤務時間が 29 分のとき' do

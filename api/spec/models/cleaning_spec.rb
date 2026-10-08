@@ -28,6 +28,12 @@ RSpec.describe Cleaning do
         expect(enclosure.cleanliness.level).to eq(100)
         expect(keeper.worked_minutes).to eq(60)
       end
+
+      it 'エリアと飼育員を保存し、そのエリアを返すこと' do
+        expect(cleaning.perform).to eq(enclosure)
+        expect(enclosure).to be_persisted
+        expect(keeper).to be_persisted
+      end
     end
 
     context 'amount: 30 を渡したとき' do

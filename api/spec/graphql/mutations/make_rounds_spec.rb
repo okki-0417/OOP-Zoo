@@ -3,14 +3,29 @@
 require 'rails_helper'
 
 RSpec.describe Mutations::MakeRounds do
-  describe 'makeRounds(keeperId: "k1")' do
-    let!(:service) { stub_service(:make_rounds, Services::Result.success(:make_rounds, Object.new)) }
+  describe 'makeRounds(keeperId:)' do
+    subject(:response) do
+      OopZooSchema.execute(
+        %(mutation { makeRounds(keeperId: "#{keeper.id}") { keeper { name } reports { enclosure { name } fed { name } } } })
+      ).to_h
+    end
 
-    before { OopZooSchema.execute('mutation { makeRounds(keeperId: "k1") { __typename } }') }
+    let(:hill) { create(:enclosure, name: '丘') }
+    let(:keeper) { create(:keeper, name: '田中', enclosures: [hill]) }
+    let!(:lion) { create(:animal, name: 'レオ', enclosure: hill) }
 
-    it 'keeper_id: k1 の MakeRoundsCommand を Services::MakeRounds に渡すこと' do
-      expect(service).to have_received(:new)
-        .with(command: an_instance_of(Services::Commands::MakeRoundsCommand).and(having_attributes(keeper_id: 'k1')))
+    it '田中と、丘でレオに給餌した報告を返すこと' do
+      expect(response).to eq(
+        'data' => { 'makeRounds' => {
+          'keeper' => { 'name' => '田中' }, 'reports' => [{ 'enclosure' => { 'name' => '丘' }, 'fed' => [{ 'name' => 'レオ' }] }]
+        } }
+      )
+    end
+
+    it 'レオの食事を保存すること' do
+      response
+
+      expect(lion.reload).to be_fed_today
     end
   end
 end

@@ -3,16 +3,36 @@
 require 'rails_helper'
 
 RSpec.describe Mutations::FeedAnimal do
-  describe 'feedAnimal(animalId: "a1", keeperId: "k1", foodCode: "horse_meat")' do
-    let!(:service) { stub_service(:feed_animal, Services::Result.success(:feed_animal, Object.new)) }
+  describe 'feedAnimal(animalId:, keeperId:, foodCode:)' do
+    subject(:response) do
+      OopZooSchema.execute(
+        %(mutation { feedAnimal(animalId: "#{lion.id}", keeperId: "#{keeper.id}", foodCode: "#{food_code}") { name fedToday } })
+      ).to_h
+    end
 
-    before { OopZooSchema.execute('mutation { feedAnimal(animalId: "a1", keeperId: "k1", foodCode: "horse_meat") { __typename } }') }
+    let(:lion) { create(:animal, name: 'レオ') }
+    let(:keeper) { create(:keeper) }
+    let(:food_code) { 'horse_meat' }
 
-    it 'animal_id: a1・keeper_id: k1・food_code: horse_meat の FeedAnimalCommand を Services::FeedAnimal に渡すこと' do
-      expect(service).to have_received(:new).with(
-        command: an_instance_of(Services::Commands::FeedAnimalCommand)
-                 .and(having_attributes(animal_id: 'a1', keeper_id: 'k1', food_code: 'horse_meat'))
-      )
+    context 'foodCode が "horse_meat" のとき' do
+      it 'fedToday=true のレオを返すこと' do
+        expect(response).to eq('data' => { 'feedAnimal' => { 'name' => 'レオ', 'fedToday' => true } })
+      end
+
+      it 'レオの食事と飼育員の勤務時間を保存すること' do
+        response
+
+        expect(lion.reload).to be_fed_today
+        expect(keeper.reload.worked_minutes).to eq(Feeding::WORK_MINUTES)
+      end
+    end
+
+    context 'foodCode が未知の "cake" のとき' do
+      let(:food_code) { 'cake' }
+
+      it "extensions.code を 'FoodNotFound' にすること" do
+        expect(response['errors'].first['extensions']).to eq('code' => 'FoodNotFound')
+      end
     end
   end
 end

@@ -15,7 +15,9 @@ class Feeding
     @keeper.clock_in(WORK_MINUTES)
     @animal.satisfy_hunger(satiety)
     @animal.take_meal(offered_categories)
-    self
+    @animal.save!
+    @keeper.save!
+    @animal
   end
 
   def satiety

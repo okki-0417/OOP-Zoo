@@ -16,6 +16,11 @@ RSpec.describe Treating do
 
         expect(animal).not_to be_sick
       end
+
+      it '動物を保存し、その動物を返すこと' do
+        expect(treating.perform).to eq(animal)
+        expect(animal).to be_persisted
+      end
     end
 
     context '90回鳴いて衰弱しているとき' do

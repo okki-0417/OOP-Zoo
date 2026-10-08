@@ -7,8 +7,8 @@ module Mutations
     argument :enclosure_id, ID
     argument :keeper_id, ID
 
-    def resolve(**)
-      perform(:clean_enclosure, **)
+    def resolve(enclosure_id:, keeper_id:)
+      Cleaning.new(keeper: Keeper.find(keeper_id), enclosure: Enclosure.find(enclosure_id)).perform
     end
   end
 end

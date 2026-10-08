@@ -15,6 +15,19 @@ RSpec.describe Tending do
     it 'frozen であること' do
       expect(tending).to be_frozen
     end
+
+    context 'occupancy を省略したとき' do
+      subject(:tending) { described_class.new(keeper:, enclosure:) }
+
+      let(:keeper) { create(:keeper, specialties: [TaxonClass.bird]) }
+      let(:enclosure) { create(:enclosure) }
+
+      before { create(:animal, enclosure:) }
+
+      it '保存済みの住人から占有を組み立て、鳥類専門の飼育員に哺乳類のいるエリアを #perform で任せると AssignmentNotAllowed を投げること' do
+        expect { tending.perform }.to raise_error(Errors::AssignmentNotAllowed, /哺乳類/)
+      end
+    end
   end
 
   describe '#violation!' do

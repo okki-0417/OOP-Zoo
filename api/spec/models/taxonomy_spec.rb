@@ -190,4 +190,24 @@ RSpec.describe SpeciesCatalog do
       end
     end
   end
+
+  describe '.find!' do
+    subject(:found) { described_class.find!(key) }
+
+    context "既知のキー 'lion' のとき" do
+      let(:key) { 'lion' }
+
+      it 'ライオンの Species を返すこと' do
+        expect(found).to eq(described_class.lion)
+      end
+    end
+
+    context "未知のキー 'dragon' のとき" do
+      let(:key) { 'dragon' }
+
+      it "SpeciesNotFound('未知の種です: dragon') を投げること" do
+        expect { found }.to raise_error(Errors::SpeciesNotFound, '未知の種です: dragon')
+      end
+    end
+  end
 end

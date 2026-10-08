@@ -3,14 +3,19 @@
 require 'rails_helper'
 
 RSpec.describe Mutations::SetAdmissionFee do
-  describe 'setAdmissionFee(fee: 1800)' do
-    let!(:service) { stub_service(:set_admission_fee, Services::Result.success(:set_admission_fee, Object.new)) }
+  describe 'setAdmissionFee(fee:)' do
+    subject(:response) { OopZooSchema.execute('mutation { setAdmissionFee(fee: 1800) { admissionFee } }').to_h }
 
-    before { OopZooSchema.execute('mutation { setAdmissionFee(fee: 1800) { __typename } }') }
+    let!(:zoo) { create(:zoo) }
 
-    it 'fee: 1800 の SetAdmissionFeeCommand を Services::SetAdmissionFee に渡すこと' do
-      expect(service).to have_received(:new)
-        .with(command: an_instance_of(Services::Commands::SetAdmissionFeeCommand).and(having_attributes(fee: 1800)))
+    it 'admissionFee=1800 の園を返すこと' do
+      expect(response).to eq('data' => { 'setAdmissionFee' => { 'admissionFee' => 1800 } })
+    end
+
+    it '園の入園料を ¥1,800 にして保存すること' do
+      response
+
+      expect(zoo.reload.admission_fee).to eq(Money.yen(1_800))
     end
   end
 end

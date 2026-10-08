@@ -4,13 +4,19 @@ require 'rails_helper'
 
 RSpec.describe Mutations::OperateDay do
   describe 'operateDay' do
-    let!(:service) { stub_service(:operate_day, Services::Result.success(:operate_day, Object.new)) }
+    subject(:response) { OopZooSchema.execute('mutation { operateDay { day } }').to_h }
 
-    before { OopZooSchema.execute('mutation { operateDay { __typename } }') }
+    let!(:zoo) { create(:zoo) }
 
-    it 'OperateDayCommand を Services::OperateDay に渡すこと' do
-      expect(service).to have_received(:new)
-        .with(command: an_instance_of(Services::Commands::OperateDayCommand))
+    it 'day=1 の営業記録を返すこと' do
+      expect(response).to eq('data' => { 'operateDay' => { 'day' => 1 } })
+    end
+
+    it '営業記録を保存し、園を1日進めること' do
+      response
+
+      expect(Operating.sole.day).to eq(1)
+      expect(zoo.reload.day).to eq(1)
     end
   end
 end

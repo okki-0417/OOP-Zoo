@@ -47,6 +47,26 @@ RSpec.describe FoodCatalog do
       end
     end
   end
+
+  describe '.find!' do
+    subject(:found) { described_class.find!(key) }
+
+    context "既知のキー 'hay' のとき" do
+      let(:key) { 'hay' }
+
+      it '干し草の Food を返すこと' do
+        expect(found).to eq(described_class.hay)
+      end
+    end
+
+    context "未知のキー 'pizza' のとき" do
+      let(:key) { 'pizza' }
+
+      it "FoodNotFound('未知の餌です: pizza') を投げること" do
+        expect { found }.to raise_error(Errors::FoodNotFound, '未知の餌です: pizza')
+      end
+    end
+  end
 end
 
 RSpec.describe Feeding do
@@ -67,6 +87,12 @@ RSpec.describe Feeding do
 
       it '飼育員の勤務時間を WORK_MINUTES(10分)使うこと' do
         expect { feeding.serve }.to change(keeper, :worked_minutes).by(10)
+      end
+
+      it '動物と飼育員を保存し、その動物を返すこと' do
+        expect(feeding.serve).to eq(animal)
+        expect(animal).to be_persisted
+        expect(keeper).to be_persisted
       end
     end
 

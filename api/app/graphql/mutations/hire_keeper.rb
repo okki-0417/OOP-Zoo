@@ -7,8 +7,9 @@ module Mutations
     argument :name, String
     argument :specialties, [String]
 
-    def resolve(**)
-      perform(:hire_keeper, **)
+    def resolve(name:, specialties:)
+      keeper = Keeper.new(name:, specialties: specialties.map { |key| TaxonClass.new(key) })
+      Hiring.new(zoo: Zoo.current, employee: keeper).perform
     end
   end
 end

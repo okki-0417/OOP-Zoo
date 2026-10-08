@@ -3,6 +3,29 @@
 require 'rails_helper'
 
 RSpec.describe ZooDay do
+  describe '.current' do
+    subject(:current) { described_class.current(random: Random.new(0)) }
+
+    let!(:hill) { create(:enclosure, name: '丘') }
+    let!(:lion) { create(:animal, name: 'レオ', enclosure: hill) }
+    let!(:keeper) { create(:keeper) }
+
+    it '保存済みの園・エリア・動物・飼育員から1日を組み立てること' do
+      expect(current.zoo).to eq(Zoo.current)
+      expect(current.enclosures).to eq([hill])
+      expect(current.on_exhibit).to eq([lion])
+      expect(current.keepers).to eq([keeper])
+    end
+
+    context '前日の営業が保存済みのとき' do
+      before { described_class.current(random: Random.new(0)).run }
+
+      it '#run で day=2 の Operating を返すこと' do
+        expect(current.run.day).to eq(2)
+      end
+    end
+  end
+
   subject(:zoo_day) do
     described_class.new(
       zoo:, occupancies: [Occupancy.new(enclosure: hill, occupants:)], keepers: [keeper], veterinarians: [],
@@ -54,6 +77,11 @@ RSpec.describe ZooDay do
 
         expect(keeper.worked_minutes).to eq(0)
       end
+    end
+
+    it 'Operating・園・エリア・動物・飼育員を保存すること' do
+      expect(operating).to be_persisted
+      expect([zoo, hill, lion, keeper]).to all(be_persisted)
     end
 
     context '体力1で空腹度100の個体がいるとき' do

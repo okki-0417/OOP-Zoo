@@ -3,14 +3,18 @@
 require 'rails_helper'
 
 RSpec.describe Mutations::ExamineAnimal do
-  describe 'examineAnimal(animalId: "a1", veterinarianId: "v1")' do
-    let!(:service) { stub_service(:examine_animal, Services::Result.success(:examine_animal, Object.new)) }
+  describe 'examineAnimal(animalId:, veterinarianId:)' do
+    subject(:response) do
+      OopZooSchema.execute(
+        %(mutation { examineAnimal(animalId: "#{lion.id}", veterinarianId: "#{veterinarian.id}") { animal { name } diagnosis } })
+      ).to_h
+    end
 
-    before { OopZooSchema.execute('mutation { examineAnimal(animalId: "a1", veterinarianId: "v1") { __typename } }') }
+    let(:lion) { create(:animal, name: 'レオ') }
+    let(:veterinarian) { create(:veterinarian) }
 
-    it 'animal_id: a1・veterinarian_id: v1 の ExamineAnimalCommand を Services::ExamineAnimal に渡すこと' do
-      expect(service).to have_received(:new)
-        .with(command: an_instance_of(Services::Commands::ExamineAnimalCommand).and(having_attributes(animal_id: 'a1', veterinarian_id: 'v1')))
+    it '健康なレオと diagnosis HEALTHY を返すこと' do
+      expect(response).to eq('data' => { 'examineAnimal' => { 'animal' => { 'name' => 'レオ' }, 'diagnosis' => 'HEALTHY' } })
     end
   end
 end
