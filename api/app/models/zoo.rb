@@ -6,8 +6,6 @@ class Zoo < ApplicationRecord
   DEFAULT_FUNDS_YEN = 1_000_000
 
   attribute :admission_fee, ValueType.new(Money, load: Money.method(:yen), dump: :yen.to_proc)
-  attribute :revenue, ValueType.new(Money, load: Money.method(:yen), dump: :yen.to_proc),
-            default: -> { Money.zero }
   attribute :balance, ValueType.new(Balance, dump: :yen.to_proc),
             default: -> { Balance.zero }
   attribute :reputation, ValueType.new(Reputation, dump: :value.to_proc),
@@ -18,7 +16,7 @@ class Zoo < ApplicationRecord
   has_many :animals, dependent: :destroy
   has_many :keepers, dependent: :destroy
   has_many :veterinarians, dependent: :destroy
-  has_many :operatings, dependent: :destroy
+  has_many :operatings, -> { order(:day, :id) }, inverse_of: :zoo, dependent: :destroy
 
   validates :name, presence: { message: '動物園名は必須です' }
 
@@ -43,21 +41,18 @@ class Zoo < ApplicationRecord
     reputation.score
   end
 
-  def season
-    Season.on_day(day)
+  def day
+    operatings.size
   end
 
-  def advance_day
-    self.day += 1
-    self
+  def season
+    Season.on_day(day)
   end
 
   def admit_visitors(count)
     raise ArgumentError, '来園者数は0以上でなければなりません' if count.negative?
 
-    self.visitor_count += count
     earned = admission_fee * count
-    self.revenue += earned
     self.balance += earned
     earned
   end

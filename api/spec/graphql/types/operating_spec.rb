@@ -8,11 +8,8 @@ RSpec.describe Types::Operating do
                            amount: Money.yen(4_500))
   end
   let(:operating) do
-    Operating.create!(
-      zoo: create(:zoo), day: 1, visitors: 12, income: Money.yen(24_000), cost: Money.yen(4_500), deaths: 0,
-      balance: Balance.new(119_500), reputation: 50, outbreak: nil,
-      total_visitors: 12, total_revenue: Money.yen(24_000), expenses: [feed]
-    )
+    create(:operating, visitors: 12, income: Money.yen(24_000), cost: Money.yen(4_500), balance: Balance.new(119_500),
+                       expenses: [feed])
   end
 
   describe 'income' do

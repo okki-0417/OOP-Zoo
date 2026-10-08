@@ -35,7 +35,7 @@ RSpec.describe ZooDay do
   subject(:zoo_day) do
     described_class.new(
       zoo:, occupancies: [Occupancy.new(enclosure: hill, occupants:)], keepers: [keeper], veterinarians: [],
-      yesterday:, random: Random.new(0)
+      random: Random.new(0)
     )
   end
 
@@ -44,7 +44,6 @@ RSpec.describe ZooDay do
   let(:lion) { build(:animal, name: 'レオ') }
   let(:occupants) { [lion] }
   let(:keeper) { build(:keeper) }
-  let(:yesterday) { nil }
 
   describe '#run' do
     subject(:operating) { zoo_day.run }
@@ -64,15 +63,6 @@ RSpec.describe ZooDay do
 
       expect(hill.cleanliness_level).to eq(99)
       expect(hill.enrichment.level).to eq(98)
-    end
-
-    context '前日の累計(visitor_count・revenue が実行前の園と同じ)があるとき' do
-      let(:yesterday) { Operating.new(total_visitors: zoo.visitor_count, total_revenue: zoo.revenue) }
-
-      it 'visitors・income が前日の累計との差分(実行後の園の値)になること' do
-        expect(operating.visitors).to eq(zoo.visitor_count)
-        expect(operating.income).to eq(zoo.revenue)
-      end
     end
 
     context '飼育員が100分働いているとき' do

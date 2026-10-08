@@ -109,14 +109,10 @@ RSpec.describe Types::Query do
   end
 
   describe 'operatings' do
-    let(:attributes) do
-      { visitors: 0, income: Money.zero, cost: Money.zero, deaths: 0, balance: Balance.zero,
-        reputation: 50, total_visitors: 0, total_revenue: Money.zero, expenses: [] }
-    end
-    let!(:second) { Operating.create!(zoo:, day: 2, **attributes) }
-    let!(:first) { Operating.create!(zoo:, day: 1, **attributes) }
+    let!(:second) { create(:operating, zoo:, day: 2) }
+    let!(:first) { create(:operating, zoo:, day: 1) }
 
-    before { Operating.create!(zoo: create(:zoo), day: 1, **attributes) }
+    before { create(:operating, day: 1) }
 
     it 'ほかの園の記録を含めず、2日目→1日目の順に保存しても day の昇順 [1日目, 2日目] で返すこと' do
       expect(run_graphql_field('Query.operatings', nil, context:)).to eq([first, second])

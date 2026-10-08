@@ -4,11 +4,8 @@ require 'rails_helper'
 
 RSpec.describe Operating do
   subject(:operating) do
-    described_class.new(
-      zoo: build(:zoo), day:, visitors: 10, income: Money.yen(income), cost: Money.yen(cost), expenses:,
-      deaths: 0, balance: Balance.new(100_000), reputation: 50, outbreak: nil,
-      total_visitors: 10, total_revenue: Money.yen(income)
-    )
+    build(:operating, day:, visitors: 10, income: Money.yen(income), cost: Money.yen(cost), expenses:,
+                      balance: Balance.new(100_000))
   end
 
   let(:day) { 1 }
@@ -55,27 +52,6 @@ RSpec.describe Operating do
       expect(restored.cost).to eq(Money.yen(8_000))
       expect(restored.balance).to eq(Balance.new(100_000))
       expect(restored.expenses).to eq([feed])
-    end
-  end
-
-  describe '.latest' do
-    context '1日目と2日目の記録があるとき' do
-      let(:day) { 2 }
-
-      before do
-        operating.save!
-        operating.dup.tap { |first| first.day = 1 }.save!
-      end
-
-      it '2日目の記録を返すこと' do
-        expect(described_class.latest).to eq(operating)
-      end
-    end
-  end
-
-  describe '.none_yet' do
-    it '累計来園者 0人・累計収入 ¥0 の記録を返すこと' do
-      expect(described_class.none_yet).to have_attributes(total_visitors: 0, total_revenue: Money.zero)
     end
   end
 end

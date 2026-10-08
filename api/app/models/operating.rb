@@ -8,17 +8,8 @@ class Operating < ApplicationRecord
 
   attribute :income, MONEY
   attribute :cost, MONEY
-  attribute :total_revenue, MONEY
   attribute :balance, ValueType.new(Balance, dump: :yen.to_proc)
   attribute :casualties, default: -> { [] }
-
-  def self.latest
-    order(:day, :id).last
-  end
-
-  def self.none_yet
-    new(total_visitors: 0, total_revenue: Money.zero)
-  end
 
   def net_income
     Balance.new(income.yen - cost.yen)

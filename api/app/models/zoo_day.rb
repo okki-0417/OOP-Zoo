@@ -9,17 +9,15 @@ class ZooDay
       occupancies: Occupancy.of_zoo(zoo),
       keepers: zoo.keepers.order(:id).to_a,
       veterinarians: zoo.veterinarians.order(:id).to_a,
-      yesterday: zoo.operatings.latest,
       random:
     )
   end
 
-  def initialize(zoo:, occupancies:, keepers:, veterinarians:, yesterday: nil, random: Random.new)
+  def initialize(zoo:, occupancies:, keepers:, veterinarians:, random: Random.new)
     @zoo           = zoo
     @occupancies   = occupancies
     @keepers       = keepers
     @veterinarians = veterinarians
-    @yesterday     = yesterday || Operating.none_yet
     @random        = random
     @dead          = []
     @afflicted     = nil
@@ -27,7 +25,7 @@ class ZooDay
 
   def run
     today_visitors = VisitorAttraction.new(on_exhibit:, zoo: @zoo).expected_visitors
-    @zoo.admit_visitors(today_visitors)
+    income = @zoo.admit_visitors(today_visitors)
 
     operating_cost = OperatingCost.new(enclosures:, staff: @keepers + @veterinarians,
                                        species: on_exhibit.map(&:species))
@@ -44,8 +42,7 @@ class ZooDay
     )
 
     @keepers.each(&:end_shift)
-    @zoo.advance_day
-    record(operating_cost).tap { |operating| persist(operating) }
+    record(visitors: today_visitors, income:, operating_cost:).tap { |operating| persist(operating) }
   end
 
   def enclosures
@@ -100,20 +97,17 @@ class ZooDay
     @zoo.save!
   end
 
-  def record(operating_cost)
-    Operating.new(
-      zoo: @zoo,
-      day: @zoo.day,
-      visitors: @zoo.visitor_count - @yesterday.total_visitors,
-      income: Money.yen(@zoo.revenue.yen - @yesterday.total_revenue.yen),
+  def record(visitors:, income:, operating_cost:)
+    @zoo.operatings.build(
+      day: @zoo.day + 1,
+      visitors:,
+      income:,
       cost: operating_cost.amount,
       expenses: operating_cost.expenses,
       deaths: @dead.size,
       balance: @zoo.balance,
       reputation: @zoo.reputation_score,
       outbreak: @afflicted&.name,
-      total_visitors: @zoo.visitor_count,
-      total_revenue: @zoo.revenue,
       casualties: @dead.dup
     )
   end

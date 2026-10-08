@@ -25,7 +25,7 @@ RSpec.describe Operating::Expense do
 
   describe '#valid?' do
     subject(:expense) do
-      described_class.new(operating: Operating.none_yet, category: Operating::Expense::Category.feed, subject: target, quantity:, amount:)
+      described_class.new(operating: build(:operating), category: Operating::Expense::Category.feed, subject: target, quantity:, amount:)
     end
 
     context '対象・数量がそろっているとき' do

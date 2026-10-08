@@ -8,14 +8,18 @@ RSpec.describe Zoo do
   let(:funds) { Money.zero }
 
   describe '#day' do
-    it '作った直後は 0 を返すこと' do
-      expect(zoo.day).to eq(0)
+    context '作った直後のとき' do
+      it '0 を返すこと' do
+        expect(zoo.day).to eq(0)
+      end
     end
-  end
 
-  describe '#advance_day' do
-    it 'day を 1 進めること' do
-      expect { zoo.advance_day }.to change(zoo, :day).by(1)
+    context '2日営業したとき' do
+      before { 2.times { |elapsed| zoo.operatings.build(day: elapsed + 1) } }
+
+      it '営業の件数 2 を返すこと' do
+        expect(zoo.day).to eq(2)
+      end
     end
   end
 
@@ -27,7 +31,7 @@ RSpec.describe Zoo do
     end
 
     context '101日目のとき' do
-      before { 101.times { zoo.advance_day } }
+      before { 101.times { |elapsed| zoo.operatings.build(day: elapsed + 1) } }
 
       it '夏を返すこと' do
         expect(zoo.season.label).to eq('夏')
@@ -57,13 +61,6 @@ RSpec.describe Zoo do
 
       it '50人を受け入れると、その回の収入 ¥100,000 を返すこと' do
         expect(zoo.admit_visitors(50)).to eq(Money.yen(100_000))
-      end
-
-      it '50人を受け入れると、累計の visitor_count が 150・revenue が ¥300,000 になること' do
-        zoo.admit_visitors(50)
-
-        expect(zoo.visitor_count).to eq(150)
-        expect(zoo.revenue).to eq(Money.yen(300_000))
       end
     end
   end
@@ -145,14 +142,12 @@ RSpec.describe Zoo do
     subject(:restored) { described_class.find(zoo.id) }
 
     before do
-      zoo.gain_reputation(10).admit_visitors(50)
+      zoo.gain_reputation(10)
       zoo.save!
     end
 
-    it '評判+10・来園者50人を保存すると、再読込後も評判60・収入¥100,000・来園者50人であること' do
+    it '評判+10を保存すると、再読込後も評判60であること' do
       expect(restored.reputation_score).to eq(60)
-      expect(restored.revenue).to eq(Money.yen(100_000))
-      expect(restored.visitor_count).to eq(50)
     end
   end
 

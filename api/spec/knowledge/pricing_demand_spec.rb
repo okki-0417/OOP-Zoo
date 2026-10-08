@@ -60,9 +60,7 @@ RSpec.describe '入園料と需要' do
       demand = VisitorAttraction.new(
         on_exhibit: [build(:animal, species: catalog.lion, name: 'レオ')], zoo:
       ).expected_visitors
-      zoo.admit_visitors(1_000_000)
-
-      expect(zoo.visitor_count).to be <= demand
+      expect(zoo.admit_visitors(1_000_000)).to be <= zoo.admission_fee * demand
     end
   end
 

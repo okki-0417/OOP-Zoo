@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_000017) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_000018) do
   create_table "animal_immunities", force: :cascade do |t|
     t.integer "animal_id", null: false
     t.string "illness", null: false
@@ -130,8 +130,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000017) do
     t.integer "balance", null: false
     t.integer "reputation", null: false
     t.string "outbreak"
-    t.integer "total_visitors", null: false
-    t.integer "total_revenue", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "zoo_id", null: false
@@ -164,11 +162,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000017) do
   create_table "zoos", force: :cascade do |t|
     t.string "name", null: false
     t.integer "admission_fee", null: false
-    t.integer "revenue", default: 0, null: false
-    t.integer "visitor_count", default: 0, null: false
     t.integer "balance", default: 0, null: false
     t.float "reputation", null: false
-    t.integer "day", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
