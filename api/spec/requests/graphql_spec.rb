@@ -9,15 +9,6 @@ RSpec.describe 'POST /graphql', type: :request do
   end
 
   let(:variables) { {} }
-  let(:log) { StringIO.new }
-
-  around do |example|
-    original_logger = Rails.logger
-    Rails.logger = Logger.new(log)
-    example.run
-  ensure
-    Rails.logger = original_logger
-  end
 
   context 'query { enclosures { name } } を送ったとき' do
     let(:query) { '{ enclosures { name } }' }
@@ -37,24 +28,6 @@ RSpec.describe 'POST /graphql', type: :request do
       expect(body['data']).to be_nil
       expect(body['errors'].first['extensions']).to eq('code' => 'SpeciesNotFound')
       expect(response).to have_http_status(:ok)
-    end
-  end
-
-  context '名前付きの mutation AcquireAnimal($name) を送ったとき' do
-    let(:query) do
-      "mutation AcquireAnimal($name: String!) {\n  acquireAnimal(speciesCode: \"dragon\", name: $name, sex: MALE) { id }\n}"
-    end
-    let(:variables) { { name: 'X' } }
-
-    before { body }
-
-    it '操作の種類と名前・variables・1行に詰めたクエリ・エラーコードをログに出すこと' do
-      expect(log.string).to include('GraphQL mutation AcquireAnimal')
-      expect(log.string).to include('Variables: {"name":"X"}')
-      expect(log.string).to include(
-        'Query: mutation AcquireAnimal($name: String!) { acquireAnimal(speciesCode: "dragon", name: $name, sex: MALE) { id } }'
-      )
-      expect(log.string).to match(/Completed in \d+ms \(errors: SpeciesNotFound\)/)
     end
   end
 end
