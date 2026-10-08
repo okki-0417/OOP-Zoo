@@ -387,3 +387,67 @@ a.card:hover {
 .slide-leave-active {
   transition: all 0.2s ease;
 }
+
+.page-body {
+  min-height: 0;
+  padding-right: 12px;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+  padding-right: 12px;
+}
+
+.split:has(> .sheet) {
+  grid-template-columns: minmax(0, 1fr) min(400px, 55%);
+  padding-right: 0;
+}
+
+.split > :first-child {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+}
+
+.scroll-box {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.fold {
+  border-radius: 12px;
+  background: var(--surface-sunk);
+}
+
+.fold > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.fold > summary::-webkit-details-marker {
+  display: none;
+}
+
+.fold > summary::before {
+  content: "▸";
+  color: var(--ink-soft);
+  transition: rotate 0.15s ease;
+}
+
+.fold[open] > summary::before {
+  rotate: 90deg;
+}
+
+.fold > :not(summary) {
+  margin: 0 12px 12px;
+}

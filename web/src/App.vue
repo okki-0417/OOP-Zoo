@@ -24,24 +24,18 @@ const { signedOut } = useSession();
 <style scoped>
 .layout {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  min-height: 100cqh;
+  grid-template-columns: 64px minmax(0, 1fr);
+  height: 100cqh;
 }
 
 .content {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 16px 40px 64px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  padding: 0 0 12px 16px;
 }
 
-@container screen (width < 900px) {
-  .layout {
-    grid-template-columns: 64px minmax(0, 1fr);
-  }
-
-  .content {
-    padding: 8px 20px 48px;
-  }
+.content :deep(.page-header) {
+  padding-right: 12px;
 }
 </style>

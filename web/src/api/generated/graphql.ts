@@ -78,17 +78,44 @@ export type StressorCause =
   | 'MATERNAL_SEPARATION'
   | 'SOCIAL_CONFLICT';
 
+export type ZooStatusQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ZooStatusQuery = { zoo: { day: number, balance: number, reputation: number } };
+
 export type AlertsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type AlertsQuery = { alerts: Array<{ severity: AlertSeverity, kind: AlertKind, subjectType: AlertSubject, subjectId: string | null, subjectName: string, message: string }> };
+
+export type SpeciesCatalogQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SpeciesCatalogQuery = { species: Array<{ code: string, nameJa: string, conservationLabel: string, taxonClass: { label: string } }> };
+
+export type AcquireAnimalMutationVariables = Exact<{
+  speciesCode: string;
+  name: string;
+  sex: Sex;
+}>;
+
+
+export type AcquireAnimalMutation = { acquireAnimal: { id: string, name: string | null, species: { nameJa: string } } };
 
 export type AnimalQueryVariables = Exact<{
   id: string | number;
 }>;
 
 
-export type AnimalQuery = { animal: { id: string, name: string | null, alive: boolean, sex: string, lifeStage: string, ageInDays: number, causeOfDeath: string | null, health: number, maxHealth: number, hunger: number, nutrition: number, stress: number, daysUntilStarving: number, mealsToday: Array<FoodCategory>, dietCategories: Array<FoodCategory>, expecting: boolean, gestationDays: number | null, gestationPeriodDays: number | null, readyToDeliver: boolean, starving: boolean, weak: boolean, illness: string | null, contagious: boolean, malnourished: boolean, stressed: boolean, severelyStressed: boolean, stressors: Array<{ cause: StressorCause, amount: number }>, parents: Array<{ id: string }>, species: { nameJa: string, diet: string, conservationCode: string, conservationLabel: string, taxonClass: { label: string } }, enclosure: { id: string, name: string } | null, prognosis: { outlook: Outlook, daysToDeath: number | null, causeOfDeath: string | null } | null } | null, keepers: Array<{ id: string, name: string, remainingMinutes: number }>, veterinarians: Array<{ id: string, name: string }>, foods: Array<{ code: string, nameJa: string, category: FoodCategory, satiety: number }>, enclosures: Array<{ id: string, name: string, capacity: number, occupants: Array<{ id: string }> }> };
+export type AnimalQuery = { animal: { id: string, name: string | null, alive: boolean, sex: string, lifeStage: string, ageInDays: number, causeOfDeath: string | null, health: number, maxHealth: number, hunger: number, nutrition: number, stress: number, daysUntilStarving: number, mealsToday: Array<FoodCategory>, dietCategories: Array<FoodCategory>, expecting: boolean, gestationDays: number | null, gestationPeriodDays: number | null, readyToDeliver: boolean, starving: boolean, weak: boolean, illness: string | null, contagious: boolean, malnourished: boolean, stressed: boolean, severelyStressed: boolean, stressors: Array<{ cause: StressorCause, amount: number }>, parents: Array<{ id: string }>, species: { nameJa: string, diet: string, conservationCode: string, conservationLabel: string, taxonClass: { label: string } }, enclosure: { id: string, name: string } | null, prognosis: { outlook: Outlook, daysToDeath: number | null, causeOfDeath: string | null } | null } | null, keepers: Array<{ id: string, name: string, remainingMinutes: number }>, veterinarians: Array<{ id: string, name: string }>, foods: Array<{ code: string, nameJa: string, category: FoodCategory, satiety: number }>, enclosures: Array<{ id: string, name: string, capacity: number, celsius: number, occupants: Array<{ id: string }>, occupancy: { full: boolean } }> };
+
+export type HouseAnimalMutationVariables = Exact<{
+  enclosureId: string | number;
+  animalId: string | number;
+}>;
+
+
+export type HouseAnimalMutation = { houseAnimal: { name: string } };
 
 export type FeedAnimalMutationVariables = Exact<{
   animalId: string | number;
@@ -134,24 +161,7 @@ export type RenameAnimalMutation = { renameAnimal: { name: string | null } };
 export type AnimalsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type AnimalsQuery = { animals: Array<{ id: string, name: string | null, alive: boolean, health: number, maxHealth: number, ailing: boolean, hungry: boolean, fedToday: boolean, species: { nameJa: string }, enclosure: { id: string, name: string } | null }>, enclosures: Array<{ id: string, name: string, celsius: number, capacity: number, occupants: Array<{ id: string }>, occupancy: { full: boolean } }>, species: Array<{ code: string, nameJa: string, conservationLabel: string, taxonClass: { label: string } }> };
-
-export type HouseAnimalMutationVariables = Exact<{
-  enclosureId: string | number;
-  animalId: string | number;
-}>;
-
-
-export type HouseAnimalMutation = { houseAnimal: { name: string } };
-
-export type AcquireAnimalMutationVariables = Exact<{
-  speciesCode: string;
-  name: string;
-  sex: Sex;
-}>;
-
-
-export type AcquireAnimalMutation = { acquireAnimal: { name: string | null, species: { nameJa: string } } };
+export type AnimalsQuery = { animals: Array<{ id: string, name: string | null, alive: boolean, health: number, maxHealth: number, ailing: boolean, hungry: boolean, fedToday: boolean, species: { nameJa: string }, enclosure: { id: string, name: string } | null }> };
 
 export type EnclosureQueryVariables = Exact<{
   id: string | number;
@@ -302,6 +312,15 @@ export class TypedDocumentString<TResult, TVariables>
   }
 }
 
+export const ZooStatusDocument = new TypedDocumentString(`
+    query ZooStatus {
+  zoo {
+    day
+    balance
+    reputation
+  }
+}
+    `) as unknown as TypedDocumentString<ZooStatusQuery, ZooStatusQueryVariables>;
 export const AlertsDocument = new TypedDocumentString(`
     query Alerts {
   alerts {
@@ -314,6 +333,29 @@ export const AlertsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<AlertsQuery, AlertsQueryVariables>;
+export const SpeciesCatalogDocument = new TypedDocumentString(`
+    query SpeciesCatalog {
+  species {
+    code
+    nameJa
+    conservationLabel
+    taxonClass {
+      label
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<SpeciesCatalogQuery, SpeciesCatalogQueryVariables>;
+export const AcquireAnimalDocument = new TypedDocumentString(`
+    mutation AcquireAnimal($speciesCode: String!, $name: String!, $sex: Sex!) {
+  acquireAnimal(speciesCode: $speciesCode, name: $name, sex: $sex) {
+    id
+    name
+    species {
+      nameJa
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<AcquireAnimalMutation, AcquireAnimalMutationVariables>;
 export const AnimalDocument = new TypedDocumentString(`
     query Animal($id: ID!) {
   animal(id: $id) {
@@ -388,12 +430,23 @@ export const AnimalDocument = new TypedDocumentString(`
     id
     name
     capacity
+    celsius
     occupants {
       id
+    }
+    occupancy {
+      full
     }
   }
 }
     `) as unknown as TypedDocumentString<AnimalQuery, AnimalQueryVariables>;
+export const HouseAnimalDocument = new TypedDocumentString(`
+    mutation HouseAnimal($enclosureId: ID!, $animalId: ID!) {
+  houseAnimal(enclosureId: $enclosureId, animalId: $animalId) {
+    name
+  }
+}
+    `) as unknown as TypedDocumentString<HouseAnimalMutation, HouseAnimalMutationVariables>;
 export const FeedAnimalDocument = new TypedDocumentString(`
     mutation FeedAnimal($animalId: ID!, $keeperId: ID!, $foodCode: String!) {
   feedAnimal(animalId: $animalId, keeperId: $keeperId, foodCode: $foodCode) {
@@ -450,45 +503,8 @@ export const AnimalsDocument = new TypedDocumentString(`
       name
     }
   }
-  enclosures {
-    id
-    name
-    celsius
-    capacity
-    occupants {
-      id
-    }
-    occupancy {
-      full
-    }
-  }
-  species {
-    code
-    nameJa
-    conservationLabel
-    taxonClass {
-      label
-    }
-  }
 }
     `) as unknown as TypedDocumentString<AnimalsQuery, AnimalsQueryVariables>;
-export const HouseAnimalDocument = new TypedDocumentString(`
-    mutation HouseAnimal($enclosureId: ID!, $animalId: ID!) {
-  houseAnimal(enclosureId: $enclosureId, animalId: $animalId) {
-    name
-  }
-}
-    `) as unknown as TypedDocumentString<HouseAnimalMutation, HouseAnimalMutationVariables>;
-export const AcquireAnimalDocument = new TypedDocumentString(`
-    mutation AcquireAnimal($speciesCode: String!, $name: String!, $sex: Sex!) {
-  acquireAnimal(speciesCode: $speciesCode, name: $name, sex: $sex) {
-    name
-    species {
-      nameJa
-    }
-  }
-}
-    `) as unknown as TypedDocumentString<AcquireAnimalMutation, AcquireAnimalMutationVariables>;
 export const EnclosureDocument = new TypedDocumentString(`
     query Enclosure($id: ID!) {
   enclosure(id: $id) {

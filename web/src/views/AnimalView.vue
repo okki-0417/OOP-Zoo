@@ -3,8 +3,8 @@ import { computed, ref, watch } from "vue";
 import { graphql } from "../api/generated";
 import type { Diagnosis, FoodCategory, Outlook } from "../api/generated/graphql";
 import MeterBar from "../components/MeterBar.vue";
-import PageHeader from "../components/PageHeader.vue";
 import QueryState from "../components/QueryState.vue";
+import SideSheet from "../components/SideSheet.vue";
 import { useMutation } from "../composables/useMutation";
 import { useQuery } from "../composables/useQuery";
 import { emojiOf } from "../lib/emoji";
@@ -86,9 +86,21 @@ const AnimalQuery = graphql(`
       id
       name
       capacity
+      celsius
       occupants {
         id
       }
+      occupancy {
+        full
+      }
+    }
+  }
+`);
+
+const HouseAnimalMutation = graphql(`
+  mutation HouseAnimal($enclosureId: ID!, $animalId: ID!) {
+    houseAnimal(enclosureId: $enclosureId, animalId: $animalId) {
+      name
     }
   }
 `);
@@ -160,6 +172,14 @@ const veterinarianId = ref("");
 const enclosureId = ref("");
 const newName = ref("");
 
+type Tab = "status" | "care" | "facts";
+const tabs: { key: Tab; label: string }[] = [
+  { key: "status", label: "状態" },
+  { key: "care", label: "世話" },
+  { key: "facts", label: "くわしく" },
+];
+const tab = ref<Tab>("status");
+
 watch(
   () => query.data.value?.keepers,
   (list) => (keeperId.value ||= list?.[0]?.id ?? ""),
@@ -179,7 +199,9 @@ watch(
 );
 
 const transferTargets = computed(() =>
-  (query.data.value?.enclosures ?? []).filter((e) => e.id !== animal.value?.enclosure?.id),
+  (query.data.value?.enclosures ?? []).filter(
+    (e) => e.id !== animal.value?.enclosure?.id && !e.occupancy.full,
+  ),
 );
 
 const diagnosis: Record<Diagnosis, string> = {
@@ -221,6 +243,14 @@ async function transfer() {
   );
 }
 
+async function house() {
+  await mutate(
+    HouseAnimalMutation,
+    { animalId: props.id, enclosureId: enclosureId.value },
+    ({ houseAnimal }) => `${animal.value?.name ?? ""}を${houseAnimal.name}に収容しました`,
+  );
+}
+
 async function rename() {
   const renamed = await mutate(
     RenameAnimalMutation,
@@ -232,66 +262,191 @@ async function rename() {
 </script>
 
 <template>
-  <PageHeader :title="animal?.name ?? 'どうぶつ'" :crumbs="[{ label: '動物', to: '/animals' }]" />
-
-  <QueryState
-    :loading="query.loading.value"
-    :error="query.error.value"
-    :empty="!animal"
-    @retry="query.reload"
-  >
-    <div v-if="animal" class="columns">
-      <div>
-        <h2 class="section-title">プロフィール</h2>
-        <section class="card profile" :class="{ dead: !animal.alive }">
-          <div class="portrait">
-            {{
-              animal.alive ? emojiOf(animal.species.nameJa, animal.species.taxonClass.label) : "🪦"
-            }}
-          </div>
-          <div class="stack">
+  <SideSheet :title="animal?.name ?? 'どうぶつ'" close-to="/animals">
+    <QueryState
+      :loading="query.loading.value"
+      :error="query.error.value"
+      :empty="!animal"
+      @retry="query.reload"
+    >
+      <template v-if="animal">
+        <section class="profile" :class="{ dead: !animal.alive }">
+          <span class="portrait">{{
+            animal.alive ? emojiOf(animal.species.nameJa, animal.species.taxonClass.label) : "🪦"
+          }}</span>
+          <div class="grow">
             <p class="species">{{ animal.species.nameJa }}</p>
             <div class="tags">
               <span class="badge">{{ animal.sex }}</span>
               <span class="badge">{{ animal.lifeStage }}・{{ animal.ageInDays }}日</span>
-              <span class="badge"
-                >{{ animal.species.taxonClass.label }}・{{ animal.species.diet }}</span
-              >
-              <span class="badge badge-warn">
-                {{ animal.species.conservationCode }} {{ animal.species.conservationLabel }}
-              </span>
+              <span v-if="animal.parents.length > 0" class="badge badge-good">園生まれ</span>
             </div>
           </div>
+          <RouterLink
+            v-if="animal.enclosure"
+            :to="`/enclosures/${animal.enclosure.id}`"
+            class="home"
+          >
+            🌳 {{ animal.enclosure.name }} ›
+          </RouterLink>
         </section>
 
-        <section v-if="!animal.alive" class="card memorial">
-          <p>🕊️ {{ animal.causeOfDeath ?? "不明" }}により亡くなりました</p>
-        </section>
+        <p v-if="!animal.alive" class="memorial">
+          🕊️ {{ animal.causeOfDeath ?? "不明" }}により亡くなりました
+        </p>
 
-        <section v-else class="card stack">
-          <MeterBar label="体力" :value="animal.health" :max="animal.maxHealth" />
-          <MeterBar label="空腹" :value="animal.hunger" :max="100" invert />
-          <MeterBar label="栄養" :value="animal.nutrition" :max="100" />
-          <MeterBar label="ストレス" :value="animal.stress" :max="100" invert />
-          <ul v-if="animal.stressors.length > 0" class="stressors">
-            <li v-for="stressor in animal.stressors" :key="stressor.cause" class="row">
-              <span class="badge badge-warn">{{ stressorLabel(stressor.cause) }}</span>
-              <span class="muted">+{{ stressor.amount }}/日</span>
-              <span class="grow" />
-              <RouterLink
-                v-if="remedyOf(stressor.cause, animal).to !== `/animals/${animal.id}`"
-                :to="remedyOf(stressor.cause, animal).to"
-                class="remedy"
+        <template v-else>
+          <div class="segmented" role="tablist">
+            <button
+              v-for="t in tabs"
+              :key="t.key"
+              type="button"
+              role="tab"
+              :aria-pressed="tab === t.key"
+              @click="tab = t.key"
+            >
+              {{ t.label }}
+            </button>
+          </div>
+
+          <template v-if="tab === 'status'">
+            <div class="meters">
+              <MeterBar label="体力" :value="animal.health" :max="animal.maxHealth" />
+              <MeterBar label="空腹" :value="animal.hunger" :max="100" invert />
+              <MeterBar label="栄養" :value="animal.nutrition" :max="100" />
+              <MeterBar label="ストレス" :value="animal.stress" :max="100" invert />
+            </div>
+
+            <div class="tags">
+              <button
+                v-if="!animal.enclosure"
+                type="button"
+                class="badge badge-warn"
+                @click="tab = 'care'"
               >
-                {{ remedyOf(stressor.cause, animal).label }} ›
-              </RouterLink>
-              <span v-else class="muted">{{ remedyOf(stressor.cause, animal).label }}</span>
-            </li>
-          </ul>
-          <p v-else-if="animal.stress > 0 && animal.enclosure" class="muted stressors">
-            ストレスの原因はありません。毎日少しずつ下がります
-          </p>
-          <dl class="facts">
+                未収容 › 収容する
+              </button>
+              <span v-if="animal.starving" class="badge badge-bad">飢えている</span>
+              <span v-if="animal.weak" class="badge badge-bad">衰弱</span>
+              <span v-if="animal.illness" class="badge badge-bad"
+                >🦠 {{ animal.illness }}{{ animal.contagious ? "(感染性)" : "" }}</span
+              >
+              <span v-if="animal.malnourished" class="badge badge-bad">栄養失調</span>
+              <span v-if="animal.severelyStressed" class="badge badge-bad">強いストレス</span>
+              <span v-else-if="animal.stressed" class="badge badge-warn">ストレス</span>
+              <span
+                v-if="animal.prognosis"
+                class="badge"
+                :class="outlooks[animal.prognosis.outlook].tone"
+              >
+                予後 {{ outlooks[animal.prognosis.outlook].label }}
+              </span>
+            </div>
+
+            <p v-if="animal.prognosis?.daysToDeath" class="warning">
+              このままだと {{ animal.prognosis.daysToDeath }} 日以内に{{
+                animal.prognosis.causeOfDeath
+              }}する見込み
+            </p>
+
+            <details v-if="animal.stressors.length > 0" class="fold">
+              <summary>
+                <span class="grow">😣 ストレスの原因</span>
+                <span class="badge badge-warn">{{ animal.stressors.length }}</span>
+              </summary>
+              <ul class="stressors">
+                <li v-for="stressor in animal.stressors" :key="stressor.cause" class="row">
+                  <span class="grow">{{ stressorLabel(stressor.cause) }}</span>
+                  <span class="muted">+{{ stressor.amount }}/日</span>
+                  <RouterLink
+                    v-if="remedyOf(stressor.cause, animal).to !== `/animals/${animal.id}`"
+                    :to="remedyOf(stressor.cause, animal).to"
+                    class="remedy"
+                  >
+                    {{ remedyOf(stressor.cause, animal).label }} ›
+                  </RouterLink>
+                  <span v-else class="muted">{{ remedyOf(stressor.cause, animal).label }}</span>
+                </li>
+              </ul>
+            </details>
+          </template>
+
+          <div v-else-if="tab === 'care'" class="care">
+            <form v-if="!animal.enclosure" class="action" @submit.prevent="house">
+              <span class="verb">🌳 収容</span>
+              <select v-model="enclosureId" class="inline-select grow" required aria-label="収容先">
+                <option value="" disabled>収容先…</option>
+                <option v-for="e in transferTargets" :key="e.id" :value="e.id">
+                  {{ e.name }}（{{ e.occupants.length }}/{{ e.capacity }}・{{ e.celsius }}℃）
+                </option>
+              </select>
+              <button class="btn btn-primary btn-small" :disabled="busy || !enclosureId">
+                収容
+              </button>
+            </form>
+
+            <form class="action" @submit.prevent="feed">
+              <span class="verb">🍖 ごはん</span>
+              <select v-model="keeperId" class="inline-select grow" required aria-label="飼育員">
+                <option v-for="k in query.data.value?.keepers" :key="k.id" :value="k.id">
+                  {{ k.name }}（{{ k.remainingMinutes }}分）
+                </option>
+              </select>
+              <select v-model="foodCode" class="inline-select grow" required aria-label="餌">
+                <option v-for="f in edibleFoods" :key="f.code" :value="f.code">
+                  {{ f.nameJa }}（+{{ f.satiety }}）
+                </option>
+              </select>
+              <button class="btn btn-primary btn-small" :disabled="busy || !keeperId">
+                あげる
+              </button>
+            </form>
+
+            <div class="action">
+              <span class="verb">🩺 診療</span>
+              <select v-model="veterinarianId" class="inline-select grow" aria-label="獣医">
+                <option v-for="v in query.data.value?.veterinarians" :key="v.id" :value="v.id">
+                  {{ v.name }}
+                </option>
+              </select>
+              <button class="btn btn-small" :disabled="busy || !veterinarianId" @click="examine">
+                診察
+              </button>
+              <button class="btn btn-small" :disabled="busy || !veterinarianId" @click="treat">
+                治療
+              </button>
+            </div>
+
+            <form v-if="animal.enclosure" class="action" @submit.prevent="transfer">
+              <span class="verb">🚚 移送</span>
+              <select v-model="enclosureId" class="inline-select grow" required aria-label="移送先">
+                <option value="" disabled>移送先…</option>
+                <option v-for="e in transferTargets" :key="e.id" :value="e.id">
+                  {{ e.name }}（{{ e.occupants.length }}/{{ e.capacity }}）
+                </option>
+              </select>
+              <button class="btn btn-small" :disabled="busy || !enclosureId">移送</button>
+            </form>
+
+            <form class="action" @submit.prevent="rename">
+              <span class="verb">✏️ 改名</span>
+              <input
+                v-model.trim="newName"
+                class="inline-select grow"
+                required
+                maxlength="20"
+                placeholder="新しい名前"
+                aria-label="新しい名前"
+              />
+              <button class="btn btn-small" :disabled="busy || !newName">改名</button>
+            </form>
+          </div>
+
+          <dl v-else class="facts">
+            <dt>分類</dt>
+            <dd>{{ animal.species.taxonClass.label }}・{{ animal.species.diet }}</dd>
+            <dt>保全</dt>
+            <dd>{{ animal.species.conservationCode }} {{ animal.species.conservationLabel }}</dd>
             <dt>飢餓まで</dt>
             <dd>給餌が途絶えると {{ animal.daysUntilStarving }} 日</dd>
             <dt>今日の食事</dt>
@@ -309,129 +464,123 @@ async function rename() {
                 <span v-if="animal.readyToDeliver" class="badge badge-good">出産の時期</span>
               </dd>
             </template>
+            <dt>予後</dt>
+            <dd>
+              {{
+                !animal.prognosis
+                  ? "収容されていないため、日々の経過も予後もありません"
+                  : animal.prognosis.daysToDeath
+                    ? `${animal.prognosis.daysToDeath} 日以内に${animal.prognosis.causeOfDeath}する見込み`
+                    : "30日以内に命に関わる見込みはありません"
+              }}
+            </dd>
           </dl>
-          <div class="tags">
-            <span v-if="animal.starving" class="badge badge-bad">飢えている</span>
-            <span v-if="animal.weak" class="badge badge-bad">衰弱</span>
-            <span v-if="animal.illness" class="badge badge-bad"
-              >🦠 {{ animal.illness }}{{ animal.contagious ? "(感染性)" : "" }}</span
-            >
-            <span v-if="animal.malnourished" class="badge badge-bad">栄養失調</span>
-            <span v-if="animal.severelyStressed" class="badge badge-bad">強いストレス</span>
-            <span v-else-if="animal.stressed" class="badge badge-warn">ストレス</span>
-            <span v-if="animal.parents.length > 0" class="badge badge-good">園生まれ</span>
-          </div>
-          <RouterLink
-            v-if="animal.enclosure"
-            :to="`/enclosures/${animal.enclosure.id}`"
-            class="row home"
-          >
-            <span>🌳</span>
-            <span class="grow">{{ animal.enclosure.name }}</span>
-            <span class="muted">›</span>
-          </RouterLink>
-          <p v-else class="muted">どのエリアにも収容されていません</p>
-        </section>
-
-        <template v-if="animal.alive">
-          <h2 class="section-title">予後</h2>
-          <section class="card stack">
-            <template v-if="animal.prognosis">
-              <div class="row">
-                <span class="badge" :class="outlooks[animal.prognosis.outlook].tone">
-                  {{ outlooks[animal.prognosis.outlook].label }}
-                </span>
-                <span class="grow">
-                  {{
-                    animal.prognosis.daysToDeath
-                      ? `このままだと ${animal.prognosis.daysToDeath} 日以内に${animal.prognosis.causeOfDeath}する見込み`
-                      : "30日以内に命に関わる見込みはありません"
-                  }}
-                </span>
-              </div>
-              <p class="muted">給餌を続け、治療や環境の改善をしなかった場合の見通しです</p>
-            </template>
-            <p v-else class="muted">収容されていないため、日々の経過も予後もありません</p>
-          </section>
         </template>
-      </div>
-
-      <div v-if="animal.alive">
-        <h2 class="section-title">ごはん</h2>
-        <form class="card stack" @submit.prevent="feed">
-          <div class="row">
-            <label class="field grow">
-              飼育員
-              <select v-model="keeperId" required>
-                <option v-for="k in query.data.value?.keepers" :key="k.id" :value="k.id">
-                  {{ k.name }}（残り{{ k.remainingMinutes }}分）
-                </option>
-              </select>
-            </label>
-            <label class="field grow">
-              餌
-              <select v-model="foodCode" required>
-                <option v-for="f in edibleFoods" :key="f.code" :value="f.code">
-                  {{ f.nameJa }}（満腹+{{ f.satiety }}）
-                </option>
-              </select>
-            </label>
-          </div>
-          <button class="btn btn-primary" :disabled="busy || !keeperId">🍖 ごはんをあげる</button>
-        </form>
-
-        <h2 class="section-title">診療</h2>
-        <section class="card stack">
-          <label class="field">
-            獣医
-            <select v-model="veterinarianId">
-              <option v-for="v in query.data.value?.veterinarians" :key="v.id" :value="v.id">
-                {{ v.name }}
-              </option>
-            </select>
-          </label>
-          <div class="row">
-            <button class="btn btn-block" :disabled="busy || !veterinarianId" @click="examine">
-              🩺 診察
-            </button>
-            <button class="btn btn-block" :disabled="busy || !veterinarianId" @click="treat">
-              💊 治療
-            </button>
-          </div>
-        </section>
-
-        <h2 class="section-title">移送・改名</h2>
-        <section class="card stack">
-          <form class="row bottom" @submit.prevent="transfer">
-            <label class="field grow">
-              移送先
-              <select v-model="enclosureId" required>
-                <option value="" disabled>選んでください</option>
-                <option v-for="e in transferTargets" :key="e.id" :value="e.id">
-                  {{ e.name }}（{{ e.occupants.length }}/{{ e.capacity }}）
-                </option>
-              </select>
-            </label>
-            <button class="btn" :disabled="busy || !enclosureId">移送</button>
-          </form>
-          <form class="row bottom" @submit.prevent="rename">
-            <label class="field grow">
-              新しい名前
-              <input v-model.trim="newName" required maxlength="20" />
-            </label>
-            <button class="btn" :disabled="busy || !newName">改名</button>
-          </form>
-        </section>
-      </div>
-    </div>
-  </QueryState>
+      </template>
+    </QueryState>
+  </SideSheet>
 </template>
 
 <style scoped>
+.profile {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.profile.dead {
+  filter: grayscale(1);
+}
+
+.portrait {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  font-size: 1.8rem;
+  background:
+    radial-gradient(
+      circle at 30% 30%,
+      color-mix(in srgb, var(--accent) 30%, transparent),
+      transparent 70%
+    ),
+    var(--surface-sunk);
+}
+
+.species {
+  font-weight: 800;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tags:empty {
+  display: none;
+}
+
+.home {
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--brand);
+}
+
+button.badge {
+  border: none;
+  cursor: pointer;
+}
+
+.warning {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--bad);
+}
+
+.care {
+  display: grid;
+  gap: 8px;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.action .grow {
+  width: 0;
+}
+
+.action .btn {
+  flex: none;
+}
+
+.verb {
+  flex: none;
+  width: 5em;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.memorial {
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.meters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
 .stressors {
   display: grid;
   gap: 6px;
-  margin: -4px 0 4px;
   padding: 0;
   list-style: none;
   font-size: 0.85rem;
@@ -446,70 +595,10 @@ async function rename() {
   text-decoration: underline;
 }
 
-.profile {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.profile.dead {
-  filter: grayscale(1);
-}
-
-.portrait {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 88px;
-  height: 88px;
-  border-radius: 24px;
-  font-size: 3.2rem;
-  background:
-    radial-gradient(
-      circle at 30% 30%,
-      color-mix(in srgb, var(--accent) 30%, transparent),
-      transparent 70%
-    ),
-    var(--surface-sunk);
-}
-
-.species {
-  font-weight: 800;
-  font-size: 1.1rem;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tags:empty {
-  display: none;
-}
-
-.memorial {
-  text-align: center;
-  color: var(--ink-soft);
-}
-
-.home {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--surface-sunk);
-  font-weight: 700;
-}
-
-.bottom {
-  align-items: end;
-}
-
 .facts {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 4px 16px;
-  margin: 0;
   font-size: 0.85rem;
 }
 

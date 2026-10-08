@@ -26,13 +26,19 @@ export const router = createRouter({
       name: "animals",
       component: () => import("./views/AnimalsView.vue"),
       meta: { section: "animals" },
-    },
-    {
-      path: "/animals/:id",
-      name: "animal",
-      component: () => import("./views/AnimalView.vue"),
-      props: true,
-      meta: { section: "animals" },
+      children: [
+        {
+          path: "new",
+          name: "acquire-animal",
+          component: () => import("./views/AcquireAnimalView.vue"),
+        },
+        {
+          path: ":id",
+          name: "animal",
+          component: () => import("./views/AnimalView.vue"),
+          props: true,
+        },
+      ],
     },
     {
       path: "/enclosures",
