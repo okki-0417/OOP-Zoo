@@ -88,6 +88,13 @@ export type AlertsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type AlertsQuery = { alerts: Array<{ severity: AlertSeverity, kind: AlertKind, subjectType: AlertSubject, subjectId: string | null, subjectName: string, message: string }> };
 
+export type MakeRoundsMutationVariables = Exact<{
+  keeperId: string | number;
+}>;
+
+
+export type MakeRoundsMutation = { makeRounds: { keeper: { id: string, name: string, remainingMinutes: number }, reports: Array<{ cleaned: boolean, enriched: boolean, enclosure: { id: string, name: string }, fed: Array<{ name: string | null }>, skipped: Array<{ subject: string, reason: string }> }> } };
+
 export type SpeciesCatalogQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -237,6 +244,31 @@ export type FinanceQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type FinanceQuery = { operatings: Array<{ day: number, visitors: number, income: number, cost: number, netIncome: number, balance: number, expenses: Array<{ category: ExpenseCategory, subject: string, quantity: number, amount: number }> }> };
 
+export type TaxonClassesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type TaxonClassesQuery = { taxonClasses: Array<{ code: string, label: string }> };
+
+export type HireKeeperMutationVariables = Exact<{
+  name: string;
+  specialties: Array<string> | string;
+}>;
+
+
+export type HireKeeperMutation = { hireKeeper: { id: string, name: string } };
+
+export type HireVeterinarianMutationVariables = Exact<{
+  name: string;
+}>;
+
+
+export type HireVeterinarianMutation = { hireVeterinarian: { name: string } };
+
+export type KeepersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type KeepersQuery = { keepers: Array<{ id: string, name: string, workedMinutes: number, specialties: Array<{ label: string }>, enclosures: Array<{ id: string, name: string, occupants: Array<{ alive: boolean, fedToday: boolean }> }> }> };
+
 export type OfficeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -269,29 +301,7 @@ export type ReputationQuery = { zoo: { reputation: number, admissionFee: number,
 export type StaffQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type StaffQuery = { keepers: Array<{ id: string, name: string, workedMinutes: number, specialties: Array<{ label: string }>, enclosures: Array<{ id: string, name: string, occupants: Array<{ alive: boolean, fedToday: boolean }> }> }>, veterinarians: Array<{ id: string, name: string }>, taxonClasses: Array<{ code: string, label: string }> };
-
-export type MakeRoundsMutationVariables = Exact<{
-  keeperId: string | number;
-}>;
-
-
-export type MakeRoundsMutation = { makeRounds: { keeper: { id: string, name: string, remainingMinutes: number }, reports: Array<{ cleaned: boolean, enriched: boolean, enclosure: { id: string, name: string }, fed: Array<{ name: string | null }>, skipped: Array<{ subject: string, reason: string }> }> } };
-
-export type HireKeeperMutationVariables = Exact<{
-  name: string;
-  specialties: Array<string> | string;
-}>;
-
-
-export type HireKeeperMutation = { hireKeeper: { name: string } };
-
-export type HireVeterinarianMutationVariables = Exact<{
-  name: string;
-}>;
-
-
-export type HireVeterinarianMutation = { hireVeterinarian: { name: string } };
+export type StaffQuery = { keepers: Array<{ id: string, name: string, remainingMinutes: number, specialties: Array<{ label: string }>, enclosures: Array<{ id: string, occupants: Array<{ alive: boolean, fedToday: boolean }> }> }>, veterinarians: Array<{ id: string, name: string }> };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -333,6 +343,32 @@ export const AlertsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<AlertsQuery, AlertsQueryVariables>;
+export const MakeRoundsDocument = new TypedDocumentString(`
+    mutation MakeRounds($keeperId: ID!) {
+  makeRounds(keeperId: $keeperId) {
+    keeper {
+      id
+      name
+      remainingMinutes
+    }
+    reports {
+      enclosure {
+        id
+        name
+      }
+      fed {
+        name
+      }
+      cleaned
+      enriched
+      skipped {
+        subject
+        reason
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<MakeRoundsMutation, MakeRoundsMutationVariables>;
 export const SpeciesCatalogDocument = new TypedDocumentString(`
     query SpeciesCatalog {
   species {
@@ -654,6 +690,49 @@ export const FinanceDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<FinanceQuery, FinanceQueryVariables>;
+export const TaxonClassesDocument = new TypedDocumentString(`
+    query TaxonClasses {
+  taxonClasses {
+    code
+    label
+  }
+}
+    `) as unknown as TypedDocumentString<TaxonClassesQuery, TaxonClassesQueryVariables>;
+export const HireKeeperDocument = new TypedDocumentString(`
+    mutation HireKeeper($name: String!, $specialties: [String!]!) {
+  hireKeeper(name: $name, specialties: $specialties) {
+    id
+    name
+  }
+}
+    `) as unknown as TypedDocumentString<HireKeeperMutation, HireKeeperMutationVariables>;
+export const HireVeterinarianDocument = new TypedDocumentString(`
+    mutation HireVeterinarian($name: String!) {
+  hireVeterinarian(name: $name) {
+    name
+  }
+}
+    `) as unknown as TypedDocumentString<HireVeterinarianMutation, HireVeterinarianMutationVariables>;
+export const KeepersDocument = new TypedDocumentString(`
+    query Keepers {
+  keepers {
+    id
+    name
+    workedMinutes
+    specialties {
+      label
+    }
+    enclosures {
+      id
+      name
+      occupants {
+        alive
+        fedToday
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<KeepersQuery, KeepersQueryVariables>;
 export const OfficeDocument = new TypedDocumentString(`
     query Office {
   zoo {
@@ -774,13 +853,12 @@ export const StaffDocument = new TypedDocumentString(`
   keepers {
     id
     name
-    workedMinutes
+    remainingMinutes
     specialties {
       label
     }
     enclosures {
       id
-      name
       occupants {
         alive
         fedToday
@@ -791,49 +869,5 @@ export const StaffDocument = new TypedDocumentString(`
     id
     name
   }
-  taxonClasses {
-    code
-    label
-  }
 }
     `) as unknown as TypedDocumentString<StaffQuery, StaffQueryVariables>;
-export const MakeRoundsDocument = new TypedDocumentString(`
-    mutation MakeRounds($keeperId: ID!) {
-  makeRounds(keeperId: $keeperId) {
-    keeper {
-      id
-      name
-      remainingMinutes
-    }
-    reports {
-      enclosure {
-        id
-        name
-      }
-      fed {
-        name
-      }
-      cleaned
-      enriched
-      skipped {
-        subject
-        reason
-      }
-    }
-  }
-}
-    `) as unknown as TypedDocumentString<MakeRoundsMutation, MakeRoundsMutationVariables>;
-export const HireKeeperDocument = new TypedDocumentString(`
-    mutation HireKeeper($name: String!, $specialties: [String!]!) {
-  hireKeeper(name: $name, specialties: $specialties) {
-    name
-  }
-}
-    `) as unknown as TypedDocumentString<HireKeeperMutation, HireKeeperMutationVariables>;
-export const HireVeterinarianDocument = new TypedDocumentString(`
-    mutation HireVeterinarian($name: String!) {
-  hireVeterinarian(name: $name) {
-    name
-  }
-}
-    `) as unknown as TypedDocumentString<HireVeterinarianMutation, HireVeterinarianMutationVariables>;

@@ -64,6 +64,16 @@ export const router = createRouter({
       name: "staff",
       component: () => import("./views/StaffView.vue"),
       meta: { section: "staff" },
+      children: [
+        { path: "new", name: "hire-staff", component: () => import("./views/HireStaffView.vue") },
+        { path: "rounds", name: "rounds", component: () => import("./views/RoundsView.vue") },
+        {
+          path: ":id",
+          name: "keeper",
+          component: () => import("./views/KeeperView.vue"),
+          props: true,
+        },
+      ],
     },
     { path: "/zoo", redirect: "/enclosures" },
     { path: "/zoo/gate", redirect: "/animals" },
